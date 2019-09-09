@@ -1,15 +1,18 @@
 #pragma once
 
-#include "Entry.h"
+#include "List.h"
 namespace spvgentwo
 {
+	// forward decls
+	class IAllocator;
+
 	class Type
 	{
 	public:
-		Type();
+		Type(IAllocator* _pAllocator);
 		~Type();
 
 	private:
-		//Entry<Type>* m_subTypes;
+		List<Type> m_subTypes;
 	};
 } // !spvgentwo
