@@ -24,6 +24,15 @@ namespace spvgentwo
 		Module* getModule();
 		IAllocator* getAllocator();
 
+		Iterator begin() const { return Iterator(m_pInstructions); }
+		Iterator end() const { return Iterator(nullptr); }
+
+		// get last instruction
+		Iterator getTerminator();
+
+		// manual instruction add
+		TInstruction* addInstruction();
+
 	private:
 		Function* m_pFunction = nullptr; // parent
 		TInstruction* m_pInstructions = nullptr;

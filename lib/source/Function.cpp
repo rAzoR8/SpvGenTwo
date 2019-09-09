@@ -23,7 +23,7 @@ spvgentwo::TBasicBlock* spvgentwo::Function::addBasicBlock()
 		return m_pBasicBlocks;
 	}
 
-	return m_pBasicBlocks->emplace_back(m_pModule->getAllocator(), this);
+	return m_pBasicBlocks->emplace_back(getAllocator(), this);
 }
 
 spvgentwo::IAllocator* spvgentwo::Function::getAllocator()

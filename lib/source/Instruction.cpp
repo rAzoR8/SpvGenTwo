@@ -8,6 +8,11 @@ spvgentwo::Instruction::Instruction(BasicBlock* _pBasicBlock) :
 
 spvgentwo::Instruction::~Instruction()
 {
+	if (m_pOperands != nullptr) 
+	{
+		m_pOperands->destroyList();
+		m_pOperands = nullptr;
+	}
 }
 
 spvgentwo::TOperand* spvgentwo::Instruction::addOperand(const Operand _operand)
