@@ -5,7 +5,6 @@ namespace spvgentwo
 {
 	// forward delcs
 	class Module;
-	//class BasicBlock;
 	class IAllocator;
 
 	using TBasicBlock = Entry<BasicBlock>;
@@ -13,6 +12,8 @@ namespace spvgentwo
 	class Function
 	{
 	public:
+		using Iterator = EntryIterator<BasicBlock>;
+
 		Function(Module* _pModule);
 		~Function();
 
@@ -20,6 +21,9 @@ namespace spvgentwo
 
 		Module* getModule() { return m_pModule; }
 		const Module* getModule() const { return m_pModule; }
+
+		Iterator begin() const { return Iterator(m_pBasicBlocks); }
+		Iterator end() const { return Iterator(nullptr); }
 
 		IAllocator* getAllocator();
 	private:
