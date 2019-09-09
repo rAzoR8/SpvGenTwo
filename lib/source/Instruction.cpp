@@ -15,7 +15,7 @@ spvgentwo::Instruction::~Instruction()
 	}
 }
 
-spvgentwo::TOperand* spvgentwo::Instruction::addOperand(const Operand _operand)
+spvgentwo::TOperand* spvgentwo::Instruction::addOperand(const Operand& _operand)
 {
 	if (m_pOperands == nullptr)
 	{

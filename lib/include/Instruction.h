@@ -9,6 +9,8 @@ namespace spvgentwo
 	class BasicBlock;
 	class Instruction;
 
+	static constexpr spv::Id InvalidId = 0xFFFFFFFF;
+
 	struct Operand
 	{
 		union {
@@ -44,14 +46,19 @@ namespace spvgentwo
 		// manual instruction construction:
 		void setOpCode(const spv::Op _op) { m_Operation = _op; };
 		spv::Op getOpCode() const { return m_Operation; }
-		TOperand* addOperand(const Operand _operand);
+		TOperand* addOperand(const Operand& _operand);
 
 		Iterator begin() const { return Iterator(m_pOperands); }
 		Iterator end() const { return Iterator(nullptr); }
 
+		spv::Id getId() const { return m_ResultId; }
+		spv::Id getTypeId() const { return m_TypeId; }
+
 	private:
 		BasicBlock* m_pBasicBlock = nullptr;
 		spv::Op m_Operation = spv::Op::OpNop;
+		spv::Id m_ResultId = InvalidId;
+		spv::Id m_TypeId = InvalidId;
 
 		TOperand* m_pOperands = nullptr;
 	};
