@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EntryIterator.h"
+#include "List.h"
 #include <vulkan/spirv.hpp11>
 
 namespace spvgentwo
@@ -30,9 +30,7 @@ namespace spvgentwo
 		Operand(unsigned int _literal) : literal(_literal), type(Type::Literal) {}
 	};
 
-	using TOperand = Entry<Operand>;
-
-	class Instruction
+	class Instruction : public List<Operand>
 	{
 	public:
 		using Iterator = EntryIterator<Operand>;
@@ -46,10 +44,7 @@ namespace spvgentwo
 		// manual instruction construction:
 		void setOpCode(const spv::Op _op) { m_Operation = _op; };
 		spv::Op getOpCode() const { return m_Operation; }
-		TOperand* addOperand(const Operand& _operand);
-
-		Iterator begin() const { return Iterator(m_pOperands); }
-		Iterator end() const { return Iterator(nullptr); }
+		EntryType* addOperand(const Operand& _operand) { return emplace_back(_operand); }
 
 		spv::Id getId() const { return m_ResultId; }
 		spv::Id getTypeId() const { return m_TypeId; }
@@ -59,7 +54,5 @@ namespace spvgentwo
 		spv::Op m_Operation = spv::Op::OpNop;
 		spv::Id m_ResultId = InvalidId;
 		spv::Id m_TypeId = InvalidId;
-
-		TOperand* m_pOperands = nullptr;
 	};
 } // !spvgentwo

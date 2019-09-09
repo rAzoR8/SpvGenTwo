@@ -3,17 +3,12 @@
 #include "Module.h"
 
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction) :
-	m_pFunction(_pFunction)
+	m_pFunction(_pFunction), List(_pFunction->getAllocator())
 {
 }
 
 spvgentwo::BasicBlock::~BasicBlock()
 {
-	if (m_pInstructions != nullptr) 
-	{
-		m_pInstructions->destroyList();
-		m_pInstructions = nullptr;
-	}
 }
 
 spvgentwo::Module* spvgentwo::BasicBlock::getModule()
@@ -28,15 +23,5 @@ spvgentwo::IAllocator* spvgentwo::BasicBlock::getAllocator()
 
 spvgentwo::BasicBlock::Iterator spvgentwo::BasicBlock::getTerminator()
 {
-	return Iterator(m_pInstructions == nullptr ? nullptr : m_pInstructions->last());
-}
-
-spvgentwo::TInstruction* spvgentwo::BasicBlock::addInstruction()
-{
-	if (m_pInstructions == nullptr)
-	{
-		m_pInstructions = TInstruction::create(getAllocator(), this);
-		return m_pInstructions;
-	}
-	return m_pInstructions->emplace_back(getAllocator(), this);
+	return Iterator(m_pLast);
 }

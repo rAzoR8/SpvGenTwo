@@ -8,12 +8,9 @@ namespace spvgentwo
 	class Function;
 	class IAllocator;
 
-	using TInstruction = Entry<Instruction>;
-
-	class BasicBlock
+	class BasicBlock : public List<Instruction>
 	{
 	public:
-		using Iterator = EntryIterator<Instruction>;
 
 		BasicBlock(Function* _pFunction);
 		~BasicBlock();
@@ -24,17 +21,13 @@ namespace spvgentwo
 		Module* getModule();
 		IAllocator* getAllocator();
 
-		Iterator begin() const { return Iterator(m_pInstructions); }
-		Iterator end() const { return Iterator(nullptr); }
-
 		// get last instruction
 		Iterator getTerminator();
 
 		// manual instruction add
-		TInstruction* addInstruction();
+		EntryType* addInstruction() { return emplace_back(this); }
 
 	private:
 		Function* m_pFunction = nullptr; // parent
-		TInstruction* m_pInstructions = nullptr;
 	};
 } // !spvgentwo

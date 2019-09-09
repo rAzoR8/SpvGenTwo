@@ -24,14 +24,13 @@ namespace spvgentwo
 
 		Entry* last();
 
-		void destroyList();
+		void destroyList(IAllocator* _pAlloc);
 
 		bool operator==(const Entry<T>& _other) const;
 		bool operator!=(const Entry<T>& _other) const;
 
 	private:
 		T m_data;
-		IAllocator* m_pAlloc = nullptr;
 		Entry* m_pPrev = nullptr;
 		Entry* m_pNext = nullptr;
 	};
@@ -52,9 +51,7 @@ namespace spvgentwo
 	template<class ...Args>
 	inline Entry<T>* Entry<T>::create(IAllocator* _pAlloc, Args&& ..._args)
 	{
-		Entry<T>* pNew = _pAlloc->construct<Entry<T>>(static_cast<Args&&>(_args)...);
-		pNew->m_pAlloc = _pAlloc;
-		return pNew;
+		return _pAlloc->construct<Entry<T>>(static_cast<Args&&>(_args)...);
 	}
 
 	template<class T>
@@ -64,7 +61,6 @@ namespace spvgentwo
 		if (m_pNext == nullptr)
 		{
 			m_pNext = _pAlloc->construct<Entry<T>>(static_cast<Args&&>(_args)...);	
-			m_pNext->m_pAlloc = _pAlloc;
 			if (m_pNext != nullptr)
 			{
 				m_pNext->m_pPrev = this;
@@ -109,17 +105,16 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	inline void Entry<T>::destroyList()
+	inline void Entry<T>::destroyList(IAllocator* _pAlloc)
 	{
 		Entry<T>* entry = this;
 
 		while (entry != nullptr)
 		{
 			Entry<T>* next = entry->m_pNext;
-			IAllocator* alloc = entry->m_pAlloc;
 
 			entry->~Entry();
-			alloc->deallocate(entry);
+			_pAlloc->deallocate(entry);
 
 			entry = next;
 		}
