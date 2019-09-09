@@ -8,3 +8,8 @@ spvgentwo::Type::Type(IAllocator* _pAllocator) :
 spvgentwo::Type::~Type()
 {
 }
+
+spvgentwo::Type spvgentwo::Type::Void()
+{
+	return Type(m_subTypes.getAllocator());
+}
