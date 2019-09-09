@@ -13,6 +13,8 @@ namespace spvgentwo
 	class Module
 	{
 	public:
+		using Iterator = EntryIterator<Function>;
+
 		Module(IAllocator* _pAllocator);
 		~Module();
 
@@ -20,6 +22,10 @@ namespace spvgentwo
 
 		IAllocator* getAllocator() { return m_pAllocator; }
 		const IAllocator* getAllocator() const { return m_pAllocator; }
+
+		Iterator begin() const { return Iterator(m_pFunctions); }
+		Iterator end() const { return Iterator(nullptr); }
+
 	private:
 		TFunction* m_pFunctions = nullptr;
 		IAllocator* m_pAllocator = nullptr;
