@@ -1,7 +1,7 @@
 #pragma once
 
 #include "List.h"
-#include <vulkan/spirv.hpp11>
+#include "SpvDefines.h"
 
 namespace spvgentwo
 {
@@ -14,11 +14,19 @@ namespace spvgentwo
 		Type(IAllocator* _pAllocator);
 		~Type();
 
-		Type Void();
+		void setBaseType(const spv::Op _type);
+
+		// makes this a void type
+		Type& Void();
+		
+		Type& Int(const uint32_t _bits = 32u, const bool _sign = true);
+		Type& UInt(const uint32_t _bits = 32u) { return Int(_bits, false); }
+
+		Type& Float(const uint32_t _bits = 32u);
 
 	private:
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type
-		spv::Id m_Dimension = 0;
+		uint32_t m_Dimension = 0u;
 		bool m_Sign = false;
 
 		// image

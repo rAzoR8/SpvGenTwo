@@ -2,7 +2,7 @@
 
 #include "List.h"
 #include "Operand.h"
-#include <vulkan/spirv.hpp11>
+#include "SpvDefines.h"
 
 namespace spvgentwo
 {

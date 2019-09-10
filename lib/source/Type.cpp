@@ -9,7 +9,31 @@ spvgentwo::Type::~Type()
 {
 }
 
-spvgentwo::Type spvgentwo::Type::Void()
+void spvgentwo::Type::setBaseType(const spv::Op _type)
 {
-	return Type(m_subTypes.getAllocator());
+	if (IsType(_type))
+	{
+		m_Type = _type;
+	}
+}
+
+spvgentwo::Type& spvgentwo::Type::Void()
+{
+	m_Type = spv::Op::OpTypeVoid;
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::Int(const uint32_t _bits, const bool _sign)
+{
+	m_Type = spv::Op::OpTypeInt;
+	m_Dimension = _bits;
+	m_Sign = _sign;
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::Float(const uint32_t _bits)
+{
+	m_Type = spv::Op::OpTypeFloat;
+	m_Dimension = _bits;
+	return *this;
 }

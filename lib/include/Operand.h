@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 namespace spvgentwo
 {
 	// forward decls
@@ -11,7 +13,7 @@ namespace spvgentwo
 		union {
 			BasicBlock* branchTarget;
 			Instruction* instruction;
-			unsigned int literal;
+			uint32_t literal;
 		};
 		enum class Type
 		{
@@ -40,6 +42,6 @@ namespace spvgentwo
 
 		Operand(BasicBlock* _target) : branchTarget(_target), type(Type::BranchTarget) {}
 		Operand(Instruction* _instr) : instruction(_instr), type(Type::Instruction) {}
-		Operand(unsigned int _literal) : literal(_literal), type(Type::Literal) {}
+		Operand(uint32_t _literal) : literal(_literal), type(Type::Literal) {}
 	};
 } // !spvgentwo
