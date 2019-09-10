@@ -8,8 +8,8 @@ namespace spvgentwo
 	class IAllocator
 	{
 	public:
-		virtual void* allocate(const size_t _bytes, const uint32_t _aligment);
-		virtual void deallocate(const void* _ptr);
+		virtual void* allocate(const size_t _bytes, const uint32_t _aligment) = 0;
+		virtual void deallocate(const void* _ptr) = 0;
 
 		template <class T, class ... Args>
 		T* construct(Args&& ..._args) 
