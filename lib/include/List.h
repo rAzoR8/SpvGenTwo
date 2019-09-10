@@ -18,7 +18,12 @@ namespace spvgentwo
 		using PointerType = T *;
 
 		List(IAllocator* _pAllocator);
+		List(const List& _other);
+		List(List&& _other);
 		~List();
+
+		List& operator=(const List& _other);
+		List& operator=(List&& _other);
 
 		IAllocator* getAllocator() { return m_pAllocator; }
 		const IAllocator* getAllocator() const { return m_pAllocator; }
@@ -52,6 +57,27 @@ namespace spvgentwo
 	}
 
 	template<class T>
+	inline List<T>::List(const List& _other) :
+		m_pAllocator(_other.m_pAllocator)
+	{
+		for (const T& e : _other)
+		{
+			emplace_back(e);
+		}
+	}
+
+	template<class T>
+	inline List<T>::List(List&& _other) :
+		m_pAllocator(_other.m_pAllocator),
+		m_pBegin(_other.m_pBegin),
+		m_pLast(_other.m_pLast)
+	{
+		_other.m_pAllocator = nullptr;
+		_other.m_pBegin = nullptr;
+		_other.m_pLast = nullptr;
+	}
+
+	template<class T>
 	inline List<T>::~List()
 	{
 		if (m_pBegin != nullptr && m_pAllocator != nullptr)
@@ -60,6 +86,55 @@ namespace spvgentwo
 			m_pBegin = nullptr;
 		}
 		m_pAllocator = nullptr;
+	}
+
+	template<class T>
+	inline List<T>& List<T>::operator=(const List<T>& _other)
+	{
+		if (this == &_other) return *this;
+
+		Iterator l = begin(), le = end(), r = _other.begin(), re = _other.end();
+		for (; l != le && r != re; ++l, ++r)
+		{
+			(*l).m_data = (*r).m_data;
+		}
+
+		// left side was longer, destroy rest
+		if(l != le)
+		{
+			(*l).destroyList(m_pAllocator);
+		}
+
+		// right side was longer, emplace
+		for (; r != re; ++r)
+		{
+			emplace_back((*r).m_data);
+		}
+
+		return *this;
+	}
+
+	template<class T>
+	inline List<T>& List<T>::operator=(List<T>&& _other)
+	{
+		if (this == &_other) return this;
+
+		// destroy left side
+		if (m_pBegin != nullptr && m_pAllocator != nullptr)
+		{
+			m_pBegin->destroyList(m_pAllocator);
+		}
+
+		// assign right side
+		m_pAllocator = _other.m_pAllocator;
+		m_pBegin = _other.m_pBegin;
+		m_pLast = _other.m_pLast;
+
+		_other.m_pAllocator = nullptr;
+		_other.m_pBegin = nullptr;
+		_other.m_pLast = nullptr;
+
+		return *this;
 	}
 
 	template<class T>
