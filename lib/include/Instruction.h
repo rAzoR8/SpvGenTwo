@@ -1,34 +1,12 @@
 #pragma once
 
 #include "List.h"
+#include "Operand.h"
 #include <vulkan/spirv.hpp11>
 
 namespace spvgentwo
 {
-	// forward decl
-	class BasicBlock;
-	class Instruction;
-
 	static constexpr spv::Id InvalidId = 0xFFFFFFFF;
-
-	struct Operand
-	{
-		union {
-			Instruction* instr;
-			unsigned int literal;
-		};
-		enum class Type
-		{
-			Instruction = 0,
-			Literal
-		} type;
-
-		Operand(const Operand& _other) : type(_other.type) { if (type == Type::Instruction) instr = _other.instr; else literal = _other.literal; }
-		Operand(Operand&& _other) noexcept : type(_other.type) { if (type == Type::Instruction) instr = _other.instr; else literal = _other.literal; }
-
-		Operand(Instruction* _instr) : instr(_instr), type(Type::Instruction) {}
-		Operand(unsigned int _literal) : literal(_literal), type(Type::Literal) {}
-	};
 
 	class Instruction : public List<Operand>
 	{
