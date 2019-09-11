@@ -13,7 +13,7 @@ namespace spvgentwo
 		Module(IAllocator* _pAllocator);
 		~Module();
 
-		EntryType* addFunction() { return emplace_back(this); }
+		Function& addFunction() { return emplace_back(this); }
 
 	private:
 	};

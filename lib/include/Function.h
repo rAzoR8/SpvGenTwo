@@ -13,7 +13,7 @@ namespace spvgentwo
 		Function(Module* _pModule);
 		~Function();
 
-		EntryType* addBasicBlock() { return emplace_back(this); }
+		BasicBlock& addBasicBlock() { return emplace_back(this); }
 
 		Module* getModule() { return m_pModule; }
 		const Module* getModule() const { return m_pModule; }

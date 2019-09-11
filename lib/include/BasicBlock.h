@@ -25,7 +25,7 @@ namespace spvgentwo
 		Iterator getTerminator();
 
 		// manual instruction add
-		EntryType* addInstruction() { return emplace_back(this); }
+		Instruction& addInstruction() { return emplace_back(this); }
 
 	private:
 		Function* m_pFunction = nullptr; // parent

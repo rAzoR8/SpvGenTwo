@@ -19,10 +19,18 @@ namespace spvgentwo
 		// makes this a void type
 		Type& Void();
 		
+		Type& Bool();
+
 		Type& Int(const unsigned int _bits = 32u, const bool _sign = true);
 		Type& UInt(const unsigned int _bits = 32u) { return Int(_bits, false); }
 
 		Type& Float(const unsigned int _bits = 32u);
+
+		// makes this a struct, returns new member
+		Type& StructMember();
+
+		// makes this an array, returns inner type
+		Type& Array(const unsigned int _elements);
 
 	private:
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type

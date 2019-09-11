@@ -29,6 +29,15 @@ namespace spvgentwo
 		bool operator==(const Entry<T>& _other) const;
 		bool operator!=(const Entry<T>& _other) const;
 
+		T& inner() { return m_data; }
+		const T& inner() const { return m_data; }
+
+		T& operator*() { return m_data; }
+		const T& operator*() const { return m_data; }
+
+		T* operator->() { return &m_data; }
+		const T* operator->() const { return &m_data; }
+
 	private:
 		T m_data;
 		Entry* m_pPrev = nullptr;

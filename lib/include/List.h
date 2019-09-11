@@ -28,9 +28,12 @@ namespace spvgentwo
 		IAllocator* getAllocator() { return m_pAllocator; }
 		const IAllocator* getAllocator() const { return m_pAllocator; }
 
+		template<class ...Args>
+		Entry<T>* emplace_back_entry(Args&& ..._args);
+
 		// emplace at the end of the linked list
 		template<class ...Args>
-		Entry<T>* emplace_back(Args&& ..._args);
+		T& emplace_back(Args&& ..._args);
 
 		// insert new entry before this entry
 		//template<class ...Args>
@@ -39,11 +42,13 @@ namespace spvgentwo
 		Iterator begin() const { return Iterator(m_pOperands); }
 		Iterator end() const { return Iterator(nullptr); }
 
-		Entry<T>& front() { return *m_pBegin; }
-		const Entry<T>& front() const { return *m_pBegin; }
+		T& front() { return m_pBegin->inner(); }
+		const T& front() const { return m_pBegin->inner(); }
 
-		Entry<T>& back() { return *m_pLast; }
-		const Entry<T>& back() const { return *m_pLast; }
+		T& back() { return m_pLast->inner(); }
+		const T& back() const { return m_pLast->inner(); }
+
+		bool empty() const { return m_pBegin != nullptr; }
 
 	protected:
 		IAllocator* m_pAllocator = nullptr;
@@ -139,7 +144,7 @@ namespace spvgentwo
 
 	template<class T>
 	template<class ...Args>
-	inline Entry<T>* List<T>::emplace_back(Args&& ..._args)
+	inline Entry<T>* List<T>::emplace_back_entry(Args&& ..._args)
 	{
 		if (m_pBegin == nullptr)
 		{
@@ -151,5 +156,12 @@ namespace spvgentwo
 			m_pLast = m_pLast->emplace_back(m_pAllocator, forward<Args>(_args)...);
 		}
 		return m_pLast;
+	}
+
+	template<class T>
+	template<class ...Args>
+	inline T& List<T>::emplace_back(Args&& ..._args)
+	{
+		return **emplace_back_entry(forward<Args>(_args)...);
 	}
 } // !spvgentwo
