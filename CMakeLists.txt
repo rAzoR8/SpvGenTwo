@@ -52,7 +52,7 @@ target_include_directories(lib PRIVATE "${Vulkan_INCLUDE_DIR}")
 
 #cli project
 add_executable(cli "${cli_sources}")
-target_include_directories(cli PRIVATE "${cli_includes}")
+target_include_directories(cli PUBLIC "${cli_includes};${lib_includes};${Vulkan_INCLUDE_DIR}")
 target_link_libraries(cli PUBLIC lib)
 
 message(STATUS "")
