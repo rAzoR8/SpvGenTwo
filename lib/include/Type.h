@@ -19,14 +19,14 @@ namespace spvgentwo
 		// makes this a void type
 		Type& Void();
 		
-		Type& Int(const uint32_t _bits = 32u, const bool _sign = true);
-		Type& UInt(const uint32_t _bits = 32u) { return Int(_bits, false); }
+		Type& Int(const unsigned int _bits = 32u, const bool _sign = true);
+		Type& UInt(const unsigned int _bits = 32u) { return Int(_bits, false); }
 
-		Type& Float(const uint32_t _bits = 32u);
+		Type& Float(const unsigned int _bits = 32u);
 
 	private:
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type
-		uint32_t m_Dimension = 0u;
+		unsigned int m_Dimension = 0u;
 		bool m_Sign = false;
 
 		// image

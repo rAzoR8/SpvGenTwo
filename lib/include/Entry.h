@@ -51,7 +51,7 @@ namespace spvgentwo
 	template<class ...Args>
 	inline Entry<T>* Entry<T>::create(IAllocator* _pAlloc, Args&& ..._args)
 	{
-		return _pAlloc->construct<Entry<T>>(static_cast<Args&&>(_args)...);
+		return _pAlloc->construct<Entry<T>>(forward<Args>(_args)...);
 	}
 
 	template<class T>

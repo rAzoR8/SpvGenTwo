@@ -22,7 +22,8 @@ namespace spvgentwo
 		// manual instruction construction:
 		void setOpCode(const spv::Op _op) { m_Operation = _op; };
 		spv::Op getOpCode() const { return m_Operation; }
-		EntryType* addOperand(const Operand& _operand) { return emplace_back(_operand); }
+		template<class ...Args>
+		EntryType* addOperand(Args&& ... _operand) { return emplace_back(forward<Args>(_operand)...); }
 
 		spv::Id getId() const { return m_ResultId; }
 		spv::Id getTypeId() const { return m_TypeId; }

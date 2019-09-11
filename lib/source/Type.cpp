@@ -23,7 +23,7 @@ spvgentwo::Type& spvgentwo::Type::Void()
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Int(const uint32_t _bits, const bool _sign)
+spvgentwo::Type& spvgentwo::Type::Int(const unsigned int _bits, const bool _sign)
 {
 	m_Type = spv::Op::OpTypeInt;
 	m_Dimension = _bits;
@@ -31,7 +31,7 @@ spvgentwo::Type& spvgentwo::Type::Int(const uint32_t _bits, const bool _sign)
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Float(const uint32_t _bits)
+spvgentwo::Type& spvgentwo::Type::Float(const unsigned int _bits)
 {
 	m_Type = spv::Op::OpTypeFloat;
 	m_Dimension = _bits;

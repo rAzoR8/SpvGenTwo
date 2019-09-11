@@ -143,12 +143,12 @@ namespace spvgentwo
 	{
 		if (m_pBegin == nullptr)
 		{
-			m_pBegin = Entry<T>::create(m_pAllocator, static_cast<Args&&>(_args)...);
+			m_pBegin = Entry<T>::create(m_pAllocator, forward<Args>(_args)...);
 			m_pLast = m_pBegin;
 		}
 		else
 		{
-			m_pLast = m_pLast->emplace_back(m_pAllocator, static_cast<Args&&>(_args)...);
+			m_pLast = m_pLast->emplace_back(m_pAllocator, forward<Args>(_args)...);
 		}
 		return m_pLast;
 	}
