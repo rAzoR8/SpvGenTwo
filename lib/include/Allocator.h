@@ -19,5 +19,12 @@ namespace spvgentwo
 			}
 			return pData;
 		}
+
+		template <class T>
+		void destruct(T* _ptr)
+		{
+			_ptr->~T();
+			deallocate(_ptr);
+		}
 	};
 } // spvgentwo

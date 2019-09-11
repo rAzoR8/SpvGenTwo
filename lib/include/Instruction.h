@@ -6,6 +6,9 @@
 
 namespace spvgentwo
 {
+	// forward delcs
+	class Type;
+
 	static constexpr spv::Id InvalidId = 0xFFFFFFFF;
 
 	class Instruction : public List<Operand>
@@ -26,12 +29,20 @@ namespace spvgentwo
 		EntryType* addOperand(Args&& ... _operand) { return emplace_back(forward<Args>(_operand)...); }
 
 		spv::Id getId() const { return m_ResultId; }
-		spv::Id getTypeId() const { return m_TypeId; }
+		Type* getType() { return m_pType; }
+
+		// memory of _pType is owned externaly
+		void setSharedType(Type* _pType);
+
+		// type is owned by this instruction (modules allocator)
+		Type* createType();
 
 	private:
 		BasicBlock* m_pBasicBlock = nullptr;
 		spv::Op m_Operation = spv::Op::OpNop;
 		spv::Id m_ResultId = InvalidId;
-		spv::Id m_TypeId = InvalidId;
+		
+		Type* m_pType = nullptr;
+		bool m_bSharedType = false; // if not shared, this instruction owns type memory
 	};
 } // !spvgentwo

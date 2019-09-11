@@ -5,7 +5,7 @@
 namespace spvgentwo
 {
 	// forward decls
-	class IAllocator;
+	//class IAllocator;
 
 	class Module : public List<Function>
 	{
