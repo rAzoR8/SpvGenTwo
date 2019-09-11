@@ -22,6 +22,9 @@ namespace spvgentwo
 		template<class ...Args>
 		Entry* insert(IAllocator* _pAlloc, Args&& ..._args);
 
+		// removes this entry from the list (and destroys it if allocator is provieded), returns next entry
+		Entry* remove(IAllocator* _pAllo);
+
 		Entry* last();
 
 		void destroyList(IAllocator* _pAlloc);
@@ -102,6 +105,28 @@ namespace spvgentwo
 		entry->m_pNext = this;
 		
 		return entry;
+	}
+	template<class T>
+	inline Entry<T>* Entry<T>::remove(IAllocator* _pAlloc)
+	{
+		Entry<T>* next = m_pNext;
+
+		if (m_pPrev != nullptr)
+		{
+			m_pPrev->m_pNext = next;
+		}
+
+		if (next != nullptr)
+		{
+			next->m_pPrev = m_pPrev;
+		}
+
+		if (_pAlloc != nullptr)
+		{
+			_pAlloc->destruct(this);
+		}
+
+		return next;
 	}
 	template<class T>
 	inline Entry<T>* Entry<T>::last()
