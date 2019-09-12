@@ -1,7 +1,8 @@
 #pragma once
 
+// replacement header for some std functions and traits
+
 #include <stddef.h>
-// replacement for some std functions and traits
 
 #ifndef DONT_REPLACE_PLACEMENTNEW
 inline void* operator new(size_t size, void* ptr) noexcept { (void)size; return ptr; }
@@ -14,12 +15,12 @@ inline void* operator new(size_t size, void* ptr) noexcept { (void)size; return 
 #ifdef DONT_REPLACE_TRAITS
 #include <type_traits>
 #include <utility>
-namespace spvgentwo
+namespace spvgentwo::std
 {
-	using namespace std;
+	using namespace ::std;
 }
 #else
-namespace spvgentwo
+namespace spvgentwo::std
 {
 	template <class>
 	inline constexpr bool is_lvalue_reference_v = false;
@@ -63,15 +64,18 @@ namespace spvgentwo
 	struct remove_cv<const volatile T> { using type = T; };
 	template <class T>
 	using remove_cv_t = typename remove_cv<T>::type;
+} // !spvgentwo::std
+#endif
 
+// custom traits
+namespace spvgentwo
+{
+	// cpp20
 	template <class T>
-	using remove_cvref_t = remove_cv_t<remove_reference_t<T>>;
+	using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
 	template <class T>
 	struct remove_cvref { using type = remove_cvref_t<T>; };
 
-	// custom trait
 	template <class T, class BASE>
-	inline constexpr bool is_same_base_type_v = is_same_v<remove_cvref_t<T>, BASE>;
-
+	inline constexpr bool is_same_base_type_v = std::is_same_v<remove_cvref_t<T>, BASE>;
 } // !spvgentwo
-#endif

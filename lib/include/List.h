@@ -148,12 +148,12 @@ namespace spvgentwo
 	{
 		if (m_pBegin == nullptr)
 		{
-			m_pBegin = Entry<T>::create(m_pAllocator, forward<Args>(_args)...);
+			m_pBegin = Entry<T>::create(m_pAllocator, std::forward<Args>(_args)...);
 			m_pLast = m_pBegin;
 		}
 		else
 		{
-			m_pLast = m_pLast->emplace_back(m_pAllocator, forward<Args>(_args)...);
+			m_pLast = m_pLast->emplace_back(m_pAllocator, std::forward<Args>(_args)...);
 		}
 		return m_pLast;
 	}
@@ -162,6 +162,6 @@ namespace spvgentwo
 	template<class ...Args>
 	inline T& List<T>::emplace_back(Args&& ..._args)
 	{
-		return **emplace_back_entry(forward<Args>(_args)...);
+		return **emplace_back_entry(std::forward<Args>(_args)...);
 	}
 } // !spvgentwo

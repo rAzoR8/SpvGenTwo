@@ -26,7 +26,7 @@ namespace spvgentwo
 		void setOpCode(const spv::Op _op) { m_Operation = _op; };
 		spv::Op getOpCode() const { return m_Operation; }
 		template<class ...Args>
-		Operand& addOperand(Args&& ... _operand) { return emplace_back(forward<Args>(_operand)...); }
+		Operand& addOperand(Args&& ... _operand) { return emplace_back(std::forward<Args>(_operand)...); }
 
 		spv::Id getId() const { return m_ResultId; }
 		Type* getType() { return m_pType; }
