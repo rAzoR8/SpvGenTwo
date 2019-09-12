@@ -9,7 +9,7 @@ macro(add_include_folder include_folder includes)
 	set(${includes} "${${includes}};${CMAKE_CURRENT_LIST_DIR}/${include_folder}")
 endmacro()
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)

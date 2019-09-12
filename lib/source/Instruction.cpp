@@ -37,3 +37,8 @@ spvgentwo::Type* spvgentwo::Instruction::createType()
 	// only return a valid type owned by this instance
 	return nullptr;
 }
+
+void spvgentwo::Instruction::opCapability(const spv::Capability _capability)
+{
+	makeOp(spv::Op::OpCapability, _capability);
+}

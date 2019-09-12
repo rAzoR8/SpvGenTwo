@@ -5,7 +5,7 @@
 
 namespace spvgentwo
 {
-	constexpr bool IsType(const spv::Op _type)
+	constexpr bool isType(const spv::Op _type)
 	{		
 		if ((_type >= spv::Op::OpTypeVoid && _type <= spv::Op::OpTypeForwardPointer) || // basic types
 			(_type >= spv::Op::OpTypeVmeImageINTEL && _type <= spv::Op::OpTypeAvcSicResultINTEL) // intel ext
@@ -25,5 +25,10 @@ namespace spvgentwo
 		default:
 			return false;
 		}
+	}
+
+	constexpr size_t wordCount(const size_t _byteCount)
+	{
+		return (_byteCount / sizeof(spv::Id)) + (_byteCount % sizeof(spv::Id) != 0u ? 1u : 0u);
 	}
 } //!spvgentwo

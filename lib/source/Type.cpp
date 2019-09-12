@@ -11,7 +11,7 @@ spvgentwo::Type::~Type()
 
 void spvgentwo::Type::setBaseType(const spv::Op _type)
 {
-	if (IsType(_type))
+	if (isType(_type))
 	{
 		m_Type = _type;
 	}
