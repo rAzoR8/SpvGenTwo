@@ -9,6 +9,10 @@ namespace spvgentwo
 	{
 	public:
 		void* allocate(const size_t _bytes, const unsigned int _aligment) final;
-		void deallocate(void* _ptr) final;
+		void deallocate(void* _ptr, const size_t _bytes) final;
+		~HeapAllocator();
+	private:
+		size_t m_Allocated = 0u;
+		size_t m_Deallocated = 0u;
 	};
 } //! spvgentwo

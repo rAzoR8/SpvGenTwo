@@ -146,10 +146,7 @@ namespace spvgentwo
 		while (entry != nullptr)
 		{
 			Entry<T>* next = entry->m_pNext;
-
-			entry->~Entry();
-			_pAlloc->deallocate(entry);
-
+			_pAlloc->destruct(entry);
 			entry = next;
 		}
 	}

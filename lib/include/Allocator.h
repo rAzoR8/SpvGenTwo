@@ -7,7 +7,7 @@ namespace spvgentwo
 	{
 	public:
 		virtual void* allocate(const size_t _bytes, const unsigned int _aligment) = 0;
-		virtual void deallocate(void* _ptr) = 0;
+		virtual void deallocate(void* _ptr, const size_t _bytes = 0u) = 0;
 
 		template <class T, class ... Args>
 		T* construct(Args&& ..._args) 
@@ -24,7 +24,7 @@ namespace spvgentwo
 		void destruct(T* _ptr)
 		{
 			_ptr->~T();
-			deallocate(_ptr);
+			deallocate(_ptr, sizeof(T));
 		}
 	};
 } // spvgentwo
