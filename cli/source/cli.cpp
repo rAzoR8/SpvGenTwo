@@ -31,14 +31,7 @@ int main(int argc, char* argv[])
 	Function& func = module.addFunction();
 	BasicBlock& bb = func.addBasicBlock();
 	Instruction& instr = bb.addInstruction();
-	instr.opCapability(spv::Capability::Shader);
-	struct bl {
-	char data[5]{ 'a', 'b', 'c', 'd', 'e' };
-	}x;
-	constexpr auto si = sizeof(bl);
-	instr.appendLiterals(x);
-	//Type& type = *instr.createType();
-	//type.Int();
+	//Type& structtest = instr.createType()->StructM().FloatP().UIntP().Bool();
 
 	return 0;
 }

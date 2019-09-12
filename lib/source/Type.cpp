@@ -1,7 +1,8 @@
 #include "Type.h"
 
-spvgentwo::Type::Type(IAllocator* _pAllocator) :
-	m_subTypes(_pAllocator)
+spvgentwo::Type::Type(IAllocator* _pAllocator, Type* _pParent) :
+	m_subTypes(_pAllocator),
+	m_pParent(_pParent)
 {
 }
 
@@ -44,22 +45,41 @@ spvgentwo::Type& spvgentwo::Type::Float(const unsigned int _bits)
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::StructMember()
+spvgentwo::Type& spvgentwo::Type::Struct()
 {
 	m_Type = spv::Op::OpTypeStruct;
-	return m_subTypes.emplace_back(m_subTypes.getAllocator());
+	return *this;
 }
 
 spvgentwo::Type& spvgentwo::Type::Array(const unsigned int _elements)
 {
 	m_Type = spv::Op::OpTypeArray;
 	m_Dimension = _elements;
-	if (m_subTypes.empty())
-	{
-		return m_subTypes.emplace_back(m_subTypes.getAllocator());
-	}
-	else
-	{
-		return m_subTypes.front();
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::Function()
+{
+	m_Type = spv::Op::OpTypeArray;
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::Member()
+{
+	return m_subTypes.emplace_back(m_subTypes.getAllocator(), this);
+}
+
+spvgentwo::Type& spvgentwo::Type::Parent()
+{
+	if (m_pParent == nullptr) return *this;
+	return *m_pParent;
+}
+
+spvgentwo::Type& spvgentwo::Type::Top()
+{
+	Type* parent = this;
+	while (true) {
+		if (parent->m_pParent == nullptr) { return *parent; }
+		parent = parent->m_pParent;
 	}
 }
