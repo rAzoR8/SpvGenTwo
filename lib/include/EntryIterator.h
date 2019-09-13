@@ -22,8 +22,8 @@ namespace spvgentwo
 		EntryIterator<T> operator++(int);
 		EntryIterator<T> operator--(int);
 
-		T& operator*() { return *m_pEntry; }
-		const T& operator*() const { return *m_pEntry; }
+		T& operator*() { return m_pEntry->inner(); }
+		const T& operator*() const { return m_pEntry->inner(); }
 
 		T* operator->() { return m_pEntry->operator->(); }
 		const T* operator->() const { return m_pEntry->operator->(); }
@@ -53,20 +53,20 @@ namespace spvgentwo
 	template<class T>
 	inline EntryIterator<T>& EntryIterator<T>::operator++()
 	{
-		m_pEntry = m_pEntry->m_pNext;
+		m_pEntry = m_pEntry->next();
 		return *this;
 	}
 	template<class T>
 	inline EntryIterator<T>& EntryIterator<T>::operator--()
 	{
-		m_pEntry = m_pEntry->m_pPrev;
+		m_pEntry = m_pEntry->prev();
 		return *this;
 	}
 	template<class T>
 	inline EntryIterator<T> EntryIterator<T>::operator++(int)
 	{
 		EntryIterator<T> ret(m_pEntry);
-		m_pEntry = m_pEntry->m_pNext;
+		m_pEntry = m_pEntry->next();
 		return ret;
 	}
 
@@ -74,7 +74,7 @@ namespace spvgentwo
 	inline EntryIterator<T> EntryIterator<T>::operator--(int)
 	{
 		EntryIterator<T> ret(m_pEntry);
-		m_pEntry = m_pEntry->m_pPrev;
+		m_pEntry = m_pEntry->prev();
 		return ret;
 	}
 } // !spvgentwo

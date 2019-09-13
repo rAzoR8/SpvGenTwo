@@ -27,6 +27,12 @@ namespace spvgentwo
 
 		Entry* last();
 
+		Entry* prev() { return m_pPrev; }
+		const Entry* prev() const { return m_pPrev; }
+
+		Entry* next() { return m_pNext;}
+		const Entry* next() const { return m_pNext; }
+
 		void destroyList(IAllocator* _pAlloc);
 
 		bool operator==(const Entry<T>& _other) const;

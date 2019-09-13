@@ -101,19 +101,19 @@ namespace spvgentwo
 		Iterator l = begin(), le = end(), r = _other.begin(), re = _other.end();
 		for (; l != le && r != re; ++l, ++r)
 		{
-			(*l).m_data = (*r).m_data;
+			(*l) = (*r);
 		}
 
 		// left side was longer, destroy rest
 		if(l != le)
 		{
-			(*l).destroyList(m_pAllocator);
+			l.entry()->destroyList(m_pAllocator);
 		}
 
 		// right side was longer, emplace
 		for (; r != re; ++r)
 		{
-			emplace_back((*r).m_data);
+			emplace_back(*r);
 		}
 
 		return *this;
@@ -122,7 +122,7 @@ namespace spvgentwo
 	template<class T>
 	inline List<T>& List<T>::operator=(List<T>&& _other)
 	{
-		if (this == &_other) return this;
+		if (this == &_other) return *this;
 
 		// destroy left side
 		if (m_pBegin != nullptr && m_pAllocator != nullptr)
