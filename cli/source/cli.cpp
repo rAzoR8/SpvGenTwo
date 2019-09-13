@@ -50,5 +50,7 @@ int main(int argc, char* argv[])
 
 	Type y(&alloc);
 	y = myStruct;
+
+	assert(x == freeType && y == myStruct);
 	return 0;
 }

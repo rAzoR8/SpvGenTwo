@@ -68,6 +68,15 @@ spvgentwo::Type& spvgentwo::Type::operator=(const Type& _other)
 	return *this;
 }
 
+bool spvgentwo::Type::operator==(const Type& _other) const
+{
+	return
+		m_Type == _other.m_Type &&
+		m_Dimension == _other.m_Dimension &&
+		m_Sign == _other.m_Sign &&
+		m_subTypes == _other.m_subTypes;
+}
+
 void spvgentwo::Type::setBaseType(const spv::Op _type)
 {
 	if (isType(_type))

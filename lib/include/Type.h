@@ -21,6 +21,9 @@ namespace spvgentwo
 		Type& operator=(Type&& _other) noexcept;
 		Type& operator=(const Type& _other);
 
+		bool operator==(const Type& _other) const;
+		bool operator!=(const Type& _other) const { return !operator==(_other); }
+
 		spv::Op getBaseType() const { return m_Type; }
 		void setBaseType(const spv::Op _type);
 
