@@ -28,6 +28,11 @@ int main(int argc, char* argv[])
 	HeapAllocator alloc;
 
 	Module module(&alloc);
+
+	module.addCapability(spv::Capability::Shader);
+	module.addExtensionInstructionImport("GLSL.std.450");
+	module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
+
 	Function& func = module.addFunction();
 	BasicBlock& bb = func.addBasicBlock();
 	Instruction& instr = bb.addInstruction();
@@ -52,5 +57,6 @@ int main(int argc, char* argv[])
 	y = myStruct;
 
 	assert(x == freeType && y == myStruct);
+
 	return 0;
 }
