@@ -2,6 +2,11 @@
 #include "Function.h"
 #include "Module.h"
 
+spvgentwo::BasicBlock::BasicBlock(IAllocator* _pAllocator) :
+	m_pFunction(nullptr), List(_pAllocator)
+{
+}
+
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction) :
 	m_pFunction(_pFunction), List(_pFunction->getAllocator())
 {

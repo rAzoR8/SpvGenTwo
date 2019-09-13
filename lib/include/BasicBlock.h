@@ -12,6 +12,7 @@ namespace spvgentwo
 	{
 	public:
 
+		BasicBlock(IAllocator* _pAllocator);
 		BasicBlock(Function* _pFunction);
 		~BasicBlock();
 
