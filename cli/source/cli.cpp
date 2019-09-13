@@ -46,5 +46,9 @@ int main(int argc, char* argv[])
 	// void fun(float, float);
 	freeType.Function().VoidM().FloatM().FloatM();
 
+	Type x(freeType);
+
+	Type y(&alloc);
+	y = myStruct;
 	return 0;
 }

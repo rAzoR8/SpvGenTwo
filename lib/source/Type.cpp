@@ -6,8 +6,66 @@ spvgentwo::Type::Type(IAllocator* _pAllocator, Type* _pParent) :
 {
 }
 
+spvgentwo::Type::Type(Type&& _other) noexcept:
+	m_subTypes(std::move(_other.m_subTypes)),
+	m_Type(_other.m_Type),
+	m_Dimension(_other.m_Dimension),
+	m_Sign(_other.m_Sign)
+{
+	for (Type& t : m_subTypes)
+	{
+		t.m_pParent = this;
+	}
+}
+
+spvgentwo::Type::Type(const Type& _other) : 
+	m_subTypes(_other.m_subTypes),
+	m_Type(_other.m_Type),
+	m_Dimension(_other.m_Dimension),
+	m_Sign(_other.m_Sign)
+{
+	for (Type& t : m_subTypes)
+	{
+		t.m_pParent = this;
+	}
+}
+
 spvgentwo::Type::~Type()
 {
+}
+
+spvgentwo::Type& spvgentwo::Type::operator=(Type&& _other) noexcept
+{
+	if (this == &_other) return *this;
+
+	m_subTypes = std::move(_other.m_subTypes);
+
+	m_Type = _other.m_Type;
+	m_Dimension = _other.m_Dimension;
+	m_Sign = _other.m_Sign;
+
+	for (Type& t : m_subTypes)
+	{
+		t.m_pParent = this;
+	}
+
+	return *this;
+}
+spvgentwo::Type& spvgentwo::Type::operator=(const Type& _other)
+{
+	if (this == &_other) return *this;
+	m_subTypes = _other.m_subTypes;
+
+	m_Type = _other.m_Type;
+	m_Dimension = _other.m_Dimension;
+	m_Sign = _other.m_Sign;
+
+	for (Type& t : m_subTypes)
+	{
+		t.m_pParent = this;
+	}
+
+	return *this;
 }
 
 void spvgentwo::Type::setBaseType(const spv::Op _type)
@@ -60,7 +118,7 @@ spvgentwo::Type& spvgentwo::Type::Array(const unsigned int _elements)
 
 spvgentwo::Type& spvgentwo::Type::Function()
 {
-	m_Type = spv::Op::OpTypeArray;
+	m_Type = spv::Op::OpTypeFunction;
 	return *this;
 }
 

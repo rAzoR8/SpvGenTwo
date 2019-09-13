@@ -14,14 +14,23 @@ namespace spvgentwo
 		using Iterator = List<Type>::Iterator;
 
 		Type(IAllocator* _pAllocator, Type* _pParent = nullptr);
+		Type(Type&& _other) noexcept;
+		Type(const Type& _other);
 		~Type();
+
+		Type& operator=(Type&& _other) noexcept;
+		Type& operator=(const Type& _other);
+
+		spv::Op getBaseType() const { return m_Type; }
+		void setBaseType(const spv::Op _type);
+
+		// dimension, bits, elements
+		unsigned int getDimension() const { return m_Dimension; }
+		bool getSign() const { return m_Sign; } // integer
 
 		// return new subtype
 		Type& Member(); // element ? rename to subtype?
-
 		Type& Parent();
-
-		void setBaseType(const spv::Op _type);
 
 		// makes this a void type
 		Type& Void();
@@ -71,8 +80,8 @@ namespace spvgentwo
 		bool m_Sign = false;
 
 		// image
-		bool m_Array = false;
-		bool m_MultiSampled = false;
+		//bool m_Array = false;
+		//bool m_MultiSampled = false;
 		// depth tex type
 		// sampler access
 
