@@ -25,6 +25,9 @@ namespace spvgentwo
 		List& operator=(const List& _other);
 		List& operator=(List&& _other);
 
+		bool operator==(const List<T>&  other) const;
+		bool operator!=(const List<T>& _other) const { return !operator==(_other); }
+
 		IAllocator* getAllocator() { return m_pAllocator; }
 		const IAllocator* getAllocator() const { return m_pAllocator; }
 
@@ -140,6 +143,19 @@ namespace spvgentwo
 		_other.m_pLast = nullptr;
 
 		return *this;
+	}
+
+	template <class T>
+	bool List<T>::operator==(const List<T>& _other) const
+	{
+		Iterator l = begin(), le = end(), r = _other.begin(), re = _other.end();
+		for (; l != le && r != re; ++l, ++r)
+		{
+			if ((*l) != (*r)) return false;
+		}
+
+		// check if both list are at the end (same length)
+		return l == le && r == re;
 	}
 
 	template<class T>

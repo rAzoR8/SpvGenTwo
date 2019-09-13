@@ -35,6 +35,7 @@ namespace spvgentwo
 
 		void destroyList(IAllocator* _pAlloc);
 
+		// TODO: checks for identity, not equality
 		bool operator==(const Entry<T>& _other) const;
 		bool operator!=(const Entry<T>& _other) const;
 
