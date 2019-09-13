@@ -31,7 +31,20 @@ int main(int argc, char* argv[])
 	Function& func = module.addFunction();
 	BasicBlock& bb = func.addBasicBlock();
 	Instruction& instr = bb.addInstruction();
-	//Type& structtest = instr.createType()->StructM().FloatP().UIntP().Bool();
+	Type& type = *instr.createType(); // ->StructM().FloatP().UIntP().Bool();
+
+	//struct myStruct
+	//{
+	//	float x;
+	//	float y;
+	//	unsigned int z;
+	//};
+	Type& myStruct = type.Struct().FloatM().FloatM().UIntM();
+
+	Type freeType(&alloc);
+
+	// void fun(float, float);
+	freeType.Function().VoidM().FloatM().FloatM();
 
 	return 0;
 }

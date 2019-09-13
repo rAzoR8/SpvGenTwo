@@ -39,7 +39,7 @@ namespace spvgentwo
 		//template<class ...Args>
 		//Entry<T>* insert(Args&& ..._args);
 
-		Iterator begin() const { return Iterator(m_pOperands); }
+		Iterator begin() const { return Iterator(m_pBegin); }
 		Iterator end() const { return Iterator(nullptr); }
 
 		T& front() { return m_pBegin->inner(); }

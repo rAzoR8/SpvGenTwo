@@ -11,6 +11,8 @@ namespace spvgentwo
 	class Type
 	{
 	public:
+		using Iterator = List<Type>::Iterator;
+
 		Type(IAllocator* _pAllocator, Type* _pParent = nullptr);
 		~Type();
 
@@ -23,41 +25,48 @@ namespace spvgentwo
 
 		// makes this a void type
 		Type& Void();
-		Type& VoidP() { Void(); return Parent(); }
+
+		// adds a new member of type void but returns this structure
+		Type& VoidM() { Member().Void(); return *this; }
 		
 		Type& Bool();
-		Type& BoolP() { Bool(); return Parent(); }
+		Type& BoolM() { Member().Bool(); return *this; }
 
 		Type& Int(const unsigned int _bits = 32u, const bool _sign = true);
-		Type& IntP(const unsigned int _bits = 32u, const bool _sign = true) { Int(_bits, _sign); return Parent(); }
+		Type& IntM(const unsigned int _bits = 32u, const bool _sign = true) { Member().Int(_bits, _sign); return *this; }
 
 		Type& UInt(const unsigned int _bits = 32u) { return Int(_bits, false); }
-		Type& UIntP(const unsigned int _bits = 32u) { return IntP(_bits, false); } // return parent
+		Type& UIntM(const unsigned int _bits = 32u) { return IntM(_bits, false); }
 
 		Type& Float(const unsigned int _bits = 32u);
-		Type& FloatP(const unsigned int _bits = 32u) { Float(); return Parent(); }
+		Type& FloatM(const unsigned int _bits = 32u) { Member().Float(); return *this; }
 
 		// makes this a struct
 		Type& Struct();
-		// makes this a struct, returns new member
-		Type& StructM() { Struct(); return Member(); }
 
 		// makes this an array
 		Type& Array(const unsigned int _elements);
 		// makes this an array, returns element type
-		Type& ArrayM(const unsigned int _elements) { Array(_elements); return Member(); }
+		Type& ArrayElement(const unsigned int _elements) { Array(_elements); return m_subTypes.empty() ? Member() : m_subTypes.front(); }
 			   
 		// makes this a function
 		Type& Function();
-		// make this a function, return 'return type'
-		Type& FunctionM() { Function(); return Member(); }
 
 		// return top most type
 		Type& Top();
 
+		Iterator begin() const { return m_subTypes.begin(); }
+		Iterator end() const { return m_subTypes.end(); }
+
+		Type& front() { return m_subTypes.front(); }
+		const Type& front() const { return m_subTypes.front(); }
+
+		Type& back() { return m_subTypes.back(); }
+		const Type& back() const { return m_subTypes.back(); }
+
 	private:
-		Type* m_pParent = nullptr;
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type
+		Type* m_pParent = nullptr;
 		unsigned int m_Dimension = 0u;
 		bool m_Sign = false;
 
