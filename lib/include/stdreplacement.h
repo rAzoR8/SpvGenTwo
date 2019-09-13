@@ -39,14 +39,22 @@ namespace spvgentwo::std
 	using remove_reference_t = typename remove_reference<T>::type;
 
 	template <class T>
-	[[nodiscard]] constexpr T&& forward(remove_reference_t<T>& _Arg) noexcept {
+	[[nodiscard]] constexpr T&& forward(remove_reference_t<T>& _Arg) noexcept
+	{
 		return static_cast<T&&>(_Arg);
 	}
 
 	template <class T>
-	[[nodiscard]] constexpr T&& forward(remove_reference_t<T>&& _Arg) noexcept { 
+	[[nodiscard]] constexpr T&& forward(remove_reference_t<T>&& _Arg) noexcept
+	{ 
 		static_assert(!is_lvalue_reference_v<T>, "forward of lvalue");
 		return static_cast<T&&>(_Arg);		
+	}
+
+	template <class T>
+	[[nodiscard]] constexpr remove_reference_t<T>&& move(T&& _Arg) noexcept
+	{
+		return static_cast<remove_reference_t<T>&&>(_Arg);
 	}
 
 	template <class, class>
