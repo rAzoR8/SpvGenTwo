@@ -47,3 +47,8 @@ void spvgentwo::Instruction::opCapability(const spv::Capability _capability)
 {
 	makeOp(spv::Op::OpCapability, _capability);
 }
+
+void spvgentwo::Instruction::opMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel)
+{
+	makeOp(spv::Op::OpMemoryModel, _addressModel, _memoryModel);
+}

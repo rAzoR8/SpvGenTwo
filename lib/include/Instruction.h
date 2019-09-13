@@ -39,15 +39,17 @@ namespace spvgentwo
 		// type is owned by this instruction (modules allocator)
 		Type* createType();
 
-		// instruction generators
-		void opCapability(const spv::Capability _capability);
-
 		// creates literals
 		template <class T, class ...Args>
 		void makeOp(T first, Args ... _args);
 
 		template <class T, class ...Args>
 		void appendLiterals(T first, Args ... _args);
+
+		// instruction generators
+		void opCapability(const spv::Capability _capability);
+
+		void opMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
 
 	private:
 		BasicBlock* m_pBasicBlock = nullptr;
