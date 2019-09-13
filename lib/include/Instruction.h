@@ -16,7 +16,9 @@ namespace spvgentwo
 	public:
 		using Iterator = EntryIterator<Operand>;
 
+		Instruction(IAllocator* _pAllocator);
 		Instruction(BasicBlock* _pBasicBlock);
+
 		~Instruction();
 
 		BasicBlock* getBasicBlock() { return m_pBasicBlock; }

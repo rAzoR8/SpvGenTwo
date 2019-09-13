@@ -2,6 +2,11 @@
 #include "BasicBlock.h"
 #include "Type.h"
 
+spvgentwo::Instruction::Instruction(IAllocator* _pAllocator) :
+	m_pBasicBlock(nullptr), List(_pAllocator)
+{
+}
+
 spvgentwo::Instruction::Instruction(BasicBlock* _pBasicBlock) :
 	m_pBasicBlock(_pBasicBlock), List(_pBasicBlock->getAllocator())
 {
