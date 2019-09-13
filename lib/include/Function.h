@@ -10,6 +10,7 @@ namespace spvgentwo
 	class Function : public List<BasicBlock>
 	{
 	public:
+		Function(IAllocator* _pAllocator);
 		Function(Module* _pModule);
 		~Function();
 
