@@ -52,3 +52,14 @@ void spvgentwo::Instruction::opMemoryModel(const spv::AddressingModel _addressMo
 {
 	makeOp(spv::Op::OpMemoryModel, _addressModel, _memoryModel);
 }
+
+void spvgentwo::Instruction::opExtension(const char* _pExtName)
+{
+	makeOp(spv::Op::OpExtension, _pExtName);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opExtInstrImport(const char* _pExtName)
+{
+	makeOp(spv::Op::OpExtInstImport, _pExtName);
+	return this;
+}

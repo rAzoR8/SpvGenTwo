@@ -43,13 +43,20 @@ namespace spvgentwo
 		template <class T, class ...Args>
 		void makeOp(T first, Args ... _args);
 
+		void appendLiterals(const char* _pStr);
+
 		template <class T, class ...Args>
 		void appendLiterals(T first, Args ... _args);
 
-		// instruction generators
+		// instruction generators:
+		// all instructions generating a result id return a pointer to this instruction for reference (passing to other instruction operand)
 		void opCapability(const spv::Capability _capability);
 
 		void opMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
+
+		void opExtension(const char* _pExtName);
+
+		Instruction* opExtInstrImport(const char* _pExtName);
 
 	private:
 		BasicBlock* m_pBasicBlock = nullptr;
@@ -114,4 +121,24 @@ namespace spvgentwo
 		}
 	}
 
+	inline void spvgentwo::Instruction::appendLiterals(const char* _pStr)
+	{
+		unsigned int word{ 0u };
+		unsigned int l = 0u;
+		char c = 0u;
+
+		do
+		{
+			c = _pStr[l];
+			const auto mod = l++ % sizeof(unsigned int);
+			reinterpret_cast<char*>(&word)[mod] = c;
+
+			if (c == 0 || mod == 3)
+			{
+				addOperand(word);
+				word = 0u;
+			}
+
+		} while (c != 0);
+	}
 } // !spvgentwo
