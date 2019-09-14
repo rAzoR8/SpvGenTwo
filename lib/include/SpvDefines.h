@@ -31,4 +31,18 @@ namespace spvgentwo
 	{
 		return (_byteCount / sizeof(spv::Id)) + (_byteCount % sizeof(spv::Id) != 0u ? 1u : 0u);
 	}
+
+	inline bool hasResult(const spv::Op _operation)
+	{
+		bool res = false, type = false;
+		spv::HasResultAndType(_operation, &res, &type);
+		return res;
+	}
+
+	inline bool hasResultType(const spv::Op _operation)
+	{
+		bool res = false, type = false;
+		spv::HasResultAndType(_operation, &res, &type);
+		return type;
+	}
 } //!spvgentwo
