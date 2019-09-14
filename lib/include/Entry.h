@@ -23,7 +23,7 @@ namespace spvgentwo
 		Entry* insert(IAllocator* _pAlloc, Args&& ..._args);
 
 		// removes this entry from the list (and destroys it if allocator is provieded), returns next entry
-		Entry* remove(IAllocator* _pAllo);
+		Entry* remove(IAllocator* _pAlloc);
 
 		Entry* last();
 

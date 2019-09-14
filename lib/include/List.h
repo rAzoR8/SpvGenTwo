@@ -39,8 +39,11 @@ namespace spvgentwo
 		T& emplace_back(Args&& ..._args);
 
 		// insert new entry before this entry
-		//template<class ...Args>
-		//Entry<T>* insert(Args&& ..._args);
+		template<class ...Args>
+		Entry<T>* insert(Iterator _pos, Args&& ..._args);
+
+		// removes element at pos from list, returns next element
+		Entry<T>* erase(Iterator _pos, const bool _destruct = true);
 
 		Iterator begin() const { return Iterator(m_pBegin); }
 		Iterator end() const { return Iterator(nullptr); }
@@ -53,10 +56,13 @@ namespace spvgentwo
 
 		bool empty() const { return m_pBegin != nullptr; }
 
+		size_t size() const { return m_Elements; }
+
 	protected:
 		IAllocator* m_pAllocator = nullptr;
 		Entry<T>* m_pBegin = nullptr;
 		Entry<T>* m_pLast = nullptr;
+		size_t m_Elements = 0u;
 	};
 
 	template<class T>
@@ -78,11 +84,13 @@ namespace spvgentwo
 	inline List<T>::List(List&& _other) :
 		m_pAllocator(_other.m_pAllocator),
 		m_pBegin(_other.m_pBegin),
-		m_pLast(_other.m_pLast)
+		m_pLast(_other.m_pLast),
+		m_Elements(_other.m_Elements)
 	{
 		_other.m_pAllocator = nullptr;
 		_other.m_pBegin = nullptr;
 		_other.m_pLast = nullptr;
+		_other.m_Elements = 0u;
 	}
 
 	template<class T>
@@ -119,6 +127,7 @@ namespace spvgentwo
 			emplace_back(*r);
 		}
 
+		m_Elements = _other.m_Elements;
 		return *this;
 	}
 
@@ -137,10 +146,12 @@ namespace spvgentwo
 		m_pAllocator = _other.m_pAllocator;
 		m_pBegin = _other.m_pBegin;
 		m_pLast = _other.m_pLast;
+		m_Elements = _other.m_Elements;
 
 		_other.m_pAllocator = nullptr;
 		_other.m_pBegin = nullptr;
 		_other.m_pLast = nullptr;
+		_other.m_Elements = 0u;
 
 		return *this;
 	}
@@ -171,6 +182,7 @@ namespace spvgentwo
 		{
 			m_pLast = m_pLast->emplace_back(m_pAllocator, std::forward<Args>(_args)...);
 		}
+		++m_Elements;
 		return m_pLast;
 	}
 
@@ -179,5 +191,20 @@ namespace spvgentwo
 	inline T& List<T>::emplace_back(Args&& ..._args)
 	{
 		return **emplace_back_entry(std::forward<Args>(_args)...);
+	}
+
+	template<class T>
+	template<class ...Args>
+	inline Entry<T>* List<T>::insert(Iterator _pos, Args&& ..._args)
+	{
+		++m_Elements;
+		return _pos.entry()->insert(m_pAllocator, std::forward<Args>(_args)...);
+	}
+
+	template<class T>
+	inline Entry<T>* List<T>::erase(Iterator _pos, const bool _destruct)
+	{
+		--m_Elements;
+		return _pos.entry()->remove(_destruct ? m_pAllocator : nullptr);
 	}
 } // !spvgentwo
