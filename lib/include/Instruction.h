@@ -31,14 +31,11 @@ namespace spvgentwo
 		Operand& addOperand(Args&& ... _operand) { return emplace_back(std::forward<Args>(_operand)...); }
 
 		spv::Id getId() const { return m_ResultId; }
-		Type* getType() { return m_pType; }
+		Instruction* getType() { return m_pType; }
+		void setType(Instruction* _pType);
 
-		// memory of _pType is owned externaly
-		void setSharedType(Type* _pType);
+		bool isTypeOp() const;
 
-		// type is owned by this instruction (modules allocator)
-		Type* createType();
-		
 		// get number of 32 bit words used by this instruction
 		unsigned int getWordCount() const;
 		unsigned int getOpCode() const;
@@ -72,8 +69,7 @@ namespace spvgentwo
 		spv::Op m_Operation = spv::Op::OpNop;
 		spv::Id m_ResultId = InvalidId;
 		
-		Type* m_pType = nullptr;
-		bool m_bSharedType = false; // if not shared, this instruction owns type memory
+		Instruction* m_pType = nullptr;
 	};
 
 	template<class T, class ...Args>
@@ -83,13 +79,24 @@ namespace spvgentwo
 		{
 			m_Operation = _first;
 		} 
-		else if constexpr (is_same_base_type_v<T, Type*>)
+		else if constexpr (is_same_base_type_v<T, Instruction*>)
 		{
-			setSharedType(_first);
+			if (_first->isTypeOp())
+			{
+				setType(_first);
+			}
+			else
+			{
+				addOperand(_first);
+			}
 		}
-		else if constexpr (is_same_base_type_v<T, Instruction*> || is_same_base_type_v<T, BasicBlock*>)
+		else if constexpr(is_same_base_type_v<T, BasicBlock*>)
 		{
 			addOperand(_first);
+		}
+		else if constexpr (sizeof(T) == sizeof(unsigned int)) // bitcast to 32 bit literal
+		{
+			addOperand(*reinterpret_cast<const unsigned int*>(&_first));
 		}
 		else
 		{

@@ -15,33 +15,6 @@ spvgentwo::Instruction::Instruction(BasicBlock* _pBasicBlock) :
 
 spvgentwo::Instruction::~Instruction()
 {
-	if (m_pType != nullptr && m_bSharedType == false)
-	{
-		m_pAllocator->destruct(m_pType);
-		m_pType = nullptr;
-	}
-}
-
-void spvgentwo::Instruction::setSharedType(Type* _pType)
-{
-	if (m_pType == nullptr)
-	{
-		m_pType = _pType;
-		m_bSharedType = true;
-	}
-}
-
-spvgentwo::Type* spvgentwo::Instruction::createType()
-{
-	if (m_pType == nullptr)
-	{
-		m_pType = m_pAllocator->construct<Type>(m_pAllocator);
-		m_bSharedType = false;
-		return m_pType;
-	}
-
-	// only return a valid type owned by this instance
-	return nullptr;
 }
 
 unsigned int spvgentwo::Instruction::getWordCount() const
@@ -55,13 +28,23 @@ unsigned int spvgentwo::Instruction::getOpCode() const
 	return (unsigned int (m_Operation) & spv::OpCodeMask) | (getWordCount() << spv::WordCountShift);
 }
 
+void spvgentwo::Instruction::setType(Instruction* _pType)
+{
+	m_pType = _pType;
+}
+
+bool spvgentwo::Instruction::isTypeOp() const
+{
+	return isType(m_Operation);
+}
+
 void spvgentwo::Instruction::write(IWriter* _pWriter) const
 {
 	_pWriter->put(getOpCode());
 
-	if (m_pType != nullptr)
+	if (m_pType != nullptr && m_pType->m_ResultId != InvalidId)
 	{
-		// TODO: put result id
+		_pWriter->put(m_pType->m_ResultId);
 	}
 
 	if (m_ResultId != InvalidId)

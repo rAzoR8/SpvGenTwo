@@ -36,7 +36,6 @@ int main(int argc, char* argv[])
 	Function& func = module.addFunction();
 	BasicBlock& bb = func.addBasicBlock();
 	Instruction& instr = bb.addInstruction();
-	Type& type = *instr.createType(); // ->StructM().FloatP().UIntP().Bool();
 
 	//struct myStruct
 	//{
@@ -44,7 +43,8 @@ int main(int argc, char* argv[])
 	//	float y;
 	//	unsigned int z;
 	//};
-	Type& myStruct = type.Struct().FloatM().FloatM().UIntM();
+	Type myStruct(&alloc);
+	myStruct.Struct().FloatM().FloatM().UIntM();
 
 	Type freeType(&alloc);
 
