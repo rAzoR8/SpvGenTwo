@@ -25,8 +25,8 @@ namespace spvgentwo
 		const BasicBlock* getBasicBlock() const { return m_pBasicBlock; }
 
 		// manual instruction construction:
-		void setOpCode(const spv::Op _op) { m_Operation = _op; };
-		spv::Op getOpCode() const { return m_Operation; }
+		void setOperation(const spv::Op _op) { m_Operation = _op; };
+		spv::Op getOperation() const { return m_Operation; }
 		template<class ...Args>
 		Operand& addOperand(Args&& ... _operand) { return emplace_back(std::forward<Args>(_operand)...); }
 
@@ -38,6 +38,12 @@ namespace spvgentwo
 
 		// type is owned by this instruction (modules allocator)
 		Type* createType();
+		
+		// get number of 32 bit words used by this instruction
+		unsigned int getWordCount() const;
+		unsigned int getOpCode() const;
+
+		void write(IWriter* _pWriter) const;
 
 		// creates literals
 		template <class T, class ...Args>
@@ -47,6 +53,9 @@ namespace spvgentwo
 
 		template <class T, class ...Args>
 		void appendLiterals(T first, Args ... _args);
+
+		template <class OutStream>
+		OutStream& operator<<(OutStream& _stream);
 
 		// instruction generators:
 		// all instructions generating a result id return a pointer to this instruction for reference (passing to other instruction operand)

@@ -1,6 +1,7 @@
 #include "Instruction.h"
 #include "BasicBlock.h"
 #include "Type.h"
+#include "Writer.h"
 
 spvgentwo::Instruction::Instruction(IAllocator* _pAllocator) :
 	m_pBasicBlock(nullptr), List(_pAllocator)
@@ -41,6 +42,37 @@ spvgentwo::Type* spvgentwo::Instruction::createType()
 
 	// only return a valid type owned by this instance
 	return nullptr;
+}
+
+unsigned int spvgentwo::Instruction::getWordCount() const
+{
+	// TODO: check with spv::HasResultAndType if m_pType and m_ResultId have been set correctly
+	return 1u + (m_pType != nullptr ? 1u : 0) + (m_ResultId != InvalidId ? 1u : 0u) + static_cast<unsigned int>(m_Elements); // (m_elements is number of operands)
+}
+
+unsigned int spvgentwo::Instruction::getOpCode() const
+{
+	return (unsigned int (m_Operation) & spv::OpCodeMask) | (getWordCount() << spv::WordCountShift);
+}
+
+void spvgentwo::Instruction::write(IWriter* _pWriter) const
+{
+	_pWriter->put(getOpCode());
+
+	if (m_pType != nullptr)
+	{
+		// TODO: put result id
+	}
+
+	if (m_ResultId != InvalidId)
+	{
+		_pWriter->put(m_ResultId);
+	}
+	
+	for (const Operand& operand : *this)
+	{
+		operand.write(_pWriter);
+	}
 }
 
 void spvgentwo::Instruction::opCapability(const spv::Capability _capability)

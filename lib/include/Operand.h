@@ -1,21 +1,20 @@
 #pragma once
 
-#include <stdint.h>
-
 namespace spvgentwo
 {
 	// forward decls
 	class Instruction;
 	class BasicBlock;
+	class IWriter;
 
 	struct Operand
 	{
 		union {
 			BasicBlock* branchTarget;
 			Instruction* instruction;
-			uint32_t literal;
+			unsigned int literal;
 		};
-		enum class Type
+		enum class Type : unsigned int
 		{
 			Instruction = 0,
 			BranchTarget,
@@ -60,6 +59,8 @@ namespace spvgentwo
 
 		Operand(BasicBlock* _target) : branchTarget(_target), type(Type::BranchTarget) {}
 		Operand(Instruction* _instr) : instruction(_instr), type(Type::Instruction) {}
-		Operand(uint32_t _literal) : literal(_literal), type(Type::Literal) {}
+		Operand(unsigned int _literal) : literal(_literal), type(Type::Literal) {}
+
+		void write(IWriter* _pWriter) const;
 	};
 } // !spvgentwo
