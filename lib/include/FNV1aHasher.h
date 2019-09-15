@@ -5,7 +5,7 @@
 namespace spvgentwo
 {
 	// 64 bit FNV-1a hash
-	class FNV1aHash
+	class FNV1aHasher
 	{
 	public:
 		using Hash64 = unsigned long long;
@@ -17,9 +17,9 @@ namespace spvgentwo
 		Hash64 add(const void* _pData, const size_t _length);
 
 		template <class T>
-		FNV1aHash& operator<<(const T& _data);
+		FNV1aHasher& operator<<(const T& _data);
 
-		FNV1aHash& operator<<(const char* _str);
+		FNV1aHasher& operator<<(const char* _str);
 
 		operator Hash64() const { return m_Hash; }
 
@@ -32,7 +32,7 @@ namespace spvgentwo
 		unsigned long long m_Hash = Offset;
 	};
 
-	inline FNV1aHash::Hash64 FNV1aHash::add(const char* _pStr)
+	inline FNV1aHasher::Hash64 FNV1aHasher::add(const char* _pStr)
 	{
 		for (; *_pStr != 0; ++ _pStr)
 		{
@@ -43,7 +43,7 @@ namespace spvgentwo
 		return m_Hash;
 	}
 
-	inline FNV1aHash::FNV1aHash::Hash64 spvgentwo::FNV1aHash::add(const void* _pData, const size_t _length)
+	inline FNV1aHasher::FNV1aHasher::Hash64 spvgentwo::FNV1aHasher::add(const void* _pData, const size_t _length)
 	{
 		const unsigned char* pBytes = reinterpret_cast<const unsigned char*>(_pData);
 		for (size_t i = 0u; i < _length; ++i)
@@ -55,14 +55,14 @@ namespace spvgentwo
 		return m_Hash;
 	}
 
-	inline FNV1aHash& FNV1aHash::operator<<(const char* _pStr)
+	inline FNV1aHasher& FNV1aHasher::operator<<(const char* _pStr)
 	{
 		add(_pStr);
 		return *this;
 	}
 
 	template<class T>
-	inline FNV1aHash& FNV1aHash::operator<<(const T& _data)
+	inline FNV1aHasher& FNV1aHasher::operator<<(const T& _data)
 	{
 		add(&_data, sizeof(T));
 		return *this;
