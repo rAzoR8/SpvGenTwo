@@ -14,6 +14,9 @@ namespace spvgentwo
 		Function(Module* _pModule);
 		~Function();
 
+		// OpFunction 
+		const Instruction* getFunction() const { return &m_Function; }
+
 		BasicBlock& addBasicBlock() { return emplace_back(this); }
 
 		Module* getModule() { return m_pModule; }

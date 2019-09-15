@@ -3,16 +3,6 @@
 #include "Type.h"
 #include "Writer.h"
 
-spvgentwo::Instruction::Instruction(IAllocator* _pAllocator) :
-	m_pBasicBlock(nullptr), List(_pAllocator)
-{
-}
-
-spvgentwo::Instruction::Instruction(BasicBlock* _pBasicBlock) :
-	m_pBasicBlock(_pBasicBlock), List(_pBasicBlock->getAllocator())
-{
-}
-
 spvgentwo::Instruction::~Instruction()
 {
 }
@@ -91,6 +81,11 @@ spvgentwo::Instruction* spvgentwo::Instruction::opLabel()
 {
 	makeOp(spv::Op::OpLabel);
 	return this;
+}
+
+void spvgentwo::Instruction::opFunction(const Flag<spv::FunctionControlMask> _functionControl, const Instruction* _pResultType, const Instruction* _pFuncType)
+{
+	makeOp(spv::Op::OpFunction, _pResultType, _functionControl.mask, _pFuncType);
 }
 
 void spvgentwo::Instruction::opFunctionEnd()

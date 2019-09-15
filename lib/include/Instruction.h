@@ -16,8 +16,10 @@ namespace spvgentwo
 	public:
 		using Iterator = EntryIterator<Operand>;
 
-		Instruction(IAllocator* _pAllocator);
-		Instruction(BasicBlock* _pBasicBlock);
+		template <class ...Args>
+		Instruction(IAllocator* _pAllocator, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
+		template <class ...Args>
+		Instruction(BasicBlock* _pBasicBlock, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
 
 		~Instruction();
 
@@ -63,6 +65,8 @@ namespace spvgentwo
 
 		Instruction* opLabel();
 
+		void opFunction(const Flag<spv::FunctionControlMask> _functionControl, const Instruction* _pResultType, const Instruction* _pFuncType);
+
 		void opFunctionEnd();
 
 	private:
@@ -73,8 +77,23 @@ namespace spvgentwo
 		Instruction* m_pType = nullptr;
 	};
 
+	// free helper function
 	void writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions);
 
+	template<class ...Args>
+	inline Instruction::Instruction(IAllocator* _pAllocator, const spv::Op _op, Args&& ..._args) :
+		m_pBasicBlock(nullptr), List(_pAllocator)
+	{
+		makeOp(_op, std::forward<Args>(_args)...);
+	}
+
+	template<class ...Args>
+	inline Instruction::Instruction(BasicBlock* _pBasicBlock, const spv::Op _op, Args&& ..._args) :
+		m_pBasicBlock(_pBasicBlock), List(_pBasicBlock->getAllocator())
+	{
+		makeOp(_op, std::forward<Args>(_args)...);
+	}
+	
 	template<class T, class ...Args>
 	inline void Instruction::makeOp(T _first, Args ..._args)
 	{
@@ -84,7 +103,7 @@ namespace spvgentwo
 		} 
 		else if constexpr (is_same_base_type_v<T, Instruction*>)
 		{
-			if (_first->isTypeOp())
+			if (_first->isTypeOp() && m_pType == nullptr)
 			{
 				setType(_first);
 			}

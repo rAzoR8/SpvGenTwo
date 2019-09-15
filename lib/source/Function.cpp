@@ -6,6 +6,7 @@ spvgentwo::Function::Function(IAllocator* _pAllocator) :
 	m_Function(_pAllocator),
 	m_Parameters(_pAllocator)
 {
+	//m_Function.opFunction()
 }
 
 spvgentwo::Function::Function(Module* _pModule) :
@@ -13,6 +14,7 @@ spvgentwo::Function::Function(Module* _pModule) :
 	m_Function(_pModule->getAllocator()),
 	m_Parameters(_pModule->getAllocator())
 {
+	//m_Function.opFunction()
 }
 
 spvgentwo::Function::~Function()
@@ -29,7 +31,6 @@ void spvgentwo::Function::write(IWriter* _pWriter) const
 		bb.write(_pWriter);
 	}
 
-	Instruction end(m_pAllocator);
-
+	Instruction end(m_pAllocator, spv::Op::OpFunctionEnd);
 	end.write(_pWriter);
 }

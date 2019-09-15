@@ -45,4 +45,14 @@ namespace spvgentwo
 		spv::HasResultAndType(_operation, &res, &type);
 		return type;
 	}
+
+	template <class Enum>
+	struct Flag
+	{
+		union
+		{
+			unsigned int mask;
+			Enum enumeration;
+		};
+	};
 } //!spvgentwo
