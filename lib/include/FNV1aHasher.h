@@ -19,9 +19,14 @@ namespace spvgentwo
 		template <class T>
 		FNV1aHash& operator<<(const T& _data);
 
-		FNV1aHash& operator<<(const char* _pStr);
+		FNV1aHash& operator<<(const char* _str);
 
 		operator Hash64() const { return m_Hash; }
+
+		template <class T>
+		Hash64 operator()(const T& _data) { return add(&_data, sizeof(T)); }
+
+		Hash64 operator()(const char* _str) { return add(_str); }
 
 	private:
 		unsigned long long m_Hash = Offset;
