@@ -61,8 +61,8 @@ int main(int argc, char* argv[])
 
 	LinearProbingHashMap<const char*, const char*> map(&alloc);
 
-	map.insert( "key", "value");
-	map.insert("key2", "value2");
+	map.insertUnique("key", "value");
+	map.insertUnique("key2", "value2");
 
 	auto val = map.get("key");
 
