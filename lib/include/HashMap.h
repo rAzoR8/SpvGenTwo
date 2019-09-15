@@ -7,7 +7,7 @@ namespace spvgentwo
 {
 	template <class Key, class Value>
 	// with chaining => multimap
-	class LinearProbingHashMap
+	class HashMap
 	{
 	public:
 		static constexpr auto DefaultBucktCount = 64u;
@@ -31,8 +31,8 @@ namespace spvgentwo
 		using Bucket = List<Node>;
 	public:
 		
-		LinearProbingHashMap(IAllocator* _pAllocator, const unsigned int _buckets = DefaultBucktCount);
-		~LinearProbingHashMap();
+		HashMap(IAllocator* _pAllocator, const unsigned int _buckets = DefaultBucktCount);
+		~HashMap();
 
 		template <class ... Args>
 		const Node& insert(Args&& ... _args);
@@ -41,8 +41,10 @@ namespace spvgentwo
 		template <class ... Args>
 		const Node& insertUnique(Args&& ... _args);
 
-		const Value* get(const Hash64& _hash) const;
+		const Value* get(const Hash64 _hash) const;
 		const Value* get(const Key& _key) const; // TODO: non const variants
+
+		const unsigned int count(const Hash64 _hash) const;
 
 		const Bucket& getBucket(const unsigned int _index) const { return m_pBuckets[_index]; }
 		unsigned int getBucketCount() const { return m_Buckets; }
@@ -53,7 +55,7 @@ namespace spvgentwo
 		unsigned int m_Buckets = 0u;
 	};
 	template<class Key, class Value>
-	inline LinearProbingHashMap<Key, Value>::LinearProbingHashMap(IAllocator* _pAllocator, const unsigned int _buckets) : 
+	inline HashMap<Key, Value>::HashMap(IAllocator* _pAllocator, const unsigned int _buckets) : 
 		m_pAllocator(_pAllocator), m_Buckets(_buckets)
 	{
 		m_pBuckets = reinterpret_cast<Bucket*>(m_pAllocator->allocate(m_Buckets * sizeof(Bucket)));
@@ -64,7 +66,7 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline LinearProbingHashMap<Key, Value>::~LinearProbingHashMap()
+	inline HashMap<Key, Value>::~HashMap()
 	{
 		if (m_pBuckets != nullptr && m_pAllocator != nullptr)
 		{
@@ -79,7 +81,7 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline const Value* LinearProbingHashMap<Key, Value>::get(const Hash64& _hash) const
+	inline const Value* HashMap<Key, Value>::get(const Hash64 _hash) const
 	{
 		const auto index = _hash % m_Buckets;
 
@@ -93,14 +95,31 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline const Value* LinearProbingHashMap<Key, Value>::get(const Key& _key) const
+	inline const unsigned int HashMap<Key, Value>::count(const Hash64 _hash) const
+	{
+		unsigned int keys = 0u;
+		const auto index = _hash % m_Buckets;
+
+		for (const Node& n : m_pBuckets[index])
+		{
+			if (n.hash == _hash)
+			{
+				++keys;
+			}
+		}
+
+		return keys;
+	}
+
+	template<class Key, class Value>
+	inline const Value* HashMap<Key, Value>::get(const Key& _key) const
 	{
 		return get(hash(_key));
 	}
 	
 	template<class Key, class Value>
 	template<class ...Args>
-	inline typename const LinearProbingHashMap<Key, Value>::Node& LinearProbingHashMap<Key, Value>::insert(Args&& ..._args)
+	inline typename const HashMap<Key, Value>::Node& HashMap<Key, Value>::insert(Args&& ..._args)
 	{
 		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, std::forward<Args>(_args)...);
 
@@ -116,7 +135,7 @@ namespace spvgentwo
 	}
 	template<class Key, class Value>
 	template<class ...Args>
-	inline typename const LinearProbingHashMap<Key, Value>::Node& LinearProbingHashMap<Key, Value>::insertUnique(Args&& ..._args)
+	inline typename const HashMap<Key, Value>::Node& HashMap<Key, Value>::insertUnique(Args&& ..._args)
 	{
 		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, std::forward<Args>(_args)...);
 
