@@ -2,6 +2,7 @@
 
 #include "List.h"
 #include "SpvDefines.h"
+#include "Hasher.h"
 
 namespace spvgentwo
 {
@@ -30,6 +31,7 @@ namespace spvgentwo
 		// dimension, bits, elements
 		unsigned int getDimension() const { return m_Dimension; }
 		bool getSign() const { return m_Sign; } // integer
+		const List<Type>& getSubTypes() const { return m_subTypes; }
 
 		// return new subtype
 		Type& Member(); // element ? rename to subtype?
@@ -89,5 +91,28 @@ namespace spvgentwo
 		// sampler access
 
 		List<Type> m_subTypes;
+	};
+
+	template <>
+	struct Hasher<Type>
+	{
+		Hash64 operator()(const Type& _type, FNV1aHasher& _hasher) const
+		{
+			_hasher << _type.getBaseType();
+			_hasher << _type.getDimension();
+			_hasher << _type.getSign();
+
+			for (const Type& sub : _type.getSubTypes()) {
+				operator()(sub, _hasher); // go deeper
+			}
+
+			return _hasher;
+		}
+
+		Hash64 operator()(const Type& _type) const
+		{
+			FNV1aHasher h;
+			return operator()(_type, h);
+		}
 	};
 } // !spvgentwo
