@@ -8,7 +8,7 @@ namespace spvgentwo
 	class HeapAllocator : public IAllocator
 	{
 	public:
-		void* allocate(const size_t _bytes, const unsigned int _aligment) final;
+		void* allocate(const size_t _bytes, const unsigned int _aligment = 1u) final;
 		void deallocate(void* _ptr, const size_t _bytes) final;
 		~HeapAllocator();
 	private:

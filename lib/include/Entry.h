@@ -18,6 +18,9 @@ namespace spvgentwo
 		template<class ...Args>
 		Entry* emplace_back(IAllocator* _pAlloc, Args&& ..._args);
 
+		// _entry attached to the end, should be created on the same allocator
+		Entry* append(Entry<T>* _entry);
+
 		// insert new entry before this entry
 		template<class ...Args>
 		Entry* insert(IAllocator* _pAlloc, Args&& ..._args);
@@ -57,7 +60,7 @@ namespace spvgentwo
 	template<class T>
 	template<class ...Args>
 	inline Entry<T>::Entry(Args&& ..._args) :
-		m_data(static_cast<Args&&>(_args)...)
+		m_data{ std::forward<Args>(_args)... }
 	{
 	}
 
@@ -77,9 +80,15 @@ namespace spvgentwo
 	template<class ...Args>
 	inline Entry<T>* Entry<T>::emplace_back(IAllocator* _pAlloc, Args&& ..._args)
 	{
+		return append(create(_pAlloc, std::forward<Args>(_args)...));
+	}
+
+	template<class T>
+	inline Entry<T>* Entry<T>::append(Entry<T>* _entry)
+	{
 		if (m_pNext == nullptr)
 		{
-			m_pNext = _pAlloc->construct<Entry<T>>(static_cast<Args&&>(_args)...);	
+			m_pNext = _entry;
 			if (m_pNext != nullptr)
 			{
 				m_pNext->m_pPrev = this;
@@ -88,10 +97,10 @@ namespace spvgentwo
 		}
 		else
 		{
-			return last()->emplace_back(_pAlloc, static_cast<Args&&>(_args)...);
+			return last()->append(_entry);
 		}
 	}
-
+	
 	template<class T>
 	template<class ...Args>
 	inline Entry<T>* Entry<T>::insert(IAllocator* _pAlloc, Args&& ..._args)

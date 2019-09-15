@@ -20,7 +20,7 @@ namespace spvgentwo
 		List(IAllocator* _pAllocator);
 		List(const List& _other);
 		List(List&& _other);
-		~List();
+		virtual ~List();
 
 		List& operator=(const List& _other);
 		List& operator=(List&& _other);
@@ -33,6 +33,9 @@ namespace spvgentwo
 
 		template<class ...Args>
 		Entry<T>* emplace_back_entry(Args&& ..._args);
+
+		// adds _entry to the end of the chain, returns same entry
+		Entry<T>* append_entry(Entry<T>* _entry);
 
 		// emplace at the end of the linked list
 		template<class ...Args>
@@ -53,6 +56,9 @@ namespace spvgentwo
 
 		T& back() { return m_pLast->inner(); }
 		const T& back() const { return m_pLast->inner(); }
+
+		Entry<T>* last() { return m_pLast; }
+		const Entry<T>* last() const { return m_pLast; }
 
 		bool empty() const { return m_pBegin != nullptr; }
 
@@ -167,6 +173,22 @@ namespace spvgentwo
 
 		// check if both list are at the end (same length)
 		return l == le && r == re;
+	}
+
+	template<class T>
+	inline Entry<T>* List<T>::append_entry(Entry<T>* _entry)
+	{
+		if (m_pBegin == nullptr)
+		{
+			m_pBegin = _entry;
+			m_pLast = m_pBegin;
+		}
+		else
+		{
+			m_pLast = m_pLast->append(_entry);
+		}
+		++m_Elements;
+		return m_pLast;
 	}
 
 	template<class T>

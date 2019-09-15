@@ -6,7 +6,7 @@ namespace spvgentwo
 	class IAllocator
 	{
 	public:
-		virtual void* allocate(const size_t _bytes, const unsigned int _aligment) = 0;
+		virtual void* allocate(const size_t _bytes, const unsigned int _aligment = 1u) = 0;
 		virtual void deallocate(void* _ptr, const size_t _bytes = 0u) = 0;
 
 		template <class T, class ... Args>
@@ -15,7 +15,8 @@ namespace spvgentwo
 			T* pData = reinterpret_cast<T*>(allocate(sizeof(T), 1u)); // TODO: aligment
 			if (pData != nullptr)
 			{
-				new(pData) T(std::forward<Args>(_args)...); // forward
+				//new(pData) T(std::forward<Args>(_args)...); // forward
+				new(pData) T{ std::forward<Args>(_args)... };
 			}
 			return pData;
 		}

@@ -2,6 +2,7 @@
 #include "cli.h"
 #include <assert.h>
 #include <stdio.h>
+#include "LinearProbingHashMap.h"
 
 using namespace spvgentwo;
 
@@ -57,6 +58,14 @@ int main(int argc, char* argv[])
 	y = myStruct;
 
 	assert(x == freeType && y == myStruct);
+
+	LinearProbingHashMap<const char*, const char*> map(&alloc);
+
+	map.insert( "key", "value");
+	map.insert("key2", "value2");
+
+	auto val = map.get("key");
+
 
 	return 0;
 }
