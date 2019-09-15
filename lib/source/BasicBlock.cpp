@@ -5,11 +5,13 @@
 spvgentwo::BasicBlock::BasicBlock(IAllocator* _pAllocator) :
 	m_pFunction(nullptr), List(_pAllocator)
 {
+	addInstruction().opLabel();
 }
 
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction) :
 	m_pFunction(_pFunction), List(_pFunction->getAllocator())
 {
+	addInstruction().opLabel();
 }
 
 spvgentwo::BasicBlock::~BasicBlock()

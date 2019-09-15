@@ -78,3 +78,9 @@ spvgentwo::Instruction* spvgentwo::Instruction::opExtInstrImport(const char* _pE
 	makeOp(spv::Op::OpExtInstImport, _pExtName);
 	return this;
 }
+
+spvgentwo::Instruction* spvgentwo::Instruction::opLabel()
+{
+	makeOp(spv::Op::OpLabel);
+	return this;
+}

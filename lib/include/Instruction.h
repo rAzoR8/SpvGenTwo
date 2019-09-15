@@ -64,6 +64,8 @@ namespace spvgentwo
 
 		Instruction* opExtInstrImport(const char* _pExtName);
 
+		Instruction* opLabel();
+
 	private:
 		BasicBlock* m_pBasicBlock = nullptr;
 		spv::Op m_Operation = spv::Op::OpNop;
