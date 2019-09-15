@@ -2,12 +2,16 @@
 #include "Module.h"
 
 spvgentwo::Function::Function(IAllocator* _pAllocator) :
-	m_pModule(nullptr), List(_pAllocator)
+	m_pModule(nullptr), List(_pAllocator),
+	m_Function(_pAllocator),
+	m_Parameters(_pAllocator)
 {
 }
 
 spvgentwo::Function::Function(Module* _pModule) :
-	m_pModule(_pModule), List(_pModule->getAllocator())
+	m_pModule(_pModule), List(_pModule->getAllocator()),
+	m_Function(_pModule->getAllocator()),
+	m_Parameters(_pModule->getAllocator())
 {
 }
 
@@ -15,7 +19,17 @@ spvgentwo::Function::~Function()
 {
 }
 
-spvgentwo::IAllocator* spvgentwo::Function::getAllocator()
+void spvgentwo::Function::write(IWriter* _pWriter) const
 {
-	return m_pModule->getAllocator();
+	m_Function.write(_pWriter);
+	writeInstructions(_pWriter, m_Parameters);
+
+	for (const BasicBlock& bb : *this)
+	{
+		bb.write(_pWriter);
+	}
+
+	Instruction end(m_pAllocator);
+
+	end.write(_pWriter);
 }

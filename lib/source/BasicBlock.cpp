@@ -32,3 +32,11 @@ spvgentwo::BasicBlock::Iterator spvgentwo::BasicBlock::getTerminator()
 {
 	return Iterator(m_pLast);
 }
+
+void spvgentwo::BasicBlock::write(IWriter* _pWriter) const
+{
+	for (const Instruction& instr : *this)
+	{
+		instr.write(_pWriter);
+	}
+}

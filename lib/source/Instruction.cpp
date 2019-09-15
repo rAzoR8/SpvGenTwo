@@ -58,6 +58,14 @@ void spvgentwo::Instruction::write(IWriter* _pWriter) const
 	}
 }
 
+void spvgentwo::writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions)
+{
+	for (const Instruction& cap : _instructions)
+	{
+		cap.write(_pWriter);
+	}
+}
+
 void spvgentwo::Instruction::opCapability(const spv::Capability _capability)
 {
 	makeOp(spv::Op::OpCapability, _capability);
@@ -83,4 +91,9 @@ spvgentwo::Instruction* spvgentwo::Instruction::opLabel()
 {
 	makeOp(spv::Op::OpLabel);
 	return this;
+}
+
+void spvgentwo::Instruction::opFunctionEnd()
+{
+	makeOp(spv::Op::OpFunctionEnd);
 }

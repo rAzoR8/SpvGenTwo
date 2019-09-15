@@ -7,6 +7,7 @@ namespace spvgentwo
 	class Module;
 	class Function;
 	class IAllocator;
+	class IWriter;
 
 	class BasicBlock : public List<Instruction>
 	{
@@ -27,6 +28,8 @@ namespace spvgentwo
 
 		// manual instruction add
 		Instruction& addInstruction() { return emplace_back(this); }
+
+		void write(IWriter* _pWriter) const;
 
 	private:
 		Function* m_pFunction = nullptr; // parent

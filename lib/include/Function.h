@@ -19,8 +19,11 @@ namespace spvgentwo
 		Module* getModule() { return m_pModule; }
 		const Module* getModule() const { return m_pModule; }
 
-		IAllocator* getAllocator();
+		void write(IWriter* _pWriter) const;
 	private:
 		Module* m_pModule = nullptr; // parent
+
+		Instruction m_Function;
+		List<Instruction> m_Parameters;
 	};
 } // !spvgentwo

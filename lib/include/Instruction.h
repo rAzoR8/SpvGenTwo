@@ -51,9 +51,6 @@ namespace spvgentwo
 		template <class T, class ...Args>
 		void appendLiterals(T first, Args ... _args);
 
-		template <class OutStream>
-		OutStream& operator<<(OutStream& _stream);
-
 		// instruction generators:
 		// all instructions generating a result id return a pointer to this instruction for reference (passing to other instruction operand)
 		void opCapability(const spv::Capability _capability);
@@ -66,6 +63,8 @@ namespace spvgentwo
 
 		Instruction* opLabel();
 
+		void opFunctionEnd();
+
 	private:
 		BasicBlock* m_pBasicBlock = nullptr;
 		spv::Op m_Operation = spv::Op::OpNop;
@@ -73,6 +72,8 @@ namespace spvgentwo
 		
 		Instruction* m_pType = nullptr;
 	};
+
+	void writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions);
 
 	template<class T, class ...Args>
 	inline void Instruction::makeOp(T _first, Args ..._args)

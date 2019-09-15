@@ -1,6 +1,7 @@
 #include "Module.h"
 #include "Function.h"
 #include "Type.h"
+#include "Writer.h"
 
 spvgentwo::Module::Module(IAllocator* _pAllocator) :
 	List(_pAllocator),
@@ -8,7 +9,7 @@ spvgentwo::Module::Module(IAllocator* _pAllocator) :
 	m_MemoryModel(_pAllocator),
 	m_Extensions(_pAllocator),
 	m_ExtInstrImport(_pAllocator),
-	m_Types(_pAllocator),
+	m_TypesAndConstants(_pAllocator),
 	m_TypeBuilder(_pAllocator)
 {
 }
@@ -38,7 +39,7 @@ const spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 		return node.kv.value;
 	}
 
-	Instruction* pInstr = node.kv.value = &m_Types.emplace_back(m_pAllocator);
+	Instruction* pInstr = node.kv.value = &m_TypesAndConstants.emplace_back(m_pAllocator);
 
 	const spv::Op base = _type.getBaseType();
 
@@ -80,4 +81,42 @@ const spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel)
 {
 	m_MemoryModel.opMemoryModel(_addressModel, _memoryModel);
+}
+
+void spvgentwo::Module::write(IWriter* _pWriter) const
+{
+	// TODO: resolve step (maybe outside of this function)
+
+	// write header
+	_pWriter->put(spv::MagicNumber);
+	_pWriter->put(spv::Version);
+	_pWriter->put(GeneratorId);
+	_pWriter->put(m_maxId + 1u); // bounds
+	_pWriter->put(0u); // schema
+
+	// write preamble
+	writeInstructions(_pWriter, m_Capabilities);
+	writeInstructions(_pWriter, m_Extensions);
+	writeInstructions(_pWriter, m_ExtInstrImport);
+	m_MemoryModel.write(_pWriter);
+
+	// todo: get entry point defintions
+
+	//All execution - mode declarations, using OpExecutionMode or OpExecutionModeId.
+	
+	//7. These debug instructions, which must be grouped in the following order :
+	//	a. all OpString, OpSourceExtension, OpSource, and OpSourceContinued, without forward references.
+	//	b. all OpNameand all OpMemberName
+	//	c.all OpModuleProcessed instructions
+
+	// all decoration instructions (OpDecorate, OpMemberDecorate, OpGroupDecorate, OpGroupMemberDecorate, and OpDecorationGroup).
+
+	//  All function declarations (function without body)
+
+
+	// write functions
+	for (const Function& fun : *this)
+	{
+		fun.write(_pWriter);
+	}
 }

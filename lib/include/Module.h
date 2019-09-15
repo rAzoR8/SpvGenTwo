@@ -15,6 +15,8 @@ namespace spvgentwo
 		Module(IAllocator* _pAllocator);
 		~Module();
 
+		static constexpr unsigned int GeneratorId = 'fabi';
+
 		Function& addFunction() { return emplace_back(this); }
 
 		void addCapability(const spv::Capability _capability);
@@ -27,6 +29,8 @@ namespace spvgentwo
 
 		const List<Instruction>& getCapabilities() const { return m_Capabilities; }
 
+		void write(IWriter* _pWriter) const;
+
 	private:
 
 		// preamble
@@ -35,7 +39,9 @@ namespace spvgentwo
 		List<Instruction> m_ExtInstrImport; // todo: map between ext names and Instruction*
 		Instruction m_MemoryModel;
 
-		List<Instruction> m_Types;
+		List<Instruction> m_TypesAndConstants;
 		HashMap<Type, Instruction*> m_TypeBuilder;
+
+		unsigned int m_maxId = 0u;
 	};
 } // !spvgentwo
