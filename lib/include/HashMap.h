@@ -39,11 +39,16 @@ namespace spvgentwo
 		~HashMap();
 
 		template <class ... Args>
-		Node& insert(Args&& ... _args);
+		Node& emplace(Args&& ... _args);
 
 		// returns existing node if duplicate
 		template <class ... Args>
-		Node& insertUnique(Args&& ... _args);
+		Node& emplaceUnique(Args&& ... _args);
+
+		template <class ... Args>
+		Node& emplaceUnique(const Key& _key, Args&& ... _args);
+
+		Node& newNodeUnique(const Hash64& _hash);
 
 		Value* get(const Hash64 _hash);
 		Value* get(const Key& _key); // TODO: const variants
@@ -123,7 +128,7 @@ namespace spvgentwo
 
 	template<class Key, class Value>
 	template<class ...Args>
-	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::insert(Args&& ..._args)
+	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplace(Args&& ..._args)
 	{
 		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, std::forward<Args>(_args)...);
 
@@ -137,9 +142,10 @@ namespace spvgentwo
 
 		return n;
 	}
+
 	template<class Key, class Value>
-	template<class ...Args>
-	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::insertUnique(Args&& ..._args)
+	template<class ...Args> // (non trivial) key is constructed from args and then used to compute the hash
+	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplaceUnique(Args&& ..._args)
 	{
 		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, std::forward<Args>(_args)...);
 
@@ -159,6 +165,44 @@ namespace spvgentwo
 
 		m_pBuckets[index].append_entry(pNode);
 
+		return n;
+	}
+
+	template<class Key, class Value>
+	template<class ...Args>
+	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplaceUnique(const Key& _key, Args&& ..._args)
+	{
+		const Hash64 h = hash(_key);
+		const auto index = h % m_Buckets;
+
+		for (Node& existing : m_pBuckets[index])
+		{
+			if (existing.hash == h)
+			{
+				return existing;
+			}
+		}
+
+		Node& n = m_pBuckets[index].emplace_back(_key, std::forward<Args>(_args)...);
+		n.hash = h;
+		return n;
+	}
+
+	template<class Key, class Value>
+	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::newNodeUnique(const Hash64& _hash)
+	{
+		const auto index = _hash % m_Buckets;
+
+		for (Node& existing : m_pBuckets[index])
+		{
+			if (existing.hash == n.hash)
+			{
+				return existing;
+			}
+		}
+
+		Node& n = m_pBuckets[index].emplace_back();
+		n.hash = _hash;
 		return n;
 	}
 } // !spvgentwo

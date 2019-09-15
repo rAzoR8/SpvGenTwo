@@ -32,7 +32,7 @@ spvgentwo::Instruction* spvgentwo::Module::addExtensionInstructionImport(const c
 }
 const spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 {
-	auto& node = m_TypeBuilder.insertUnique(_type, nullptr);
+	auto& node = m_TypeBuilder.emplaceUnique(_type, nullptr);
 	if (node.kv.value != nullptr)
 	{
 		return node.kv.value;
