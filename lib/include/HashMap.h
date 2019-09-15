@@ -16,6 +16,9 @@ namespace spvgentwo
 
 		struct Node
 		{
+			template <class Key, class Value>
+			friend class HashMap;
+
 			template <class ...Args>
 			Node(Args&& ... _args) : kv{ std::forward<Args>(_args)... }, hash{ 0u }{}
 
@@ -25,24 +28,25 @@ namespace spvgentwo
 				Value value;
 			} kv;
 
+		private:
 			Hash64 hash;
 		};
 
 		using Bucket = List<Node>;
 	public:
-		
+
 		HashMap(IAllocator* _pAllocator, const unsigned int _buckets = DefaultBucktCount);
 		~HashMap();
 
 		template <class ... Args>
-		const Node& insert(Args&& ... _args);
+		Node& insert(Args&& ... _args);
 
 		// returns existing node if duplicate
 		template <class ... Args>
-		const Node& insertUnique(Args&& ... _args);
+		Node& insertUnique(Args&& ... _args);
 
-		const Value* get(const Hash64 _hash) const;
-		const Value* get(const Key& _key) const; // TODO: non const variants
+		Value* get(const Hash64 _hash);
+		Value* get(const Key& _key); // TODO: const variants
 
 		const unsigned int count(const Hash64 _hash) const;
 
@@ -55,7 +59,7 @@ namespace spvgentwo
 		unsigned int m_Buckets = 0u;
 	};
 	template<class Key, class Value>
-	inline HashMap<Key, Value>::HashMap(IAllocator* _pAllocator, const unsigned int _buckets) : 
+	inline HashMap<Key, Value>::HashMap(IAllocator* _pAllocator, const unsigned int _buckets) :
 		m_pAllocator(_pAllocator), m_Buckets(_buckets)
 	{
 		m_pBuckets = reinterpret_cast<Bucket*>(m_pAllocator->allocate(m_Buckets * sizeof(Bucket)));
@@ -81,11 +85,11 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline const Value* HashMap<Key, Value>::get(const Hash64 _hash) const
+	inline Value* HashMap<Key, Value>::get(const Hash64 _hash)
 	{
 		const auto index = _hash % m_Buckets;
 
-		for (const Node& n : m_pBuckets[index])
+		for (Node& n : m_pBuckets[index])
 		{
 			if (n.hash == _hash)
 				return &n.kv.value;
@@ -112,14 +116,14 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline const Value* HashMap<Key, Value>::get(const Key& _key) const
+	inline Value* HashMap<Key, Value>::get(const Key& _key) 
 	{
 		return get(hash(_key));
 	}
-	
+
 	template<class Key, class Value>
 	template<class ...Args>
-	inline typename const HashMap<Key, Value>::Node& HashMap<Key, Value>::insert(Args&& ..._args)
+	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::insert(Args&& ..._args)
 	{
 		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, std::forward<Args>(_args)...);
 
@@ -135,7 +139,7 @@ namespace spvgentwo
 	}
 	template<class Key, class Value>
 	template<class ...Args>
-	inline typename const HashMap<Key, Value>::Node& HashMap<Key, Value>::insertUnique(Args&& ..._args)
+	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::insertUnique(Args&& ..._args)
 	{
 		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, std::forward<Args>(_args)...);
 
@@ -144,7 +148,7 @@ namespace spvgentwo
 		n.hash = hash(n.kv.key);
 		const auto index = n.hash % m_Buckets;
 
-		for (const Node& existing : m_pBuckets[index])
+		for (Node& existing : m_pBuckets[index])
 		{
 			if (existing.hash == n.hash)
 			{

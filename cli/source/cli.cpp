@@ -2,7 +2,6 @@
 #include "cli.h"
 #include <assert.h>
 #include <stdio.h>
-#include "HashMap.h"
 
 using namespace spvgentwo;
 
@@ -59,13 +58,11 @@ int main(int argc, char* argv[])
 
 	assert(x == freeType && y == myStruct);
 
-	HashMap<const char*, const char*> map(&alloc);
+	const Instruction* pInstr = module.addType(myStruct);
 
-	map.insertUnique("key", "value");
-	map.insertUnique("key2", "value2");
+	const Instruction* pInstr2 = module.addType(myStruct);
 
-	auto val = map.get("key");
-
+	assert(pInstr == pInstr2);
 
 	return 0;
 }

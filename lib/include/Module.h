@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Function.h"
+#include "HashMap.h"
+//#include "Type.h"
 
 namespace spvgentwo
 {
@@ -19,6 +21,8 @@ namespace spvgentwo
 		void addExtension(const char* _pExtName);
 		Instruction* addExtensionInstructionImport(const char* _pExtName);
 
+		const Instruction* addType(const Type& _type);
+
 		void setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
 
 		const List<Instruction>& getCapabilities() const { return m_Capabilities; }
@@ -30,5 +34,8 @@ namespace spvgentwo
 		List<Instruction> m_Extensions;
 		List<Instruction> m_ExtInstrImport; // todo: map between ext names and Instruction*
 		Instruction m_MemoryModel;
+
+		List<Instruction> m_Types;
+		HashMap<Type, Instruction*> m_TypeBuilder;
 	};
 } // !spvgentwo

@@ -10,8 +10,8 @@ namespace spvgentwo
 	struct Operand
 	{
 		union {
-			BasicBlock* branchTarget;
-			Instruction* instruction;
+			const BasicBlock* branchTarget;
+			const Instruction* instruction;
 			unsigned int literal;
 		};
 		enum class Type : unsigned int
@@ -57,8 +57,8 @@ namespace spvgentwo
 			}
 		}
 
-		Operand(BasicBlock* _target) : branchTarget(_target), type(Type::BranchTarget) {}
-		Operand(Instruction* _instr) : instruction(_instr), type(Type::Instruction) {}
+		Operand(const BasicBlock* _target) : branchTarget(_target), type(Type::BranchTarget) {}
+		Operand(const Instruction* _instr) : instruction(_instr), type(Type::Instruction) {}
 		Operand(unsigned int _literal) : literal(_literal), type(Type::Literal) {}
 
 		void write(IWriter* _pWriter) const;
