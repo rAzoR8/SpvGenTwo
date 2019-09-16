@@ -25,13 +25,17 @@ namespace spvgentwo
 		bool operator==(const Type& _other) const;
 		bool operator!=(const Type& _other) const { return !operator==(_other); }
 
+		void reset();
+
 		spv::Op getBaseType() const { return m_Type; }
 		void setBaseType(const spv::Op _type);
 
 		// dimension, bits, elements
 		unsigned int getDimension() const { return m_Dimension; }
 		bool getSign() const { return m_Sign; } // integer
+		
 		const List<Type>& getSubTypes() const { return m_subTypes; }
+		List<Type>& getSubTypes() { return m_subTypes; }
 
 		// return new subtype
 		Type& Member(); // element ? rename to subtype?

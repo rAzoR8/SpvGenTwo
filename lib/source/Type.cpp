@@ -85,6 +85,12 @@ void spvgentwo::Type::setBaseType(const spv::Op _type)
 	}
 }
 
+void spvgentwo::Type::reset()
+{
+	m_Type = spv::Op::OpTypeVoid;
+	m_subTypes.clear();
+}
+
 spvgentwo::Type& spvgentwo::Type::Void()
 {
 	m_Type = spv::Op::OpTypeVoid;
