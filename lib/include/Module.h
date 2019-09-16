@@ -31,6 +31,9 @@ namespace spvgentwo
 
 		void write(IWriter* _pWriter) const;
 
+		// creates new empty type using this modules allocator
+		Type& newType();
+
 	private:
 
 		// preamble
@@ -41,6 +44,8 @@ namespace spvgentwo
 
 		List<Instruction> m_TypesAndConstants;
 		HashMap<Type, Instruction*> m_TypeBuilder;
+
+		List<Type> m_userTypes; // just for convenience
 
 		unsigned int m_maxId = 0u;
 	};

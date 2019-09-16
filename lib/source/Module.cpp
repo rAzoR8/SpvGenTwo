@@ -10,12 +10,18 @@ spvgentwo::Module::Module(IAllocator* _pAllocator) :
 	m_Extensions(_pAllocator),
 	m_ExtInstrImport(_pAllocator),
 	m_TypesAndConstants(_pAllocator),
-	m_TypeBuilder(_pAllocator)
+	m_TypeBuilder(_pAllocator),
+	m_userTypes(_pAllocator)
 {
 }
 
 spvgentwo::Module::~Module()
 {
+}
+
+spvgentwo::Type& spvgentwo::Module::newType()
+{
+	return m_userTypes.emplace_back(m_pAllocator);
 }
 
 void spvgentwo::Module::addCapability(const spv::Capability _capability)
