@@ -34,35 +34,15 @@ int main(int argc, char* argv[])
 	module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
 
 	Function& func = module.addFunction();
+
 	BasicBlock& bb = func.addBasicBlock();
-	Instruction& instr = bb.addInstruction();
-
-	//struct myStruct
-	//{
-	//	float x;
-	//	float y;
-	//	unsigned int z;
-	//};
-	Type myStruct(&alloc);
-	myStruct.Struct().FloatM().FloatM().UIntM();
-
-	Type freeType(&alloc);
+	//Instruction& instr = bb.addInstruction();
 
 	// void fun(float, float);
-	freeType.Function().VoidM().FloatM().FloatM();
+	//func.createSignature().VoidM().FloatM().FloatM();
+	//func.finalize(spv::FunctionControlMask::Const);
 
-	Type x(freeType);
-
-	Type y(&alloc);
-	y = myStruct;
-
-	assert(x == freeType && y == myStruct);
-
-	const Instruction* pInstr = module.addType(myStruct);
-
-	const Instruction* pInstr2 = module.addType(myStruct);
-
-	assert(pInstr == pInstr2);
+	func.finalizeSignature(spv::FunctionControlMask::Const, module.newType().Void(), module.newType().Float(), module.newType().Float());
 
 	return 0;
 }
