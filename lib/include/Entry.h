@@ -14,12 +14,18 @@ namespace spvgentwo
 		template<class ...Args>
 		static Entry* create(IAllocator* _pAlloc, Args&& ..._args);
 
+		template<class ...Args>
+		Entry* emplace_front(IAllocator* _pAlloc, Args&& ..._args);
+
 		// emplace at the end of the linked list
 		template<class ...Args>
 		Entry* emplace_back(IAllocator* _pAlloc, Args&& ..._args);
 
 		// _entry attached to the end, should be created on the same allocator
 		Entry* append(Entry<T>* _entry);
+
+		// prepend to the head, should be crated with on the same allocator
+		Entry* prepend(Entry<T>* _entry);
 
 		// insert new entry before this entry
 		template<class ...Args>
@@ -28,7 +34,9 @@ namespace spvgentwo
 		// removes this entry from the list (and destroys it if allocator is provieded), returns next entry
 		Entry* remove(IAllocator* _pAlloc);
 
-		Entry* last();
+		Entry* first(); // head
+
+		Entry* last(); // tail
 
 		Entry* prev() { return m_pPrev; }
 		const Entry* prev() const { return m_pPrev; }
@@ -78,6 +86,13 @@ namespace spvgentwo
 
 	template<class T>
 	template<class ...Args>
+	inline Entry<T>* Entry<T>::emplace_front(IAllocator* _pAlloc, Args&& ..._args)
+	{
+		return prepend(create(_pAlloc, std::forward<Args>(_args)...));
+	}
+
+	template<class T>
+	template<class ...Args>
 	inline Entry<T>* Entry<T>::emplace_back(IAllocator* _pAlloc, Args&& ..._args)
 	{
 		return append(create(_pAlloc, std::forward<Args>(_args)...));
@@ -98,6 +113,21 @@ namespace spvgentwo
 		else
 		{
 			return last()->append(_entry);
+		}
+	}
+
+	template<class T>
+	inline Entry<T>* Entry<T>::prepend(Entry<T>* _entry)
+	{
+		if (m_pPrev == nullptr)
+		{
+			m_pPrev = _entry;
+			m_pPrev->m_pNext = this;
+			return _entry;
+		}
+		else
+		{
+			return first()->prepend(_entry);
 		}
 	}
 	
@@ -151,6 +181,16 @@ namespace spvgentwo
 		while (true){
 			if (next->m_pNext == nullptr) { return next; }
 			next = next->m_pNext;
+		}
+	}
+
+	template<class T>
+	inline Entry<T>* Entry<T>::first()
+	{
+		Entry<T>* prev = this;
+		while (true) {
+			if (prev->m_pPrev == nullptr) { return prev; }
+			prev = prev->m_pPrev;
 		}
 	}
 
