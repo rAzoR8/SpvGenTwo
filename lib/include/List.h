@@ -31,8 +31,18 @@ namespace spvgentwo
 		IAllocator* getAllocator() { return m_pAllocator; }
 		const IAllocator* getAllocator() const { return m_pAllocator; }
 
+		void clear(); // destroy entries
+
+		template<class ...Args>
+		Entry<T>* emplace_front_entry(Args&& ..._args);
+
+		template<class ...Args>
+		T& emplace_front(Args&& ..._args);
+
 		template<class ...Args>
 		Entry<T>* emplace_back_entry(Args&& ..._args);
+
+		Entry<T>* prepend_entry(Entry<T>* _entry);
 
 		// adds _entry to the end of the chain, returns same entry
 		Entry<T>* append_entry(Entry<T>* _entry);
@@ -102,12 +112,18 @@ namespace spvgentwo
 	template<class T>
 	inline List<T>::~List()
 	{
+		clear();
+		m_pAllocator = nullptr;
+	}
+
+	template<class T>
+	inline void List<T>::clear()
+	{
 		if (m_pBegin != nullptr && m_pAllocator != nullptr)
 		{
 			m_pBegin->destroyList(m_pAllocator);
 			m_pBegin = nullptr;
 		}
-		m_pAllocator = nullptr;
 	}
 
 	template<class T>
@@ -176,6 +192,22 @@ namespace spvgentwo
 	}
 
 	template<class T>
+	inline Entry<T>* List<T>::prepend_entry(Entry<T>* _entry)
+	{
+		if (m_pBegin == nullptr)
+		{
+			m_pBegin = _entry;
+			m_pLast = m_pBegin;
+		}
+		else
+		{
+			m_pBegin = m_pBegin->prepend(_entry);
+		}
+		++m_Elements;
+		return m_pBegin;
+	}
+
+	template<class T>
 	inline Entry<T>* List<T>::append_entry(Entry<T>* _entry)
 	{
 		if (m_pBegin == nullptr)
@@ -193,19 +225,23 @@ namespace spvgentwo
 
 	template<class T>
 	template<class ...Args>
+	inline Entry<T>* List<T>::emplace_front_entry(Args&& ..._args)
+	{
+		return prepend_entry(Entry<T>::create(m_pAllocator, std::forward<Args>(_args)...));
+	}
+
+	template<class T>
+	template<class ...Args>
 	inline Entry<T>* List<T>::emplace_back_entry(Args&& ..._args)
 	{
-		if (m_pBegin == nullptr)
-		{
-			m_pBegin = Entry<T>::create(m_pAllocator, std::forward<Args>(_args)...);
-			m_pLast = m_pBegin;
-		}
-		else
-		{
-			m_pLast = m_pLast->emplace_back(m_pAllocator, std::forward<Args>(_args)...);
-		}
-		++m_Elements;
-		return m_pLast;
+		return append_entry(Entry<T>::create(m_pAllocator, std::forward<Args>(_args)...));
+	}
+
+	template<class T>
+	template<class ...Args>
+	inline T& List<T>::emplace_front(Args&& ..._args)
+	{
+		return **emplace_front_entry(std::forward<Args>(_args)...);
 	}
 
 	template<class T>
