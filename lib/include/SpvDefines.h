@@ -46,13 +46,5 @@ namespace spvgentwo
 		return type;
 	}
 
-	template <class Enum>
-	struct Flag
-	{
-		union
-		{
-			unsigned int mask;
-			Enum enumeration;
-		};
-	};
+
 } //!spvgentwo

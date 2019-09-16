@@ -7,6 +7,14 @@ spvgentwo::Instruction::~Instruction()
 {
 }
 
+void spvgentwo::Instruction::reset()
+{
+	m_Operation = spv::Op::OpNop;
+	m_pType = nullptr;
+	m_ResultId = InvalidId;
+	clear(); // clear operands
+}
+
 unsigned int spvgentwo::Instruction::getWordCount() const
 {
 	// TODO: check with spv::HasResultAndType if m_pType and m_ResultId have been set correctly
@@ -18,7 +26,7 @@ unsigned int spvgentwo::Instruction::getOpCode() const
 	return (unsigned int (m_Operation) & spv::OpCodeMask) | (getWordCount() << spv::WordCountShift);
 }
 
-void spvgentwo::Instruction::setType(Instruction* _pType)
+void spvgentwo::Instruction::setType(const Instruction* _pType)
 {
 	m_pType = _pType;
 }
@@ -83,9 +91,16 @@ spvgentwo::Instruction* spvgentwo::Instruction::opLabel()
 	return this;
 }
 
-void spvgentwo::Instruction::opFunction(const Flag<spv::FunctionControlMask> _functionControl, const Instruction* _pResultType, const Instruction* _pFuncType)
+spvgentwo::Instruction* spvgentwo::Instruction::opFunction(const Flag<spv::FunctionControlMask> _functionControl, const Instruction* _pResultType, const Instruction* _pFuncType)
 {
 	makeOp(spv::Op::OpFunction, _pResultType, _functionControl.mask, _pFuncType);
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opFunctionParameter(const Instruction* _pType)
+{
+	makeOp(spv::Op::OpFunctionParameter, _pType);
+	return this;
 }
 
 void spvgentwo::Instruction::opFunctionEnd()

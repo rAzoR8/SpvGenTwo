@@ -3,6 +3,7 @@
 #include "List.h"
 #include "Operand.h"
 #include "SpvDefines.h"
+#include "Flag.h"
 
 namespace spvgentwo
 {
@@ -33,10 +34,12 @@ namespace spvgentwo
 		Operand& addOperand(Args&& ... _operand) { return emplace_back(std::forward<Args>(_operand)...); }
 
 		spv::Id getId() const { return m_ResultId; }
-		Instruction* getType() { return m_pType; }
-		void setType(Instruction* _pType);
+		const Instruction* getType() const { return m_pType; }
+		void setType(const Instruction* _pType);
 
 		bool isTypeOp() const;
+
+		void reset();
 
 		// get number of 32 bit words used by this instruction
 		unsigned int getWordCount() const;
@@ -65,16 +68,18 @@ namespace spvgentwo
 
 		Instruction* opLabel();
 
-		void opFunction(const Flag<spv::FunctionControlMask> _functionControl, const Instruction* _pResultType, const Instruction* _pFuncType);
+		Instruction* opFunction(const Flag<spv::FunctionControlMask> _functionControl, const Instruction* _pResultType, const Instruction* _pFuncType);
+
+		Instruction* opFunctionParameter(const Instruction* _pType);
 
 		void opFunctionEnd();
 
 	private:
-		BasicBlock* m_pBasicBlock = nullptr;
 		spv::Op m_Operation = spv::Op::OpNop;
-		spv::Id m_ResultId = InvalidId;
-		
-		Instruction* m_pType = nullptr;
+		const Instruction* m_pType = nullptr; // result type
+
+		BasicBlock* m_pBasicBlock = nullptr;
+		spv::Id m_ResultId = InvalidId;		
 	};
 
 	// free helper function
