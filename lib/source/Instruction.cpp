@@ -10,15 +10,12 @@ spvgentwo::Instruction::~Instruction()
 void spvgentwo::Instruction::reset()
 {
 	m_Operation = spv::Op::OpNop;
-	m_pType = nullptr;
-	m_ResultId = InvalidId;
 	clear(); // clear operands
 }
 
 unsigned int spvgentwo::Instruction::getWordCount() const
 {
-	// TODO: check with spv::HasResultAndType if m_pType and m_ResultId have been set correctly
-	return 1u + (m_pType != nullptr ? 1u : 0) + (m_ResultId != InvalidId ? 1u : 0u) + static_cast<unsigned int>(m_Elements); // (m_elements is number of operands)
+	return 1u + static_cast<unsigned int>(m_Elements); // (m_elements is number of operands)
 }
 
 unsigned int spvgentwo::Instruction::getOpCode() const
@@ -26,9 +23,37 @@ unsigned int spvgentwo::Instruction::getOpCode() const
 	return (unsigned int (m_Operation) & spv::OpCodeMask) | (getWordCount() << spv::WordCountShift);
 }
 
-void spvgentwo::Instruction::setType(const Instruction* _pType)
+spv::Id spvgentwo::Instruction::getResultId() const
 {
-	m_pType = _pType;
+	if (hasResult(m_Operation) && empty() == false)
+	{
+		return front().getResultId();
+	}
+	return InvalidId;
+}
+
+void spvgentwo::Instruction::setResultId(const spv::Id _resultId)
+{
+	if (hasResult(m_Operation) && empty() == false)
+	{
+		front().resultId = _resultId;
+	}
+}
+
+const spvgentwo::Instruction* spvgentwo::Instruction::getType() const
+{
+	bool resultId = false, resultType = false;
+	spv::HasResultAndType(m_Operation, &resultId, &resultType);
+
+	if (resultType == false || empty())
+		return nullptr;
+
+	auto it = begin();
+	if (resultId && size() > 1u) // skip result op 
+	{
+		++it;
+	}
+	return it->getInstruction();
 }
 
 bool spvgentwo::Instruction::isTypeOp() const
@@ -39,16 +64,6 @@ bool spvgentwo::Instruction::isTypeOp() const
 void spvgentwo::Instruction::write(IWriter* _pWriter) const
 {
 	_pWriter->put(getOpCode());
-
-	if (m_pType != nullptr && m_pType->m_ResultId != InvalidId)
-	{
-		_pWriter->put(m_pType->m_ResultId);
-	}
-
-	if (m_ResultId != InvalidId)
-	{
-		_pWriter->put(m_ResultId);
-	}
 	
 	for (const Operand& operand : *this)
 	{

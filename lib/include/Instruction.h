@@ -2,15 +2,12 @@
 
 #include "List.h"
 #include "Operand.h"
-#include "SpvDefines.h"
 #include "Flag.h"
 
 namespace spvgentwo
 {
 	// forward delcs
 	class Type;
-
-	static constexpr spv::Id InvalidId = 0xFFFFFFFF;
 
 	class Instruction : public List<Operand>
 	{
@@ -33,10 +30,10 @@ namespace spvgentwo
 		template<class ...Args>
 		Operand& addOperand(Args&& ... _operand) { return emplace_back(std::forward<Args>(_operand)...); }
 
-		spv::Id getId() const { return m_ResultId; }
-		const Instruction* getType() const { return m_pType; }
-		void setType(const Instruction* _pType);
-
+		spv::Id getResultId() const;
+		void setResultId(const spv::Id _resultId); // todo: make private
+		const Instruction* getType() const;
+	
 		bool isTypeOp() const;
 
 		void reset();
@@ -76,10 +73,7 @@ namespace spvgentwo
 
 	private:
 		spv::Op m_Operation = spv::Op::OpNop;
-		const Instruction* m_pType = nullptr; // result type
-
-		BasicBlock* m_pBasicBlock = nullptr;
-		spv::Id m_ResultId = InvalidId;		
+		BasicBlock* m_pBasicBlock = nullptr; // parent
 	};
 
 	// free helper function
@@ -108,22 +102,15 @@ namespace spvgentwo
 		} 
 		else if constexpr (is_same_base_type_v<T, Instruction*>)
 		{
-			if (_first->isTypeOp() && m_pType == nullptr)
-			{
-				setType(_first);
-			}
-			else
-			{
-				addOperand(_first);
-			}
+			addOperand(_first);
 		}
 		else if constexpr(is_same_base_type_v<T, BasicBlock*>)
 		{
 			addOperand(_first);
 		}
-		else if constexpr (sizeof(T) == sizeof(unsigned int)) // bitcast to 32 bit literal
+		else if constexpr (sizeof(T) == sizeof(literal_t)) // bitcast to 32 bit literal
 		{
-			addOperand(*reinterpret_cast<const unsigned int*>(&_first));
+			addOperand(*reinterpret_cast<const literal_t*>(&_first));
 		}
 		else
 		{
@@ -144,12 +131,12 @@ namespace spvgentwo
 		
 		for (auto w = 0u; w < words; ++w)
 		{
-			addOperand(reinterpret_cast<const unsigned int*>(&first)[w]);
+			addOperand(reinterpret_cast<const literal_t*>(&first)[w]);
 		}
 		
 		if constexpr (bytes % sizeof(unsigned int) != 0)
 		{
-			unsigned int lastWord{ 0u };
+			literal_t lastWord{ 0u };
 			const auto offset = words * sizeof(unsigned int);
 			for (auto b = offset; b < bytes; ++b)
 			{
@@ -166,7 +153,7 @@ namespace spvgentwo
 
 	inline void spvgentwo::Instruction::appendLiterals(const char* _pStr)
 	{
-		unsigned int word{ 0u };
+		literal_t word{ 0u };
 		unsigned int l = 0u;
 		char c = 0u;
 
@@ -179,7 +166,7 @@ namespace spvgentwo
 			if (c == 0 || mod == 3)
 			{
 				addOperand(word);
-				word = 0u;
+				word.value = 0u;
 			}
 
 		} while (c != 0);
