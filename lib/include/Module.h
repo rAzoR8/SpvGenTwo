@@ -2,7 +2,7 @@
 
 #include "Function.h"
 #include "HashMap.h"
-//#include "Type.h"
+#include "Constant.h"
 
 namespace spvgentwo
 {
@@ -23,6 +23,7 @@ namespace spvgentwo
 		void addExtension(const char* _pExtName);
 		Instruction* addExtensionInstructionImport(const char* _pExtName);
 
+		const Instruction* addConstant(const Constant& _const);
 		const Instruction* addType(const Type& _type);
 
 		void setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
@@ -33,6 +34,8 @@ namespace spvgentwo
 
 		// creates new empty type using this modules allocator
 		Type& newType();
+
+		Constant& newConstant();
 
 	private:
 
@@ -46,6 +49,7 @@ namespace spvgentwo
 		HashMap<Type, Instruction*> m_TypeBuilder;
 
 		List<Type> m_userTypes; // just for convenience
+		List<Constant> m_userConstants; // just for convenience
 
 		unsigned int m_maxId = 0u;
 	};

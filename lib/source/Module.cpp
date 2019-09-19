@@ -11,7 +11,8 @@ spvgentwo::Module::Module(IAllocator* _pAllocator) :
 	m_ExtInstrImport(_pAllocator),
 	m_TypesAndConstants(_pAllocator),
 	m_TypeBuilder(_pAllocator),
-	m_userTypes(_pAllocator)
+	m_userTypes(_pAllocator),
+	m_userConstants(_pAllocator)
 {
 }
 
@@ -22,6 +23,11 @@ spvgentwo::Module::~Module()
 spvgentwo::Type& spvgentwo::Module::newType()
 {
 	return m_userTypes.emplace_back(m_pAllocator);
+}
+
+spvgentwo::Constant& spvgentwo::Module::newConstant()
+{
+	return m_userConstants.emplace_back(m_pAllocator);
 }
 
 void spvgentwo::Module::addCapability(const spv::Capability _capability)
@@ -36,6 +42,10 @@ void spvgentwo::Module::addExtension(const char* _pExtName)
 spvgentwo::Instruction* spvgentwo::Module::addExtensionInstructionImport(const char* _pExtName)
 {
 	return m_ExtInstrImport.emplace_back(m_pAllocator).opExtInstrImport(_pExtName);
+}
+const spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
+{
+	return nullptr;
 }
 const spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 {
