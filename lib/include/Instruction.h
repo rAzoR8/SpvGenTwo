@@ -48,10 +48,8 @@ namespace spvgentwo
 		template <class T, class ...Args>
 		void makeOp(T first, Args ... _args);
 
-		void appendLiterals(const char* _pStr);
-
-		template <class T, class ...Args>
-		void appendLiterals(T first, Args ... _args);
+		template <class ...Args>
+		void appendLiterals(Args ... _args);
 
 		// instruction generators:
 		// all instructions generating a result id return a pointer to this instruction for reference (passing to other instruction operand)
@@ -123,52 +121,9 @@ namespace spvgentwo
 		}
 	}
 
-	template<class T, class ...Args>
-	inline void Instruction::appendLiterals(T first, Args ..._args)
+	template<class ...Args>
+	inline void Instruction::appendLiterals(Args ..._args)
 	{
-		constexpr auto bytes = sizeof(T);
-		constexpr auto words = wordCount(bytes) - (bytes % sizeof(unsigned int) == 0 ? 0 : 1);
-		
-		for (auto w = 0u; w < words; ++w)
-		{
-			addOperand(reinterpret_cast<const literal_t*>(&first)[w]);
-		}
-		
-		if constexpr (bytes % sizeof(unsigned int) != 0)
-		{
-			literal_t lastWord{ 0u };
-			const auto offset = words * sizeof(unsigned int);
-			for (auto b = offset; b < bytes; ++b)
-			{
-				reinterpret_cast<char*>(&lastWord)[b - offset] = reinterpret_cast<const char*>(&first)[b];
-			}
-			addOperand(lastWord);
-		}		
-
-		if constexpr (sizeof...(_args) > 0u)
-		{
-			appendLiterals(_args...);
-		}
-	}
-
-	inline void spvgentwo::Instruction::appendLiterals(const char* _pStr)
-	{
-		literal_t word{ 0u };
-		unsigned int l = 0u;
-		char c = 0u;
-
-		do
-		{
-			c = _pStr[l];
-			const auto mod = l++ % sizeof(unsigned int);
-			reinterpret_cast<char*>(&word)[mod] = c;
-
-			if (c == 0 || mod == 3)
-			{
-				addOperand(word);
-				word.value = 0u;
-			}
-
-		} while (c != 0);
+		appendLiteralsToContainer(*this, _args...);
 	}
 } // !spvgentwo

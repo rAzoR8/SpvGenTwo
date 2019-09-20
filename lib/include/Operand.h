@@ -92,4 +92,54 @@ namespace spvgentwo
 
 		void write(IWriter* _pWriter) const;
 	};
+
+	template<class Container, class T, class ...Args>
+	void appendLiteralsToContainer(Container& _out, T first, Args ..._args)
+	{
+		constexpr auto bytes = sizeof(T);
+		constexpr auto words = wordCount(bytes) - (bytes % sizeof(unsigned int) == 0 ? 0 : 1);
+
+		for (auto w = 0u; w < words; ++w)
+		{
+			_out.emplace_back(reinterpret_cast<const literal_t*>(&first)[w]);
+		}
+
+		if constexpr (bytes % sizeof(unsigned int) != 0)
+		{
+			literal_t lastWord{ 0u };
+			const auto offset = words * sizeof(unsigned int);
+			for (auto b = offset; b < bytes; ++b)
+			{
+				reinterpret_cast<char*>(&lastWord)[b - offset] = reinterpret_cast<const char*>(&first)[b];
+			}
+			_out.emplace_back(lastWord);
+		}
+
+		if constexpr (sizeof...(_args) > 0u)
+		{
+			appendLiteralsToContainer(_out, _args...);
+		}
+	}
+
+	template <class Container>
+	void appendLiteralsToContainer(Container& _out, const char* _pStr)
+	{
+		literal_t word{ 0u };
+		unsigned int l = 0u;
+		char c = 0u;
+
+		do
+		{
+			c = _pStr[l];
+			const auto mod = l++ % sizeof(unsigned int);
+			reinterpret_cast<char*>(&word)[mod] = c;
+
+			if (c == 0 || mod == 3)
+			{
+				_out.emplace_back(word);
+				word.value = 0u;
+			}
+
+		} while (c != 0);
+	}
 } // !spvgentwo 
