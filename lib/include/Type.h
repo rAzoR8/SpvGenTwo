@@ -59,6 +59,9 @@ namespace spvgentwo
 		Type& Float(const unsigned int _bits = 32u);
 		Type& FloatM(const unsigned int _bits = 32u) { Member().Float(); return *this; }
 
+		Type& Double() { return Float(64u); };
+		Type& DoubleM() { Member().Float(44u); return *this; }
+
 		// makes this a struct
 		Type& Struct();
 
@@ -81,6 +84,9 @@ namespace spvgentwo
 
 		Type& back() { return m_subTypes.back(); }
 		const Type& back() const { return m_subTypes.back(); }
+
+		template <class T>
+		Type& primitive() { static_assert(false, "incompatible type"); return *this; }
 
 	private:
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type
@@ -119,4 +125,37 @@ namespace spvgentwo
 			return operator()(_type, h);
 		}
 	};
-} // !spvgentwo
+
+	template <>
+	inline Type& Type::primitive<bool>() { return Bool(); }
+
+	template <>
+	inline Type& Type::primitive<short>() { return Int(16u); }
+
+	template <>
+	inline Type& Type::primitive<unsigned short>() { return UInt(16u); }
+	
+	template <>
+	inline Type& Type::primitive<int>() { return Int(); }
+
+	template <>
+	inline Type& Type::primitive<unsigned int>() { return UInt(); }
+
+	template <>
+	inline Type& Type::primitive<long>() { return Int(); }
+
+	template <>
+	inline Type& Type::primitive<unsigned long>() { return UInt(); }
+
+	template <>
+	inline Type& Type::primitive<long long>() { return Int(64u); }
+
+	template <>
+	inline Type& Type::primitive<unsigned long long>() { return UInt(64u); }
+
+	template <>
+	inline Type& Type::primitive<float>() { return Float(); }
+
+	template <>
+	inline Type& Type::primitive<double>() { return Double(); }
+} // !spvgentwI
