@@ -46,7 +46,7 @@ namespace spvgentwo
 
 		// creates literals
 		template <class T, class ...Args>
-		void makeOp(T first, Args ... _args);
+		Instruction* makeOp(T first, Args ... _args);
 
 		template <class ...Args>
 		void appendLiterals(Args ... _args);
@@ -92,7 +92,7 @@ namespace spvgentwo
 	}
 	
 	template<class T, class ...Args>
-	inline void Instruction::makeOp(T _first, Args ..._args)
+	inline Instruction* Instruction::makeOp(T _first, Args ..._args)
 	{
 		if constexpr (is_same_base_type_v<T, spv::Op>)
 		{
@@ -119,6 +119,8 @@ namespace spvgentwo
 		{
 			makeOp(_args...);
 		}
+
+		return this;
 	}
 
 	template<class ...Args>

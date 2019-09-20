@@ -9,17 +9,32 @@ namespace spvgentwo
 	public:
 		Constant(IAllocator* _pAllocator);
 		Constant(const Constant& _other);
-		Constant(Constant&& _other);
+		Constant(Constant&& _other) noexcept;
 		~Constant();
 
 		Constant& operator=(const Constant& _other);
-		Constant& operator=(Constant&& _other);
+		Constant& operator=(Constant&& _other) noexcept;
 
 		spv::Op getOperation() const { return m_Operation; }
 		const Type& getType() const { return m_Type; }
 
 		const List<unsigned int>& getData() const { return m_literalData; }
 		const List<Constant>& getComponents() const { return m_Components; }
+
+		Constant& make(const bool _value, const bool _spec = false);
+
+		Constant& make(const short _value, const bool _spec = false);
+		Constant& make(const unsigned short _value, const bool _spec = false);
+
+		Constant& make(const int _value, const bool _spec = false);
+		Constant& make(const unsigned int _value, const bool _spec = false);
+
+		Constant& make(const long long _value, const bool _spec = false);
+		Constant& make(const unsigned long long _value, const bool _spec = false);
+
+		Constant& make(const float _value, const bool _spec = false);
+		Constant& make(const double _value, const bool _spec = false);
+
 	private:
 		//Constant* m_pParent = nullptr;
 		spv::Op m_Operation = spv::Op::OpConstantNull;

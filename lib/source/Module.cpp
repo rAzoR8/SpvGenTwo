@@ -11,8 +11,7 @@ spvgentwo::Module::Module(IAllocator* _pAllocator) :
 	m_ExtInstrImport(_pAllocator),
 	m_TypesAndConstants(_pAllocator),
 	m_TypeBuilder(_pAllocator),
-	m_userTypes(_pAllocator),
-	m_userConstants(_pAllocator)
+	m_ConstantBuilder(_pAllocator)
 {
 }
 
@@ -20,14 +19,14 @@ spvgentwo::Module::~Module()
 {
 }
 
-spvgentwo::Type& spvgentwo::Module::newType()
+spvgentwo::Type spvgentwo::Module::newType()
 {
-	return m_userTypes.emplace_back(m_pAllocator);
+	return Type(m_pAllocator);
 }
 
-spvgentwo::Constant& spvgentwo::Module::newConstant()
+spvgentwo::Constant spvgentwo::Module::newConstant()
 {
-	return m_userConstants.emplace_back(m_pAllocator);
+	return Constant(m_pAllocator);
 }
 
 void spvgentwo::Module::addCapability(const spv::Capability _capability)
@@ -45,8 +44,55 @@ spvgentwo::Instruction* spvgentwo::Module::addExtensionInstructionImport(const c
 }
 const spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 {
-	return nullptr;
+	const Instruction* pType = addType(_const.getType());
+
+	auto& node = m_ConstantBuilder.emplaceUnique(_const, nullptr);
+	if (node.kv.value != nullptr)
+	{
+		return node.kv.value;
+	}
+
+	Instruction* pInstr = node.kv.value = &m_TypesAndConstants.emplace_back(m_pAllocator);
+
+	const spv::Op constantOp = _const.getOperation();
+
+	pInstr->makeOp(constantOp, pType, InvalidId);
+
+	switch (constantOp)
+	{
+	case spv::Op::OpConstantTrue:
+	case spv::Op::OpConstantFalse:
+	case spv::Op::OpConstantNull:
+	case spv::Op::OpSpecConstantTrue:
+	case spv::Op::OpSpecConstantFalse:
+		// nothing to do
+		break;
+	case spv::Op::OpConstant:
+	case spv::Op::OpSpecConstant:
+		for(const unsigned int& val : _const.getData())
+		{
+			pInstr->addOperand(literal_t{ val });
+		}
+		break;
+	case spv::Op::OpConstantComposite:
+	case spv::Op::OpSpecConstantComposite:
+		for(const Constant& component : _const.getComponents())
+		{
+			pInstr->addOperand(addConstant(component));		
+		}
+		break;
+
+		// TODO: remaining complex types
+	case spv::Op::OpConstantSampler:
+	case spv::Op::OpSpecConstantOp:
+
+	default:
+		break;
+	}
+
+	return pInstr;
 }
+
 const spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 {
 	auto& node = m_TypeBuilder.emplaceUnique(_type, nullptr);
@@ -59,7 +105,7 @@ const spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 
 	const spv::Op base = _type.getBaseType();
 
-	pInstr->makeOp(base);
+	pInstr->makeOp(base, InvalidId);
 
 	switch (base)
 	{
@@ -86,7 +132,7 @@ const spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 		break;
 	case spv::Op::OpTypeArray:
 		pInstr->addOperand(addType(_type.getSubTypes().front())); // element type
-		//pInstr->addOperand(addConstant(_type.getDimension()); // length as constant
+		pInstr->addOperand(addConstant(newConstant().make(_type.getDimension()))); // length as constant
 		break;
 	default:
 		break; // unknown type

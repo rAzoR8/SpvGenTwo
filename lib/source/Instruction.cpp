@@ -25,35 +25,43 @@ unsigned int spvgentwo::Instruction::getOpCode() const
 
 spv::Id spvgentwo::Instruction::getResultId() const
 {
-	if (hasResult(m_Operation) && empty() == false)
+	bool resultId = false, resultType = false;
+	spv::HasResultAndType(m_Operation, &resultId, &resultType);
+
+	if (resultId == false || empty())
+		return InvalidId;
+
+	auto it = begin();
+	if (resultType && size() > 1u) // skip resultType operand 
 	{
-		return front().getResultId();
+		++it;
 	}
-	return InvalidId;
+	return it->getResultId();
 }
 
 void spvgentwo::Instruction::setResultId(const spv::Id _resultId)
 {
-	if (hasResult(m_Operation) && empty() == false)
+	bool resultId = false, resultType = false;
+	spv::HasResultAndType(m_Operation, &resultId, &resultType);
+
+	if (resultId == false || empty())
+		return;
+
+	auto it = begin();
+	if (resultType && size() > 1u) // skip resultType operand 
 	{
-		front().resultId = _resultId;
+		++it;
 	}
+	it->resultId = _resultId;
 }
 
 const spvgentwo::Instruction* spvgentwo::Instruction::getType() const
 {
-	bool resultId = false, resultType = false;
-	spv::HasResultAndType(m_Operation, &resultId, &resultType);
-
-	if (resultType == false || empty())
-		return nullptr;
-
-	auto it = begin();
-	if (resultId && size() > 1u) // skip result op 
+	if (hasResultType(m_Operation) && empty() == false)
 	{
-		++it;
+		return front().getInstruction();
 	}
-	return it->getInstruction();
+	return nullptr;
 }
 
 bool spvgentwo::Instruction::isTypeOp() const
@@ -96,26 +104,22 @@ void spvgentwo::Instruction::opExtension(const char* _pExtName)
 
 spvgentwo::Instruction* spvgentwo::Instruction::opExtInstrImport(const char* _pExtName)
 {
-	makeOp(spv::Op::OpExtInstImport, _pExtName);
-	return this;
+	return makeOp(spv::Op::OpExtInstImport, InvalidId, _pExtName);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opLabel()
 {
-	makeOp(spv::Op::OpLabel);
-	return this;
+	return makeOp(spv::Op::OpLabel, InvalidId);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opFunction(const Flag<spv::FunctionControlMask> _functionControl, const Instruction* _pResultType, const Instruction* _pFuncType)
 {
-	makeOp(spv::Op::OpFunction, _pResultType, _functionControl.mask, _pFuncType);
-	return this;
+	return makeOp(spv::Op::OpFunction, _pResultType, InvalidId, _functionControl.mask, _pFuncType);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opFunctionParameter(const Instruction* _pType)
 {
-	makeOp(spv::Op::OpFunctionParameter, _pType);
-	return this;
+	return makeOp(spv::Op::OpFunctionParameter, _pType, InvalidId);
 }
 
 void spvgentwo::Instruction::opFunctionEnd()
