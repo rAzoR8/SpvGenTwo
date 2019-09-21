@@ -162,7 +162,26 @@ void spvgentwo::Module::write(IWriter* _pWriter) const
 	writeInstructions(_pWriter, m_ExtInstrImport);
 	m_MemoryModel.write(_pWriter);
 
-	// todo: get entry point defintions
+	// write entry points
+	for (const Function& fun : *this)
+	{
+		if (fun.isEntryPoint())
+		{
+			fun.getEntryPoint()->write(_pWriter);
+		}
+	}
+
+	// write entrypoint executions modes
+	for (const Function& fun : *this)
+	{
+		if (fun.isEntryPoint())
+		{
+			for(const Instruction& mode : fun.getExecutionModes())
+			{
+				mode.write(_pWriter);
+			}
+		}
+	}
 
 	//All execution - mode declarations, using OpExecutionMode or OpExecutionModeId.
 	
@@ -174,7 +193,6 @@ void spvgentwo::Module::write(IWriter* _pWriter) const
 	// all decoration instructions (OpDecorate, OpMemberDecorate, OpGroupDecorate, OpGroupMemberDecorate, and OpDecorationGroup).
 
 	//  All function declarations (function without body)
-
 
 	// write functions
 	for (const Function& fun : *this)

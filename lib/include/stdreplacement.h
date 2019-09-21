@@ -2,7 +2,7 @@
 
 // replacement header for some std functions and traits
 
-#include <stddef.h>
+#include <cstddef>
 
 #ifndef DONT_REPLACE_PLACEMENTNEW
 inline void* operator new(size_t size, void* ptr) noexcept { (void)size; return ptr; }

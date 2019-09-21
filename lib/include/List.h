@@ -19,11 +19,11 @@ namespace spvgentwo
 
 		List(IAllocator* _pAllocator);
 		List(const List& _other);
-		List(List&& _other);
+		List(List&& _other) noexcept;
 		virtual ~List();
 
 		List& operator=(const List& _other);
-		List& operator=(List&& _other);
+		List& operator=(List&& _other) noexcept;
 
 		bool operator==(const List<T>&  other) const;
 		bool operator!=(const List<T>& _other) const { return !operator==(_other); }
@@ -74,6 +74,13 @@ namespace spvgentwo
 
 		size_t size() const { return m_Elements; }
 
+		Iterator find(const T& _val) const;
+
+		template<class _Pred>
+		Iterator find_if(const _Pred& _pred) const;
+
+		bool contains(const T& _val) const { return find(_val) != nullptr; }
+
 	protected:
 		IAllocator* m_pAllocator = nullptr;
 		Entry<T>* m_pBegin = nullptr;
@@ -97,7 +104,7 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	inline List<T>::List(List&& _other) :
+	inline List<T>::List(List&& _other) noexcept:
 		m_pAllocator(_other.m_pAllocator),
 		m_pBegin(_other.m_pBegin),
 		m_pLast(_other.m_pLast),
@@ -154,7 +161,7 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	inline List<T>& List<T>::operator=(List<T>&& _other)
+	inline List<T>& List<T>::operator=(List<T>&& _other) noexcept
 	{
 		if (this == &_other) return *this;
 
@@ -264,5 +271,23 @@ namespace spvgentwo
 	{
 		--m_Elements;
 		return _pos.entry()->remove(_destruct ? m_pAllocator : nullptr);
+	}
+
+	template<class T>
+	inline typename List<T>::Iterator List<T>::find(const T& _val) const
+	{
+		auto it = begin();
+		for(; it != nullptr && *it != _val; ++it){}
+
+		return it;
+	}
+
+	template<class T>
+	template<class _Pred>
+	inline typename List<T>::Iterator List<T>::find_if(const _Pred& _pred) const
+	{
+		auto it = begin();
+		for (; it != nullptr && !_pred(*it); ++it) {}
+		return it;
 	}
 } // !spvgentwo

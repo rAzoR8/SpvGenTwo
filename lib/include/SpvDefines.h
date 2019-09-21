@@ -46,5 +46,17 @@ namespace spvgentwo
 		return type;
 	}
 
-
+	// returns either spv::OpExecutionMode or spv::OpExecutionModeId based on input mode
+	constexpr spv::Op getExecutionModeOp(const spv::ExecutionMode _mode)
+	{
+		switch (_mode)
+		{
+		case spv::ExecutionMode::SubgroupsPerWorkgroupId:
+		case spv::ExecutionMode::LocalSizeId:
+		case spv::ExecutionMode::LocalSizeHintId:
+			return spv::Op::OpExecutionModeId;
+		default:
+			return spv::Op::OpExecutionMode;
+		}
+	}
 } //!spvgentwo

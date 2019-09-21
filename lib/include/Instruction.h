@@ -69,6 +69,10 @@ namespace spvgentwo
 
 		void opFunctionEnd();
 
+		//  _pFunction is result of opFunction
+		template <class ... Instr>
+		void opEntryPoint(const spv::ExecutionModel _model, const Instruction* _pFunction, const char* _pName, Instr ... _instr);
+
 	private:
 		spv::Op m_Operation = spv::Op::OpNop;
 		BasicBlock* m_pBasicBlock = nullptr; // parent
@@ -127,5 +131,11 @@ namespace spvgentwo
 	inline void Instruction::appendLiterals(Args ..._args)
 	{
 		appendLiteralsToContainer(*this, _args...);
+	}
+
+	template<class ...Instr>
+	inline void Instruction::opEntryPoint(const spv::ExecutionModel _model, const Instruction* _pFunction, const char* _pName, Instr ..._instr)
+	{
+		makeOp(_model, _pFunction, _pName, _instr...);
 	}
 } // !spvgentwo
