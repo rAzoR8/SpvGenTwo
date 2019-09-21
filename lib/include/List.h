@@ -234,28 +234,28 @@ namespace spvgentwo
 	template<class ...Args>
 	inline Entry<T>* List<T>::emplace_front_entry(Args&& ..._args)
 	{
-		return prepend_entry(Entry<T>::create(m_pAllocator, std::forward<Args>(_args)...));
+		return prepend_entry(Entry<T>::create(m_pAllocator, stdrep::forward<Args>(_args)...));
 	}
 
 	template<class T>
 	template<class ...Args>
 	inline Entry<T>* List<T>::emplace_back_entry(Args&& ..._args)
 	{
-		return append_entry(Entry<T>::create(m_pAllocator, std::forward<Args>(_args)...));
+		return append_entry(Entry<T>::create(m_pAllocator, stdrep::forward<Args>(_args)...));
 	}
 
 	template<class T>
 	template<class ...Args>
 	inline T& List<T>::emplace_front(Args&& ..._args)
 	{
-		return **emplace_front_entry(std::forward<Args>(_args)...);
+		return **emplace_front_entry(stdrep::forward<Args>(_args)...);
 	}
 
 	template<class T>
 	template<class ...Args>
 	inline T& List<T>::emplace_back(Args&& ..._args)
 	{
-		return **emplace_back_entry(std::forward<Args>(_args)...);
+		return **emplace_back_entry(stdrep::forward<Args>(_args)...);
 	}
 
 	template<class T>
@@ -263,7 +263,7 @@ namespace spvgentwo
 	inline Entry<T>* List<T>::insert(Iterator _pos, Args&& ..._args)
 	{
 		++m_Elements;
-		return _pos.entry()->insert(m_pAllocator, std::forward<Args>(_args)...);
+		return _pos.entry()->insert(m_pAllocator, stdrep::forward<Args>(_args)...);
 	}
 
 	template<class T>

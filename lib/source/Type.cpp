@@ -7,7 +7,7 @@ spvgentwo::Type::Type(IAllocator* _pAllocator, Type* _pParent) :
 }
 
 spvgentwo::Type::Type(Type&& _other) noexcept:
-	m_subTypes(std::move(_other.m_subTypes)),
+	m_subTypes(stdrep::move(_other.m_subTypes)),
 	m_Type(_other.m_Type),
 	m_Dimension(_other.m_Dimension),
 	m_Sign(_other.m_Sign)
@@ -38,7 +38,7 @@ spvgentwo::Type& spvgentwo::Type::operator=(Type&& _other) noexcept
 {
 	if (this == &_other) return *this;
 
-	m_subTypes = std::move(_other.m_subTypes);
+	m_subTypes = stdrep::move(_other.m_subTypes);
 
 	m_Type = _other.m_Type;
 	m_Dimension = _other.m_Dimension;

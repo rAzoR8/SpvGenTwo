@@ -68,7 +68,7 @@ namespace spvgentwo
 	template<class T>
 	template<class ...Args>
 	inline Entry<T>::Entry(Args&& ..._args) :
-		m_data{ std::forward<Args>(_args)... }
+		m_data{ stdrep::forward<Args>(_args)... }
 	{
 	}
 
@@ -81,21 +81,21 @@ namespace spvgentwo
 	template<class ...Args>
 	inline Entry<T>* Entry<T>::create(IAllocator* _pAlloc, Args&& ..._args)
 	{
-		return _pAlloc->construct<Entry<T>>(std::forward<Args>(_args)...);
+		return _pAlloc->construct<Entry<T>>(stdrep::forward<Args>(_args)...);
 	}
 
 	template<class T>
 	template<class ...Args>
 	inline Entry<T>* Entry<T>::emplace_front(IAllocator* _pAlloc, Args&& ..._args)
 	{
-		return prepend(create(_pAlloc, std::forward<Args>(_args)...));
+		return prepend(create(_pAlloc, stdrep::forward<Args>(_args)...));
 	}
 
 	template<class T>
 	template<class ...Args>
 	inline Entry<T>* Entry<T>::emplace_back(IAllocator* _pAlloc, Args&& ..._args)
 	{
-		return append(create(_pAlloc, std::forward<Args>(_args)...));
+		return append(create(_pAlloc, stdrep::forward<Args>(_args)...));
 	}
 
 	template<class T>

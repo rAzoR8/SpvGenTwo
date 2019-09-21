@@ -20,7 +20,7 @@ namespace spvgentwo
 			friend class HashMap;
 
 			template <class ...Args>
-			Node(Args&& ... _args) : kv{ std::forward<Args>(_args)... }, hash{ 0u }{}
+			Node(Args&& ... _args) : kv{ stdrep::forward<Args>(_args)... }, hash{ 0u }{}
 
 			struct //KV
 			{
@@ -130,7 +130,7 @@ namespace spvgentwo
 	template<class ...Args>
 	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplace(Args&& ..._args)
 	{
-		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, std::forward<Args>(_args)...);
+		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, stdrep::forward<Args>(_args)...);
 
 		Node& n = pNode->inner();
 
@@ -147,7 +147,7 @@ namespace spvgentwo
 	template<class ...Args> // (non trivial) key is constructed from args and then used to compute the hash
 	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplaceUnique(Args&& ..._args)
 	{
-		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, std::forward<Args>(_args)...);
+		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, stdrep::forward<Args>(_args)...);
 
 		Node& n = pNode->inner();
 
@@ -183,7 +183,7 @@ namespace spvgentwo
 			}
 		}
 
-		Node& n = m_pBuckets[index].emplace_back(_key, std::forward<Args>(_args)...);
+		Node& n = m_pBuckets[index].emplace_back(_key, stdrep::forward<Args>(_args)...);
 		n.hash = h;
 		return n;
 	}

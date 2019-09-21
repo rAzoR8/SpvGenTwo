@@ -28,7 +28,7 @@ namespace spvgentwo
 		void setOperation(const spv::Op _op) { m_Operation = _op; };
 		spv::Op getOperation() const { return m_Operation; }
 		template<class ...Args>
-		Operand& addOperand(Args&& ... _operand) { return emplace_back(std::forward<Args>(_operand)...); }
+		Operand& addOperand(Args&& ... _operand) { return emplace_back(stdrep::forward<Args>(_operand)...); }
 
 		spv::Id getResultId() const;
 		void setResultId(const spv::Id _resultId); // todo: make private
@@ -73,6 +73,8 @@ namespace spvgentwo
 		template <class ... Instr>
 		void opEntryPoint(const spv::ExecutionModel _model, const Instruction* _pFunction, const char* _pName, Instr ... _instr);
 
+		Instruction* opIAdd(const Instruction* _pResultType, const Instruction* _pLeft, const Instruction* _pRight);
+
 	private:
 		spv::Op m_Operation = spv::Op::OpNop;
 		BasicBlock* m_pBasicBlock = nullptr; // parent
@@ -85,14 +87,14 @@ namespace spvgentwo
 	inline Instruction::Instruction(IAllocator* _pAllocator, const spv::Op _op, Args&& ..._args) :
 		m_pBasicBlock(nullptr), List(_pAllocator)
 	{
-		makeOp(_op, std::forward<Args>(_args)...);
+		makeOp(_op, stdrep::forward<Args>(_args)...);
 	}
 
 	template<class ...Args>
 	inline Instruction::Instruction(BasicBlock* _pBasicBlock, const spv::Op _op, Args&& ..._args) :
 		m_pBasicBlock(_pBasicBlock), List(_pBasicBlock->getAllocator())
 	{
-		makeOp(_op, std::forward<Args>(_args)...);
+		makeOp(_op, stdrep::forward<Args>(_args)...);
 	}
 	
 	template<class T, class ...Args>

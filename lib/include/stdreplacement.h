@@ -15,12 +15,12 @@ inline void* operator new(size_t size, void* ptr) noexcept { (void)size; return 
 #ifdef DONT_REPLACE_TRAITS
 #include <type_traits>
 #include <utility>
-namespace spvgentwo::std
+namespace spvgentwo::stdrep
 {
 	using namespace ::std;
 }
 #else
-namespace spvgentwo::std
+namespace spvgentwo::stdrep
 {
 	template <class>
 	inline constexpr bool is_lvalue_reference_v = false;
@@ -72,7 +72,7 @@ namespace spvgentwo::std
 	struct remove_cv<const volatile T> { using type = T; };
 	template <class T>
 	using remove_cv_t = typename remove_cv<T>::type;
-} // !spvgentwo::std
+} // !spvgentwo::stdrep
 #endif
 
 // custom traits
@@ -80,10 +80,10 @@ namespace spvgentwo
 {
 	// cpp20
 	template <class T>
-	using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+	using remove_cvref_t = stdrep::remove_cv_t<stdrep::remove_reference_t<T>>;
 	template <class T>
 	struct remove_cvref { using type = remove_cvref_t<T>; };
 
 	template <class T, class BASE>
-	inline constexpr bool is_same_base_type_v = std::is_same_v<remove_cvref_t<T>, BASE>;
+	inline constexpr bool is_same_base_type_v = stdrep::is_same_v<remove_cvref_t<T>, BASE>;
 } // !spvgentwo

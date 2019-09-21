@@ -1,7 +1,9 @@
 #pragma once
 
 #include "lib.h"
+#include "Writer.h"
 #include <malloc.h>
+#include <cstdio>
 
 namespace spvgentwo
 {
@@ -14,5 +16,33 @@ namespace spvgentwo
 	private:
 		size_t m_Allocated = 0u;
 		size_t m_Deallocated = 0u;
+	};
+
+	class BinaryFileWriter : public IWriter
+	{
+	public:
+		BinaryFileWriter(const char* _path)
+		{
+			m_pFile = fopen(_path, "wb");
+		}
+
+		~BinaryFileWriter()
+		{
+			if (m_pFile != nullptr)
+			{
+				fclose(m_pFile);
+				m_pFile = nullptr;
+			}
+		}
+
+		void put(unsigned int _word) final
+		{
+			if (m_pFile != nullptr)
+			{
+				fwrite(&_word, sizeof(unsigned int), 1u, m_pFile);
+			}
+		}
+	private:
+		FILE* m_pFile = nullptr;
 	};
 } //! spvgentwo

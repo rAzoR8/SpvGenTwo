@@ -27,7 +27,7 @@ namespace spvgentwo
 		Iterator getTerminator();
 
 		// manual instruction add
-		Instruction& addInstruction() { return emplace_back(this); }
+		Instruction* addInstruction() { return &emplace_back(this); }
 
 		void write(IWriter* _pWriter) const;
 

@@ -15,8 +15,7 @@ namespace spvgentwo
 			T* pData = reinterpret_cast<T*>(allocate(sizeof(T), 1u)); // TODO: aligment
 			if (pData != nullptr)
 			{
-				//new(pData) T(std::forward<Args>(_args)...); // forward
-				new(pData) T{ std::forward<Args>(_args)... };
+				new(pData) T{ stdrep::forward<Args>(_args)... };
 			}
 			return pData;
 		}

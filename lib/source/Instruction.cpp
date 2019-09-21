@@ -122,6 +122,12 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFunctionParameter(const Instru
 	return makeOp(spv::Op::OpFunctionParameter, _pType, InvalidId);
 }
 
+
+spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(const Instruction* _pResultType, const Instruction* _pLeft, const Instruction* _pRight)
+{
+	return makeOp(_pResultType, InvalidId, _pLeft, _pRight);
+}
+
 void spvgentwo::Instruction::opFunctionEnd()
 {
 	makeOp(spv::Op::OpFunctionEnd);

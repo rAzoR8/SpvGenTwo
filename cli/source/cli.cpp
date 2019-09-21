@@ -34,15 +34,25 @@ int main(int argc, char* argv[])
 	module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
 
 	Function& func = module.addFunction();
-
 	BasicBlock& bb = func.addBasicBlock();
-	//Instruction& instr = bb.addInstruction();
+
+	auto c1 = module.newConstant();
+	auto c2 = module.newConstant();
+
+	auto const1 = module.addConstant(c1.make(1));
+	auto const2 = module.addConstant(c2.make(2));
+
+	Instruction* instr = bb.addInstruction()->opIAdd(const1->getType(), const1, const2);
 
 	// void fun(float, float);
-	//func.createSignature().VoidM().FloatM().FloatM();
-	//func.finalize(spv::FunctionControlMask::Const);
+	func.createSignature().VoidM().FloatM().FloatM();
+	func.finalize(spv::FunctionControlMask::Const);
 
-	func.finalizeSignature(spv::FunctionControlMask::Const, module.newType().Void(), module.newType().Float(), module.newType().Float());
+	func.promoteToEntryPoint(spv::ExecutionModel::Vertex, "main");
+
+	BinaryFileWriter writer("test.spv");
+
+	module.write(&writer);
 
 	return 0;
 }

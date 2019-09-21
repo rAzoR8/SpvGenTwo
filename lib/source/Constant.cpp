@@ -17,10 +17,10 @@ spvgentwo::Constant::Constant(const Constant& _other) :
 }
 
 spvgentwo::Constant::Constant(Constant&& _other) noexcept:
-	m_Operation(std::move(_other.m_Operation)),
-	m_Components(std::move(_other.m_Components)),
-	m_literalData(std::move(_other.m_literalData)),
-	m_Type(std::move(_other.m_Type))
+	m_Operation(stdrep::move(_other.m_Operation)),
+	m_Components(stdrep::move(_other.m_Components)),
+	m_literalData(stdrep::move(_other.m_literalData)),
+	m_Type(stdrep::move(_other.m_Type))
 {
 }
 
@@ -41,10 +41,10 @@ spvgentwo::Constant& spvgentwo::Constant::operator=(const Constant& _other)
 spvgentwo::Constant& spvgentwo::Constant::operator=(Constant&& _other) noexcept
 {
 	if (this == &_other) return *this;
-	m_Components = std::move(_other.m_Components);
-	m_literalData = std::move(_other.m_literalData);
-	m_Operation = std::move(_other.m_Operation);
-	m_Type = std::move(_other.m_Type);
+	m_Components = stdrep::move(_other.m_Components);
+	m_literalData = stdrep::move(_other.m_literalData);
+	m_Operation = stdrep::move(_other.m_Operation);
+	m_Type = stdrep::move(_other.m_Type);
 	return *this;
 }
 
