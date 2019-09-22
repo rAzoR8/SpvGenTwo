@@ -162,7 +162,7 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	writeInstructions(_pWriter, m_ExtInstrImport, m_maxId);
 	m_MemoryModel.write(_pWriter, m_maxId);
 
-	// write entry points
+	// write entry points declarations
 	for (Function& fun : *this)
 	{
 		if (fun.isEntryPoint())
@@ -182,22 +182,38 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 			}
 		}
 	}
-
-	//All execution - mode declarations, using OpExecutionMode or OpExecutionModeId.
 	
+	// TODO:
 	//7. These debug instructions, which must be grouped in the following order :
 	//	a. all OpString, OpSourceExtension, OpSource, and OpSourceContinued, without forward references.
 	//	b. all OpNameand all OpMemberName
 	//	c.all OpModuleProcessed instructions
 
+	// TODO:
 	// all decoration instructions (OpDecorate, OpMemberDecorate, OpGroupDecorate, OpGroupMemberDecorate, and OpDecorationGroup).
 
-	//  All function declarations (function without body)
+	// write types and constants
+	writeInstructions(_pWriter, m_TypesAndConstants, m_maxId);
+	
+	// TODO:
+	// all global variable declarations(all OpVariable instructions whose Storage Class is notFunction)
 
-	// write functions
+	//  All function declarations (function without body)
 	for (Function& fun : *this)
 	{
-		fun.write(_pWriter, m_maxId);
+		if (fun.empty())
+		{
+			fun.write(_pWriter, m_maxId);		
+		}
+	}
+
+	// write functions with bodies
+	for (Function& fun : *this)
+	{
+		if (fun.empty() == false) 
+		{
+			fun.write(_pWriter, m_maxId);		
+		}
 	}
 
 	_pWriter->putAt(m_maxId + 1u, boundsPos);

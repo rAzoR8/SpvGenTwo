@@ -2,6 +2,7 @@
 #include "cli.h"
 #include <assert.h>
 #include <stdio.h>
+#include <cstdlib>
 
 using namespace spvgentwo;
 
@@ -50,9 +51,13 @@ int main(int argc, char* argv[])
 
 	func.promoteToEntryPoint(spv::ExecutionModel::Vertex, "main");
 
-	BinaryFileWriter writer("test.spv");
+	{
+		BinaryFileWriter writer("test.spv");
+		module.write(&writer);
+	}
 
-	module.write(&writer);
+	system("spirv-dis test.spv");
+	system("spirv-val test.spv");
 
 	return 0;
 }
