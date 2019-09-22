@@ -8,6 +8,7 @@ namespace spvgentwo
 {
 	// forward delcs
 	class Type;
+	class Function;
 
 	class Instruction : public List<Operand>
 	{
@@ -74,6 +75,12 @@ namespace spvgentwo
 		void opReturnValue(Instruction* _pValue);
 
 		void opFunctionEnd();
+
+		template <class ... ArgInstr>
+		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ... _args);
+
+		template <class ... ArgInstr>
+		Instruction* call(Function* _pFunction, ArgInstr ... _args);
 
 		//  _pFunction is result of opFunction
 		template <class ... Instr>
@@ -152,6 +159,18 @@ namespace spvgentwo
 	inline void Instruction::appendLiterals(Args ..._args)
 	{
 		appendLiteralsToContainer(*this, _args...);
+	}
+
+	template<class ...ArgInstr>
+	inline Instruction* Instruction::opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ..._args)
+	{
+		return makeOp(spv::Op::OpFunctionCall, _pResultType, InvalidId, _pFunction, _args...);
+	}
+
+	template<class ...ArgInstr>
+	inline Instruction* Instruction::call(Function* _pFunction, ArgInstr ..._args)
+	{
+		return opFunctionCall(_pFunction->getReturnType(), _pFunction->getFunction(), _args...);
 	}
 
 	template<class ...Instr>

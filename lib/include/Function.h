@@ -21,6 +21,9 @@ namespace spvgentwo
 		// OpEntryPoint
 		Instruction* getEntryPoint() { return &m_EntryPoint; }
 
+		// only valid after finalization
+		Instruction* getReturnType();
+
 		BasicBlock& addBasicBlock() { return emplace_back(this); }
 
 		Module* getModule() { return m_pModule; }

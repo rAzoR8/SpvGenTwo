@@ -72,22 +72,35 @@ int main(int argc, char* argv[])
 	module.addExtensionInstructionImport("GLSL.std.450");
 	module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
 
-	Function& func = module.addFunction();
-	BasicBlock& bb = func.addBasicBlock();
+	Function& funcAdd = module.addFunction();
+	{
+		BasicBlock& bb = funcAdd.addBasicBlock();
 
-	auto c1 = module.newConstant();
-	auto c2 = module.newConstant();
+		Instruction* type = module.type<int>();
+		Instruction* x = funcAdd.addParameter(type);
+		Instruction* y = funcAdd.addParameter(type);
 
-	auto const1 = module.addConstant(c1.make(1));
-	auto const2 = module.addConstant(c2.make(2));
+		Instruction* z = bb->opIAdd(module.type<int>(), x, y);
+		bb.returnValue(z);
 
-	Instruction* instr = bb->opIAdd(const1->getType(), const1, const2);
-	bb.returnValue(/*instr*/);
+		funcAdd.finalize(type, spv::FunctionControlMask::Const);
+	}
 
-	// void fun();	
-	func.finalize(module.type<void>(), spv::FunctionControlMask::Const);
+	Function& entry = module.addFunction();
 
-	func.promoteToEntryPoint(spv::ExecutionModel::Vertex, "main");
+	{
+		BasicBlock& bb = entry.addBasicBlock();
+		Instruction* c1 = module.constant(1);
+		Instruction* c2 = module.constant(2);
+
+		bb->call(&funcAdd, c1, c2);
+		bb.returnValue();
+
+		// void fun();	
+		entry.finalize(module.type<void>(), spv::FunctionControlMask::Const);
+	}
+
+	entry.promoteToEntryPoint(spv::ExecutionModel::Vertex, "main");
 
 	{
 		BinaryFileWriter writer("test.spv");

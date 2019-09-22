@@ -81,7 +81,7 @@ namespace spvgentwo
 	inline Instruction* Module::constant(const T& _value, const bool _spec)
 	{
 		Constant dummy(m_pAllocator);
-		return addConstant(dummy.make<T>(), _spec);
+		return addConstant(dummy.make<T>(_value, _spec));
 	}
 
 	template<class ...TypeInstr>

@@ -23,6 +23,19 @@ spvgentwo::Function::~Function()
 {
 }
 
+spvgentwo::Instruction* spvgentwo::Function::getReturnType()
+{
+	if (m_pFunctionType != nullptr)
+	{
+		auto it = ++m_pFunctionType->begin();
+		if (it != nullptr)
+		{
+			return it->getInstruction();
+		}
+	}
+	return nullptr;
+}
+
 void spvgentwo::Function::write(IWriter* _pWriter, spv::Id& _resultId)
 {
 	m_Function.write(_pWriter, _resultId);
