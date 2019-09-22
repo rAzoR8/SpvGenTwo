@@ -53,6 +53,8 @@ namespace spvgentwo
 		Value* get(const Hash64 _hash);
 		Value* get(const Key& _key); // TODO: const variants
 
+		Key* findKey(const Value& _value);
+
 		const unsigned int count(const Hash64 _hash) const;
 
 		const Bucket& getBucket(const unsigned int _index) const { return m_pBuckets[_index]; }
@@ -124,6 +126,26 @@ namespace spvgentwo
 	inline Value* HashMap<Key, Value>::get(const Key& _key) 
 	{
 		return get(hash(_key));
+	}
+
+	template<class Key, class Value>
+	inline Key* HashMap<Key, Value>::findKey(const Value& _value)
+	{
+		for (auto i = 0u; i < m_Buckets; ++i)
+		{
+			for (Bucket& b : m_pBuckets[i])
+			{
+				for (Node& n : b)
+				{
+					if (n.kv.value == _value)
+					{
+						return &n.kv.key;
+					}
+				}
+			}
+		}
+
+		return nullptr;
 	}
 
 	template<class Key, class Value>
