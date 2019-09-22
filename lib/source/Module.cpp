@@ -143,6 +143,20 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 
 	return pInstr;
 }
+
+spvgentwo::Instruction* spvgentwo::Module::compositeType(const spv::Op _Type, const List<Instruction*>& _subTypes)
+{
+	// TODO: feed into TypeBuilder (use reverse Instruction* -> Type HashMap?)
+	Instruction* pInstr = m_TypesAndConstants.emplace_back(m_pAllocator).makeOp(_Type, InvalidId);
+	
+	for (Instruction* pSubType : _subTypes)
+	{
+		pInstr->addOperand(pSubType);
+	}
+
+	return pInstr;
+}
+
 void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel)
 {
 	m_MemoryModel.opMemoryModel(_addressModel, _memoryModel);

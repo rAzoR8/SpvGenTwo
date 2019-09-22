@@ -5,7 +5,6 @@ spvgentwo::Function::Function(IAllocator* _pAllocator) :
 	m_pModule(nullptr), List(_pAllocator),
 	m_Function(_pAllocator),
 	m_Parameters(_pAllocator),
-	m_Type(_pAllocator),
 	m_EntryPoint(_pAllocator),
 	m_ExecutionModes(_pAllocator)
 {
@@ -15,7 +14,6 @@ spvgentwo::Function::Function(Module* _pModule) :
 	m_pModule(_pModule), List(_pModule->getAllocator()),
 	m_Function(_pModule->getAllocator()),
 	m_Parameters(_pModule->getAllocator()),
-	m_Type(_pModule->getAllocator()),
 	m_EntryPoint(_pModule->getAllocator()),
 	m_ExecutionModes(_pModule->getAllocator())
 {
@@ -39,33 +37,27 @@ void spvgentwo::Function::write(IWriter* _pWriter, spv::Id& _resultId)
 	end.write(_pWriter, _resultId);
 }
 
-spvgentwo::Type& spvgentwo::Function::createSignature()
+spvgentwo::Instruction* spvgentwo::Function::addParameter(Instruction* _pType)
 {
-	return m_Type.Function();
+	return m_Parameters.emplace_back(m_pAllocator).opFunctionParameter(_pType);;
 }
 
-bool spvgentwo::Function::finalize(const Flag<spv::FunctionControlMask> _control)
+bool spvgentwo::Function::finalize(Instruction* _pReturnType, const Flag<spv::FunctionControlMask> _control)
 {
 	if (m_pModule == nullptr || m_pFunctionType != nullptr)
 	{
 		return false;
 	}
 
-	m_Type.Function();
+	// function signature type
+	m_pFunctionType = m_pModule->compositeType(spv::Op::OpTypeFunction, _pReturnType);
 
-	// first type is the return type
-	Instruction* pResultType = m_pModule->addType(m_Type.front());
-
-	// function parameters
-	for (auto it = ++m_Type.begin(), end = m_Type.end(); it != end; ++it) 
+	for (Instruction& param : m_Parameters)
 	{
-		m_Parameters.emplace_back(m_pAllocator).opFunctionParameter(m_pModule->addType(*it));
+		m_pFunctionType->addOperand(param.getType());
 	}
 
-	// function signature type
-	m_pFunctionType = m_pModule->addType(m_Type);
-
-	m_Function.opFunction(_control, pResultType, m_pFunctionType);
+	m_Function.opFunction(_control, _pReturnType, m_pFunctionType);
 
 	return true;
 }

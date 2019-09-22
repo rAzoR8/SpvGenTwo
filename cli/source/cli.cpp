@@ -84,9 +84,8 @@ int main(int argc, char* argv[])
 	Instruction* instr = bb->opIAdd(const1->getType(), const1, const2);
 	bb.returnValue(/*instr*/);
 
-	// int fun(float, float);
-	func.createSignature().VoidM();// .FloatM().FloatM();
-	func.finalize(spv::FunctionControlMask::Const);
+	// void fun();	
+	func.finalize(module.type<void>(), spv::FunctionControlMask::Const);
 
 	func.promoteToEntryPoint(spv::ExecutionModel::Vertex, "main");
 

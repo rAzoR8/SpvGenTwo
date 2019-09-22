@@ -28,19 +28,12 @@ namespace spvgentwo
 
 		void write(IWriter* _pWriter, spv::Id& _resultId);
 
-		// calls finalize internally (all-in-one function)
-		template <class ... Types>
-		void finalizeSignature(const Flag<spv::FunctionControlMask> _control, const Type& _returnType, Types&& ... _args);
+		// return OpFunctionParameter
+		Instruction* addParameter(Instruction* _pType);
 
 		const List<Instruction>& getParameters() const { return m_Parameters; }
 
-		// returns the OpTypeFunction, finalize needs to be called
-		Type& createSignature();
-
-		bool finalize(const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone);
-
-		template <class ... Types>
-		void addParameters(const Type& _type, const Types& ... _args);
+		bool finalize(Instruction* _pReturnType, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone);
 
 		void promoteToEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName);
 		bool isEntryPoint() const { return m_ExecutionModel != spv::ExecutionModel::Max && m_pEntryPointName != nullptr; }
@@ -60,7 +53,6 @@ namespace spvgentwo
 
 		Instruction m_Function; // OpFunction
 		Instruction* m_pFunctionType = nullptr;
-		Type m_Type; // OpFunctionType
 
 		List<Instruction> m_Parameters; // OpFunctionParameters
 
@@ -70,25 +62,6 @@ namespace spvgentwo
 		spv::ExecutionModel m_ExecutionModel = spv::ExecutionModel::Max;
 		const char* m_pEntryPointName = nullptr;
 	};
-
-	template<class ...Types>
-	inline void Function::finalizeSignature(const Flag<spv::FunctionControlMask> _control, const Type& _returnType, Types&& ... _args)
-	{
-		addParameters(_returnType, _args...);
-
-		finalize(_control);
-	}
-
-	template<class ...Types>
-	inline void Function::addParameters(const Type& _type, const Types& ..._args)
-	{
-		m_Type.getSubTypes().emplace_back(_type);
-
-		if constexpr (sizeof...(_args) > 0)
-		{
-			addParameters(_args...);
-		}
-	}
 
 	template<class ...Args>
 	inline Instruction* Function::addExecutionMode(const spv::ExecutionMode _mode, Args ..._args)

@@ -23,8 +23,20 @@ namespace spvgentwo
 		void addExtension(const char* _pExtName);
 		Instruction* addExtensionInstructionImport(const char* _pExtName);
 
-		Instruction* addConstant(const Constant& _const);
 		Instruction* addType(const Type& _type);
+
+		template <class T>
+		Instruction* type();
+
+		Instruction* addConstant(const Constant& _const);
+
+		template <class T>
+		Instruction* constant(const T& _value, const bool _spec = false);
+
+		Instruction* compositeType(const spv::Op _Type, const List<Instruction*>& _subTypes);
+
+		template <class ... TypeInstr>
+		Instruction* compositeType(const spv::Op _Type, TypeInstr ... _types);
 
 		void setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
 
@@ -40,6 +52,10 @@ namespace spvgentwo
 		Constant newConstant();
 
 	private:
+		template <class ... TypeInstr>
+		Instruction* compositeType(Instruction* _pCompositeTye, Instruction* _pSubType, TypeInstr ... _types);
+
+	private:
 
 		// preamble
 		List<Instruction> m_Capabilities;
@@ -53,4 +69,44 @@ namespace spvgentwo
 
 		unsigned int m_maxId = 0u;
 	};
+
+	template<class T>
+	inline Instruction* Module::type()
+	{
+		Type dummy(m_pAllocator);
+		return addType(dummy.make<T>());
+	}
+
+	template<class T>
+	inline Instruction* Module::constant(const T& _value, const bool _spec)
+	{
+		Constant dummy(m_pAllocator);
+		return addConstant(dummy.make<T>(), _spec);
+	}
+
+	template<class ...TypeInstr>
+	inline Instruction* Module::compositeType(const spv::Op _Type, TypeInstr ..._types)
+	{
+		Instruction* _pType = m_TypesAndConstants.emplace_back(m_pAllocator).makeOp(_Type, InvalidId);
+
+		if constexpr (sizeof...(_types) > 0u)
+		{
+			return compositeType(_pType, _types...);
+		}
+	
+		return _pType;
+	}
+
+	template<class ...TypeInstr>
+	inline Instruction* Module::compositeType(Instruction* _pCompositeType, Instruction* _pSubType, TypeInstr ..._types)
+	{
+		_pCompositeType->addOperand(_pSubType);
+
+		if constexpr (sizeof...(_types) > 0u)
+		{
+			compositeType(_pCompositeType, _types...);
+		}
+
+		return _pCompositeType;
+	}
 } // !spvgentwo

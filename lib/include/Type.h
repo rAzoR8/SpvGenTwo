@@ -88,6 +88,9 @@ namespace spvgentwo
 		template <class T>
 		Type& primitive() { static_assert(false, "incompatible type"); return *this; }
 
+		template <class T>
+		Type& make();
+
 	private:
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type
 		Type* m_pParent = nullptr;
@@ -125,6 +128,16 @@ namespace spvgentwo
 			return operator()(_type, h);
 		}
 	};
+
+	template<class T>
+	inline Type& Type::make()
+	{
+		// TODO: check for composite types
+		return primitive<T>();
+	}
+
+	template <>
+	inline Type& Type::primitive<void>() { return Void(); }
 
 	template <>
 	inline Type& Type::primitive<bool>() { return Bool(); }
