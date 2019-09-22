@@ -19,12 +19,6 @@ namespace spvgentwo
 	
 	struct Operand
 	{
-		union {
-			BasicBlock* branchTarget;
-			Instruction* instruction; // intermediate or type
-			literal_t value;
-			spv::Id resultId;
-		};
 		enum class Type : unsigned int
 		{
 			Instruction = 0,
@@ -32,6 +26,13 @@ namespace spvgentwo
 			Literal,
 			ResultId
 		} type;
+
+		union {
+			BasicBlock* branchTarget;
+			Instruction* instruction; // intermediate or type
+			literal_t value;
+			spv::Id resultId;
+		};
 
 		bool isBranchTarget() const { return type == Type::BranchTarget; }
 		bool isInstruction() const { return type == Type::Instruction; }

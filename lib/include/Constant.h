@@ -21,19 +21,8 @@ namespace spvgentwo
 		const List<unsigned int>& getData() const { return m_literalData; }
 		const List<Constant>& getComponents() const { return m_Components; }
 
-		Constant& make(const bool _value, const bool _spec = false);
-
-		Constant& make(const short _value, const bool _spec = false);
-		Constant& make(const unsigned short _value, const bool _spec = false);
-
-		Constant& make(const int _value, const bool _spec = false);
-		Constant& make(const unsigned int _value, const bool _spec = false);
-
-		Constant& make(const long long _value, const bool _spec = false);
-		Constant& make(const unsigned long long _value, const bool _spec = false);
-
-		Constant& make(const float _value, const bool _spec = false);
-		Constant& make(const double _value, const bool _spec = false);
+		template <class T>
+		Constant& make(const T& _value, const bool _spec = false);
 
 	private:
 		//Constant* m_pParent = nullptr;
@@ -43,6 +32,29 @@ namespace spvgentwo
 		List<unsigned int> m_literalData;
 		List<Constant> m_Components;
 	};
+
+	template <class T>
+	Constant& Constant::make(const T& _value, const bool _spec)
+	{
+		// TODO: handle OpConstantNull, OpConstantComposite (vector, matrix), OpConstantSampler, OpSpecConstantOp
+
+		if constexpr (traits::is_primitive_type_v<T>)
+		{
+			m_Type.primitive<T>(); // TODO: implement generic make<T> for Type
+			appendLiteralsToContainer(m_literalData, _value);
+		}
+
+		if constexpr (stdrep::is_same_v<T, bool>)
+		{
+			m_Operation = _value ? (_spec ? spv::Op::OpSpecConstantTrue : spv::Op::OpConstantTrue) : (_spec ? spv::Op::OpSpecConstantFalse : spv::Op::OpConstantFalse);
+		}
+		else
+		{
+			m_Operation = _spec ? spv::Op::OpSpecConstant : spv::Op::OpConstant;
+		}
+
+		return *this;
+	}
 
 	template <>
 	struct Hasher<Constant>

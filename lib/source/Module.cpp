@@ -34,23 +34,26 @@ void spvgentwo::Module::addCapability(const spv::Capability _capability)
 	// emplace free instruction (without parent BB)
 	m_Capabilities.emplace_back(m_pAllocator).opCapability(_capability);
 }
+
 void spvgentwo::Module::addExtension(const char* _pExtName)
 {
 	m_Extensions.emplace_back(m_pAllocator).opExtension(_pExtName);
 }
+
 spvgentwo::Instruction* spvgentwo::Module::addExtensionInstructionImport(const char* _pExtName)
 {
 	return m_ExtInstrImport.emplace_back(m_pAllocator).opExtInstrImport(_pExtName);
 }
+
 spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 {
-	Instruction* pType = addType(_const.getType());
-
 	auto& node = m_ConstantBuilder.emplaceUnique(_const, nullptr);
 	if (node.kv.value != nullptr)
 	{
 		return node.kv.value;
 	}
+
+	Instruction* pType = addType(_const.getType());
 
 	Instruction* pInstr = node.kv.value = &m_TypesAndConstants.emplace_back(m_pAllocator);
 
@@ -85,7 +88,6 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 		// TODO: remaining complex types
 	case spv::Op::OpConstantSampler:
 	case spv::Op::OpSpecConstantOp:
-
 	default:
 		break;
 	}

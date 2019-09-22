@@ -134,7 +134,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opLabel()
 
 spvgentwo::Instruction* spvgentwo::Instruction::opFunction(const Flag<spv::FunctionControlMask> _functionControl, Instruction* _pResultType, Instruction* _pFuncType)
 {
-	return makeOp(spv::Op::OpFunction, _pResultType, InvalidId, _functionControl.mask, _pFuncType);
+	return makeOp(spv::Op::OpFunction, _pResultType, InvalidId, literal_t{ _functionControl.mask }, _pFuncType);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opFunctionParameter(Instruction* _pType)
