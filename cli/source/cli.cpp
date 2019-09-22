@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
 	auto const1 = module.addConstant(c1.make(1));
 	auto const2 = module.addConstant(c2.make(2));
 
-	Instruction* instr = bb.addInstruction()->opIAdd(const1->getType(), const1, const2);
+	Instruction* instr = bb->opIAdd(const1->getType(), const1, const2);
 	bb.returnValue(/*instr*/);
 
 	// int fun(float, float);

@@ -29,6 +29,8 @@ namespace spvgentwo
 		// manual instruction add
 		Instruction* addInstruction() { return &emplace_back(this); }
 
+		Instruction* operator->() { return &emplace_back(this); }
+
 		// set return value of this block (used in function), returns opReturn/opReturnValue instruction
 		Instruction* returnValue(Instruction* _pValue = nullptr);
 
