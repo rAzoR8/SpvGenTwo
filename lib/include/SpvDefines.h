@@ -5,6 +5,8 @@
 
 namespace spvgentwo
 {
+	constexpr unsigned int makeGeneratorId(unsigned short _gen, unsigned short _ver) { return _gen << 16 | _ver; }
+
 	constexpr bool isType(const spv::Op _type)
 	{		
 		if ((_type >= spv::Op::OpTypeVoid && _type <= spv::Op::OpTypeForwardPointer) || // basic types

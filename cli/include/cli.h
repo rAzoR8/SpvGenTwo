@@ -35,13 +35,25 @@ namespace spvgentwo
 			}
 		}
 
-		void put(unsigned int _word) final
+		long put(unsigned int _word) final
 		{
 			if (m_pFile != nullptr)
 			{
 				fwrite(&_word, sizeof(unsigned int), 1u, m_pFile);
+				return ftell(m_pFile);
+			}
+
+			return 0;
+		}
+
+		void putAt(unsigned int _word, const long _offset) final
+		{
+			if (m_pFile != nullptr && fseek(m_pFile, _offset, SEEK_SET) == 0)
+			{
+				fwrite(&_word, sizeof(unsigned int), 1u, m_pFile);
 			}
 		}
+
 	private:
 		FILE* m_pFile = nullptr;
 	};

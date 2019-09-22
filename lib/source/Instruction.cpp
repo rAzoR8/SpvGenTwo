@@ -39,23 +39,45 @@ spv::Id spvgentwo::Instruction::getResultId() const
 	return it->getResultId();
 }
 
-void spvgentwo::Instruction::setResultId(const spv::Id _resultId)
+spv::Id spvgentwo::Instruction::resolveId(spv::Id _resultId)
 {
+	for (Operand& op : *this)
+	{
+		switch (op.type)
+		{
+		case Operand::Type::Instruction:
+			_resultId = op.instruction->resolveId(_resultId);
+			break;
+		case Operand::Type::BranchTarget:
+			_resultId = op.branchTarget->front().resolveId(_resultId);
+		default:
+			break;
+		}
+	}
+
 	bool resultId = false, resultType = false;
 	spv::HasResultAndType(m_Operation, &resultId, &resultType);
 
 	if (resultId == false || empty())
-		return;
+		return _resultId;
 
 	auto it = begin();
 	if (resultType && size() > 1u) // skip resultType operand 
 	{
 		++it;
 	}
-	it->resultId = _resultId;
+
+	if (it->resultId == InvalidId)
+	{
+		return (it->resultId = _resultId + 1);
+	}
+	else
+	{
+		return it->resultId;
+	}
 }
 
-const spvgentwo::Instruction* spvgentwo::Instruction::getType() const
+spvgentwo::Instruction* spvgentwo::Instruction::getType()
 {
 	if (hasResultType(m_Operation) && empty() == false)
 	{
@@ -69,22 +91,28 @@ bool spvgentwo::Instruction::isTypeOp() const
 	return isType(m_Operation);
 }
 
-void spvgentwo::Instruction::write(IWriter* _pWriter) const
+spv::Id spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id _resultId)
 {
+	_resultId = resolveId(_resultId);
+
 	_pWriter->put(getOpCode());
 	
 	for (const Operand& operand : *this)
 	{
 		operand.write(_pWriter);
 	}
+
+	return _resultId;
 }
 
-void spvgentwo::writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions)
+spv::Id spvgentwo::writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions, spv::Id _resultId)
 {
-	for (const Instruction& cap : _instructions)
+	for (Instruction& instr : _instructions)
 	{
-		cap.write(_pWriter);
+		_resultId = instr.write(_pWriter, _resultId);
 	}
+
+	return _resultId;
 }
 
 void spvgentwo::Instruction::opCapability(const spv::Capability _capability)
@@ -112,18 +140,18 @@ spvgentwo::Instruction* spvgentwo::Instruction::opLabel()
 	return makeOp(spv::Op::OpLabel, InvalidId);
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opFunction(const Flag<spv::FunctionControlMask> _functionControl, const Instruction* _pResultType, const Instruction* _pFuncType)
+spvgentwo::Instruction* spvgentwo::Instruction::opFunction(const Flag<spv::FunctionControlMask> _functionControl, Instruction* _pResultType, Instruction* _pFuncType)
 {
 	return makeOp(spv::Op::OpFunction, _pResultType, InvalidId, _functionControl.mask, _pFuncType);
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opFunctionParameter(const Instruction* _pType)
+spvgentwo::Instruction* spvgentwo::Instruction::opFunctionParameter(Instruction* _pType)
 {
 	return makeOp(spv::Op::OpFunctionParameter, _pType, InvalidId);
 }
 
 
-spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(const Instruction* _pResultType, const Instruction* _pLeft, const Instruction* _pRight)
+spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight)
 {
 	return makeOp(_pResultType, InvalidId, _pLeft, _pRight);
 }

@@ -29,7 +29,7 @@ namespace spvgentwo
 		// manual instruction add
 		Instruction* addInstruction() { return &emplace_back(this); }
 
-		void write(IWriter* _pWriter) const;
+		spv::Id write(IWriter* _pWriter, spv::Id _resultId);
 
 	private:
 		Function* m_pFunction = nullptr; // parent

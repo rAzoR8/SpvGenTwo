@@ -25,18 +25,18 @@ spvgentwo::Function::~Function()
 {
 }
 
-void spvgentwo::Function::write(IWriter* _pWriter) const
+spv::Id spvgentwo::Function::write(IWriter* _pWriter, spv::Id _resultId)
 {
-	m_Function.write(_pWriter);
-	writeInstructions(_pWriter, m_Parameters);
+	_resultId = m_Function.write(_pWriter, _resultId);
+	_resultId = writeInstructions(_pWriter, m_Parameters, _resultId);
 
-	for (const BasicBlock& bb : *this)
+	for (BasicBlock& bb : *this)
 	{
-		bb.write(_pWriter);
+		_resultId = bb.write(_pWriter, _resultId);
 	}
 
 	Instruction end(m_pAllocator, spv::Op::OpFunctionEnd);
-	end.write(_pWriter);
+	return (_resultId = end.write(_pWriter, _resultId));
 }
 
 spvgentwo::Type& spvgentwo::Function::createSignature()
@@ -54,7 +54,7 @@ bool spvgentwo::Function::finalize(const Flag<spv::FunctionControlMask> _control
 	m_Type.Function();
 
 	// first type is the return type
-	const Instruction* pResultType = m_pModule->addType(m_Type.front());
+	Instruction* pResultType = m_pModule->addType(m_Type.front());
 
 	// function parameters
 	for (auto it = ++m_Type.begin(), end = m_Type.end(); it != end; ++it) 
@@ -78,19 +78,19 @@ void spvgentwo::Function::promoteToEntryPoint(const spv::ExecutionModel _model, 
 	m_EntryPoint.reset();
 	m_EntryPoint.opEntryPoint(_model, &m_Function, m_pEntryPointName);
 
-	for(const spvgentwo::Instruction* pVar : getGlobalVariableInterface())
+	for(spvgentwo::Instruction* pVar : getGlobalVariableInterface())
 	{
 		m_EntryPoint.addOperand(pVar);
 	}
 }
 
-spvgentwo::List<const spvgentwo::Instruction*> spvgentwo::Function::getGlobalVariableInterface() const
+spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::getGlobalVariableInterface() const
 {
-	List<const Instruction*> vars(m_pAllocator);
+	List<Instruction*> vars(m_pAllocator);
 
-	for(const BasicBlock& bb : *this)
+	for(BasicBlock& bb : *this)
 	{
-		for(const Instruction& instr : bb)
+		for(Instruction& instr : bb)
 		{
 			// find valid OpVariable (resultType, resultId, Storage Class)
 			if(instr.getOperation() == spv::Op::OpVariable && instr.size() >= 3)

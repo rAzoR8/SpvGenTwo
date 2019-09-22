@@ -70,7 +70,7 @@ namespace spvgentwo
 		Entry<T>* last() { return m_pLast; }
 		const Entry<T>* last() const { return m_pLast; }
 
-		bool empty() const { return m_pBegin != nullptr; }
+		bool empty() const { return m_pBegin == nullptr; }
 
 		size_t size() const { return m_Elements; }
 

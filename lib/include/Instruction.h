@@ -31,8 +31,7 @@ namespace spvgentwo
 		Operand& addOperand(Args&& ... _operand) { return emplace_back(stdrep::forward<Args>(_operand)...); }
 
 		spv::Id getResultId() const;
-		void setResultId(const spv::Id _resultId); // todo: make private
-		const Instruction* getType() const;
+		Instruction* getType();
 	
 		bool isTypeOp() const;
 
@@ -42,7 +41,7 @@ namespace spvgentwo
 		unsigned int getWordCount() const;
 		unsigned int getOpCode() const;
 
-		void write(IWriter* _pWriter) const;
+		spv::Id write(IWriter* _pWriter, const spv::Id _resultId);
 
 		// creates literals
 		template <class T, class ...Args>
@@ -63,17 +62,20 @@ namespace spvgentwo
 
 		Instruction* opLabel();
 
-		Instruction* opFunction(const Flag<spv::FunctionControlMask> _functionControl, const Instruction* _pResultType, const Instruction* _pFuncType);
+		Instruction* opFunction(const Flag<spv::FunctionControlMask> _functionControl, Instruction* _pResultType, Instruction* _pFuncType);
 
-		Instruction* opFunctionParameter(const Instruction* _pType);
+		Instruction* opFunctionParameter(Instruction* _pType);
 
 		void opFunctionEnd();
 
 		//  _pFunction is result of opFunction
 		template <class ... Instr>
-		void opEntryPoint(const spv::ExecutionModel _model, const Instruction* _pFunction, const char* _pName, Instr ... _instr);
+		void opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr ... _instr);
 
-		Instruction* opIAdd(const Instruction* _pResultType, const Instruction* _pLeft, const Instruction* _pRight);
+		Instruction* opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
+
+	private:
+		spv::Id resolveId(spv::Id _resultId);
 
 	private:
 		spv::Op m_Operation = spv::Op::OpNop;
@@ -81,7 +83,7 @@ namespace spvgentwo
 	};
 
 	// free helper function
-	void writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions);
+	spv::Id writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions, spv::Id _resultId);
 
 	template<class ...Args>
 	inline Instruction::Instruction(IAllocator* _pAllocator, const spv::Op _op, Args&& ..._args) :
@@ -104,11 +106,7 @@ namespace spvgentwo
 		{
 			m_Operation = _first;
 		} 
-		else if constexpr (is_same_base_type_v<T, Instruction*>)
-		{
-			addOperand(_first);
-		}
-		else if constexpr(is_same_base_type_v<T, BasicBlock*>)
+		else if constexpr (is_same_base_type_v<T, Instruction*> || is_same_base_type_v<T, BasicBlock*> || is_same_base_type_v<T, spv::Id> || is_same_base_type_v<T, literal_t>)
 		{
 			addOperand(_first);
 		}
@@ -136,8 +134,8 @@ namespace spvgentwo
 	}
 
 	template<class ...Instr>
-	inline void Instruction::opEntryPoint(const spv::ExecutionModel _model, const Instruction* _pFunction, const char* _pName, Instr ..._instr)
+	inline void Instruction::opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr ..._instr)
 	{
-		makeOp(_model, _pFunction, _pName, _instr...);
+		makeOp(spv::Op::OpEntryPoint, _model, _pFunction, _pName, _instr...);
 	}
 } // !spvgentwo

@@ -42,9 +42,9 @@ spvgentwo::Instruction* spvgentwo::Module::addExtensionInstructionImport(const c
 {
 	return m_ExtInstrImport.emplace_back(m_pAllocator).opExtInstrImport(_pExtName);
 }
-const spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
+spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 {
-	const Instruction* pType = addType(_const.getType());
+	Instruction* pType = addType(_const.getType());
 
 	auto& node = m_ConstantBuilder.emplaceUnique(_const, nullptr);
 	if (node.kv.value != nullptr)
@@ -93,7 +93,7 @@ const spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _co
 	return pInstr;
 }
 
-const spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
+spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 {
 	auto& node = m_TypeBuilder.emplaceUnique(_type, nullptr);
 	if (node.kv.value != nullptr)
@@ -145,7 +145,7 @@ void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel,
 	m_MemoryModel.opMemoryModel(_addressModel, _memoryModel);
 }
 
-void spvgentwo::Module::write(IWriter* _pWriter) const
+void spvgentwo::Module::write(IWriter* _pWriter)
 {
 	// TODO: resolve step (maybe outside of this function)
 
@@ -153,32 +153,32 @@ void spvgentwo::Module::write(IWriter* _pWriter) const
 	_pWriter->put(spv::MagicNumber);
 	_pWriter->put(spv::Version);
 	_pWriter->put(GeneratorId);
-	_pWriter->put(m_maxId + 1u); // bounds
+	const long boundsPos = _pWriter->put(0u); // bounds dummy
 	_pWriter->put(0u); // schema
 
 	// write preamble
-	writeInstructions(_pWriter, m_Capabilities);
-	writeInstructions(_pWriter, m_Extensions);
-	writeInstructions(_pWriter, m_ExtInstrImport);
-	m_MemoryModel.write(_pWriter);
+	m_maxId = writeInstructions(_pWriter, m_Capabilities, m_maxId);
+	m_maxId = writeInstructions(_pWriter, m_Extensions, m_maxId);
+	m_maxId = writeInstructions(_pWriter, m_ExtInstrImport, m_maxId);
+	m_maxId = m_MemoryModel.write(_pWriter, m_maxId);
 
 	// write entry points
-	for (const Function& fun : *this)
+	for (Function& fun : *this)
 	{
 		if (fun.isEntryPoint())
 		{
-			fun.getEntryPoint()->write(_pWriter);
+			m_maxId = fun.getEntryPoint()->write(_pWriter, m_maxId);
 		}
 	}
 
 	// write entrypoint executions modes
-	for (const Function& fun : *this)
+	for (Function& fun : *this)
 	{
 		if (fun.isEntryPoint())
 		{
-			for(const Instruction& mode : fun.getExecutionModes())
+			for(Instruction& mode : fun.getExecutionModes())
 			{
-				mode.write(_pWriter);
+				m_maxId = mode.write(_pWriter, m_maxId);
 			}
 		}
 	}
@@ -195,8 +195,10 @@ void spvgentwo::Module::write(IWriter* _pWriter) const
 	//  All function declarations (function without body)
 
 	// write functions
-	for (const Function& fun : *this)
+	for (Function& fun : *this)
 	{
-		fun.write(_pWriter);
+		m_maxId = fun.write(_pWriter, m_maxId);
 	}
+
+	_pWriter->putAt(m_maxId + 1u, boundsPos);
 }

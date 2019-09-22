@@ -16,17 +16,17 @@ namespace spvgentwo
 		~Function();
 
 		// OpFunction 
-		const Instruction* getFunction() const { return &m_Function; }
+		Instruction* getFunction() { return &m_Function; }
 
 		// OpEntryPoint
-		const Instruction* getEntryPoint() const { return &m_EntryPoint; }
+		Instruction* getEntryPoint() { return &m_EntryPoint; }
 
 		BasicBlock& addBasicBlock() { return emplace_back(this); }
 
 		Module* getModule() { return m_pModule; }
 		const Module* getModule() const { return m_pModule; }
 
-		void write(IWriter* _pWriter) const;
+		spv::Id write(IWriter* _pWriter, spv::Id _resultId);
 
 		// calls finalize internally (all-in-one function)
 		template <class ... Types>
@@ -49,7 +49,7 @@ namespace spvgentwo
 		const char* getEntryPointName() const { return m_pEntryPointName; }
 
 		// get all the global OpVariables with StorageClass != Function used in this function
-		List<const Instruction*> getGlobalVariableInterface() const; // TODO: make private?
+		List<Instruction*> getGlobalVariableInterface() const; // TODO: make private?
 
 		template <class ... Args>
 		Instruction* addExecutionMode(const spv::ExecutionMode _mode, Args ... _args);
@@ -59,7 +59,7 @@ namespace spvgentwo
 		Module* m_pModule = nullptr; // parent
 
 		Instruction m_Function; // OpFunction
-		const Instruction* m_pFunctionType = nullptr;
+		Instruction* m_pFunctionType = nullptr;
 		Type m_Type; // OpFunctionType
 
 		List<Instruction> m_Parameters; // OpFunctionParameters

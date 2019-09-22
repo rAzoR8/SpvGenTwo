@@ -15,7 +15,7 @@ namespace spvgentwo
 		Module(IAllocator* _pAllocator);
 		~Module();
 
-		static constexpr unsigned int GeneratorId = 'fabi';
+		static constexpr unsigned int GeneratorId = makeGeneratorId('fa', 0);
 
 		Function& addFunction() { return emplace_back(this); }
 
@@ -23,14 +23,16 @@ namespace spvgentwo
 		void addExtension(const char* _pExtName);
 		Instruction* addExtensionInstructionImport(const char* _pExtName);
 
-		const Instruction* addConstant(const Constant& _const);
-		const Instruction* addType(const Type& _type);
+		Instruction* addConstant(const Constant& _const);
+		Instruction* addType(const Type& _type);
 
 		void setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
 
 		const List<Instruction>& getCapabilities() const { return m_Capabilities; }
 
-		void write(IWriter* _pWriter) const;
+		void resolveIds();
+
+		void write(IWriter* _pWriter);
 
 		// creates new empty type using this modules allocator
 		Type newType();
