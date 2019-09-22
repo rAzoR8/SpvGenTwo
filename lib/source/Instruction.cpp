@@ -39,17 +39,17 @@ spv::Id spvgentwo::Instruction::getResultId() const
 	return it->getResultId();
 }
 
-spv::Id spvgentwo::Instruction::resolveId(spv::Id _resultId)
+void spvgentwo::Instruction::resolveId(spv::Id& _resultId)
 {
 	for (Operand& op : *this)
 	{
 		switch (op.type)
 		{
 		case Operand::Type::Instruction:
-			_resultId = op.instruction->resolveId(_resultId);
+			op.instruction->resolveId(_resultId);
 			break;
 		case Operand::Type::BranchTarget:
-			_resultId = op.branchTarget->front().resolveId(_resultId);
+			op.branchTarget->front().resolveId(_resultId);
 		default:
 			break;
 		}
@@ -58,22 +58,18 @@ spv::Id spvgentwo::Instruction::resolveId(spv::Id _resultId)
 	bool resultId = false, resultType = false;
 	spv::HasResultAndType(m_Operation, &resultId, &resultType);
 
-	if (resultId == false || empty())
-		return _resultId;
+	if (resultId == false /*|| empty()*/)
+		return;
 
 	auto it = begin();
-	if (resultType && size() > 1u) // skip resultType operand 
+	if (resultType /*&& size() > 1u*/) // skip resultType operand 
 	{
 		++it;
 	}
 
 	if (it->resultId == InvalidId)
 	{
-		return (it->resultId = _resultId + 1);
-	}
-	else
-	{
-		return it->resultId;
+		it->resultId = ++_resultId;
 	}
 }
 
@@ -91,9 +87,9 @@ bool spvgentwo::Instruction::isTypeOp() const
 	return isType(m_Operation);
 }
 
-spv::Id spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id _resultId)
+void spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id& _resultId)
 {
-	_resultId = resolveId(_resultId);
+	resolveId(_resultId);
 
 	_pWriter->put(getOpCode());
 	
@@ -101,18 +97,14 @@ spv::Id spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id _resultId)
 	{
 		operand.write(_pWriter);
 	}
-
-	return _resultId;
 }
 
-spv::Id spvgentwo::writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions, spv::Id _resultId)
+void spvgentwo::writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions, spv::Id& _resultId)
 {
 	for (Instruction& instr : _instructions)
 	{
-		_resultId = instr.write(_pWriter, _resultId);
+		instr.write(_pWriter, _resultId);
 	}
-
-	return _resultId;
 }
 
 void spvgentwo::Instruction::opCapability(const spv::Capability _capability)
@@ -153,7 +145,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFunctionParameter(Instruction*
 
 spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight)
 {
-	return makeOp(_pResultType, InvalidId, _pLeft, _pRight);
+	return makeOp(spv::Op::OpIAdd, _pResultType, InvalidId, _pLeft, _pRight);
 }
 
 void spvgentwo::Instruction::opFunctionEnd()

@@ -33,12 +33,10 @@ spvgentwo::BasicBlock::Iterator spvgentwo::BasicBlock::getTerminator()
 	return Iterator(m_pLast);
 }
 
-spv::Id spvgentwo::BasicBlock::write(IWriter* _pWriter, spv::Id _resultId)
+void spvgentwo::BasicBlock::write(IWriter* _pWriter, spv::Id& _resultId)
 {
 	for (Instruction& instr : *this)
 	{
-		_resultId = instr.write(_pWriter, _resultId);
+		instr.write(_pWriter, _resultId);
 	}
-
-	return _resultId;
 }

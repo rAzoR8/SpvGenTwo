@@ -41,11 +41,10 @@ namespace spvgentwo
 		unsigned int getWordCount() const;
 		unsigned int getOpCode() const;
 
-		spv::Id write(IWriter* _pWriter, const spv::Id _resultId);
+		void write(IWriter* _pWriter, spv::Id& _resultId);
 
-		// creates literals
-		template <class T, class ...Args>
-		Instruction* makeOp(T first, Args ... _args);
+		template <class ...Args>
+		Instruction* makeOp(const spv::Op _op, Args ... _args);
 
 		template <class ...Args>
 		void appendLiterals(Args ... _args);
@@ -75,7 +74,12 @@ namespace spvgentwo
 		Instruction* opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
 
 	private:
-		spv::Id resolveId(spv::Id _resultId);
+		void resolveId(spv::Id& _resultId);
+
+		// creates literals
+		template <class T, class ...Args>
+		void makeOpInternal(T first, Args ... _args);
+
 
 	private:
 		spv::Op m_Operation = spv::Op::OpNop;
@@ -83,7 +87,7 @@ namespace spvgentwo
 	};
 
 	// free helper function
-	spv::Id writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions, spv::Id _resultId);
+	void writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions, spv::Id& _resultId);
 
 	template<class ...Args>
 	inline Instruction::Instruction(IAllocator* _pAllocator, const spv::Op _op, Args&& ..._args) :
@@ -98,15 +102,24 @@ namespace spvgentwo
 	{
 		makeOp(_op, stdrep::forward<Args>(_args)...);
 	}
+
+	template<class ...Args>
+	inline Instruction* Instruction::makeOp(const spv::Op _op, Args ..._args)
+	{
+		m_Operation = _op;
+
+		if constexpr (sizeof...(_args) > 0u)
+		{
+			makeOpInternal(_args...);
+		}
+
+		return this;
+	}
 	
 	template<class T, class ...Args>
-	inline Instruction* Instruction::makeOp(T _first, Args ..._args)
+	inline void Instruction::makeOpInternal(T _first, Args ..._args)
 	{
-		if constexpr (is_same_base_type_v<T, spv::Op>)
-		{
-			m_Operation = _first;
-		} 
-		else if constexpr (is_same_base_type_v<T, Instruction*> || is_same_base_type_v<T, BasicBlock*> || is_same_base_type_v<T, spv::Id> || is_same_base_type_v<T, literal_t>)
+		if constexpr (is_same_base_type_v<T, Instruction*> || is_same_base_type_v<T, BasicBlock*> || is_same_base_type_v<T, spv::Id> || is_same_base_type_v<T, literal_t>)
 		{
 			addOperand(_first);
 		}
@@ -121,10 +134,8 @@ namespace spvgentwo
 
 		if constexpr (sizeof...(_args) > 0u)
 		{
-			makeOp(_args...);
+			makeOpInternal(_args...);
 		}
-
-		return this;
 	}
 
 	template<class ...Args>

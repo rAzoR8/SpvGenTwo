@@ -26,7 +26,7 @@ namespace spvgentwo
 		Module* getModule() { return m_pModule; }
 		const Module* getModule() const { return m_pModule; }
 
-		spv::Id write(IWriter* _pWriter, spv::Id _resultId);
+		void write(IWriter* _pWriter, spv::Id& _resultId);
 
 		// calls finalize internally (all-in-one function)
 		template <class ... Types>

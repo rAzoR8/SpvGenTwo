@@ -157,17 +157,17 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	_pWriter->put(0u); // schema
 
 	// write preamble
-	m_maxId = writeInstructions(_pWriter, m_Capabilities, m_maxId);
-	m_maxId = writeInstructions(_pWriter, m_Extensions, m_maxId);
-	m_maxId = writeInstructions(_pWriter, m_ExtInstrImport, m_maxId);
-	m_maxId = m_MemoryModel.write(_pWriter, m_maxId);
+	writeInstructions(_pWriter, m_Capabilities, m_maxId);
+	writeInstructions(_pWriter, m_Extensions, m_maxId);
+	writeInstructions(_pWriter, m_ExtInstrImport, m_maxId);
+	m_MemoryModel.write(_pWriter, m_maxId);
 
 	// write entry points
 	for (Function& fun : *this)
 	{
 		if (fun.isEntryPoint())
 		{
-			m_maxId = fun.getEntryPoint()->write(_pWriter, m_maxId);
+			fun.getEntryPoint()->write(_pWriter, m_maxId);
 		}
 	}
 
@@ -178,7 +178,7 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 		{
 			for(Instruction& mode : fun.getExecutionModes())
 			{
-				m_maxId = mode.write(_pWriter, m_maxId);
+				mode.write(_pWriter, m_maxId);
 			}
 		}
 	}
@@ -197,7 +197,7 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	// write functions
 	for (Function& fun : *this)
 	{
-		m_maxId = fun.write(_pWriter, m_maxId);
+		fun.write(_pWriter, m_maxId);
 	}
 
 	_pWriter->putAt(m_maxId + 1u, boundsPos);

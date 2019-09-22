@@ -25,18 +25,18 @@ spvgentwo::Function::~Function()
 {
 }
 
-spv::Id spvgentwo::Function::write(IWriter* _pWriter, spv::Id _resultId)
+void spvgentwo::Function::write(IWriter* _pWriter, spv::Id& _resultId)
 {
-	_resultId = m_Function.write(_pWriter, _resultId);
-	_resultId = writeInstructions(_pWriter, m_Parameters, _resultId);
+	m_Function.write(_pWriter, _resultId);
+	writeInstructions(_pWriter, m_Parameters, _resultId);
 
 	for (BasicBlock& bb : *this)
 	{
-		_resultId = bb.write(_pWriter, _resultId);
+		bb.write(_pWriter, _resultId);
 	}
 
 	Instruction end(m_pAllocator, spv::Op::OpFunctionEnd);
-	return (_resultId = end.write(_pWriter, _resultId));
+	end.write(_pWriter, _resultId);
 }
 
 spvgentwo::Type& spvgentwo::Function::createSignature()
