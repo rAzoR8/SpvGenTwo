@@ -29,6 +29,12 @@ namespace spvgentwo
 		// manual instruction add
 		Instruction* addInstruction() { return &emplace_back(this); }
 
+		// set return value of this block (used in function), returns opReturn/opReturnValue instruction
+		Instruction* returnValue(Instruction* _pValue = nullptr);
+
+		//Instruction* getReturnOp() { return &m_Return; }
+		//Instruction* getReturnValue();
+
 		void write(IWriter* _pWriter, spv::Id& _resultId);
 
 	private:

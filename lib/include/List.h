@@ -67,8 +67,11 @@ namespace spvgentwo
 		T& back() { return m_pLast->inner(); }
 		const T& back() const { return m_pLast->inner(); }
 
-		Entry<T>* last() { return m_pLast; }
-		const Entry<T>* last() const { return m_pLast; }
+		Entry<T>* lastEntry() { return m_pLast; }
+		const Entry<T>* lastEntry() const { return m_pLast; }
+
+		Iterator last() { return Iterator(m_pLast); }
+		const Iterator last() const { return Iterator(m_pLast); }
 
 		bool empty() const { return m_pBegin == nullptr; }
 
@@ -82,10 +85,10 @@ namespace spvgentwo
 		bool contains(const T& _val) const { return find(_val) != nullptr; }
 
 	protected:
-		IAllocator* m_pAllocator = nullptr;
 		Entry<T>* m_pBegin = nullptr;
 		Entry<T>* m_pLast = nullptr;
 		size_t m_Elements = 0u;
+		IAllocator* m_pAllocator = nullptr;
 	};
 
 	template<class T>

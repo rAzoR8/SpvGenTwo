@@ -21,38 +21,10 @@ namespace spvgentwo
 	class BinaryFileWriter : public IWriter
 	{
 	public:
-		BinaryFileWriter(const char* _path)
-		{
-			m_pFile = fopen(_path, "wb");
-		}
-
-		~BinaryFileWriter()
-		{
-			if (m_pFile != nullptr)
-			{
-				fclose(m_pFile);
-				m_pFile = nullptr;
-			}
-		}
-
-		long put(unsigned int _word) final
-		{
-			if (m_pFile != nullptr)
-			{
-				fwrite(&_word, sizeof(unsigned int), 1u, m_pFile);
-				return ftell(m_pFile);
-			}
-
-			return 0;
-		}
-
-		void putAt(unsigned int _word, const long _offset) final
-		{
-			if (m_pFile != nullptr && fseek(m_pFile, _offset, SEEK_SET) == 0)
-			{
-				fwrite(&_word, sizeof(unsigned int), 1u, m_pFile);
-			}
-		}
+		BinaryFileWriter(const char* _path);
+		~BinaryFileWriter();
+		long put(unsigned int _word);
+		void putAt(unsigned int _word, const long _offset);
 
 	private:
 		FILE* m_pFile = nullptr;

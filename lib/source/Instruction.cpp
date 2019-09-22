@@ -28,11 +28,11 @@ spv::Id spvgentwo::Instruction::getResultId() const
 	bool resultId = false, resultType = false;
 	spv::HasResultAndType(m_Operation, &resultId, &resultType);
 
-	if (resultId == false || empty())
+	if (resultId == false/* || empty()*/)
 		return InvalidId;
 
 	auto it = begin();
-	if (resultType && size() > 1u) // skip resultType operand 
+	if (resultType /*&& size() > 1u*/) // skip resultType operand 
 	{
 		++it;
 	}
@@ -75,7 +75,7 @@ void spvgentwo::Instruction::resolveId(spv::Id& _resultId)
 
 spvgentwo::Instruction* spvgentwo::Instruction::getType()
 {
-	if (hasResultType(m_Operation) && empty() == false)
+	if (hasResultType() && empty() == false)
 	{
 		return front().getInstruction();
 	}
@@ -91,7 +91,7 @@ void spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id& _resultId)
 {
 	resolveId(_resultId);
 
-	_pWriter->put(getOpCode());
+	auto offset = _pWriter->put(getOpCode());
 	
 	for (const Operand& operand : *this)
 	{
@@ -142,6 +142,15 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFunctionParameter(Instruction*
 	return makeOp(spv::Op::OpFunctionParameter, _pType, InvalidId);
 }
 
+void spvgentwo::Instruction::opReturn()
+{
+	makeOp(spv::Op::OpReturn);
+}
+
+void spvgentwo::Instruction::opReturnValue(Instruction* _pValue)
+{
+	makeOp(spv::Op::OpReturnValue, _pValue);
+}
 
 spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight)
 {

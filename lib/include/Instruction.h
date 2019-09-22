@@ -35,6 +35,10 @@ namespace spvgentwo
 	
 		bool isTypeOp() const;
 
+		bool hasResult() const { return hasResultId(m_Operation); }
+		bool hasResultType() const { return hasResultTypeId(m_Operation); }
+		bool hasResultAndType() const { return hasResultAndTypeId(m_Operation); }
+
 		void reset();
 
 		// get number of 32 bit words used by this instruction
@@ -64,6 +68,10 @@ namespace spvgentwo
 		Instruction* opFunction(const Flag<spv::FunctionControlMask> _functionControl, Instruction* _pResultType, Instruction* _pFuncType);
 
 		Instruction* opFunctionParameter(Instruction* _pType);
+
+		void opReturn();
+
+		void opReturnValue(Instruction* _pValue);
 
 		void opFunctionEnd();
 
@@ -106,6 +114,8 @@ namespace spvgentwo
 	template<class ...Args>
 	inline Instruction* Instruction::makeOp(const spv::Op _op, Args ..._args)
 	{
+		reset();
+
 		m_Operation = _op;
 
 		if constexpr (sizeof...(_args) > 0u)

@@ -33,6 +33,23 @@ spvgentwo::BasicBlock::Iterator spvgentwo::BasicBlock::getTerminator()
 	return Iterator(m_pLast);
 }
 
+spvgentwo::Instruction* spvgentwo::BasicBlock::returnValue(Instruction* _pValue)
+{
+	Instruction* pRet = addInstruction();
+
+	if (_pValue == nullptr)
+	{
+		pRet->opReturn();
+	}
+	else
+	{
+		// TODO: check return type with m_FunctionType
+		pRet->opReturnValue(_pValue);
+	}
+
+	return pRet;
+}
+
 void spvgentwo::BasicBlock::write(IWriter* _pWriter, spv::Id& _resultId)
 {
 	for (Instruction& instr : *this)

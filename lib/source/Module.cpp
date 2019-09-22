@@ -127,6 +127,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 		pInstr->appendLiterals(_type.getDimension()); // element / row count
 		break;
 	case spv::Op::OpTypeStruct:
+	case spv::Op::OpTypeFunction:
 		for (const Type& member : _type.getSubTypes())
 		{
 			pInstr->addOperand(addType(member)); // member type
@@ -155,7 +156,7 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	_pWriter->put(spv::MagicNumber);
 	_pWriter->put(spv::Version);
 	_pWriter->put(GeneratorId);
-	const long boundsPos = _pWriter->put(0u); // bounds dummy
+	const long boundsPos = _pWriter->put(1024u); // bounds dummy
 	_pWriter->put(0u); // schema
 
 	// write preamble
