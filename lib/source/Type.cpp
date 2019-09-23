@@ -10,7 +10,8 @@ spvgentwo::Type::Type(Type&& _other) noexcept:
 	m_subTypes(stdrep::move(_other.m_subTypes)),
 	m_Type(_other.m_Type),
 	m_Dimension(_other.m_Dimension),
-	m_Sign(_other.m_Sign)
+	m_Sign(_other.m_Sign),
+	m_StorageClass(_other.m_StorageClass)
 {
 	for (Type& t : m_subTypes)
 	{
@@ -22,7 +23,8 @@ spvgentwo::Type::Type(const Type& _other) :
 	m_subTypes(_other.m_subTypes),
 	m_Type(_other.m_Type),
 	m_Dimension(_other.m_Dimension),
-	m_Sign(_other.m_Sign)
+	m_Sign(_other.m_Sign),
+	m_StorageClass(_other.m_StorageClass)
 {
 	for (Type& t : m_subTypes)
 	{
@@ -43,6 +45,7 @@ spvgentwo::Type& spvgentwo::Type::operator=(Type&& _other) noexcept
 	m_Type = _other.m_Type;
 	m_Dimension = _other.m_Dimension;
 	m_Sign = _other.m_Sign;
+	m_StorageClass = _other.m_StorageClass;
 
 	for (Type& t : m_subTypes)
 	{
@@ -59,6 +62,7 @@ spvgentwo::Type& spvgentwo::Type::operator=(const Type& _other)
 	m_Type = _other.m_Type;
 	m_Dimension = _other.m_Dimension;
 	m_Sign = _other.m_Sign;
+	m_StorageClass = _other.m_StorageClass;
 
 	for (Type& t : m_subTypes)
 	{
@@ -74,6 +78,7 @@ bool spvgentwo::Type::operator==(const Type& _other) const
 		m_Type == _other.m_Type &&
 		m_Dimension == _other.m_Dimension &&
 		m_Sign == _other.m_Sign &&
+		m_StorageClass == _other.m_StorageClass &&
 		m_subTypes == _other.m_subTypes;
 }
 
@@ -134,6 +139,12 @@ spvgentwo::Type& spvgentwo::Type::Array(const unsigned int _elements)
 spvgentwo::Type& spvgentwo::Type::Function()
 {
 	m_Type = spv::Op::OpTypeFunction;
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::Pointer()
+{
+	m_Type = spv::Op::OpTypePointer;
 	return *this;
 }
 

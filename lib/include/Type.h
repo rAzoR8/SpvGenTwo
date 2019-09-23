@@ -33,6 +33,7 @@ namespace spvgentwo
 		// dimension, bits, elements
 		unsigned int getDimension() const { return m_Dimension; }
 		bool getSign() const { return m_Sign; } // integer
+		spv::StorageClass getStorageClass() const { return m_StorageClass; }
 		
 		const List<Type>& getSubTypes() const { return m_subTypes; }
 		List<Type>& getSubTypes() { return m_subTypes; }
@@ -73,6 +74,9 @@ namespace spvgentwo
 		// makes this a function
 		Type& Function();
 
+		// make this a pointer
+		Type& Pointer();
+
 		// return top most type
 		Type& Top();
 
@@ -96,7 +100,7 @@ namespace spvgentwo
 		Type* m_pParent = nullptr;
 		unsigned int m_Dimension = 0u;
 		bool m_Sign = false;
-
+		spv::StorageClass m_StorageClass = spv::StorageClass::Generic; // for OpTypePointer
 		// image
 		//bool m_Array = false;
 		//bool m_MultiSampled = false;
@@ -114,6 +118,7 @@ namespace spvgentwo
 			_hasher << _type.getBaseType();
 			_hasher << _type.getDimension();
 			_hasher << _type.getSign();
+			_hasher << _type.getStorageClass();
 
 			for (const Type& sub : _type.getSubTypes()) {
 				operator()(sub, _hasher); // go deeper

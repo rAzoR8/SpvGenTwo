@@ -126,6 +126,10 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 		pInstr->addOperand(addType(_type.getSubTypes().front())); // element / row type
 		pInstr->appendLiterals(_type.getDimension()); // element / row count
 		break;
+	case spv::Op::OpTypePointer:
+		pInstr->appendLiterals(_type.getStorageClass());
+		pInstr->addOperand(addType(_type.getSubTypes().front())); // base type
+		break;
 	case spv::Op::OpTypeStruct:
 	case spv::Op::OpTypeFunction:
 		for (const Type& member : _type.getSubTypes())
