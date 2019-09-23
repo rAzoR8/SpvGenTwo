@@ -142,9 +142,10 @@ spvgentwo::Type& spvgentwo::Type::Function()
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Pointer()
+spvgentwo::Type& spvgentwo::Type::Pointer(const spv::StorageClass _storageClass)
 {
 	m_Type = spv::Op::OpTypePointer;
+	m_StorageClass = _storageClass;
 	return *this;
 }
 

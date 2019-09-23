@@ -93,6 +93,8 @@ int main(int argc, char* argv[])
 		Instruction* c1 = module.constant(1);
 		Instruction* c2 = module.constant(2);
 
+		Instruction* ptrType = module.type<int*>();
+
 		bb->call(&funcAdd, c1, c2);
 		bb.returnValue();
 

@@ -23,6 +23,22 @@ namespace spvgentwo::stdrep
 namespace spvgentwo::stdrep
 {
 	template <class>
+	inline constexpr bool is_pointer_v = false;
+
+	template <class T>
+	inline constexpr bool is_pointer_v<T*> = true;
+
+	template <class T>
+	struct remove_pointer { using type = T; };
+	template <class T>
+	struct remove_pointer<T*> { using type = T; };
+	template <class T>
+	struct remove_pointer<T**> { using type = T; };
+
+	template <class T>
+	using remove_pointer_t = typename remove_pointer<T>::type;
+
+	template <class>
 	inline constexpr bool is_lvalue_reference_v = false;
 
 	template <class T>

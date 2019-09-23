@@ -32,8 +32,11 @@ namespace spvgentwo
 
 		// dimension, bits, elements
 		unsigned int getDimension() const { return m_Dimension; }
+		void setDimension(const unsigned int _dimension) { m_Dimension = _dimension; }
 		bool getSign() const { return m_Sign; } // integer
+		void setSign(const bool _sign) { m_Sign = _sign; }
 		spv::StorageClass getStorageClass() const { return m_StorageClass; }
+		void setStorageClass(const spv::StorageClass _storageClass) { m_StorageClass = _storageClass; }
 		
 		const List<Type>& getSubTypes() const { return m_subTypes; }
 		List<Type>& getSubTypes() { return m_subTypes; }
@@ -75,7 +78,7 @@ namespace spvgentwo
 		Type& Function();
 
 		// make this a pointer
-		Type& Pointer();
+		Type& Pointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic);;
 
 		// return top most type
 		Type& Top();
@@ -137,8 +140,16 @@ namespace spvgentwo
 	template<class T>
 	inline Type& Type::make()
 	{
-		// TODO: check for composite types
-		return primitive<T>();
+		if constexpr (stdrep::is_pointer_v<T>)
+		{
+			Pointer().Member().make<stdrep::remove_pointer_t<T>>();
+		}
+		else
+		{
+			// TODO: check for composite types
+			primitive<T>();
+		}
+		return *this;
 	}
 
 	template <>
