@@ -86,6 +86,10 @@ namespace spvgentwo
 		template <class ... Instr>
 		void opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr ... _instr);
 
+		// _pResultType must be of OpTypePointer
+		template <class ...Instr>
+		Instruction* opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instr ... _initializer);
+
 		Instruction* opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
 
 	private:
@@ -177,5 +181,11 @@ namespace spvgentwo
 	inline void Instruction::opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr ..._instr)
 	{
 		makeOp(spv::Op::OpEntryPoint, _model, _pFunction, _pName, _instr...);
+	}
+
+	template<class ...Instr>
+	inline Instruction* Instruction::opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instr ..._initializer)
+	{
+		return makeOp(spv::Op::OpVariable, _pResultType, InvalidId, _initializer....);
 	}
 } // !spvgentwo
