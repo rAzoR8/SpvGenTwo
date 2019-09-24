@@ -32,13 +32,48 @@ namespace spvgentwo
 		void setBaseType(const spv::Op _type);
 
 		// dimension, bits, elements
-		unsigned int getDimension() const { return m_Dimension; }
-		void setDimension(const unsigned int _dimension) { m_Dimension = _dimension; }
-		bool getSign() const { return m_Sign; } // integer
-		void setSign(const bool _sign) { m_Sign = _sign; }
+		unsigned int getIntWidth() const { return m_IntWidth; }
+		void setIntWidth(const unsigned int _width) { m_IntWidth = _width; }
+
+		unsigned int getFloatWidth() const { return m_FloatWidth; }
+		void setFloatWidth(const unsigned int _width) { m_FloatWidth = _width; }
+
+		unsigned int getImageDepth() const { return m_ImgDepth; }
+		void setImageDepth(const unsigned int _depth) { m_ImgDepth = _depth; }
+
+		bool getIntSign() const { return m_IntSign; }
+		void setIntSign(const bool _sign) { m_IntSign = _sign; }
+
+		spv::Dim getImageDimension() const { return m_ImgDimension; }
+		void setImageDimension(const spv::Dim _dim) { m_ImgDimension = _dim; }
+
+		bool getImageArray() const { return m_ImgArray; }
+		void setImageArray(const bool _array) { m_ImgArray = _array; }
+
+		bool getImageMultiSampled() const { return m_ImgMultiSampled; }
+		void setImageMultiSampled(const bool _ms) { m_ImgMultiSampled = _ms; }
+
+		SamplerImageAccess getImageSamplerAccess() const { return m_ImgSamplerAccess; }
+		void setImageSamplerAccess(const SamplerImageAccess _access) { m_ImgSamplerAccess; }
+
+		spv::ImageFormat getImageFormat() const { return m_ImgFormat; }
+		void setImageFormat(const spv::ImageFormat _format) { m_ImgFormat = _format; }
+
+		unsigned int getVectorComponentCount() const { return m_VecComponentCount; }
+		void setVectorComponentCount(unsigned int _count) { m_VecComponentCount = _count; }
+
+		unsigned int getMatrixColumnCount() const { return m_MatColumnCount; }
+		void setMatrixColumnCount(unsigned int _count) { m_MatColumnCount = _count; }
+
+		unsigned int getArrayLength() const { return m_ArrayLength; }
+		void setArrayLength(unsigned int _legnth) { m_ArrayLength = _legnth;}
+
 		spv::StorageClass getStorageClass() const { return m_StorageClass; }
 		void setStorageClass(const spv::StorageClass _storageClass) { m_StorageClass = _storageClass; }
 		
+		spv::AccessQualifier getAccessQualifier() const { return m_AccessQualier; }
+		void setAccessQualifier(const spv::AccessQualifier _access) { m_AccessQualier = _access; }
+
 		const List<Type>& getSubTypes() const { return m_subTypes; }
 		List<Type>& getSubTypes() { return m_subTypes; }
 
@@ -71,7 +106,7 @@ namespace spvgentwo
 		Type& Struct();
 
 		// makes this an array
-		Type& Array(const unsigned int _elements);
+		Type& Array(const unsigned int _elements, const Type* _elementType = nullptr);
 		// makes this an array, returns element type
 		Type& ArrayElement(const unsigned int _elements) { Array(_elements); return m_subTypes.empty() ? Member() : m_subTypes.front(); }
 			   
@@ -83,6 +118,16 @@ namespace spvgentwo
 		Type& ForwardPointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic);
 
 		Type& Sampler();
+
+		Type& Image(
+			const Type* _pSampledType = nullptr,
+			const spv::Dim _dim = spv::Dim::Dim2D,
+			const unsigned int _depth = 1u,
+			const bool _array = false,
+			const bool _multiSampled = false,
+			const SamplerImageAccess _sampled = SamplerImageAccess::Unknown,
+			const spv::ImageFormat _format = spv::ImageFormat::Unknown,
+			const spv::AccessQualifier _access = spv::AccessQualifier::Max);
 
 		Type& Event();
 
@@ -113,14 +158,31 @@ namespace spvgentwo
 	private:
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type
 		Type* m_pParent = nullptr;
-		unsigned int m_Dimension = 0u;
-		bool m_Sign = false;
-		spv::StorageClass m_StorageClass = spv::StorageClass::Generic; // for OpTypePointer
+
+		union 
+		{
+			unsigned int m_ImgDepth = 0u;
+			unsigned int m_FloatWidth;
+			unsigned int m_IntWidth;
+			unsigned int m_VecComponentCount;
+			unsigned int m_MatColumnCount;
+			unsigned int m_ArrayLength;
+		};
+
+		bool m_IntSign = false;
+
+		// for OpTypePointer
+		spv::StorageClass m_StorageClass = spv::StorageClass::Generic;
+		
 		// image
-		//bool m_Array = false;
-		//bool m_MultiSampled = false;
-		// depth tex type
-		// sampler access
+		spv::Dim m_ImgDimension = spv::Dim::Max;
+		bool m_ImgArray = false;
+		bool m_ImgMultiSampled = false;
+		SamplerImageAccess m_ImgSamplerAccess = SamplerImageAccess::Unknown;
+		spv::ImageFormat m_ImgFormat = spv::ImageFormat::Unknown;
+
+		// image and pipe
+		spv::AccessQualifier m_AccessQualier = spv::AccessQualifier::Max;
 
 		List<Type> m_subTypes;
 	};
@@ -135,6 +197,16 @@ namespace spvgentwo
 	struct pipe_storage_t {};
 	struct named_barrier_t {};
 
+	struct image_t
+	{
+		Type sampledType;
+		spv::Dim dimension = spv::Dim::Max;
+		bool array = false;
+		bool multiSampled = false;
+		SamplerImageAccess samplerAccess = SamplerImageAccess::Unknown;
+		spv::ImageFormat format = spv::ImageFormat::Unknown;
+		spv::AccessQualifier accessQualier = spv::AccessQualifier::Max;
+	};
 
 	template <>
 	struct Hasher<Type>
@@ -142,10 +214,16 @@ namespace spvgentwo
 		Hash64 operator()(const Type& _type, FNV1aHasher& _hasher) const
 		{
 			_hasher << _type.getBaseType();
-			_hasher << _type.getDimension();
-			_hasher << _type.getSign();
-			_hasher << _type.getStorageClass();
-
+			_hasher << _type.getIntWidth(); // image depth, float width
+			_hasher << _type.getIntSign(); // float sign
+			_hasher << _type.getStorageClass(); // pointer
+			_hasher << _type.getImageDimension();
+			_hasher << _type.getImageArray();
+			_hasher << _type.getImageMultiSampled();
+			_hasher << _type.getImageSamplerAccess();
+			_hasher << _type.getImageFormat();
+			_hasher << _type.getAccessQualifier();
+				
 			for (const Type& sub : _type.getSubTypes()) {
 				operator()(sub, _hasher); // go deeper
 			}
@@ -167,17 +245,25 @@ namespace spvgentwo
 		{
 			m_StorageClass = _first;
 		}
-		else if constexpr (stdrep::is_same_v<Prop, unsigned int>)
+		if constexpr (stdrep::is_same_v<Prop, spv::Dim>)
 		{
-			m_Dimension = _first;
-		}
-		else if constexpr (stdrep::is_same_v<Prop, bool>)
-		{
-			m_Sign = _first;
+			m_ImgDimension = _first;
 		}
 		else if constexpr (stdrep::is_same_v<Prop, spv::Op>)
 		{
 			m_Type = _first;
+		}
+		else if constexpr (stdrep::is_same_v<Prop, spv::AccessQualifier>)
+		{
+			m_AccessQualier = _first;
+		}
+		else if constexpr (stdrep::is_same_v<Prop, SamplerImageAccess>)
+		{
+			m_ImgSamplerAccess = _first;
+		}
+		else if constexpr (stdrep::is_same_v<Prop, spv::ImageFormat>)
+		{
+			m_ImgFormat = _first;
 		}
 		else if constexpr (stdrep::is_same_v<Prop, Type>)
 		{

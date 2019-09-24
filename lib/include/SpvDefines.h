@@ -5,6 +5,14 @@
 
 namespace spvgentwo
 {
+	// Sampled indicates whether or not this image will be accessed in combination with a sampler, and must be one of the following values:
+	enum class SamplerImageAccess : unsigned int
+	{
+		Unknown = 0, // indicates this is only known at run time, not at compile time
+		Sampled = 1, // indicates will be used with sampler
+		Storage = 2  // indicates will be used without a sampler (a storage image)
+	};
+
 	constexpr unsigned int makeGeneratorId(unsigned short _gen, unsigned short _ver) { return _gen << 16 | _ver; }
 
 	constexpr bool isType(const spv::Op _type)

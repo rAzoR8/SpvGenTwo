@@ -8,10 +8,15 @@ spvgentwo::Type::Type(IAllocator* _pAllocator, Type* _pParent) :
 
 spvgentwo::Type::Type(Type&& _other) noexcept:
 	m_subTypes(stdrep::move(_other.m_subTypes)),
-	m_Type(_other.m_Type),
-	m_Dimension(_other.m_Dimension),
-	m_Sign(_other.m_Sign),
-	m_StorageClass(_other.m_StorageClass)
+	m_IntSign(_other.m_IntSign),
+	m_IntWidth(_other.m_IntWidth),
+	m_ImgDimension(_other.m_ImgDimension),
+	m_ImgArray(_other.m_ImgArray),
+	m_ImgMultiSampled(_other.m_ImgMultiSampled),
+	m_ImgSamplerAccess(_other.m_ImgSamplerAccess),
+	m_ImgFormat(_other.m_ImgFormat),
+	m_StorageClass(_other.m_StorageClass),
+	m_AccessQualier(_other.m_AccessQualier)
 {
 	for (Type& t : m_subTypes)
 	{
@@ -22,9 +27,15 @@ spvgentwo::Type::Type(Type&& _other) noexcept:
 spvgentwo::Type::Type(const Type& _other) : 
 	m_subTypes(_other.m_subTypes),
 	m_Type(_other.m_Type),
-	m_Dimension(_other.m_Dimension),
-	m_Sign(_other.m_Sign),
-	m_StorageClass(_other.m_StorageClass)
+	m_IntSign(_other.m_IntSign),
+	m_IntWidth(_other.m_IntWidth),
+	m_ImgDimension(_other.m_ImgDimension),
+	m_ImgArray(_other.m_ImgArray),
+	m_ImgMultiSampled(_other.m_ImgMultiSampled),
+	m_ImgSamplerAccess(_other.m_ImgSamplerAccess),
+	m_ImgFormat(_other.m_ImgFormat),
+	m_StorageClass(_other.m_StorageClass),
+	m_AccessQualier(_other.m_AccessQualier)
 {
 	for (Type& t : m_subTypes)
 	{
@@ -43,9 +54,15 @@ spvgentwo::Type& spvgentwo::Type::operator=(Type&& _other) noexcept
 	m_subTypes = stdrep::move(_other.m_subTypes);
 
 	m_Type = _other.m_Type;
-	m_Dimension = _other.m_Dimension;
-	m_Sign = _other.m_Sign;
+	m_IntSign = _other.m_IntSign;
+	m_IntWidth = _other.m_IntWidth;
+	m_ImgDimension = _other.m_ImgDimension;
+	m_ImgArray = _other.m_ImgArray;
+	m_ImgMultiSampled = _other.m_ImgMultiSampled;
+	m_ImgSamplerAccess = _other.m_ImgSamplerAccess;
+	m_ImgFormat = _other.m_ImgFormat;
 	m_StorageClass = _other.m_StorageClass;
+	m_AccessQualier = _other.m_AccessQualier;
 
 	for (Type& t : m_subTypes)
 	{
@@ -60,9 +77,15 @@ spvgentwo::Type& spvgentwo::Type::operator=(const Type& _other)
 	m_subTypes = _other.m_subTypes;
 
 	m_Type = _other.m_Type;
-	m_Dimension = _other.m_Dimension;
-	m_Sign = _other.m_Sign;
+	m_IntSign = _other.m_IntSign;
+	m_IntWidth = _other.m_IntWidth;
+	m_ImgDimension = _other.m_ImgDimension;
+	m_ImgArray = _other.m_ImgArray;
+	m_ImgMultiSampled = _other.m_ImgMultiSampled;
+	m_ImgSamplerAccess = _other.m_ImgSamplerAccess;
+	m_ImgFormat = _other.m_ImgFormat;
 	m_StorageClass = _other.m_StorageClass;
+	m_AccessQualier = _other.m_AccessQualier;
 
 	for (Type& t : m_subTypes)
 	{
@@ -76,9 +99,15 @@ bool spvgentwo::Type::operator==(const Type& _other) const
 {
 	return
 		m_Type == _other.m_Type &&
-		m_Dimension == _other.m_Dimension &&
-		m_Sign == _other.m_Sign &&
+		m_IntSign == _other.m_IntSign &&
+		m_IntWidth == _other.m_IntWidth &&
+		m_ImgDimension == _other.m_ImgDimension &&
+		m_ImgArray == _other.m_ImgArray &&
+		m_ImgMultiSampled == _other.m_ImgMultiSampled &&
+		m_ImgSamplerAccess ==_other.m_ImgSamplerAccess &&
+		m_ImgFormat == _other.m_ImgFormat &&
 		m_StorageClass == _other.m_StorageClass &&
+		m_AccessQualier == _other.m_AccessQualier &&
 		m_subTypes == _other.m_subTypes;
 }
 
@@ -111,15 +140,15 @@ spvgentwo::Type& spvgentwo::Type::Bool()
 spvgentwo::Type& spvgentwo::Type::Int(const unsigned int _bits, const bool _sign)
 {
 	m_Type = spv::Op::OpTypeInt;
-	m_Dimension = _bits;
-	m_Sign = _sign;
+	m_IntWidth = _bits;
+	m_IntSign = _sign;
 	return *this;
 }
 
 spvgentwo::Type& spvgentwo::Type::Float(const unsigned int _bits)
 {
 	m_Type = spv::Op::OpTypeFloat;
-	m_Dimension = _bits;
+	m_FloatWidth = _bits;
 	return *this;
 }
 
@@ -129,10 +158,16 @@ spvgentwo::Type& spvgentwo::Type::Struct()
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Array(const unsigned int _elements)
+spvgentwo::Type& spvgentwo::Type::Array(const unsigned int _elements, const Type* _pElementType)
 {
 	m_Type = spv::Op::OpTypeArray;
-	m_Dimension = _elements;
+	m_ArrayLength = _elements;
+
+	if(_pElementType != nullptr)
+	{
+		m_subTypes.emplace_back(*_pElementType);
+	}
+
 	return *this;
 }
 
@@ -153,6 +188,26 @@ spvgentwo::Type& spvgentwo::Type::ForwardPointer(const spv::StorageClass _storag
 {
 	m_Type = spv::Op::OpTypePointer;
 	m_StorageClass = _storageClass;
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::Image(const Type* _pSampledType, const spv::Dim _dim, const unsigned int _depth, const bool _array, const bool _multiSampled, const SamplerImageAccess _sampled, const spv::ImageFormat _format, const spv::AccessQualifier _access)
+{
+	m_Type = spv::Op::OpTypeImage;
+
+	if (_pSampledType != nullptr)
+	{
+		m_subTypes.emplace_back(*_pSampledType);
+	}
+
+	m_ImgDimension = _dim;
+	m_ImgDepth = _depth;
+	m_ImgArray = _array;
+	m_ImgMultiSampled = _multiSampled;
+	m_ImgSamplerAccess = _sampled;
+	m_ImgFormat = _format;
+	m_AccessQualier = _access;
+
 	return *this;
 }
 

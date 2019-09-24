@@ -127,15 +127,15 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 	case spv::Op::OpTypeNamedBarrier:
 		break; // nothing to do
 	case spv::Op::OpTypeInt:
-		pInstr->appendLiterals(_type.getDimension(), unsigned int (_type.getSign()));
+		pInstr->appendLiterals(_type.getIntWidth(), unsigned int (_type.getIntSign()));
 		break;
 	case spv::Op::OpTypeFloat:
-		pInstr->appendLiterals(_type.getDimension());
+		pInstr->appendLiterals(_type.getFloatWidth());
 		break;
 	case spv::Op::OpTypeVector:
 	case spv::Op::OpTypeMatrix:
-		pInstr->addOperand(addType(_type.getSubTypes().front())); // element / row type
-		pInstr->appendLiterals(_type.getDimension()); // element / row count
+		pInstr->addOperand(addType(_type.getSubTypes().front())); // column type
+		pInstr->appendLiterals(_type.getMatrixColumnCount());
 		break;
 	case spv::Op::OpTypePointer:
 		pInstr->appendLiterals(_type.getStorageClass());
@@ -158,7 +158,19 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 		break;
 	case spv::Op::OpTypeArray:
 		pInstr->addOperand(addType(_type.getSubTypes().front())); // element type
-		pInstr->addOperand(addConstant(newConstant().make(_type.getDimension()))); // length as constant
+		pInstr->addOperand(addConstant(newConstant().make(_type.getArrayLength()))); // length as constant
+		break;
+	case spv::Op::OpTypeImage:
+		pInstr->addOperand(addType(_type.getSubTypes().front())); // sampled type
+		pInstr->appendLiterals(_type.getImageDimension());
+		pInstr->appendLiterals(_type.getImageDepth());
+		pInstr->appendLiterals(_type.getImageArray());
+		pInstr->appendLiterals(_type.getImageMultiSampled());
+		pInstr->appendLiterals(_type.getImageFormat());
+		if(_type.getAccessQualifier() != spv::AccessQualifier::Max)
+		{
+			pInstr->appendLiterals(_type.getAccessQualifier());
+		}
 		break;
 	default:
 		break; // unknown type
