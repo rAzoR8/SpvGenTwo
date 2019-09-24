@@ -40,7 +40,7 @@ namespace spvgentwo
 
 		if constexpr (traits::is_primitive_type_v<T>)
 		{
-			m_Type.primitive<T>(); // TODO: implement generic make<T> for Type
+			m_Type.fundamental<T>(); // TODO: implement generic make<T> for Type
 			appendLiteralsToContainer(m_literalData, _value);
 		}
 

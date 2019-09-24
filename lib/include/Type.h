@@ -8,6 +8,7 @@ namespace spvgentwo
 {
 	// forward decls
 	class IAllocator;
+	//class Instruction;
 
 	class Type
 	{
@@ -81,6 +82,12 @@ namespace spvgentwo
 		Type& Pointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic);
 		Type& ForwardPointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic);
 
+		Type& Sampler();
+
+		Type& Event();
+
+		Type& DeviceEvent();
+
 		// return top most type
 		Type& Top();
 
@@ -94,7 +101,7 @@ namespace spvgentwo
 		const Type& back() const { return m_subTypes.back(); }
 
 		template <class T>
-		Type& primitive() { static_assert(false, "incompatible type"); return *this; }
+		Type& fundamental(const T* _typeInfo = nullptr) { static_assert(false, "incompatible type"); return *this; }
 
 		template <class T, class ... Props>
 		Type& make(Props ... _props);
@@ -117,6 +124,17 @@ namespace spvgentwo
 
 		List<Type> m_subTypes;
 	};
+
+	// opaque types
+	struct sampler_t {};
+	struct sampled_image_t { Type imageType; };
+	struct event_t {};
+	struct device_event_t {};
+	struct reserve_id_t {};
+	struct queue_t {};
+	struct pipe_storage_t {};
+	struct named_barrier_t {};
+
 
 	template <>
 	struct Hasher<Type>
@@ -182,7 +200,7 @@ namespace spvgentwo
 		else
 		{
 			// TODO: check for composite types
-			primitive<T>();
+			fundamental<T>(nullptr);
 		}
 
 		if constexpr (sizeof...(_props) > 0)
@@ -194,38 +212,41 @@ namespace spvgentwo
 	}
 
 	template <>
-	inline Type& Type::primitive<void>() { return Void(); }
+	inline Type& Type::fundamental<sampler_t>(const sampler_t*) { return Sampler(); }
 
 	template <>
-	inline Type& Type::primitive<bool>() { return Bool(); }
+	inline Type& Type::fundamental<void>(const void*) { return Void(); }
 
 	template <>
-	inline Type& Type::primitive<short>() { return Int(16u); }
+	inline Type& Type::fundamental<bool>(const bool*) { return Bool(); }
 
 	template <>
-	inline Type& Type::primitive<unsigned short>() { return UInt(16u); }
+	inline Type& Type::fundamental<short>(const short*) { return Int(16u); }
+
+	template <>
+	inline Type& Type::fundamental<unsigned short>(const unsigned short*) { return UInt(16u); }
 	
 	template <>
-	inline Type& Type::primitive<int>() { return Int(); }
+	inline Type& Type::fundamental<int>(const int*) { return Int(); }
 
 	template <>
-	inline Type& Type::primitive<unsigned int>() { return UInt(); }
+	inline Type& Type::fundamental<unsigned int>(const unsigned int*) { return UInt(); }
 
 	template <>
-	inline Type& Type::primitive<long>() { return Int(); }
+	inline Type& Type::fundamental<long>(const long*) { return Int(); }
 
 	template <>
-	inline Type& Type::primitive<unsigned long>() { return UInt(); }
+	inline Type& Type::fundamental<unsigned long>(const unsigned long*) { return UInt(); }
 
 	template <>
-	inline Type& Type::primitive<long long>() { return Int(64u); }
+	inline Type& Type::fundamental<long long>(const long long*) { return Int(64u); }
 
 	template <>
-	inline Type& Type::primitive<unsigned long long>() { return UInt(64u); }
+	inline Type& Type::fundamental<unsigned long long>(const unsigned long long*) { return UInt(64u); }
 
 	template <>
-	inline Type& Type::primitive<float>() { return Float(); }
+	inline Type& Type::fundamental<float>(const float*) { return Float(); }
 
 	template <>
-	inline Type& Type::primitive<double>() { return Double(); }
+	inline Type& Type::fundamental<double>(const double*) { return Double(); }
 } // !spvgentwI
