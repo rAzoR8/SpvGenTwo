@@ -114,6 +114,12 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 	case spv::Op::OpTypeVoid:
 	case spv::Op::OpTypeBool:
 	case spv::Op::OpTypeSampler:
+	case spv::Op::OpTypeEvent:
+	case spv::Op::OpTypeDeviceEvent:
+	case spv::Op::OpTypeReserveId:
+	case spv::Op::OpTypeQueue:
+	case spv::Op::OpTypePipeStorage:
+	case spv::Op::OpTypeNamedBarrier:
 		break; // nothing to do
 	case spv::Op::OpTypeInt:
 		pInstr->appendLiterals(_type.getDimension(), unsigned int (_type.getSign()));
@@ -136,6 +142,10 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 		{
 			pInstr->addOperand(addType(member)); // member type
 		}
+		break;
+	case spv::Op::OpTypeRuntimeArray:
+	case spv::Op::OpTypeSampledImage:
+		pInstr->addOperand(addType(_type.getSubTypes().front())); // element type
 		break;
 	case spv::Op::OpTypeArray:
 		pInstr->addOperand(addType(_type.getSubTypes().front())); // element type
