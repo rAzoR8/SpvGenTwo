@@ -25,8 +25,8 @@ namespace spvgentwo
 
 		Instruction* addType(const Type& _type);
 
-		template <class T>
-		Instruction* type();
+		template <class T, class ... Props>
+		Instruction* type(Props ... _props);
 
 		Instruction* addConstant(const Constant& _const);
 
@@ -70,11 +70,11 @@ namespace spvgentwo
 		unsigned int m_maxId = 0u;
 	};
 
-	template<class T>
-	inline Instruction* Module::type()
+	template<class T, class ...Props>
+	inline Instruction* Module::type(Props ... _props)
 	{
 		Type dummy(m_pAllocator);
-		return addType(dummy.make<T>());
+		return addType(dummy.make<T>(_props...));
 	}
 
 	template<class T>

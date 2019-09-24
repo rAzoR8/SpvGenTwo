@@ -95,8 +95,12 @@ namespace spvgentwo
 		template <class T>
 		Type& primitive() { static_assert(false, "incompatible type"); return *this; }
 
-		template <class T>
-		Type& make();
+		template <class T, class ... Props>
+		Type& make(Props ... _props);
+
+		// set Properties by type: unsigned int -> Dimension etc
+		template <class Prop, class ...Props>
+		void setProperties(const Prop _first, Props ... _props);
 
 	private:
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type
@@ -137,8 +141,38 @@ namespace spvgentwo
 		}
 	};
 
-	template<class T>
-	inline Type& Type::make()
+	template<class Prop, class ...Props>
+	inline void Type::setProperties(const Prop _first, Props ..._props)
+	{
+		if constexpr (stdrep::is_same_v<Prop, spv::StorageClass>)
+		{
+			m_StorageClass = _first;
+		}
+		else if constexpr (stdrep::is_same_v<Prop, unsigned int>)
+		{
+			m_Dimension = _first;
+		}
+		else if constexpr (stdrep::is_same_v<Prop, bool>)
+		{
+			m_Sign = _first;
+		}
+		else if constexpr (stdrep::is_same_v<Prop, spv::Op>)
+		{
+			m_Type = _first;
+		}
+		else if constexpr (stdrep::is_same_v<Prop, Type>)
+		{
+			m_subTypes.emplace_back(_first);
+		}
+
+		if constexpr (sizeof...(_props) > 0)
+		{
+			setProperties(_props...);
+		}
+	}
+
+	template<class T, class ...Props>
+	inline Type& Type::make(Props ..._props)
 	{
 		if constexpr (stdrep::is_pointer_v<T>)
 		{
@@ -149,6 +183,12 @@ namespace spvgentwo
 			// TODO: check for composite types
 			primitive<T>();
 		}
+
+		if constexpr (sizeof...(_props) > 0)
+		{
+			setProperties(_props...);
+		}
+
 		return *this;
 	}
 
