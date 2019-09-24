@@ -107,7 +107,12 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 
 	const spv::Op base = _type.getBaseType();
 
-	pInstr->makeOp(base, InvalidId);
+	pInstr->makeOp(base);
+
+	if (base != spv::Op::OpTypeForwardPointer)
+	{
+		pInstr->addOperand(InvalidId);
+	}
 
 	switch (base)
 	{
@@ -135,6 +140,10 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 	case spv::Op::OpTypePointer:
 		pInstr->appendLiterals(_type.getStorageClass());
 		pInstr->addOperand(addType(_type.getSubTypes().front())); // base type
+		break;
+	case spv::Op::OpTypeForwardPointer:
+		pInstr->addOperand(addType(_type.getSubTypes().front())); // base type
+		pInstr->appendLiterals(_type.getStorageClass());
 		break;
 	case spv::Op::OpTypeStruct:
 	case spv::Op::OpTypeFunction:

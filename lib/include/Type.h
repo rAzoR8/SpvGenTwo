@@ -78,7 +78,8 @@ namespace spvgentwo
 		Type& Function();
 
 		// make this a pointer
-		Type& Pointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic);;
+		Type& Pointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic);
+		Type& ForwardPointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic);
 
 		// return top most type
 		Type& Top();

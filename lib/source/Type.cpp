@@ -149,6 +149,13 @@ spvgentwo::Type& spvgentwo::Type::Pointer(const spv::StorageClass _storageClass)
 	return *this;
 }
 
+spvgentwo::Type& spvgentwo::Type::ForwardPointer(const spv::StorageClass _storageClass)
+{
+	m_Type = spv::Op::OpTypePointer;
+	m_StorageClass = _storageClass;
+	return *this;
+}
+
 spvgentwo::Type& spvgentwo::Type::Member()
 {
 	return m_subTypes.emplace_back(m_subTypes.getAllocator(), this);
