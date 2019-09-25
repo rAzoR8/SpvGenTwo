@@ -28,7 +28,7 @@ namespace spvgentwo
 		} type;
 
 		union {
-			BasicBlock* branchTarget;
+			BasicBlock* branchTarget = nullptr; 
 			Instruction* instruction; // intermediate or type
 			literal_t value;
 			spv::Id resultId;

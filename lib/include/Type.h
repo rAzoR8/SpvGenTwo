@@ -153,7 +153,7 @@ namespace spvgentwo
 
 		// set Properties by type: unsigned int -> Dimension etc
 		template <class Prop, class ...Props>
-		void setProperties(const Prop _first, Props ... _props);
+		const Prop* setProperties(const Prop _first, Props ... _props);
 
 	private:
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type
@@ -196,6 +196,8 @@ namespace spvgentwo
 	struct queue_t {};
 	struct pipe_storage_t {};
 	struct named_barrier_t {};
+	struct array_t { Type elementType; unsigned int length; };
+	struct runtime_array_t { Type elementType; };
 
 	struct image_t
 	{
@@ -239,7 +241,7 @@ namespace spvgentwo
 	};
 
 	template<class Prop, class ...Props>
-	inline void Type::setProperties(const Prop _first, Props ..._props)
+	inline const Prop* Type::setProperties(const Prop _first, Props ..._props)
 	{
 		if constexpr (stdrep::is_same_v<Prop, spv::StorageClass>)
 		{
@@ -274,6 +276,25 @@ namespace spvgentwo
 		{
 			setProperties(_props...);
 		}
+
+		if constexpr (stdrep::is_same_v<Prop, image_t>)
+		{
+			return &_first;
+		}
+		else if constexpr (stdrep::is_same_v<Prop, sampled_image_t>)
+		{
+			return &_first;
+		}
+		else if constexpr (stdrep::is_same_v<Prop, array_t>)
+		{
+			return &_first;
+		}
+		else if constexpr (stdrep::is_same_v<Prop, runtime_array_t>)
+		{
+			return &_first;
+		}
+
+		return nullptr;
 	}
 
 	template<class T, class ...Props>
@@ -282,16 +303,21 @@ namespace spvgentwo
 		if constexpr (stdrep::is_pointer_v<T>)
 		{
 			Pointer().Member().make<stdrep::remove_pointer_t<T>>();
+
+			if constexpr (sizeof...(_props) > 0)
+			{
+				 setProperties(_props...);
+			}
 		}
 		else
 		{
-			// TODO: check for composite types
-			fundamental<T>(nullptr);
-		}
+			const void* pProp = nullptr;
+			if constexpr (sizeof...(_props) > 0)
+			{
+				pProp = setProperties(_props...);
+			}
 
-		if constexpr (sizeof...(_props) > 0)
-		{
-			setProperties(_props...);
+			fundamental<T>(reinterpret_cast<const T*>(pProp));
 		}
 
 		return *this;
