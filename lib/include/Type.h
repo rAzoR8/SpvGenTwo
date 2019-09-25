@@ -109,7 +109,9 @@ namespace spvgentwo
 		Type& Array(const unsigned int _elements, const Type* _elementType = nullptr);
 		// makes this an array, returns element type
 		Type& ArrayElement(const unsigned int _elements) { Array(_elements); return m_subTypes.empty() ? Member() : m_subTypes.front(); }
-			   
+
+		Type& RuntimeArray(const Type* _elementType);
+
 		// makes this a function
 		Type& Function();
 
@@ -128,6 +130,8 @@ namespace spvgentwo
 			const SamplerImageAccess _sampled = SamplerImageAccess::Unknown,
 			const spv::ImageFormat _format = spv::ImageFormat::Unknown,
 			const spv::AccessQualifier _access = spv::AccessQualifier::Max);
+
+		Type& SampledImage(const Type* _imageType = nullptr);
 
 		Type& Event();
 
@@ -325,6 +329,18 @@ namespace spvgentwo
 
 	template <>
 	inline Type& Type::fundamental<sampler_t>(const sampler_t*) { return Sampler(); }
+
+	template <>
+	inline Type& Type::fundamental<array_t>(const array_t* _prop)	
+	{ 
+		return _prop == nullptr ? Array(0) : Array(_prop->length, &_prop->elementType);
+	}
+
+	template <>
+	inline Type& Type::fundamental<runtime_array_t>(const runtime_array_t* _prop)
+	{
+		return RuntimeArray(_prop == nullptr ? nullptr : &_prop->elementType);
+	}
 
 	template <>
 	inline Type& Type::fundamental<void>(const void*) { return Void(); }

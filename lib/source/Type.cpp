@@ -171,6 +171,18 @@ spvgentwo::Type& spvgentwo::Type::Array(const unsigned int _elements, const Type
 	return *this;
 }
 
+spvgentwo::Type& spvgentwo::Type::RuntimeArray(const Type* _elementType)
+{
+	m_Type = spv::Op::OpTypeRuntimeArray;
+
+	if (_elementType != nullptr)
+	{
+		m_subTypes.emplace_back(*_elementType);
+	}
+
+	return *this;
+}
+
 spvgentwo::Type& spvgentwo::Type::Function()
 {
 	m_Type = spv::Op::OpTypeFunction;
@@ -207,6 +219,18 @@ spvgentwo::Type& spvgentwo::Type::Image(const Type* _pSampledType, const spv::Di
 	m_ImgSamplerAccess = _sampled;
 	m_ImgFormat = _format;
 	m_AccessQualier = _access;
+
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::SampledImage(const Type* _imageType)
+{
+	m_Type = spv::Op::OpTypeSampledImage;
+
+	if (_imageType != nullptr)
+	{
+		m_subTypes.emplace_back(*_imageType);
+	}
 
 	return *this;
 }
