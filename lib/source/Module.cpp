@@ -199,7 +199,7 @@ void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel,
 
 void spvgentwo::Module::write(IWriter* _pWriter)
 {
-	// TODO: resolve step (maybe outside of this function)
+	m_maxId = 0u;
 
 	// write header
 	_pWriter->put(spv::MagicNumber);
