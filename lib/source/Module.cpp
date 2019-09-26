@@ -55,7 +55,9 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 
 	Instruction* pType = addType(_const.getType());
 
-	Instruction* pInstr = node.kv.value = &m_TypesAndConstants.emplace_back(m_pAllocator);
+	auto entry = Entry<Instruction>::create(m_pAllocator, m_pAllocator);
+
+	Instruction* pInstr = node.kv.value = entry->operator->();
 
 	const spv::Op constantOp = _const.getOperation();
 
@@ -91,6 +93,8 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 	default:
 		break;
 	}
+
+	m_TypesAndConstants.append_entry(entry);
 
 	return pInstr;
 }
