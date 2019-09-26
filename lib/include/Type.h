@@ -137,6 +137,18 @@ namespace spvgentwo
 
 		Type& DeviceEvent();
 
+		Type& ReserveId();
+
+		Type& Queue();
+
+		Type& PipeStorage();
+
+		Type& NamedBarrier();
+
+		Type& Vector(unsigned int _elements, const Type* _elementType = nullptr);
+
+		Type& Matrix(unsigned int _columns, const Type* _rowType = nullptr);
+		
 		// return top most type
 		Type& Top();
 
@@ -194,25 +206,30 @@ namespace spvgentwo
 	// opaque types
 	struct sampler_t {};
 	struct sampled_image_t { Type imageType; };
-	struct event_t {};
-	struct device_event_t {};
-	struct reserve_id_t {};
-	struct queue_t {};
-	struct pipe_storage_t {};
-	struct named_barrier_t {};
-	struct array_t { Type elementType; unsigned int length; };
-	struct runtime_array_t { Type elementType; };
 
 	struct image_t
 	{
 		Type sampledType;
 		spv::Dim dimension = spv::Dim::Max;
+		unsigned int depth = 1u;
 		bool array = false;
 		bool multiSampled = false;
 		SamplerImageAccess samplerAccess = SamplerImageAccess::Unknown;
 		spv::ImageFormat format = spv::ImageFormat::Unknown;
 		spv::AccessQualifier accessQualier = spv::AccessQualifier::Max;
 	};
+
+	struct event_t {};
+	struct device_event_t {};
+	struct reserve_id_t {};
+	struct queue_t {};
+	struct pipe_storage_t {};
+	struct named_barrier_t {};
+	struct vector_t { Type elementType; unsigned int elements; };
+	struct matrix_t { Type columnType; unsigned int columns; };
+	
+	struct array_t { Type elementType; unsigned int length; };
+	struct runtime_array_t { Type elementType; };
 
 	template <>
 	struct Hasher<Type>
@@ -329,6 +346,31 @@ namespace spvgentwo
 
 	template <>
 	inline Type& Type::fundamental<sampler_t>(const sampler_t*) { return Sampler(); }
+
+	template <>
+	inline Type& Type::fundamental<sampled_image_t>(const sampled_image_t* _prop) 
+	{
+		return SampledImage(_prop == nullptr ? nullptr : &_prop->imageType);
+	}
+
+	template <>
+	inline Type& Type::fundamental<image_t>(const image_t* _prop) 
+	{
+		if (_prop == nullptr)
+		{
+			return Image();
+		}
+		else
+		{
+			return Image(&_prop->sampledType, _prop->dimension, _prop->depth, _prop->array, _prop->multiSampled, _prop->samplerAccess, _prop->format, _prop->accessQualier);
+		}
+	}
+
+	template <>
+	inline Type& Type::fundamental<event_t>(const event_t*) { return Event(); }
+
+	template <>
+	inline Type& Type::fundamental<device_event_t>(const device_event_t*) { return DeviceEvent(); }
 
 	template <>
 	inline Type& Type::fundamental<array_t>(const array_t* _prop)	

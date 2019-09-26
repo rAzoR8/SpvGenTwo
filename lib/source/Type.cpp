@@ -235,6 +235,68 @@ spvgentwo::Type& spvgentwo::Type::SampledImage(const Type* _imageType)
 	return *this;
 }
 
+spvgentwo::Type& spvgentwo::Type::Event()
+{
+	m_Type = spv::Op::OpTypeEvent;
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::DeviceEvent()
+{
+	m_Type = spv::Op::OpTypeDeviceEvent;
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::ReserveId()
+{
+	m_Type = spv::Op::OpTypeReserveId;
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::Queue()
+{
+	m_Type = spv::Op::OpTypeQueue;
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::PipeStorage()
+{
+	m_Type = spv::Op::OpTypePipeStorage;
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::NamedBarrier()
+{
+	m_Type = spv::Op::OpTypeNamedBarrier;
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::Vector(unsigned int _elements, const Type* _elementType)
+{
+	m_Type = spv::Op::OpTypeVector;
+	m_VecComponentCount = _elements;
+
+	if (_elementType != nullptr)
+	{
+		m_subTypes.emplace_back(*_elementType);
+	}
+
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::Matrix(unsigned int _columns, const Type* _elementType)
+{
+	m_Type = spv::Op::OpTypeVector;
+	m_MatColumnCount = _columns;
+
+	if (_elementType != nullptr)
+	{
+		m_subTypes.emplace_back(*_elementType);
+	}
+
+	return *this;
+}
+
 spvgentwo::Type& spvgentwo::Type::Member()
 {
 	return m_subTypes.emplace_back(m_subTypes.getAllocator(), this);
