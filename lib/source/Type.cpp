@@ -286,7 +286,7 @@ spvgentwo::Type& spvgentwo::Type::Vector(unsigned int _elements, const Type* _el
 
 spvgentwo::Type& spvgentwo::Type::Matrix(unsigned int _columns, const Type* _elementType)
 {
-	m_Type = spv::Op::OpTypeVector;
+	m_Type = spv::Op::OpTypeMatrix;
 	m_MatColumnCount = _columns;
 
 	if (_elementType != nullptr)

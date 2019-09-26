@@ -22,6 +22,41 @@ namespace spvgentwo::stdrep
 #else
 namespace spvgentwo::stdrep
 {
+	template <class... _Types>
+	using void_t = void;
+
+	template <class T, T Val>
+	struct integral_constant
+	{
+		static constexpr T value = Val;
+
+		using value_type = T;
+		using type = integral_constant;
+
+		constexpr operator value_type() const noexcept {
+			return value;
+		}
+
+		[[nodiscard]] constexpr value_type operator()() const noexcept {
+			return value;
+		}
+	};
+
+	template <bool Val>
+	using bool_constant = integral_constant<bool, Val>;
+
+	using true_type = bool_constant<true>;
+	using false_type = bool_constant<false>;
+
+	template <bool cond, class T = void>
+	struct enable_if {};
+
+	template <class T>
+	struct enable_if<true, T> {	using type = T;	};
+
+	template <bool cond, class T = void>
+	using enable_if_t = typename enable_if<cond, T>::type;
+
 	template <class>
 	inline constexpr bool is_pointer_v = false;
 

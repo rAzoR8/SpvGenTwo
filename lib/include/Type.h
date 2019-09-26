@@ -205,9 +205,9 @@ namespace spvgentwo
 
 	// opaque types
 	struct sampler_t {};
-	struct sampled_image_t { Type imageType; };
+	struct dyn_sampled_image_t { Type imageType; };
 
-	struct image_t
+	struct dyn_image_t
 	{
 		Type sampledType;
 		spv::Dim dimension = spv::Dim::Max;
@@ -225,11 +225,56 @@ namespace spvgentwo
 	struct queue_t {};
 	struct pipe_storage_t {};
 	struct named_barrier_t {};
-	struct vector_t { Type elementType; unsigned int elements; };
-	struct matrix_t { Type columnType; unsigned int columns; };
+	struct dyn_vector_t { Type elementType; unsigned int elements; };
+	struct dyn_matrix_t { Type columnType; unsigned int columns; };
 	
-	struct array_t { Type elementType; unsigned int length; };
-	struct runtime_array_t { Type elementType; };
+	struct dyn_array_t { Type elementType; unsigned int length; };
+	struct dyn_runtime_array_t { Type elementType; };
+
+	template<class T, unsigned int N>
+	struct array_t {
+		using array_element = T;
+		static constexpr unsigned int Elements = N;
+	};
+
+	template<class T, unsigned int N>
+	struct vector_t {
+		using vec_element = T;
+		static constexpr unsigned int Elements = N;
+	};
+
+	template<class T, unsigned int C, unsigned int R>
+	struct matrix_t {
+		using mat_column = vector_t<T, R>;
+		static constexpr unsigned int Columns = C;
+	};
+
+	template<class, class = stdrep::void_t<>>
+	struct is_array_impl : stdrep::false_type { };
+
+	template<class T>
+	struct is_array_impl<T, stdrep::void_t<typename T::array_element>> : stdrep::true_type { };
+
+	template<class T>
+	constexpr bool is_array = is_array_impl<T>::value;
+
+	template<class, class = stdrep::void_t<>>
+	struct is_vector_impl : stdrep::false_type { };
+
+	template<class T>
+	struct is_vector_impl<T, stdrep::void_t<typename T::vec_element>> : stdrep::true_type { };
+
+	template<class T>
+	constexpr bool is_vector = is_vector_impl<T>::value;
+
+	template<class, class = stdrep::void_t<>>
+	struct is_matrix_impl : stdrep::false_type { };
+
+	template<class T>
+	struct is_matrix_impl<T, stdrep::void_t<typename T::mat_column>> : stdrep::true_type { };
+
+	template<class T>
+	constexpr bool is_matrix = is_matrix_impl<T>::value;
 
 	template <>
 	struct Hasher<Type>
@@ -298,19 +343,19 @@ namespace spvgentwo
 			setProperties(_props...);
 		}
 
-		if constexpr (stdrep::is_same_v<Prop, image_t>)
+		if constexpr (stdrep::is_same_v<Prop, dyn_image_t>)
 		{
 			return &_first;
 		}
-		else if constexpr (stdrep::is_same_v<Prop, sampled_image_t>)
+		else if constexpr (stdrep::is_same_v<Prop, dyn_sampled_image_t>)
 		{
 			return &_first;
 		}
-		else if constexpr (stdrep::is_same_v<Prop, array_t>)
+		else if constexpr (stdrep::is_same_v<Prop, dyn_array_t>)
 		{
 			return &_first;
 		}
-		else if constexpr (stdrep::is_same_v<Prop, runtime_array_t>)
+		else if constexpr (stdrep::is_same_v<Prop, dyn_runtime_array_t>)
 		{
 			return &_first;
 		}
@@ -330,6 +375,18 @@ namespace spvgentwo
 				 setProperties(_props...);
 			}
 		}
+		else if constexpr (is_array<T>)
+		{
+			Array(T::Elements).Member().make<typename T::array_element>();
+		}
+		else if constexpr (is_vector<T>)
+		{
+			Vector(T::Elements).Member().make<typename T::vec_element>();
+		}
+		else if constexpr(is_matrix<T>)
+		{
+			Matrix(T::Columns).Member().make<typename T::mat_column>();
+		}
 		else
 		{
 			const void* pProp = nullptr;
@@ -348,13 +405,13 @@ namespace spvgentwo
 	inline Type& Type::fundamental<sampler_t>(const sampler_t*) { return Sampler(); }
 
 	template <>
-	inline Type& Type::fundamental<sampled_image_t>(const sampled_image_t* _prop) 
+	inline Type& Type::fundamental<dyn_sampled_image_t>(const dyn_sampled_image_t* _prop)
 	{
 		return SampledImage(_prop == nullptr ? nullptr : &_prop->imageType);
 	}
 
 	template <>
-	inline Type& Type::fundamental<image_t>(const image_t* _prop) 
+	inline Type& Type::fundamental<dyn_image_t>(const dyn_image_t* _prop)
 	{
 		if (_prop == nullptr)
 		{
@@ -373,16 +430,22 @@ namespace spvgentwo
 	inline Type& Type::fundamental<device_event_t>(const device_event_t*) { return DeviceEvent(); }
 
 	template <>
-	inline Type& Type::fundamental<array_t>(const array_t* _prop)	
+	inline Type& Type::fundamental<dyn_array_t>(const dyn_array_t* _prop)
 	{ 
 		return _prop == nullptr ? Array(0) : Array(_prop->length, &_prop->elementType);
 	}
 
 	template <>
-	inline Type& Type::fundamental<runtime_array_t>(const runtime_array_t* _prop)
+	inline Type& Type::fundamental<dyn_runtime_array_t>(const dyn_runtime_array_t* _prop)
 	{
 		return RuntimeArray(_prop == nullptr ? nullptr : &_prop->elementType);
 	}
+
+	//template<>
+	//inline Type& Type::fundamental<typename vector_t>(vector_t)
+	//{
+	//
+	//}
 
 	template <>
 	inline Type& Type::fundamental<void>(const void*) { return Void(); }

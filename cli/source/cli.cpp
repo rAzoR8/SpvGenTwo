@@ -83,6 +83,10 @@ int main(int argc, char* argv[])
 		Instruction* z = bb->opIAdd(module.type<int>(), x, y);
 		bb.returnValue(z);
 
+		Instruction* vectype = module.type<array_t<float, 3>>();
+		Instruction* mattype = module.type<matrix_t<float, 3, 3>>();
+
+
 		funcAdd.finalize(type, spv::FunctionControlMask::Const);
 	}
 

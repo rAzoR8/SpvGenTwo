@@ -103,7 +103,9 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 		return node.kv.value;
 	}
 
-	Instruction* pInstr = node.kv.value = &m_TypesAndConstants.emplace_back(m_pAllocator);
+	auto entry = Entry<Instruction>::create(m_pAllocator, m_pAllocator);
+
+	Instruction* pInstr = node.kv.value = entry->operator->(); // &m_TypesAndConstants.emplace_back(m_pAllocator);
 
 	const spv::Op base = _type.getBaseType();
 
@@ -158,6 +160,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 		break;
 	case spv::Op::OpTypeArray:
 		pInstr->addOperand(addType(_type.getSubTypes().front())); // element type
+		// TODO: constant and its type need to be generated before this instruction is emplaced
 		pInstr->addOperand(addConstant(newConstant().make(_type.getArrayLength()))); // length as constant
 		break;
 	case spv::Op::OpTypeImage:
@@ -175,6 +178,8 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 	default:
 		break; // unknown type
 	}
+
+	m_TypesAndConstants.append_entry(entry);
 
 	return pInstr;
 }
