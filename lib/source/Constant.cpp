@@ -1,7 +1,8 @@
 #include "Constant.h"
 #include "Operand.h"
 
-spvgentwo::Constant::Constant(IAllocator* _pAllocator) : 
+spvgentwo::Constant::Constant(IAllocator* _pAllocator, Constant* _pParent) : 
+	m_pParent(_pParent),
 	m_Components(_pAllocator),
 	m_literalData(_pAllocator),
 	m_Type(_pAllocator)
@@ -14,6 +15,10 @@ spvgentwo::Constant::Constant(const Constant& _other) :
 	m_literalData(_other.m_literalData),
 	m_Type(_other.m_Type)
 {
+	for(Constant& comp : m_Components)
+	{
+		comp.m_pParent = this;
+	}
 }
 
 spvgentwo::Constant::Constant(Constant&& _other) noexcept:
@@ -22,6 +27,10 @@ spvgentwo::Constant::Constant(Constant&& _other) noexcept:
 	m_literalData(stdrep::move(_other.m_literalData)),
 	m_Type(stdrep::move(_other.m_Type))
 {
+	for (Constant& comp : m_Components)
+	{
+		comp.m_pParent = this;
+	}
 }
 
 spvgentwo::Constant::~Constant()
@@ -35,6 +44,12 @@ spvgentwo::Constant& spvgentwo::Constant::operator=(const Constant& _other)
 	m_literalData = _other.m_literalData;
 	m_Operation = _other.m_Operation;
 	m_Type = _other.m_Type;
+
+	for (Constant& comp : m_Components)
+	{
+		comp.m_pParent = this;
+	}
+
 	return *this;
 }
 
@@ -45,5 +60,15 @@ spvgentwo::Constant& spvgentwo::Constant::operator=(Constant&& _other) noexcept
 	m_literalData = stdrep::move(_other.m_literalData);
 	m_Operation = stdrep::move(_other.m_Operation);
 	m_Type = stdrep::move(_other.m_Type);
+
+	for (Constant& comp : m_Components)
+	{
+		comp.m_pParent = this;
+	}
 	return *this;
+}
+
+spvgentwo::Constant& spvgentwo::Constant::Component()
+{
+	return m_Components.emplace_back(m_Components.getAllocator(), this);
 }

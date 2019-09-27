@@ -7,7 +7,7 @@ namespace spvgentwo
 	class Constant
 	{
 	public:
-		Constant(IAllocator* _pAllocator);
+		Constant(IAllocator* _pAllocator, Constant* _pParent = nullptr);
 		Constant(const Constant& _other);
 		Constant(Constant&& _other) noexcept;
 		~Constant();
@@ -24,8 +24,10 @@ namespace spvgentwo
 		template <class T>
 		Constant& make(const T& _value, const bool _spec = false);
 
+		Constant& Component();
+
 	private:
-		//Constant* m_pParent = nullptr;
+		Constant* m_pParent = nullptr;
 		spv::Op m_Operation = spv::Op::OpConstantNull;
 		Type m_Type;
 
@@ -33,14 +35,60 @@ namespace spvgentwo
 		List<Constant> m_Components;
 	};
 
+	//template <spv::SamplerAddressingMode _addr, ConstantSamplerCoordMode _coord, spv::SamplerFilterMode _filter>
+	struct const_sampler_t
+	{
+		using const_sampler_type = sampler_t;
+		spv::SamplerAddressingMode addressMode = spv::SamplerAddressingMode::None;
+		ConstantSamplerCoordMode coordMode = ConstantSamplerCoordMode::UnNormalized;
+		spv::SamplerFilterMode filterMode = spv::SamplerFilterMode::Nearest;;
+	};
+
+	template<class, class = stdrep::void_t<>>
+	struct is_const_sampler : stdrep::false_type {};
+	template<class T>
+	struct is_const_sampler<T, stdrep::void_t<typename T::const_sampler_type>> : stdrep::true_type {};
+	template<class T>
+	constexpr bool is_const_sampler_v = is_const_sampler<T>::value;
+
+	template <class T, unsigned int N>
+	struct const_vector_t
+	{
+		using const_vector_type = vector_t<T, N>;
+		static constexpr unsigned int Elements = N;
+		T data[N];
+	};
+
+	template<class, class = stdrep::void_t<>>
+	struct is_const_vector : stdrep::false_type {};
+	template<class T>
+	struct is_const_vector<T, stdrep::void_t<typename T::const_vector_type>> : stdrep::true_type {};
+	template<class T>
+	constexpr bool is_const_vector_v = is_const_vector<T>::value;
+
 	template <class T>
 	Constant& Constant::make(const T& _value, const bool _spec)
 	{
-		// TODO: handle OpConstantNull, OpConstantComposite (vector, matrix), OpConstantSampler, OpSpecConstantOp
+		// TODO: handle OpConstantNull, OpConstantComposite (vector, matrix), OpSpecConstantOp
 
-		if constexpr (traits::is_primitive_type_v<T>)
+		if constexpr (is_const_vector_v<T>)
 		{
-			m_Type.fundamental<T>(); // TODO: implement generic make<T> for Type
+			m_Type.make<typename T::const_vector_type>();
+			for (unsigned int i = 0u; i < T::Elements; ++i)
+			{
+				Component().make(_value.data[i]);
+			}
+		}
+		else if constexpr(is_const_sampler_v<T>)
+		{
+			m_Type.make<typename T::const_sampler_type>();
+			appendLiteralsToContainer(m_literalData, _value.addressMode);
+			appendLiteralsToContainer(m_literalData, _value.coordMode);
+			appendLiteralsToContainer(m_literalData, _value.filterMode);
+		}
+		else
+		{
+			m_Type.make<T>();			
 			appendLiteralsToContainer(m_literalData, _value);
 		}
 
@@ -48,9 +96,13 @@ namespace spvgentwo
 		{
 			m_Operation = _value ? (_spec ? spv::Op::OpSpecConstantTrue : spv::Op::OpConstantTrue) : (_spec ? spv::Op::OpSpecConstantFalse : spv::Op::OpConstantFalse);
 		}
-		else
+		else if constexpr(traits::is_primitive_type_v<T>)
 		{
 			m_Operation = _spec ? spv::Op::OpSpecConstant : spv::Op::OpConstant;
+		}
+		else // composite type
+		{
+			m_Operation = _spec ? spv::Op::OpSpecConstantComposite : spv::Op::OpConstantComposite;
 		}
 
 		return *this;

@@ -164,8 +164,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 		break;
 	case spv::Op::OpTypeArray:
 		pInstr->addOperand(addType(_type.getSubTypes().front())); // element type
-		// TODO: constant and its type need to be generated before this instruction is emplaced
-		pInstr->addOperand(addConstant(newConstant().make(_type.getArrayLength()))); // length as constant
+		pInstr->addOperand(constant(_type.getArrayLength())); // length as constant
 		break;
 	case spv::Op::OpTypeImage:
 		pInstr->addOperand(addType(_type.getSubTypes().front())); // sampled type

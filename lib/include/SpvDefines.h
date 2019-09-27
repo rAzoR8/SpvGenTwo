@@ -13,6 +13,12 @@ namespace spvgentwo
 		Storage = 2  // indicates will be used without a sampler (a storage image)
 	};
 
+	enum class ConstantSamplerCoordMode : unsigned int
+	{
+		UnNormalized = 0,
+		Normalized = 1
+	};
+
 	constexpr unsigned int makeGeneratorId(unsigned short _gen, unsigned short _ver) { return _gen << 16 | _ver; }
 
 	constexpr bool isType(const spv::Op _type)

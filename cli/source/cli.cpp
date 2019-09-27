@@ -85,6 +85,7 @@ int main(int argc, char* argv[])
 
 		Instruction* vectype = module.type<array_t<float, 3>>();
 		Instruction* mattype = module.type<matrix_t<float, 3, 3>>();
+		Instruction* consvec = module.constant(const_vector_t<float, 3>({ 1.f, 2.f, 3.f }));
 
 
 		funcAdd.finalize(type, spv::FunctionControlMask::Const);
