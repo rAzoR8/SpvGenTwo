@@ -89,6 +89,13 @@ int main(int argc, char* argv[])
 		const_matrix_t<float, 2, 2> mat{ 1.f, 2.f, 3.f, 4.f };
 		Instruction* consvmat = module.constant(mat);
 
+		auto v = make_vector(1.f, 2.f, 3.f);
+
+		//auto m = make_matrix(v, v, v);
+
+		//auto ar = make_array(mat, mat, mat, mat);
+		//module.constant(ar);
+
 		funcAdd.finalize(type, spv::FunctionControlMask::Const);
 	}
 

@@ -66,6 +66,11 @@ namespace spvgentwo
 	template<class T>
 	constexpr bool is_const_vector_v = is_const_vector<T>::value;
 
+	template <class T, class ...Elems>
+	auto make_vector(T&& val, Elems&& ... _elements) {
+		return const_vector_t<remove_cvref_t<T>, 1 + sizeof...(_elements)>{stdrep::forward<T>(val), stdrep::forward<Elems>(_elements)...};
+	};
+
 	template <class T, unsigned int C, unsigned int R>
 	struct const_matrix_t
 	{
@@ -82,12 +87,44 @@ namespace spvgentwo
 	template<class T>
 	constexpr bool is_const_matrix_v = is_const_matrix<T>::value;
 
+	//template <class T, unsigned int N, class ...Elems>
+	//auto make_matrix(const_vector_t<T,N> && val, Elems&& ... _elements) {
+	//	return const_matrix_t<remove_cvref_t<T>, 1 + sizeof...(_elements), N>{stdrep::forward<T>(val), stdrep::forward<Elems>(_elements)...};
+	//};
+
+	template <class T, unsigned int N>
+	struct const_array_t
+	{
+		using const_array_type = array_t<T, N>;
+		static constexpr unsigned int Elements = N;
+		T data[N];
+	};
+
+	template<class, class = stdrep::void_t<>>
+	struct is_const_array : stdrep::false_type {};
+	template<class T>
+	struct is_const_array<T, stdrep::void_t<typename T::const_array_type>> : stdrep::true_type {};
+	template<class T>
+	constexpr bool is_const_array_v = is_const_array<T>::value;
+
+	template <class T, class ...Elems>
+	auto make_array(T&& val, Elems&& ... _elements) {
+		return const_array_t<remove_cvref_t<T>, 1 + sizeof...(_elements)>{stdrep::forward<T>(val), stdrep::forward<Elems>(_elements)...};
+	};
+
 	template <class T>
 	Constant& Constant::make(const T& _value, const bool _spec)
 	{
-		// TODO: handle OpConstantNull, OpConstantComposite (vector, matrix), OpSpecConstantOp
-
-		if constexpr (is_const_vector_v<T>)
+		// TODO: handle OpConstantNull, OpSpecConstantOp
+		if constexpr (is_const_array_v<T>)
+		{
+			m_Type.make<typename T::const_array_type>();
+			for (unsigned int i = 0u; i < T::Elements; ++i)
+			{
+				Component().make(_value.data[i]);
+			}
+		}
+		else if constexpr (is_const_vector_v<T>)
 		{
 			m_Type.make<typename T::const_vector_type>();
 			for (unsigned int i = 0u; i < T::Elements; ++i)
