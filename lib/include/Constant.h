@@ -66,6 +66,22 @@ namespace spvgentwo
 	template<class T>
 	constexpr bool is_const_vector_v = is_const_vector<T>::value;
 
+	template <class T, unsigned int C, unsigned int R>
+	struct const_matrix_t
+	{
+		using const_matrix_type = matrix_t<T, C, R>;
+		static constexpr unsigned int Columns = C;
+		static constexpr unsigned int Rows = R;
+		const_vector_t<T,R> data[C]; // columns
+	};
+
+	template<class, class = stdrep::void_t<>>
+	struct is_const_matrix : stdrep::false_type {};
+	template<class T>
+	struct is_const_matrix<T, stdrep::void_t<typename T::const_matrix_type>> : stdrep::true_type {};
+	template<class T>
+	constexpr bool is_const_matrix_v = is_const_matrix<T>::value;
+
 	template <class T>
 	Constant& Constant::make(const T& _value, const bool _spec)
 	{
@@ -75,6 +91,14 @@ namespace spvgentwo
 		{
 			m_Type.make<typename T::const_vector_type>();
 			for (unsigned int i = 0u; i < T::Elements; ++i)
+			{
+				Component().make(_value.data[i]);
+			}
+		}
+		else if constexpr (is_const_matrix_v<T>)
+		{
+			m_Type.make<typename T::const_matrix_type>();
+			for (unsigned int i = 0u; i < T::Columns; ++i)
 			{
 				Component().make(_value.data[i]);
 			}
