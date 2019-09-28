@@ -91,9 +91,9 @@ int main(int argc, char* argv[])
 
 		auto v = make_vector(1.f, 2.f, 3.f);
 
-		//auto m = make_matrix(v, v, v);
+		auto m = make_matrix(v, v, v);
 
-		//auto ar = make_array(mat, mat, mat, mat);
+		auto ar = make_array(v, v, v, v);
 		//module.constant(ar);
 
 		funcAdd.finalize(type, spv::FunctionControlMask::Const);
