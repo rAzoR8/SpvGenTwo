@@ -42,7 +42,6 @@ namespace spvgentwo
 		if constexpr (is_const_array_v<T>)
 		{
 			m_Type.make<typename T::const_array_type>();
-			//m_Type.ArrayElement(T::Elements)
 			for (unsigned int i = 0u; i < T::Elements; ++i)
 			{
 				Component().make(_value.data[i]);

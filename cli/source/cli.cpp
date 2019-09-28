@@ -93,8 +93,8 @@ int main(int argc, char* argv[])
 
 		auto m = make_matrix(v, v, v);
 
-		auto ar = make_array(v, v, v, v);
-		//module.constant(ar);
+		auto ar = make_array(m, m);
+		module.constant(ar);
 
 		funcAdd.finalize(type, spv::FunctionControlMask::Const);
 	}

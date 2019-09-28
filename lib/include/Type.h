@@ -291,6 +291,7 @@ namespace spvgentwo
 	struct const_vector_t
 	{
 		using const_vector_type = vector_t<T, N>;
+		using element_type = T;
 		static constexpr unsigned int Elements = N;
 		T data[N];
 	};
@@ -311,6 +312,7 @@ namespace spvgentwo
 	struct const_matrix_t
 	{
 		using const_matrix_type = matrix_t<T, C, R>;
+		using element_type = T;
 		static constexpr unsigned int Columns = C;
 		static constexpr unsigned int Rows = R;
 		const_vector_t<T, R> data[C]; // columns
@@ -453,13 +455,25 @@ namespace spvgentwo
 		{
 			Array(T::Elements).Member().make<typename T::array_element_type>();
 		}
+		else if constexpr (is_const_array_v<T>)
+		{
+			make<typename T::const_array_type>();
+		}
 		else if constexpr (is_vector_v<T>)
 		{
 			Vector(T::Elements).Member().make<typename T::vec_element_type>();
 		}
+		else if constexpr (is_const_vector_v<T>)
+		{
+			make<typename T::const_vector_type>();
+		}
 		else if constexpr(is_matrix_v<T>)
 		{
 			Matrix(T::Columns).Member().make<typename T::mat_column_type>();
+		}
+		else if constexpr (is_const_matrix_v<T>)
+		{
+			make<typename T::const_matrix_type>();
 		}
 		else
 		{
