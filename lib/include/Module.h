@@ -24,20 +24,21 @@ namespace spvgentwo
 		Instruction* addExtensionInstructionImport(const char* _pExtName);
 
 		Instruction* addType(const Type& _type);
+		const Type* getTypeInfo(Instruction* _pTypeInstr);
 
 		template <class T, class ... Props>
 		Instruction* type(Props ... _props);
 
+		Instruction* compositeType(const spv::Op _Type, const List<Instruction*>& _subTypes);
+		
+		template <class ... TypeInstr>
+		Instruction* compositeType(const spv::Op _Type, TypeInstr ... _types);
+		
 		Instruction* addConstant(const Constant& _const);
 
 		template <class T>
 		Instruction* constant(const T& _value, const bool _spec = false);
-
-		Instruction* compositeType(const spv::Op _Type, const List<Instruction*>& _subTypes);
-
-		template <class ... TypeInstr>
-		Instruction* compositeType(const spv::Op _Type, TypeInstr ... _types);
-
+		
 		void setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
 
 		const List<Instruction>& getCapabilities() const { return m_Capabilities; }
@@ -83,7 +84,9 @@ namespace spvgentwo
 		List<Instruction> m_Decorations; // opDecorate, opMemberDecorate
 		
 		List<Instruction> m_TypesAndConstants;
-		HashMap<Type, Instruction*> m_TypeBuilder;
+		HashMap<Type, Instruction*> m_TypeToInstr;
+		HashMap<Instruction*, Type*> m_InstrToType;
+
 		HashMap<Constant, Instruction*> m_ConstantBuilder;
 
 		List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function

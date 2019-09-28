@@ -14,7 +14,8 @@ spvgentwo::Module::Module(IAllocator* _pAllocator) :
 	m_ModuleProccessed(_pAllocator),
 	m_Decorations(_pAllocator),
 	m_TypesAndConstants(_pAllocator),
-	m_TypeBuilder(_pAllocator),
+	m_TypeToInstr(_pAllocator),
+	m_InstrToType(_pAllocator),
 	m_ConstantBuilder(_pAllocator),
 	m_GlobalVariables(_pAllocator)
 {
@@ -131,7 +132,7 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 
 spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 {
-	auto& node = m_TypeBuilder.emplaceUnique(_type, nullptr);
+	auto& node = m_TypeToInstr.emplaceUnique(_type, nullptr);
 	if (node.kv.value != nullptr)
 	{
 		return node.kv.value;
@@ -140,6 +141,8 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 	auto entry = Entry<Instruction>::create(m_pAllocator, m_pAllocator);
 
 	Instruction* pInstr = node.kv.value = entry->operator->(); // &m_TypesAndConstants.emplace_back(m_pAllocator);
+
+	m_InstrToType.emplaceUnique(pInstr, &node.kv.key);
 
 	const spv::Op base = _type.getBaseType();
 
@@ -215,6 +218,19 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 	m_TypesAndConstants.append_entry(entry);
 
 	return pInstr;
+}
+
+const spvgentwo::Type* spvgentwo::Module::getTypeInfo(Instruction* _pTypeInstr)
+{
+	if (_pTypeInstr->isTypeOp())
+	{
+		Type** t = m_InstrToType.get(_pTypeInstr);
+		if (t != nullptr)
+		{
+			return *t;
+		}
+	}
+	return nullptr;
 }
 
 spvgentwo::Instruction* spvgentwo::Module::compositeType(const spv::Op _Type, const List<Instruction*>& _subTypes)
