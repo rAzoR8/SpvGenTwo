@@ -73,13 +73,23 @@ void spvgentwo::Instruction::resolveId(spv::Id& _resultId)
 	}
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::getType()
+spvgentwo::Instruction* spvgentwo::Instruction::getType() const
 {
-	if (hasResultType() && empty() == false)
+	if (hasResultType()/* && empty() == false*/)
 	{
 		return front().getInstruction();
 	}
 	return nullptr;
+}
+
+spv::StorageClass spvgentwo::Instruction::getStorageClass() const
+{
+	if (m_Operation == spv::Op::OpVariable)
+	{
+		return static_cast<spv::StorageClass>((begin() + 2)->getLiteral().value);
+	}
+
+	return spv::StorageClass::Max;
 }
 
 bool spvgentwo::Instruction::isTypeOp() const
@@ -152,11 +162,6 @@ void spvgentwo::Instruction::opReturnValue(Instruction* _pValue)
 	makeOp(spv::Op::OpReturnValue, _pValue);
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight)
-{
-	return makeOp(spv::Op::OpIAdd, _pResultType, InvalidId, _pLeft, _pRight);
-}
-
 void spvgentwo::Instruction::opFunctionEnd()
 {
 	makeOp(spv::Op::OpFunctionEnd);
@@ -169,4 +174,19 @@ void spvgentwo::Instruction::opName(Instruction* _pTarget, const char* _pName)
 void spvgentwo::Instruction::opMemberName(Instruction* _pTargetStructType, unsigned int _memberIndex, const char* _pName)
 {
 	makeOp(spv::Op::OpMemberName, _pTargetStructType, _memberIndex, _pName);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight)
+{
+	return makeOp(spv::Op::OpIAdd, _pResultType, InvalidId, _pLeft, _pRight);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opISub(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight)
+{
+	return makeOp(spv::Op::OpISub, _pResultType, InvalidId, _pLeft, _pRight);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opIMul(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight)
+{
+	return makeOp(spv::Op::OpIMul, _pResultType, InvalidId, _pLeft, _pRight);
 }

@@ -32,7 +32,10 @@ namespace spvgentwo
 		Operand& addOperand(Args&& ... _operand) { return emplace_back(stdrep::forward<Args>(_operand)...); }
 
 		spv::Id getResultId() const;
-		Instruction* getType();
+		Instruction* getType() const;
+
+		// get StorageClass of OpVariable instructions
+		spv::StorageClass getStorageClass() const;
 	
 		bool isTypeOp() const;
 
@@ -92,9 +95,20 @@ namespace spvgentwo
 
 		void opName(Instruction* _pTarget, const char* _pName);
 
-		void opMemberName(Instruction* _pTargetStructType, unsigned int _memberindex, const char* _pName);
+		void opMemberName(Instruction* _pTargetStructType, unsigned int _memberIndex, const char* _pName);
 
+		template <class ... Decorations>
+		void opDecorate(Instruction* _pTarget, spv::Decoration _decoration, Decorations ... _decorations);
+
+		template <class ... Decorations>
+		void opMemberDecorate(Instruction* _pTargetStructType, unsigned int _memberIndex, spv::Decoration _decoration, Decorations ... _decorations);
+
+		template <class ... Instr>
+		void opMemberId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr*..._ids);
+	
 		Instruction* opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
+		Instruction* opISub(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
+		Instruction* opIMul(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
 
 	private:
 		void resolveId(spv::Id& _resultId);
@@ -191,5 +205,23 @@ namespace spvgentwo
 	inline Instruction* Instruction::opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instr ..._initializer)
 	{
 		return makeOp(spv::Op::OpVariable, _pResultType, InvalidId, _initializer....);
+	}
+
+	template<class ...Decorations>
+	inline void Instruction::opDecorate(Instruction* _pTarget, spv::Decoration _decoration, Decorations ..._decorations)
+	{
+		makeOp(spv::Op::OpDecorate, _pTarget, _decoration, _decorations...);
+	}
+
+	template<class ...Decorations>
+	inline void Instruction::opMemberDecorate(Instruction* _pTargetStructType, unsigned int _memberIndex, spv::Decoration _decoration, Decorations ..._decorations)
+	{
+		makeOp(spv::Op::OpMemberDecorate, _pTargetStructType, _memberIndex, _decoration, _decorations...);
+	}
+
+	template<class ...Instr>
+	inline void Instruction::opMemberId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr* ..._ids)
+	{
+		makeOp(spv::Op::OpDecorateId, _pTarget, _decoration, _ids...);
 	}
 } // !spvgentwo
