@@ -161,3 +161,12 @@ void spvgentwo::Instruction::opFunctionEnd()
 {
 	makeOp(spv::Op::OpFunctionEnd);
 }
+
+void spvgentwo::Instruction::opName(Instruction* _pTarget, const char* _pName)
+{
+	makeOp(spv::Op::OpName, _pTarget, _pName);
+}
+void spvgentwo::Instruction::opMemberName(Instruction* _pTargetStructType, unsigned int _memberIndex, const char* _pName)
+{
+	makeOp(spv::Op::OpMemberName, _pTargetStructType, _memberIndex, _pName);
+}

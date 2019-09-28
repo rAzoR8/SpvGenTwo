@@ -90,6 +90,10 @@ namespace spvgentwo
 		template <class ...Instr>
 		Instruction* opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instr ... _initializer);
 
+		void opName(Instruction* _pTarget, const char* _pName);
+
+		void opMemberName(Instruction* _pTargetStructType, unsigned int _memberindex, const char* _pName);
+
 		Instruction* opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
 
 	private:

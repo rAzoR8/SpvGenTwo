@@ -42,9 +42,22 @@ namespace spvgentwo
 
 		const List<Instruction>& getCapabilities() const { return m_Capabilities; }
 
-		void resolveIds();
-
 		void write(IWriter* _pWriter);
+
+		// for use with opString, opSource, opSourceContinued, opSourceExtension
+		Instruction* addSourceStringInstr();
+
+		// for use with opName and opMemberName
+		Instruction* addNameInstr();
+
+		// for use with opModuleProccessed
+		Instruction* addModuleProccessedInstr();
+
+		// for use with opDecoration, opMemberDecoration etc
+		Instruction* addDecorationInstr();
+
+		// for use with opVariable with StorageClass != Function
+		Instruction* addGlobalVariableInstr();
 
 		// creates new empty type using this modules allocator
 		Type newType();
@@ -63,9 +76,17 @@ namespace spvgentwo
 		List<Instruction> m_ExtInstrImport; // todo: map between ext names and Instruction*
 		Instruction m_MemoryModel;
 
+		List<Instruction> m_SourceStrings; // opString, opSource, opSourceContinued, opSourceExtension
+		List<Instruction> m_Names; // opName, opMemberName
+		List<Instruction> m_ModuleProccessed; // opName, opMemberName
+
+		List<Instruction> m_Decorations; // opDecorate, opMemberDecorate
+		
 		List<Instruction> m_TypesAndConstants;
 		HashMap<Type, Instruction*> m_TypeBuilder;
 		HashMap<Constant, Instruction*> m_ConstantBuilder;
+
+		List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function
 
 		unsigned int m_maxId = 0u;
 	};

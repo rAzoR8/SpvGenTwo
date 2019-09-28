@@ -9,9 +9,14 @@ spvgentwo::Module::Module(IAllocator* _pAllocator) :
 	m_MemoryModel(_pAllocator),
 	m_Extensions(_pAllocator),
 	m_ExtInstrImport(_pAllocator),
+	m_SourceStrings(_pAllocator),
+	m_Names(_pAllocator),
+	m_ModuleProccessed(_pAllocator),
+	m_Decorations(_pAllocator),
 	m_TypesAndConstants(_pAllocator),
 	m_TypeBuilder(_pAllocator),
-	m_ConstantBuilder(_pAllocator)
+	m_ConstantBuilder(_pAllocator),
+	m_GlobalVariables(_pAllocator)
 {
 }
 
@@ -43,6 +48,31 @@ void spvgentwo::Module::addExtension(const char* _pExtName)
 spvgentwo::Instruction* spvgentwo::Module::addExtensionInstructionImport(const char* _pExtName)
 {
 	return m_ExtInstrImport.emplace_back(m_pAllocator).opExtInstrImport(_pExtName);
+}
+
+spvgentwo::Instruction* spvgentwo::Module::addSourceStringInstr()
+{
+	return &m_SourceStrings.emplace_back(m_pAllocator);
+}
+
+spvgentwo::Instruction* spvgentwo::Module::addNameInstr()
+{
+	return &m_Names.emplace_back(m_pAllocator);
+}
+
+spvgentwo::Instruction* spvgentwo::Module::addModuleProccessedInstr()
+{
+	return &m_ModuleProccessed.emplace_back(m_pAllocator);
+}
+
+spvgentwo::Instruction* spvgentwo::Module::addDecorationInstr()
+{
+	return &m_Decorations.emplace_back(m_pAllocator);
+}
+
+spvgentwo::Instruction* spvgentwo::Module::addGlobalVariableInstr()
+{
+	return &m_GlobalVariables.emplace_back(m_pAllocator);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
@@ -222,6 +252,12 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	writeInstructions(_pWriter, m_ExtInstrImport, m_maxId);
 	m_MemoryModel.write(_pWriter, m_maxId);
 
+	writeInstructions(_pWriter, m_SourceStrings, m_maxId);
+	writeInstructions(_pWriter, m_Names, m_maxId);
+	writeInstructions(_pWriter, m_ModuleProccessed, m_maxId);
+
+	writeInstructions(_pWriter, m_Decorations, m_maxId);
+
 	// write entry points declarations
 	for (Function& fun : *this)
 	{
@@ -244,19 +280,13 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	}
 	
 	// TODO:
-	//7. These debug instructions, which must be grouped in the following order :
-	//	a. all OpString, OpSourceExtension, OpSource, and OpSourceContinued, without forward references.
-	//	b. all OpNameand all OpMemberName
-	//	c.all OpModuleProcessed instructions
-
-	// TODO:
 	// all decoration instructions (OpDecorate, OpMemberDecorate, OpGroupDecorate, OpGroupMemberDecorate, and OpDecorationGroup).
 
 	// write types and constants
 	writeInstructions(_pWriter, m_TypesAndConstants, m_maxId);
 	
-	// TODO:
 	// all global variable declarations(all OpVariable instructions whose Storage Class is notFunction)
+	writeInstructions(_pWriter, m_GlobalVariables, m_maxId); // TODO: check StorageClass
 
 	//  All function declarations (function without body)
 	for (Function& fun : *this)
