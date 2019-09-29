@@ -115,6 +115,13 @@ namespace spvgentwo
 
 		template <class ... Instr>
 		void opMemberId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr*..._ids);
+
+		template <class ... VarParents>
+		Instruction* opPhi(Instruction* _pResultType, Instruction* _pVar, BasicBlock* _pVarBB, VarParents ... _parents);
+
+		// deduce parent form input variables
+		template <class ... VarInst>
+		Instruction* opPhiEx(Instruction* _pResultType, Instruction* _pVar, VarInst* ... _variables);
 	
 		Instruction* opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
 		Instruction* opISub(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
@@ -127,6 +134,8 @@ namespace spvgentwo
 		template <class T, class ...Args>
 		void makeOpInternal(T first, Args ... _args);
 
+		template <class ... VarInst>
+		Instruction* opPhiExInternal(Instruction* _pVar, VarInst* ... _variables);
 
 	private:
 		spv::Op m_Operation = spv::Op::OpNop;
@@ -239,5 +248,32 @@ namespace spvgentwo
 	inline void Instruction::opMemberId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr* ..._ids)
 	{
 		makeOp(spv::Op::OpDecorateId, _pTarget, _decoration, _ids...);
+	}
+
+	template<class ...VarParents>
+	inline Instruction* Instruction::opPhi(Instruction* _pResultType, Instruction* _pVar, BasicBlock* _pVarBB, VarParents ..._parents)
+	{
+		return makeOp(spv::Op::OpPhi, _pResultType, InvalidId, _pVar, _pVarBB, _parents...);
+	}
+
+	template<class ...VarInst>
+	inline Instruction* Instruction::opPhiEx(Instruction* _pResultType, Instruction* _pVar, VarInst* ..._variables)
+	{
+		makeOp(spv::Op::OpPhi, _pResultType, InvalidId);
+		return opPhiExInternal(_pVar, _variables...);
+	}
+
+	template<class ...VarInst>
+	inline Instruction* Instruction::opPhiExInternal(Instruction* _pVar, VarInst* ..._variables)
+	{
+		addOperand(_pVar);
+		addOperand(_pVar->getBasicBlock());
+
+		if constexpr(sizeof...(_variables) > 0)
+		{
+			opPhiExInternal(_variables...);
+		}
+
+		return this;
 	}
 } // !spvgentwo
