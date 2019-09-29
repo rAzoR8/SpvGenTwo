@@ -117,6 +117,21 @@ void spvgentwo::writeInstructions(IWriter* _pWriter, const List<Instruction>& _i
 	}
 }
 
+void spvgentwo::Instruction::opNop()
+{
+	makeOp(spv::Op::OpNop);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opUndef(Instruction* _pResultType)
+{
+	return makeOp(spv::Op::OpUndef, _pResultType, InvalidId);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opSizeOf(Instruction* _pResultType, Instruction* _pPointerToVar)
+{
+	return makeOp(spv::Op::OpSizeOf, _pResultType, InvalidId, _pPointerToVar);
+}
+
 void spvgentwo::Instruction::opCapability(const spv::Capability _capability)
 {
 	makeOp(spv::Op::OpCapability, _capability);
@@ -132,7 +147,7 @@ void spvgentwo::Instruction::opExtension(const char* _pExtName)
 	makeOp(spv::Op::OpExtension, _pExtName);
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opExtInstrImport(const char* _pExtName)
+spvgentwo::Instruction* spvgentwo::Instruction::opExtInstImport(const char* _pExtName)
 {
 	return makeOp(spv::Op::OpExtInstImport, InvalidId, _pExtName);
 }

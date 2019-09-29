@@ -48,7 +48,7 @@ void spvgentwo::Module::addExtension(const char* _pExtName)
 
 spvgentwo::Instruction* spvgentwo::Module::addExtensionInstructionImport(const char* _pExtName)
 {
-	return m_ExtInstrImport.emplace_back(m_pAllocator).opExtInstrImport(_pExtName);
+	return m_ExtInstrImport.emplace_back(m_pAllocator).opExtInstImport(_pExtName);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addSourceStringInstr()

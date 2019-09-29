@@ -57,6 +57,12 @@ namespace spvgentwo
 		template <class ...Args>
 		void appendLiterals(Args ... _args);
 
+		void opNop();
+
+		Instruction* opUndef(Instruction* _pResultType);
+
+		Instruction* opSizeOf(Instruction* _pResultType, Instruction* _pPointerToVar);
+
 		// instruction generators:
 		// all instructions generating a result id return a pointer to this instruction for reference (passing to other instruction operand)
 		void opCapability(const spv::Capability _capability);
@@ -65,7 +71,11 @@ namespace spvgentwo
 
 		void opExtension(const char* _pExtName);
 
-		Instruction* opExtInstrImport(const char* _pExtName);
+		// generates extension id
+		Instruction* opExtInstImport(const char* _pExtName);
+
+		template <class ...Operands>
+		Instruction* opExtInst(Instruction* _pResultType, Instruction* _pExtensionId, unsigned int _instOpCode, Operands ... _operands);
 
 		Instruction* opLabel();
 
@@ -181,6 +191,12 @@ namespace spvgentwo
 	inline void Instruction::appendLiterals(Args ..._args)
 	{
 		appendLiteralsToContainer(*this, _args...);
+	}
+
+	template<class ...Operands>
+	inline Instruction* Instruction::opExtInst(Instruction* _pResultType, Instruction* _pExtensionId, unsigned int _instOpCode, Operands ..._operands)
+	{
+		return makeOp(spv::Op::OpExtInst, _pResultType, InvalidId, _pExtensionId, literal_t{ _instOpCode }, _operands...);
 	}
 
 	template<class ...ArgInstr>
