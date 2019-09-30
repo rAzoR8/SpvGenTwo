@@ -235,15 +235,19 @@ const spvgentwo::Type* spvgentwo::Module::getTypeInfo(Instruction* _pTypeInstr)
 
 spvgentwo::Instruction* spvgentwo::Module::compositeType(const spv::Op _Type, const List<Instruction*>& _subTypes)
 {
-	// TODO: feed into TypeBuilder (use reverse Instruction* -> Type HashMap?)
-	Instruction* pInstr = m_TypesAndConstants.emplace_back(m_pAllocator).makeOp(_Type, InvalidId);
+	Type t(m_pAllocator);
+	t.setBaseType(_Type);
 	
 	for (Instruction* pSubType : _subTypes)
 	{
-		pInstr->addOperand(pSubType);
+		const Type* info = getTypeInfo(pSubType);
+		if (info != nullptr)
+		{
+			t.getSubTypes().emplace_back(*info);
+		}
 	}
 
-	return pInstr;
+	return addType(t);
 }
 
 void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel)

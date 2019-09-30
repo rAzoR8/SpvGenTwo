@@ -67,7 +67,7 @@ namespace spvgentwo
 
 	private:
 		template <class ... TypeInstr>
-		Instruction* compositeType(Instruction* _pCompositeTye, Instruction* _pSubType, TypeInstr ... _types);
+		void compositeType(Type& _compositeTye, Instruction* _pSubType, TypeInstr ... _types);
 
 	private:
 
@@ -111,26 +111,29 @@ namespace spvgentwo
 	template<class ...TypeInstr>
 	inline Instruction* Module::compositeType(const spv::Op _Type, TypeInstr ..._types)
 	{
-		Instruction* _pType = m_TypesAndConstants.emplace_back(m_pAllocator).makeOp(_Type, InvalidId);
+		Type t(m_pAllocator);
+		t.setBaseType(_Type);
 
 		if constexpr (sizeof...(_types) > 0u)
 		{
-			return compositeType(_pType, _types...);
+			compositeType(t, _types...);
 		}
 	
-		return _pType;
+		return addType(t);
 	}
 
 	template<class ...TypeInstr>
-	inline Instruction* Module::compositeType(Instruction* _pCompositeType, Instruction* _pSubType, TypeInstr ..._types)
+	inline void Module::compositeType(Type& _compositeType, Instruction* _pSubType, TypeInstr ..._types)
 	{
-		_pCompositeType->addOperand(_pSubType);
+		const Type* info = getTypeInfo(_pSubType);
+		if (info != nullptr)
+		{
+			_compositeType.getSubTypes().emplace_back(*info);
+		}
 
 		if constexpr (sizeof...(_types) > 0u)
 		{
-			compositeType(_pCompositeType, _types...);
-		}
-
-		return _pCompositeType;
+			compositeType(_compositeType, _types...);
+		};
 	}
 } // !spvgentwo
