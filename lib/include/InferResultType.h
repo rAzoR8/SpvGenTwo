@@ -16,4 +16,7 @@ namespace spvgentwo
 
 	Instruction* selectType(const spv::Op _type, Instruction* _leftTypeInstr, Instruction* _rightTypeInstr);
 
+	// check if type OpCode matches _type, returns _typeInstr or nullptr
+	Instruction* checkType(const spv::Op _type, Instruction* _typeInstr);
+
 } //!spvgentwo

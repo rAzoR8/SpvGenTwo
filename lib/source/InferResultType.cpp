@@ -28,24 +28,27 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 		return _module.addType(t);
 	}
 	case spv::Op::OpVectorTimesScalar:
-		return selectType(spv::Op::OpTypeVector, lTypeInst, rTypeInst);
+		return checkType(spv::Op::OpTypeVector, lTypeInst);
 	case spv::Op::OpMatrixTimesScalar:
-		return selectType(spv::Op::OpTypeMatrix, lTypeInst, rTypeInst);
+		return checkType(spv::Op::OpTypeMatrix, lTypeInst);
 	case spv::Op::OpVectorTimesMatrix:
 	{
-		// Linear - algebraic Vector X Matrix.
-		// Result Type must be a vector of ﬂoating - point type.
-		// Vector must be a vector with the same Component Type as the Component Type in Result Type.Its number of components must equal the number of components in each column in Matrix.
-		// Matrix must be a matrix with the same Component Type as the Component Type in Result Type.Its number of columns must equal the number of components in Result Type.
-
+		// Matrix must be a matrix with the same Component Type as the Component Type in Result Type.
+		// Its number of columns must equal the number of components in Result Type.
+		// => return matrix row type:
+		if (lType->getBaseType() == spv::Op::OpTypeMatrix)
+		{
+			Type rowType(_module.newType());
+			rowType.Vector(lType->getMatrixColumnCount()).Member().setBaseType(lType->front().getBaseType());
+			return _module.addType(rowType);
+		}
 	}
 	case spv::Op::OpMatrixTimesVector:
 	{
 		// Matrix must be an OpTypeMatrix whose Column Type is Result Type.
-		Instruction* mat = selectType(spv::Op::OpTypeMatrix, lTypeInst, rTypeInst);
-		if (mat != nullptr)
+		if (lType->getBaseType() == spv::Op::OpTypeMatrix)
 		{
-			return (mat->begin() + 1)->getInstruction();
+			return (lTypeInst->begin() + 1)->getInstruction();
 		}
 	}
 	default:
@@ -63,4 +66,9 @@ const spvgentwo::Type* spvgentwo::selectType(const spv::Op _type, const Type* _l
 spvgentwo::Instruction* spvgentwo::selectType(const spv::Op _type, Instruction* _leftTypeInstr, Instruction* _rightTypeInstr)
 {
 	return _leftTypeInstr->getOperation() == _type ? _leftTypeInstr : (_rightTypeInstr->getOperation() == _type ? _rightTypeInstr : nullptr);
+}
+
+spvgentwo::Instruction* spvgentwo::checkType(const spv::Op _type, Instruction* _typeInstr)
+{
+	return _typeInstr->getOperation() == _type ? _typeInstr : nullptr;
 }

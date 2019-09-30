@@ -147,7 +147,7 @@ namespace spvgentwo
 
 		Type& Vector(unsigned int _elements, const Type* _elementType = nullptr);
 
-		Type& Matrix(unsigned int _columns, const Type* _rowType = nullptr);
+		Type& Matrix(unsigned int _columns, const Type* _columnType = nullptr);
 		
 		// return top most type
 		Type& Top();
@@ -226,7 +226,7 @@ namespace spvgentwo
 	struct pipe_storage_t {};
 	struct named_barrier_t {};
 	struct dyn_vector_t { Type elementType; unsigned int elements; };
-	struct dyn_matrix_t { Type columnType; unsigned int columns; };
+	struct dyn_matrix_t { Type columnType; unsigned int columns; /*length of the row*/ };
 	
 	struct dyn_array_t { Type elementType; unsigned int length; };
 	struct dyn_runtime_array_t { Type elementType; };
@@ -243,10 +243,12 @@ namespace spvgentwo
 		static constexpr unsigned int Elements = N;
 	};
 
-	template<class T, unsigned int C, unsigned int R>
+	template<class T, unsigned int _Columns, unsigned int _Rows>
 	struct matrix_t {
-		using mat_column_type = vector_t<T, R>;
-		static constexpr unsigned int Columns = C;
+		using mat_column_type = vector_t<T, _Rows>;
+		using mat_row_type = vector_t<T, _Columns>;
+		static constexpr unsigned int Columns = _Columns;
+		static constexpr unsigned int Rows = _Rows;
 	};
 
 	template<class, class = stdrep::void_t<>>
@@ -308,14 +310,14 @@ namespace spvgentwo
 		return const_vector_t<remove_cvref_t<T>, 1 + sizeof...(_elements)>{stdrep::forward<T>(val), stdrep::forward<Elems>(_elements)...};
 	};
 
-	template <class T, unsigned int C, unsigned int R>
+	template <class T, unsigned int _Columns, unsigned int _Rows>
 	struct const_matrix_t
 	{
-		using const_matrix_type = matrix_t<T, C, R>;
+		using const_matrix_type = matrix_t<T, _Columns, _Rows>;
 		using element_type = T;
-		static constexpr unsigned int Columns = C;
-		static constexpr unsigned int Rows = R;
-		const_vector_t<T, R> data[C]; // columns
+		static constexpr unsigned int Columns = _Columns;
+		static constexpr unsigned int Rows = _Rows;
+		const_vector_t<T, Rows> data[Columns]; // columns
 	};
 
 	template<class, class = stdrep::void_t<>>
@@ -325,9 +327,9 @@ namespace spvgentwo
 	template<class T>
 	constexpr bool is_const_matrix_v = is_const_matrix<T>::value;
 
-	template <class T, unsigned int N, class ...Elems>
-	auto make_matrix(const_vector_t<T, N> val, Elems ... _elements) {
-		return const_matrix_t<remove_cvref_t<T>, 1 + sizeof...(_elements), N>{val, _elements...};
+	template <class T, unsigned int Rows, class ...Columns>
+	auto make_matrix(const_vector_t<T, Rows> col0, Columns ... _columns) {
+		return const_matrix_t<remove_cvref_t<T>, 1 + sizeof...(_columns), Rows>{col0, _columns...};
 	};
 
 	template <class T, unsigned int N>

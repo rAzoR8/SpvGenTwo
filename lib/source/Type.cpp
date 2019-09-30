@@ -284,14 +284,14 @@ spvgentwo::Type& spvgentwo::Type::Vector(unsigned int _elements, const Type* _el
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Matrix(unsigned int _columns, const Type* _elementType)
+spvgentwo::Type& spvgentwo::Type::Matrix(unsigned int _columns, const Type* _columnType)
 {
 	m_Type = spv::Op::OpTypeMatrix;
-	m_MatColumnCount = _columns;
+	m_MatColumnCount = _columns; // length of the row
 
-	if (_elementType != nullptr)
+	if (_columnType != nullptr)
 	{
-		m_subTypes.emplace_back(*_elementType);
+		m_subTypes.emplace_back(*_columnType);
 	}
 
 	return *this;
