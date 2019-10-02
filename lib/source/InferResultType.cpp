@@ -15,6 +15,23 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 
 	switch (_operation)
 	{
+	case spv::Op::OpSNegate:
+	{
+		Type t(stdrep::move(_module.newType()));
+
+		if(lType->isVector())
+		{
+			t.VectorElement(lType->getVectorComponentCount()).Int(lType->front().getIntWidth(), true);
+		}
+		else
+		{
+			t.Int(lType->getIntWidth(), true);
+		}
+
+		return _module.addType(t);
+	}
+	case spv::Op::OpFNegate:
+		return _leftOperand;
 	case spv::Op::OpIAdd:
 	case spv::Op::OpISub:
 	case spv::Op::OpFAdd:
@@ -23,7 +40,7 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 	case spv::Op::OpIAddCarry:
 	case spv::Op::OpISubBorrow:
 	{
-		Type t(_module.newType());
+		Type t(stdrep::move(_module.newType()));
 		t.Struct().IntM().IntM();
 		return _module.addType(t);
 	}
@@ -38,10 +55,11 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 		// => return matrix row type:
 		if (lType->getBaseType() == spv::Op::OpTypeMatrix)
 		{
-			Type rowType(_module.newType());
+			Type rowType(stdrep::move(_module.newType()));
 			rowType.Vector(lType->getMatrixColumnCount()).Member().setBaseType(lType->front().getBaseType());
 			return _module.addType(rowType);
 		}
+		break;
 	}
 	case spv::Op::OpMatrixTimesVector:
 	{
@@ -50,7 +68,55 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 		{
 			return (lTypeInst->begin() + 1)->getInstruction();
 		}
+		break;
 	}
+	case spv::Op::OpAny:
+	case spv::Op::OpAll:
+		return _module.type<bool>();
+	case spv::Op::OpLogicalEqual:
+	case spv::Op::OpLogicalNotEqual:
+	case spv::Op::OpLogicalOr:
+	case spv::Op::OpLogicalAnd:
+	case spv::Op::OpLogicalNot:
+		// Result Type must be a scalar or vector of Boolean type.
+		// The type of Operand 1 must be the same as Result Type.
+		// The type of Operand 2 must be the same as Result Type.
+		return _leftOperand;
+	case spv::Op::OpIEqual:
+	case spv::Op::OpINotEqual:
+	case spv::Op::OpUGreaterThan:
+	case spv::Op::OpSGreaterThan:
+	case spv::Op::OpUGreaterThanEqual:
+	case spv::Op::OpSGreaterThanEqual:
+	case spv::Op::OpULessThan:
+	case spv::Op::OpSLessThan:
+	case spv::Op::OpULessThanEqual:
+	case spv::Op::OpSLessThanEqual:
+	case spv::Op::OpFOrdEqual:
+	case spv::Op::OpFUnordEqual:
+	case spv::Op::OpFOrdNotEqual:
+	case spv::Op::OpFUnordNotEqual:
+	case spv::Op::OpFOrdLessThan:
+	case spv::Op::OpFUnordLessThan:
+	case spv::Op::OpFOrdGreaterThan:
+	case spv::Op::OpFUnordGreaterThan:
+		// TODO: OpFOrdLessThanEqual ... 
+	{
+		Type t(stdrep::move(_module.newType()));
+
+		if (lType->isVector())
+		{
+			t.VectorElement(lType->getVectorComponentCount()).Bool();
+		}
+		else
+		{
+			t.Bool();
+		}
+
+		return _module.addType(t);
+	}
+
+
 	default:
 		break;
 	}

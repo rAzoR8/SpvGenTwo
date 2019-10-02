@@ -147,7 +147,13 @@ namespace spvgentwo
 
 		Type& Vector(unsigned int _elements, const Type* _elementType = nullptr);
 
+		// makes this a vector type, returns element type
+		Type& VectorElement(unsigned int _elements) { Vector(_elements); return Member(); }
+
 		Type& Matrix(unsigned int _columns, const Type* _columnType = nullptr);
+
+		// makes this a matrix type, returns column type
+		Type& MatrixColumn(unsigned int _columns) { Matrix(_columns); return Member(); }
 		
 		// return top most type
 		Type& Top();
@@ -170,6 +176,12 @@ namespace spvgentwo
 		// set Properties by type: unsigned int -> Dimension etc
 		template <class Prop, class ...Props>
 		const Prop* setProperties(const Prop _first, Props ... _props);
+
+		bool isVector() const { return m_Type == spv::Op::OpTypeVector; }
+		bool isMatrix() const { return m_Type == spv::Op::OpTypeMatrix; }
+		bool isInt() const { return m_Type == spv::Op::OpTypeInt; }
+		bool isFloat() const { return m_Type == spv::Op::OpTypeFloat; }	
+		bool isSigned() const { return isInt() && m_IntSign; }
 
 	private:
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type
