@@ -192,6 +192,46 @@ void spvgentwo::Instruction::opMemberName(Instruction* _pTargetStructType, unsig
 	makeOp(spv::Op::OpMemberName, _pTargetStructType, _memberIndex, _pName);
 }
 
+void spvgentwo::Instruction::opSelectionMerge(Instruction* _pMergeLabel, const spv::SelectionControlMask _control)
+{
+	makeOp(spv::Op::OpSelectionMerge, _pMergeLabel, _control);
+}
+
+void spvgentwo::Instruction::opSelectionMergeEx(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control)
+{
+	makeOp(spv::Op::OpSelectionMerge, _pMergeBlock, _control);
+}
+
+void spvgentwo::Instruction::opBranch(Instruction* _pTargetLabel)
+{
+	makeOp(spv::Op::OpBranch, _pTargetLabel);
+}
+
+void spvgentwo::Instruction::opBranchEx(BasicBlock* _pTargetBlock)
+{
+	makeOp(spv::Op::OpBranch, _pTargetBlock);
+}
+
+void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, Instruction* _pTrueLabel, Instruction* _pFalseLabel)
+{
+	makeOp(spv::Op::OpBranchConditional, _pCondition, _pTrueLabel, _pFalseLabel);
+}
+
+void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, Instruction* _pTrueLabel, Instruction* _pFalseLabel, const unsigned int _trueWeight, const unsigned int _falseWeight)
+{
+	makeOp(spv::Op::OpBranchConditional, _pCondition, _pTrueLabel, _pFalseLabel, _trueWeight, _falseWeight);
+}
+
+void spvgentwo::Instruction::opBranchConditionalEx(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock)
+{
+	makeOp(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock);
+}
+
+void spvgentwo::Instruction::opBranchConditionalEx(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight)
+{
+	makeOp(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock, _trueWeight, _falseWeight);
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight)
 {
 	return makeOp(spv::Op::OpIAdd, _pResultType, InvalidId, _pLeft, _pRight);

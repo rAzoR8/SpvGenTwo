@@ -34,10 +34,10 @@ namespace spvgentwo
 		// set return value of this block (used in function), returns opReturn/opReturnValue instruction
 		Instruction* returnValue(Instruction* _pValue = nullptr);
 
-		//Instruction* getReturnOp() { return &m_Return; }
-		//Instruction* getReturnValue();
-
 		void write(IWriter* _pWriter, spv::Id& _resultId);
+
+		// structured if: true and false block must NOT have a terminator yet!
+		void If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock& _mergeBlock, const spv::SelectionControlMask _mask = spv::SelectionControlMask::MaskNone);
 
 	private:
 		Function* m_pFunction = nullptr; // parent

@@ -123,6 +123,27 @@ namespace spvgentwo
 		template <class ... VarInst>
 		Instruction* opPhiEx(Instruction* _pResultType, Instruction* _pVar, VarInst* ... _variables);
 	
+		template <class ...LoopControlParams>
+		void opLoopMerge(Instruction* _pMergeLabel, Instruction* _pContinueLabel, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ... _params);
+
+		template <class ...LoopControlParams>
+		void opLoopMergeEx(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ... _params);
+
+		void opSelectionMerge(Instruction* _pMergeLabel, const spv::SelectionControlMask _control);
+		void opSelectionMergeEx(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control);
+
+		void opBranch(Instruction* _pTargetLabel);
+
+		// label is infered from the basic block on serialization
+		void opBranchEx(BasicBlock* _pTargetBlock);
+
+		void opBranchConditional(Instruction* _pCondition, Instruction* _pTrueLabel, Instruction* _pFalseLabel);
+		void opBranchConditional(Instruction* _pCondition, Instruction* _pTrueLabel, Instruction* _pFalseLabel, const unsigned int _trueWeight, const unsigned int _falseWeight);
+
+		// label is infered from the basic block on serialization
+		void opBranchConditionalEx(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock);
+		void opBranchConditionalEx(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight);
+
 		Instruction* opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
 		Instruction* opISub(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
 		Instruction* opIMul(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
@@ -275,5 +296,17 @@ namespace spvgentwo
 		}
 
 		return this;
+	}
+
+	template<class ...LoopControlParams>
+	inline void Instruction::opLoopMerge(Instruction* _pMergeLabel, Instruction* _pContinueLabel, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ..._params)
+	{
+		makeOp(spv::Op::OpLoopMerge, _pMergeLabel, _pContinueLabel, literal_t{ _loopControl }, _params...);
+	}
+
+	template<class ...LoopControlParams>
+	inline void Instruction::opLoopMergeEx(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ..._params)
+	{
+		makeOp(spv::Op::OpLoopMerge, _pMergeBlock, _pContinueBlock, literal_t{ _loopControl }, _params...);
 	}
 } // !spvgentwo

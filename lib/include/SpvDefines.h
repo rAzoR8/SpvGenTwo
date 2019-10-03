@@ -83,6 +83,23 @@ namespace spvgentwo
 		}
 	}
 
+	constexpr bool isTerminator(const spv::Op _instr)
+	{
+		switch (_instr)
+		{
+		case spv::Op::OpBranch:
+		case spv::Op::OpBranchConditional:
+		case spv::Op::OpSwitch:
+		case spv::Op::OpReturn:
+		case spv::Op::OpReturnValue:
+		case spv::Op::OpKill:
+		case spv::Op::OpUnreachable:
+			return true;
+		default:
+			return false;
+		}
+	}
+
 	// spir-v specific traits
 	namespace traits
 	{

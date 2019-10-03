@@ -30,7 +30,12 @@ spvgentwo::IAllocator* spvgentwo::BasicBlock::getAllocator()
 
 spvgentwo::BasicBlock::Iterator spvgentwo::BasicBlock::getTerminator()
 {
-	return Iterator(m_pLast);
+	if (m_pLast != nullptr && isTerminator((*m_pLast)->getOperation()))
+	{
+		return Iterator(m_pLast);
+	}
+
+	return Iterator(nullptr);
 }
 
 spvgentwo::Instruction* spvgentwo::BasicBlock::returnValue(Instruction* _pValue)
@@ -55,5 +60,17 @@ void spvgentwo::BasicBlock::write(IWriter* _pWriter, spv::Id& _resultId)
 	for (Instruction& instr : *this)
 	{
 		instr.write(_pWriter, _resultId);
+	}
+}
+
+void spvgentwo::BasicBlock::If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock& _mergeBlock, const spv::SelectionControlMask _mask)
+{
+	// this block has not been terminated yet
+	//if (getTerminator() == nullptr)
+	{
+		addInstruction()->opSelectionMergeEx(&_mergeBlock, _mask);
+		addInstruction()->opBranchConditionalEx(_pCondition, &_trueBlock, &_falseBlock);
+		_trueBlock->opBranchEx(&_mergeBlock);
+		_falseBlock->opBranchEx(&_mergeBlock);
 	}
 }
