@@ -2,16 +2,15 @@
 #include "Instruction.h"
 #include "Module.h"
 
-spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instruction* _leftOperand, Instruction* _rightOperand, Module& _module)
+spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _module, Instruction* _op1, Instruction* _op2, Instruction* _op3)
 {
-	Instruction* lTypeInst = _leftOperand->getType();
-	Instruction* rTypeInst = _rightOperand->getType();
+	Instruction* op1TypeInst = _op1 != nullptr ? _op1->getType() : nullptr;
+	Instruction* op2TypeInst = _op2 != nullptr ? _op2->getType() : nullptr;
+	Instruction* op3TypeInst = _op3 != nullptr ? _op3->getType() : nullptr;
 
-	const Type* lType = _module.getTypeInfo(lTypeInst);
-	if (lType == nullptr) return nullptr;
-
-	const Type* rType = _module.getTypeInfo(rTypeInst);
-	if (rType == nullptr) return nullptr;
+	const Type* op1Type = op1TypeInst != nullptr ? _module.getTypeInfo(op1TypeInst) : nullptr;
+	const Type* op2Type = op2TypeInst != nullptr ? _module.getTypeInfo(op2TypeInst) : nullptr;
+	const Type* op3Type = op3TypeInst != nullptr ? _module.getTypeInfo(op3TypeInst) : nullptr;
 
 	switch (_operation)
 	{
@@ -19,24 +18,24 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 	{
 		Type t(stdrep::move(_module.newType()));
 
-		if(lType->isVector())
+		if(op1Type->isVector())
 		{
-			t.VectorElement(lType->getVectorComponentCount()).Int(lType->front().getIntWidth(), true);
+			t.VectorElement(op1Type->getVectorComponentCount()).Int(op1Type->front().getIntWidth(), true);
 		}
 		else
 		{
-			t.Int(lType->getIntWidth(), true);
+			t.Int(op1Type->getIntWidth(), true);
 		}
 
 		return _module.addType(t);
 	}
 	case spv::Op::OpFNegate:
-		return _leftOperand;
+		return _op1;
 	case spv::Op::OpIAdd:
 	case spv::Op::OpISub:
 	case spv::Op::OpFAdd:
 	case spv::Op::OpFSub:
-		return _rightOperand;
+		return _op1;
 	case spv::Op::OpIAddCarry:
 	case spv::Op::OpISubBorrow:
 	{
@@ -45,18 +44,18 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 		return _module.addType(t);
 	}
 	case spv::Op::OpVectorTimesScalar:
-		return checkType(spv::Op::OpTypeVector, lTypeInst);
+		return checkType(spv::Op::OpTypeVector, op1TypeInst);
 	case spv::Op::OpMatrixTimesScalar:
-		return checkType(spv::Op::OpTypeMatrix, lTypeInst);
+		return checkType(spv::Op::OpTypeMatrix, op1TypeInst);
 	case spv::Op::OpVectorTimesMatrix:
 	{
 		// Matrix must be a matrix with the same Component Type as the Component Type in Result Type.
 		// Its number of columns must equal the number of components in Result Type.
 		// => return matrix row type:
-		if (lType->getBaseType() == spv::Op::OpTypeMatrix)
+		if (op1Type->getBaseType() == spv::Op::OpTypeMatrix)
 		{
 			Type rowType(stdrep::move(_module.newType()));
-			rowType.Vector(lType->getMatrixColumnCount()).Member().setBaseType(lType->front().getBaseType());
+			rowType.Vector(op1Type->getMatrixColumnCount()).Member().setBaseType(op1Type->front().getBaseType());
 			return _module.addType(rowType);
 		}
 		break;
@@ -64,9 +63,9 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 	case spv::Op::OpMatrixTimesVector:
 	{
 		// Matrix must be an OpTypeMatrix whose Column Type is Result Type.
-		if (lType->getBaseType() == spv::Op::OpTypeMatrix)
+		if (op1Type->getBaseType() == spv::Op::OpTypeMatrix)
 		{
-			return (lTypeInst->begin() + 1)->getInstruction();
+			return (op1TypeInst->begin() + 1)->getInstruction();
 		}
 		break;
 	}
@@ -81,7 +80,7 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 		// Result Type must be a scalar or vector of Boolean type.
 		// The type of Operand 1 must be the same as Result Type.
 		// The type of Operand 2 must be the same as Result Type.
-		return _leftOperand;
+		return op1TypeInst;
 	case spv::Op::OpIEqual:
 	case spv::Op::OpINotEqual:
 	case spv::Op::OpUGreaterThan:
@@ -100,13 +99,16 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 	case spv::Op::OpFUnordLessThan:
 	case spv::Op::OpFOrdGreaterThan:
 	case spv::Op::OpFUnordGreaterThan:
-		// TODO: OpFOrdLessThanEqual ... 
+	case spv::Op::OpFOrdLessThanEqual:
+	case spv::Op::OpFUnordLessThanEqual:
+	case spv::Op::OpFOrdGreaterThanEqual:
+	case spv::Op::OpFUnordGreaterThanEqual:
 	{
 		Type t(stdrep::move(_module.newType()));
 
-		if (lType->isVector())
+		if (op1Type->isVector())
 		{
-			t.VectorElement(lType->getVectorComponentCount()).Bool();
+			t.VectorElement(op1Type->getVectorComponentCount()).Bool();
 		}
 		else
 		{
@@ -115,8 +117,6 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 
 		return _module.addType(t);
 	}
-
-
 	default:
 		break;
 	}
