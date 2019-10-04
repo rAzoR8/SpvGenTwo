@@ -7,6 +7,16 @@ spvgentwo::Instruction::~Instruction()
 {
 }
 
+spvgentwo::Module* spvgentwo::Instruction::getModule()
+{
+	return m_pModule != nullptr ? m_pModule : m_pBasicBlock->getModule();
+}
+
+const spvgentwo::Module* spvgentwo::Instruction::getModule() const
+{
+	return m_pModule != nullptr ? m_pModule : m_pBasicBlock->getModule();
+}
+
 void spvgentwo::Instruction::reset()
 {
 	m_Operation = spv::Op::OpNop;

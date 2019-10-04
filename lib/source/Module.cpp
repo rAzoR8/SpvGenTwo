@@ -6,7 +6,7 @@
 spvgentwo::Module::Module(IAllocator* _pAllocator) :
 	List(_pAllocator),
 	m_Capabilities(_pAllocator),
-	m_MemoryModel(_pAllocator),
+	m_MemoryModel(this),
 	m_Extensions(_pAllocator),
 	m_ExtInstrImport(_pAllocator),
 	m_SourceStrings(_pAllocator),
@@ -38,42 +38,42 @@ spvgentwo::Constant spvgentwo::Module::newConstant()
 void spvgentwo::Module::addCapability(const spv::Capability _capability)
 {
 	// emplace free instruction (without parent BB)
-	m_Capabilities.emplace_back(m_pAllocator).opCapability(_capability);
+	m_Capabilities.emplace_back(this).opCapability(_capability);
 }
 
 void spvgentwo::Module::addExtension(const char* _pExtName)
 {
-	m_Extensions.emplace_back(m_pAllocator).opExtension(_pExtName);
+	m_Extensions.emplace_back(this).opExtension(_pExtName);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addExtensionInstructionImport(const char* _pExtName)
 {
-	return m_ExtInstrImport.emplace_back(m_pAllocator).opExtInstImport(_pExtName);
+	return m_ExtInstrImport.emplace_back(this).opExtInstImport(_pExtName);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addSourceStringInstr()
 {
-	return &m_SourceStrings.emplace_back(m_pAllocator);
+	return &m_SourceStrings.emplace_back(this);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addNameInstr()
 {
-	return &m_Names.emplace_back(m_pAllocator);
+	return &m_Names.emplace_back(this);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addModuleProccessedInstr()
 {
-	return &m_ModuleProccessed.emplace_back(m_pAllocator);
+	return &m_ModuleProccessed.emplace_back(this);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addDecorationInstr()
 {
-	return &m_Decorations.emplace_back(m_pAllocator);
+	return &m_Decorations.emplace_back(this);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addGlobalVariableInstr()
 {
-	return &m_GlobalVariables.emplace_back(m_pAllocator);
+	return &m_GlobalVariables.emplace_back(this);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
@@ -86,7 +86,7 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 
 	Instruction* pType = addType(_const.getType());
 
-	auto entry = Entry<Instruction>::create(m_pAllocator, m_pAllocator);
+	auto entry = Entry<Instruction>::create(m_pAllocator, this);
 
 	Instruction* pInstr = node.kv.value = entry->operator->();
 
@@ -138,7 +138,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 		return node.kv.value;
 	}
 
-	auto entry = Entry<Instruction>::create(m_pAllocator, m_pAllocator);
+	auto entry = Entry<Instruction>::create(m_pAllocator, this);
 
 	Instruction* pInstr = node.kv.value = entry->operator->(); // &m_TypesAndConstants.emplace_back(m_pAllocator);
 

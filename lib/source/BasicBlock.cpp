@@ -23,6 +23,11 @@ spvgentwo::Module* spvgentwo::BasicBlock::getModule()
 	return m_pFunction->getModule();
 }
 
+const spvgentwo::Module* spvgentwo::BasicBlock::getModule() const
+{
+	return m_pFunction->getModule();
+}
+
 spvgentwo::IAllocator* spvgentwo::BasicBlock::getAllocator()
 {
 	return getModule()->getAllocator();;

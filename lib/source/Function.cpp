@@ -1,20 +1,11 @@
 #include "Function.h"
 #include "Module.h"
 
-spvgentwo::Function::Function(IAllocator* _pAllocator) :
-	m_pModule(nullptr), List(_pAllocator),
-	m_Function(_pAllocator),
-	m_Parameters(_pAllocator),
-	m_EntryPoint(_pAllocator),
-	m_ExecutionModes(_pAllocator)
-{
-}
-
 spvgentwo::Function::Function(Module* _pModule) :
 	m_pModule(_pModule), List(_pModule->getAllocator()),
-	m_Function(_pModule->getAllocator()),
+	m_Function(_pModule),
 	m_Parameters(_pModule->getAllocator()),
-	m_EntryPoint(_pModule->getAllocator()),
+	m_EntryPoint(_pModule),
 	m_ExecutionModes(_pModule->getAllocator())
 {
 }
@@ -46,13 +37,13 @@ void spvgentwo::Function::write(IWriter* _pWriter, spv::Id& _resultId)
 		bb.write(_pWriter, _resultId);
 	}
 
-	Instruction end(m_pAllocator, spv::Op::OpFunctionEnd);
+	Instruction end(getModule(), spv::Op::OpFunctionEnd);
 	end.write(_pWriter, _resultId);
 }
 
 spvgentwo::Instruction* spvgentwo::Function::addParameter(Instruction* _pType)
 {
-	return m_Parameters.emplace_back(m_pAllocator).opFunctionParameter(_pType);;
+	return m_Parameters.emplace_back(getModule()).opFunctionParameter(_pType);
 }
 
 bool spvgentwo::Function::finalize(Instruction* _pReturnType, const Flag<spv::FunctionControlMask> _control)

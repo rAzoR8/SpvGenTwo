@@ -21,6 +21,8 @@ namespace spvgentwo
 		const Function* getFunction() const { return m_pFunction; }
 
 		Module* getModule();
+		const Module* getModule() const;
+
 		IAllocator* getAllocator();
 
 		// get last instruction

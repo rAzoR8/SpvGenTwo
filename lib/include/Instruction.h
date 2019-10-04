@@ -9,6 +9,7 @@ namespace spvgentwo
 	// forward delcs
 	class Type;
 	class Function;
+	class Module;
 
 	class Instruction : public List<Operand>
 	{
@@ -16,11 +17,14 @@ namespace spvgentwo
 		using Iterator = EntryIterator<Operand>;
 
 		template <class ...Args>
-		Instruction(IAllocator* _pAllocator, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
+		Instruction(Module* _pModule, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
 		template <class ...Args>
 		Instruction(BasicBlock* _pBasicBlock, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
 
 		~Instruction();
+
+		Module* getModule();
+		const Module* getModule() const;
 
 		BasicBlock* getBasicBlock() { return m_pBasicBlock; }
 		const BasicBlock* getBasicBlock() const { return m_pBasicBlock; }
@@ -161,21 +165,22 @@ namespace spvgentwo
 	private:
 		spv::Op m_Operation = spv::Op::OpNop;
 		BasicBlock* m_pBasicBlock = nullptr; // parent
+		Module* m_pModule = nullptr;
 	};
 
 	// free helper function
 	void writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions, spv::Id& _resultId);
 
 	template<class ...Args>
-	inline Instruction::Instruction(IAllocator* _pAllocator, const spv::Op _op, Args&& ..._args) :
-		m_pBasicBlock(nullptr), List(_pAllocator)
+	inline Instruction::Instruction(Module* _pModule, const spv::Op _op, Args&& ..._args) :
+		m_pBasicBlock(nullptr), m_pModule(_pModule), List(_pModule->getAllocator())
 	{
 		makeOp(_op, stdrep::forward<Args>(_args)...);
 	}
 
 	template<class ...Args>
 	inline Instruction::Instruction(BasicBlock* _pBasicBlock, const spv::Op _op, Args&& ..._args) :
-		m_pBasicBlock(_pBasicBlock), List(_pBasicBlock->getAllocator())
+		m_pBasicBlock(_pBasicBlock), m_pModule(_pBasicBlock->getModule()), List(_pBasicBlock->getAllocator())
 	{
 		makeOp(_op, stdrep::forward<Args>(_args)...);
 	}
