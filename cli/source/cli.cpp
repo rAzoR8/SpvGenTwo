@@ -80,13 +80,11 @@ int main(int argc, char* argv[])
 		Instruction* x = funcAdd.addParameter(type);
 		Instruction* y = funcAdd.addParameter(type);
 
-		Instruction* z = bb->opIAdd(module.type<int>(), x, y);
+		Instruction* z = bb->opIAddEx(x, y);
 		bb.returnValue(z);
 
 		Instruction* vectype = module.type<array_t<float, 3>>();
 		Instruction* mattype = module.type<matrix_t<float, 3, 3>>();
-
-		const Type* info = module.getTypeInfo(mattype);
 
 		Instruction* consvec = module.constant(const_vector_t<float, 3>({ 1.f, 2.f, 3.f }));
 		const_matrix_t<float, 2, 2> mat{ 1.f, 2.f, 3.f, 4.f };

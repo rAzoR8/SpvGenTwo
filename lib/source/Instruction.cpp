@@ -2,6 +2,7 @@
 #include "BasicBlock.h"
 #include "Type.h"
 #include "Writer.h"
+#include "InferResultType.h"
 
 spvgentwo::Instruction::~Instruction()
 {
@@ -111,7 +112,7 @@ void spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id& _resultId)
 {
 	resolveId(_resultId);
 
-	auto offset = _pWriter->put(getOpCode());
+	_pWriter->put(getOpCode());
 	
 	for (const Operand& operand : *this)
 	{
@@ -247,12 +248,27 @@ spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(Instruction* _pResultType
 	return makeOp(spv::Op::OpIAdd, _pResultType, InvalidId, _pLeft, _pRight);
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opIAddEx(Instruction* _pLeft, Instruction* _pRight)
+{
+	return opIAdd(inferType(spv::Op::OpIAdd, _pLeft, _pRight), _pLeft, _pRight);
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opISub(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight)
 {
 	return makeOp(spv::Op::OpISub, _pResultType, InvalidId, _pLeft, _pRight);
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opISubEx(Instruction* _pLeft, Instruction* _pRight)
+{
+	return opISub(inferType(spv::Op::OpISub, _pLeft, _pRight), _pLeft, _pRight);
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opIMul(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight)
 {
 	return makeOp(spv::Op::OpIMul, _pResultType, InvalidId, _pLeft, _pRight);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opIMulEx(Instruction* _pLeft, Instruction* _pRight)
+{
+	return opIMul(inferType(spv::Op::OpIMul, _pLeft, _pRight), _pLeft, _pRight);
 }
