@@ -130,145 +130,132 @@ void spvgentwo::writeInstructions(IWriter* _pWriter, const List<Instruction>& _i
 
 void spvgentwo::Instruction::opNop()
 {
-	makeOp(spv::Op::OpNop);
+	makeOpEx(spv::Op::OpNop);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opUndef(Instruction* _pResultType)
 {
-	return makeOp(spv::Op::OpUndef, _pResultType, InvalidId);
+	return makeOpEx(spv::Op::OpUndef, _pResultType, InvalidId);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opSizeOf(Instruction* _pResultType, Instruction* _pPointerToVar)
 {
-	return makeOp(spv::Op::OpSizeOf, _pResultType, InvalidId, _pPointerToVar);
+	return makeOpEx(spv::Op::OpSizeOf, _pResultType, InvalidId, _pPointerToVar);
 }
 
 void spvgentwo::Instruction::opCapability(const spv::Capability _capability)
 {
-	makeOp(spv::Op::OpCapability, _capability);
+	makeOpEx(spv::Op::OpCapability, _capability);
 }
 
 void spvgentwo::Instruction::opMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel)
 {
-	makeOp(spv::Op::OpMemoryModel, _addressModel, _memoryModel);
+	makeOpEx(spv::Op::OpMemoryModel, _addressModel, _memoryModel);
 }
 
 void spvgentwo::Instruction::opExtension(const char* _pExtName)
 {
-	makeOp(spv::Op::OpExtension, _pExtName);
+	makeOpEx(spv::Op::OpExtension, _pExtName);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opExtInstImport(const char* _pExtName)
 {
-	return makeOp(spv::Op::OpExtInstImport, InvalidId, _pExtName);
+	return makeOpEx(spv::Op::OpExtInstImport, InvalidId, _pExtName);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opLabel()
 {
-	return makeOp(spv::Op::OpLabel, InvalidId);
+	return makeOpEx(spv::Op::OpLabel, InvalidId);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opFunction(const Flag<spv::FunctionControlMask> _functionControl, Instruction* _pResultType, Instruction* _pFuncType)
 {
-	return makeOp(spv::Op::OpFunction, _pResultType, InvalidId, literal_t{ _functionControl.mask }, _pFuncType);
+	return makeOpEx(spv::Op::OpFunction, _pResultType, InvalidId, literal_t{ _functionControl.mask }, _pFuncType);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opFunctionParameter(Instruction* _pType)
 {
-	return makeOp(spv::Op::OpFunctionParameter, _pType, InvalidId);
+	return makeOpEx(spv::Op::OpFunctionParameter, _pType, InvalidId);
 }
 
 void spvgentwo::Instruction::opReturn()
 {
-	makeOp(spv::Op::OpReturn);
+	makeOpEx(spv::Op::OpReturn);
 }
 
 void spvgentwo::Instruction::opReturnValue(Instruction* _pValue)
 {
-	makeOp(spv::Op::OpReturnValue, _pValue);
+	makeOpEx(spv::Op::OpReturnValue, _pValue);
 }
 
 void spvgentwo::Instruction::opFunctionEnd()
 {
-	makeOp(spv::Op::OpFunctionEnd);
+	makeOpEx(spv::Op::OpFunctionEnd);
 }
 
 void spvgentwo::Instruction::opName(Instruction* _pTarget, const char* _pName)
 {
-	makeOp(spv::Op::OpName, _pTarget, _pName);
+	makeOpEx(spv::Op::OpName, _pTarget, _pName);
 }
 
 void spvgentwo::Instruction::opMemberName(Instruction* _pTargetStructType, unsigned int _memberIndex, const char* _pName)
 {
-	makeOp(spv::Op::OpMemberName, _pTargetStructType, _memberIndex, _pName);
+	makeOpEx(spv::Op::OpMemberName, _pTargetStructType, _memberIndex, _pName);
 }
 
 void spvgentwo::Instruction::opSelectionMerge(Instruction* _pMergeLabel, const spv::SelectionControlMask _control)
 {
-	makeOp(spv::Op::OpSelectionMerge, _pMergeLabel, _control);
+	makeOpEx(spv::Op::OpSelectionMerge, _pMergeLabel, _control);
 }
 
 void spvgentwo::Instruction::opSelectionMergeEx(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control)
 {
-	makeOp(spv::Op::OpSelectionMerge, _pMergeBlock, _control);
+	makeOpEx(spv::Op::OpSelectionMerge, _pMergeBlock, _control);
 }
 
 void spvgentwo::Instruction::opBranch(Instruction* _pTargetLabel)
 {
-	makeOp(spv::Op::OpBranch, _pTargetLabel);
+	makeOpEx(spv::Op::OpBranch, _pTargetLabel);
 }
 
 void spvgentwo::Instruction::opBranchEx(BasicBlock* _pTargetBlock)
 {
-	makeOp(spv::Op::OpBranch, _pTargetBlock);
+	makeOpEx(spv::Op::OpBranch, _pTargetBlock);
 }
 
 void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, Instruction* _pTrueLabel, Instruction* _pFalseLabel)
 {
-	makeOp(spv::Op::OpBranchConditional, _pCondition, _pTrueLabel, _pFalseLabel);
+	makeOpEx(spv::Op::OpBranchConditional, _pCondition, _pTrueLabel, _pFalseLabel);
 }
 
 void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, Instruction* _pTrueLabel, Instruction* _pFalseLabel, const unsigned int _trueWeight, const unsigned int _falseWeight)
 {
-	makeOp(spv::Op::OpBranchConditional, _pCondition, _pTrueLabel, _pFalseLabel, _trueWeight, _falseWeight);
+	makeOpEx(spv::Op::OpBranchConditional, _pCondition, _pTrueLabel, _pFalseLabel, _trueWeight, _falseWeight);
 }
 
 void spvgentwo::Instruction::opBranchConditionalEx(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock)
 {
-	makeOp(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock);
+	makeOpEx(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock);
 }
 
 void spvgentwo::Instruction::opBranchConditionalEx(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight)
 {
-	makeOp(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock, _trueWeight, _falseWeight);
+	makeOpEx(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock, _trueWeight, _falseWeight);
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight)
+spvgentwo::Instruction* spvgentwo::Instruction::makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Instruction* _pResultType)
 {
-	return makeOp(spv::Op::OpIAdd, _pResultType, InvalidId, _pLeft, _pRight);
-}
+	Instruction* pResultType = _pResultType != nullptr ? _pResultType : inferType(_instOp, _pOp1, _pOp2, _pOp3);
+	Instruction* pInst = makeOpEx(_instOp, pResultType, InvalidId, _pOp1);
 
-spvgentwo::Instruction* spvgentwo::Instruction::opIAddEx(Instruction* _pLeft, Instruction* _pRight)
-{
-	return opIAdd(inferType(spv::Op::OpIAdd, _pLeft, _pRight), _pLeft, _pRight);
-}
+	if (_pOp2 != nullptr)
+	{
+		pInst->addOperand(_pOp2);
+	}
+	if (_pOp3 != nullptr)
+	{
+		pInst->addOperand(_pOp3);
+	}
 
-spvgentwo::Instruction* spvgentwo::Instruction::opISub(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight)
-{
-	return makeOp(spv::Op::OpISub, _pResultType, InvalidId, _pLeft, _pRight);
-}
-
-spvgentwo::Instruction* spvgentwo::Instruction::opISubEx(Instruction* _pLeft, Instruction* _pRight)
-{
-	return opISub(inferType(spv::Op::OpISub, _pLeft, _pRight), _pLeft, _pRight);
-}
-
-spvgentwo::Instruction* spvgentwo::Instruction::opIMul(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight)
-{
-	return makeOp(spv::Op::OpIMul, _pResultType, InvalidId, _pLeft, _pRight);
-}
-
-spvgentwo::Instruction* spvgentwo::Instruction::opIMulEx(Instruction* _pLeft, Instruction* _pRight)
-{
-	return opIMul(inferType(spv::Op::OpIMul, _pLeft, _pRight), _pLeft, _pRight);
+	return pInst;
 }

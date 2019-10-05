@@ -55,8 +55,11 @@ namespace spvgentwo
 
 		void write(IWriter* _pWriter, spv::Id& _resultId);
 
+		// make of from up to 3 intermediate results
+		Instruction* makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2 = nullptr, Instruction* _pOp3 = nullptr, Instruction* _pResultType = nullptr);
+		
 		template <class ...Args>
-		Instruction* makeOp(const spv::Op _op, Args ... _args);
+		Instruction* makeOpEx(const spv::Op _op, Args ... _args);
 
 		template <class ...Args>
 		void appendLiterals(Args ... _args);
@@ -148,15 +151,6 @@ namespace spvgentwo
 		void opBranchConditionalEx(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock);
 		void opBranchConditionalEx(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight);
 
-		Instruction* opIAdd(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
-		Instruction* opIAddEx(Instruction* _pLeft, Instruction* _pRight);
-
-		Instruction* opISub(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
-		Instruction* opISubEx(Instruction* _pLeft, Instruction* _pRight);
-
-		Instruction* opIMul(Instruction* _pResultType, Instruction* _pLeft, Instruction* _pRight);
-		Instruction* opIMulEx(Instruction* _pLeft, Instruction* _pRight);
-
 	private:
 		void resolveId(spv::Id& _resultId);
 
@@ -180,18 +174,18 @@ namespace spvgentwo
 	inline Instruction::Instruction(Module* _pModule, const spv::Op _op, Args&& ..._args) :
 		m_pBasicBlock(nullptr), m_pModule(_pModule), List(_pModule->getAllocator())
 	{
-		makeOp(_op, stdrep::forward<Args>(_args)...);
+		makeOpEx(_op, stdrep::forward<Args>(_args)...);
 	}
 
 	template<class ...Args>
 	inline Instruction::Instruction(BasicBlock* _pBasicBlock, const spv::Op _op, Args&& ..._args) :
 		m_pBasicBlock(_pBasicBlock), m_pModule(_pBasicBlock->getModule()), List(_pBasicBlock->getAllocator())
 	{
-		makeOp(_op, stdrep::forward<Args>(_args)...);
+		makeOpEx(_op, stdrep::forward<Args>(_args)...);
 	}
 
 	template<class ...Args>
-	inline Instruction* Instruction::makeOp(const spv::Op _op, Args ..._args)
+	inline Instruction* Instruction::makeOpEx(const spv::Op _op, Args ..._args)
 	{
 		reset();
 
@@ -236,13 +230,13 @@ namespace spvgentwo
 	template<class ...Operands>
 	inline Instruction* Instruction::opExtInst(Instruction* _pResultType, Instruction* _pExtensionId, unsigned int _instOpCode, Operands ..._operands)
 	{
-		return makeOp(spv::Op::OpExtInst, _pResultType, InvalidId, _pExtensionId, literal_t{ _instOpCode }, _operands...);
+		return makeOpEx(spv::Op::OpExtInst, _pResultType, InvalidId, _pExtensionId, literal_t{ _instOpCode }, _operands...);
 	}
 
 	template<class ...ArgInstr>
 	inline Instruction* Instruction::opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ..._args)
 	{
-		return makeOp(spv::Op::OpFunctionCall, _pResultType, InvalidId, _pFunction, _args...);
+		return makeOpEx(spv::Op::OpFunctionCall, _pResultType, InvalidId, _pFunction, _args...);
 	}
 
 	template<class ...ArgInstr>
@@ -254,43 +248,43 @@ namespace spvgentwo
 	template<class ...Instr>
 	inline void Instruction::opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr ..._instr)
 	{
-		makeOp(spv::Op::OpEntryPoint, _model, _pFunction, _pName, _instr...);
+		makeOpEx(spv::Op::OpEntryPoint, _model, _pFunction, _pName, _instr...);
 	}
 
 	template<class ...Instr>
 	inline Instruction* Instruction::opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instr ..._initializer)
 	{
-		return makeOp(spv::Op::OpVariable, _pResultType, InvalidId, _initializer....);
+		return makeOpEx(spv::Op::OpVariable, _pResultType, InvalidId, _initializer....);
 	}
 
 	template<class ...Decorations>
 	inline void Instruction::opDecorate(Instruction* _pTarget, spv::Decoration _decoration, Decorations ..._decorations)
 	{
-		makeOp(spv::Op::OpDecorate, _pTarget, _decoration, _decorations...);
+		makeOpEx(spv::Op::OpDecorate, _pTarget, _decoration, _decorations...);
 	}
 
 	template<class ...Decorations>
 	inline void Instruction::opMemberDecorate(Instruction* _pTargetStructType, unsigned int _memberIndex, spv::Decoration _decoration, Decorations ..._decorations)
 	{
-		makeOp(spv::Op::OpMemberDecorate, _pTargetStructType, _memberIndex, _decoration, _decorations...);
+		makeOpEx(spv::Op::OpMemberDecorate, _pTargetStructType, _memberIndex, _decoration, _decorations...);
 	}
 
 	template<class ...Instr>
 	inline void Instruction::opMemberId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr* ..._ids)
 	{
-		makeOp(spv::Op::OpDecorateId, _pTarget, _decoration, _ids...);
+		makeOpEx(spv::Op::OpDecorateId, _pTarget, _decoration, _ids...);
 	}
 
 	template<class ...VarParents>
 	inline Instruction* Instruction::opPhi(Instruction* _pResultType, Instruction* _pVar, BasicBlock* _pVarBB, VarParents ..._parents)
 	{
-		return makeOp(spv::Op::OpPhi, _pResultType, InvalidId, _pVar, _pVarBB, _parents...);
+		return makeOpEx(spv::Op::OpPhi, _pResultType, InvalidId, _pVar, _pVarBB, _parents...);
 	}
 
 	template<class ...VarInst>
 	inline Instruction* Instruction::opPhiEx(Instruction* _pVar, VarInst* ..._variables)
 	{
-		makeOp(spv::Op::OpPhi, _pVar->getType(), InvalidId);
+		makeOpEx(spv::Op::OpPhi, _pVar->getType(), InvalidId);
 		return opPhiExInternal(_pVar, _variables...);
 	}
 
@@ -311,12 +305,12 @@ namespace spvgentwo
 	template<class ...LoopControlParams>
 	inline void Instruction::opLoopMerge(Instruction* _pMergeLabel, Instruction* _pContinueLabel, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ..._params)
 	{
-		makeOp(spv::Op::OpLoopMerge, _pMergeLabel, _pContinueLabel, literal_t{ _loopControl }, _params...);
+		makeOpEx(spv::Op::OpLoopMerge, _pMergeLabel, _pContinueLabel, literal_t{ _loopControl }, _params...);
 	}
 
 	template<class ...LoopControlParams>
 	inline void Instruction::opLoopMergeEx(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ..._params)
 	{
-		makeOp(spv::Op::OpLoopMerge, _pMergeBlock, _pContinueBlock, literal_t{ _loopControl }, _params...);
+		makeOpEx(spv::Op::OpLoopMerge, _pMergeBlock, _pContinueBlock, literal_t{ _loopControl }, _params...);
 	}
 } // !spvgentwo

@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 		Instruction* x = funcAdd.addParameter(type);
 		Instruction* y = funcAdd.addParameter(type);
 
-		Instruction* z = bb->opIAddEx(x, y);
+		Instruction* z = bb->makeOp(spv::Op::OpIAdd, x, y);
 		bb.returnValue(z);
 
 		Instruction* vectype = module.type<array_t<float, 3>>();

@@ -70,7 +70,7 @@ namespace spvgentwo
 	{
 		Instruction* pInstr = &m_ExecutionModes.emplace_back(m_pAllocator);
 
-		pInstr->makeOp(getExecutionModeOp(_mode), &m_Function, _mode, _args...);
+		pInstr->makeOpEx(getExecutionModeOp(_mode), &m_Function, _mode, _args...);
 
 		return pInstr;
 	}

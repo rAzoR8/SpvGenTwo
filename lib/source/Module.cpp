@@ -92,7 +92,7 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 
 	const spv::Op constantOp = _const.getOperation();
 
-	pInstr->makeOp(constantOp, pType, InvalidId);
+	pInstr->makeOpEx(constantOp, pType, InvalidId);
 
 	switch (constantOp)
 	{
@@ -146,7 +146,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 
 	const spv::Op base = _type.getBaseType();
 
-	pInstr->makeOp(base);
+	pInstr->makeOpEx(base);
 
 	if (base != spv::Op::OpTypeForwardPointer)
 	{
