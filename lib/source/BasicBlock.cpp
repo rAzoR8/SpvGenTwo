@@ -73,10 +73,10 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::If(Instruction* _pCondition, Basi
 	// this block has not been terminated yet
 	//if (getTerminator() == nullptr)
 	{
-		addInstruction()->opSelectionMergeEx(&_mergeBlock, _mask);
-		addInstruction()->opBranchConditionalEx(_pCondition, &_trueBlock, &_falseBlock);
-		_trueBlock->opBranchEx(&_mergeBlock);
-		_falseBlock->opBranchEx(&_mergeBlock);
+		addInstruction()->opSelectionMerge(&_mergeBlock, _mask);
+		addInstruction()->opBranchConditional(_pCondition, &_trueBlock, &_falseBlock);
+		_trueBlock->opBranch(&_mergeBlock);
+		_falseBlock->opBranch(&_mergeBlock);
 	}
 
 	for (auto it = _mergeBlock.last(); it != _mergeBlock.begin(); --it)

@@ -59,6 +59,7 @@ namespace spvgentwo
 		// make of from up to 3 intermediate results
 		Instruction* makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2 = nullptr, Instruction* _pOp3 = nullptr, Instruction* _pResultType = nullptr);
 		
+		// direclty translate arguments to spirv operands
 		template <class ...Args>
 		Instruction* makeOpEx(const spv::Op _op, Args ... _args);
 
@@ -126,28 +127,19 @@ namespace spvgentwo
 
 		// deduce parent form input variables
 		template <class ... VarInst>
-		Instruction* opPhi(Instruction* _pVar, VarInst* ... _variables);
-	
-		template <class ...LoopControlParams>
-		void opLoopMerge(Instruction* _pMergeLabel, Instruction* _pContinueLabel, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ... _params);
+		Instruction* opPhi(Instruction* _pVar, VarInst* ... _variables);	
 
 		template <class ...LoopControlParams>
-		void opLoopMergeEx(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ... _params);
+		void opLoopMerge(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ... _params);
 
-		void opSelectionMerge(Instruction* _pMergeLabel, const spv::SelectionControlMask _control);
-		void opSelectionMergeEx(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control);
-
-		void opBranch(Instruction* _pTargetLabel);
+		void opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control);
 
 		// label is infered from the basic block on serialization
-		void opBranchEx(BasicBlock* _pTargetBlock);
-
-		void opBranchConditional(Instruction* _pCondition, Instruction* _pTrueLabel, Instruction* _pFalseLabel);
-		void opBranchConditional(Instruction* _pCondition, Instruction* _pTrueLabel, Instruction* _pFalseLabel, const unsigned int _trueWeight, const unsigned int _falseWeight);
+		void opBranch(BasicBlock* _pTargetBlock);
 
 		// label is infered from the basic block on serialization
-		void opBranchConditionalEx(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock);
-		void opBranchConditionalEx(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight);
+		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock);
+		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight);
 
 	private:
 		void resolveId(spv::Id& _resultId);
@@ -295,13 +287,7 @@ namespace spvgentwo
 	}
 
 	template<class ...LoopControlParams>
-	inline void Instruction::opLoopMerge(Instruction* _pMergeLabel, Instruction* _pContinueLabel, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ..._params)
-	{
-		makeOpEx(spv::Op::OpLoopMerge, _pMergeLabel, _pContinueLabel, literal_t{ _loopControl }, _params...);
-	}
-
-	template<class ...LoopControlParams>
-	inline void Instruction::opLoopMergeEx(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ..._params)
+	inline void Instruction::opLoopMerge(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ..._params)
 	{
 		makeOpEx(spv::Op::OpLoopMerge, _pMergeBlock, _pContinueBlock, literal_t{ _loopControl }, _params...);
 	}

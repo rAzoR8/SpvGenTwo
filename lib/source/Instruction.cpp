@@ -208,42 +208,22 @@ void spvgentwo::Instruction::opMemberName(Instruction* _pTargetStructType, unsig
 	makeOpEx(spv::Op::OpMemberName, _pTargetStructType, _memberIndex, _pName);
 }
 
-void spvgentwo::Instruction::opSelectionMerge(Instruction* _pMergeLabel, const spv::SelectionControlMask _control)
-{
-	makeOpEx(spv::Op::OpSelectionMerge, _pMergeLabel, _control);
-}
-
-void spvgentwo::Instruction::opSelectionMergeEx(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control)
+void spvgentwo::Instruction::opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control)
 {
 	makeOpEx(spv::Op::OpSelectionMerge, _pMergeBlock, _control);
 }
 
-void spvgentwo::Instruction::opBranch(Instruction* _pTargetLabel)
-{
-	makeOpEx(spv::Op::OpBranch, _pTargetLabel);
-}
-
-void spvgentwo::Instruction::opBranchEx(BasicBlock* _pTargetBlock)
+void spvgentwo::Instruction::opBranch(BasicBlock* _pTargetBlock)
 {
 	makeOpEx(spv::Op::OpBranch, _pTargetBlock);
 }
 
-void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, Instruction* _pTrueLabel, Instruction* _pFalseLabel)
-{
-	makeOpEx(spv::Op::OpBranchConditional, _pCondition, _pTrueLabel, _pFalseLabel);
-}
-
-void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, Instruction* _pTrueLabel, Instruction* _pFalseLabel, const unsigned int _trueWeight, const unsigned int _falseWeight)
-{
-	makeOpEx(spv::Op::OpBranchConditional, _pCondition, _pTrueLabel, _pFalseLabel, _trueWeight, _falseWeight);
-}
-
-void spvgentwo::Instruction::opBranchConditionalEx(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock)
+void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock)
 {
 	makeOpEx(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock);
 }
 
-void spvgentwo::Instruction::opBranchConditionalEx(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight)
+void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight)
 {
 	makeOpEx(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock, _trueWeight, _falseWeight);
 }
