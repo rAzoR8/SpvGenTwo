@@ -124,12 +124,9 @@ namespace spvgentwo
 		template <class ... Instr>
 		void opMemberId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr*..._ids);
 
-		template <class ... VarParents>
-		Instruction* opPhi(Instruction* _pResultType, Instruction* _pVar, BasicBlock* _pVarBB, VarParents ... _parents);
-
 		// deduce parent form input variables
 		template <class ... VarInst>
-		Instruction* opPhiEx(Instruction* _pVar, VarInst* ... _variables);
+		Instruction* opPhi(Instruction* _pVar, VarInst* ... _variables);
 	
 		template <class ...LoopControlParams>
 		void opLoopMerge(Instruction* _pMergeLabel, Instruction* _pContinueLabel, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ... _params);
@@ -160,7 +157,7 @@ namespace spvgentwo
 		void makeOpInternal(T first, Args ... _args);
 
 		template <class ... VarInst>
-		Instruction* opPhiExInternal(Instruction* _pVar, VarInst* ... _variables);
+		Instruction* opPhiInternal(Instruction* _pVar, VarInst* ... _variables);
 
 	private:
 		spv::Op m_Operation = spv::Op::OpNop;
@@ -276,28 +273,22 @@ namespace spvgentwo
 		makeOpEx(spv::Op::OpDecorateId, _pTarget, _decoration, _ids...);
 	}
 
-	template<class ...VarParents>
-	inline Instruction* Instruction::opPhi(Instruction* _pResultType, Instruction* _pVar, BasicBlock* _pVarBB, VarParents ..._parents)
-	{
-		return makeOpEx(spv::Op::OpPhi, _pResultType, InvalidId, _pVar, _pVarBB, _parents...);
-	}
-
 	template<class ...VarInst>
-	inline Instruction* Instruction::opPhiEx(Instruction* _pVar, VarInst* ..._variables)
+	inline Instruction* Instruction::opPhi(Instruction* _pVar, VarInst* ..._variables)
 	{
 		makeOpEx(spv::Op::OpPhi, _pVar->getType(), InvalidId);
 		return opPhiExInternal(_pVar, _variables...);
 	}
 
 	template<class ...VarInst>
-	inline Instruction* Instruction::opPhiExInternal(Instruction* _pVar, VarInst* ..._variables)
+	inline Instruction* Instruction::opPhiInternal(Instruction* _pVar, VarInst* ..._variables)
 	{
 		addOperand(_pVar);
 		addOperand(_pVar->getBasicBlock());
 
 		if constexpr(sizeof...(_variables) > 0)
 		{
-			opPhiExInternal(_variables...);
+			opPhiInternal(_variables...);
 		}
 
 		return this;
