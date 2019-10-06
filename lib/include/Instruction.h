@@ -48,21 +48,26 @@ namespace spvgentwo
 		bool hasResultType() const { return hasResultTypeId(m_Operation); }
 		bool hasResultAndType() const { return hasResultAndTypeId(m_Operation); }
 
+		// reset Operation and clear Operands
 		void reset();
 
 		// get number of 32 bit words used by this instruction
 		unsigned int getWordCount() const;
+
+		// get opcode encoded with instruction word count [16 bit op code, 16 bit number of operand words] 
 		unsigned int getOpCode() const;
 
+		// serialize instructions of this basic block to the IWriter
 		void write(IWriter* _pWriter, spv::Id& _resultId);
 
-		// make of from up to 3 intermediate results
+		// make operation from up to 3 intermediate results, resulting instruction has result and result type
 		Instruction* makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2 = nullptr, Instruction* _pOp3 = nullptr, Instruction* _pResultType = nullptr);
 		
 		// direclty translate arguments to spirv operands
 		template <class ...Args>
 		Instruction* makeOpEx(const spv::Op _op, Args ... _args);
 
+		// convert and add the raw data passed via _args as literal_t operands
 		template <class ...Args>
 		void appendLiterals(Args ... _args);
 
@@ -70,7 +75,7 @@ namespace spvgentwo
 
 		Instruction* opUndef(Instruction* _pResultType);
 
-		Instruction* opSizeOf(Instruction* _pResultType, Instruction* _pPointerToVar);
+		Instruction* opSizeOf(Instruction* _pPointerToVar);
 
 		// instruction generators:
 		// all instructions generating a result id return a pointer to this instruction for reference (passing to other instruction operand)

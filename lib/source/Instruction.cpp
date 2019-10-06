@@ -143,9 +143,9 @@ spvgentwo::Instruction* spvgentwo::Instruction::opUndef(Instruction* _pResultTyp
 	return makeOpEx(spv::Op::OpUndef, _pResultType, InvalidId);
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opSizeOf(Instruction* _pResultType, Instruction* _pPointerToVar)
+spvgentwo::Instruction* spvgentwo::Instruction::opSizeOf(Instruction* _pPointerToVar)
 {
-	return makeOpEx(spv::Op::OpSizeOf, _pResultType, InvalidId, _pPointerToVar);
+	return makeOp(spv::Op::OpSizeOf, _pPointerToVar);
 }
 
 void spvgentwo::Instruction::opCapability(const spv::Capability _capability)

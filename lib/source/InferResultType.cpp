@@ -21,6 +21,8 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 
 	switch (_operation)
 	{
+	case spv::Op::OpSizeOf:
+		return module.type<unsigned int>();
 	case spv::Op::OpSNegate:
 	{
 		Type t(stdrep::move(module.newType()));
