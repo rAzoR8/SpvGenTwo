@@ -113,7 +113,7 @@ bool spvgentwo::Type::operator==(const Type& _other) const
 
 void spvgentwo::Type::setBaseType(const spv::Op _type)
 {
-	if (isType(_type))
+	if (isTypeOp(_type))
 	{
 		m_Type = _type;
 	}

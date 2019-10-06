@@ -222,7 +222,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 
 const spvgentwo::Type* spvgentwo::Module::getTypeInfo(Instruction* _pTypeInstr)
 {
-	if (_pTypeInstr->isTypeOp())
+	if (_pTypeInstr->isType())
 	{
 		Type** t = m_InstrToType.get(_pTypeInstr);
 		if (t != nullptr)

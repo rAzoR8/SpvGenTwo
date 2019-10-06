@@ -21,7 +21,7 @@ namespace spvgentwo
 
 	constexpr unsigned int makeGeneratorId(unsigned short _gen, unsigned short _ver) { return _gen << 16 | _ver; }
 
-	constexpr bool isType(const spv::Op _type)
+	constexpr bool isTypeOp(const spv::Op _type)
 	{		
 		if ((_type >= spv::Op::OpTypeVoid && _type <= spv::Op::OpTypeForwardPointer) || // basic types
 			(_type >= spv::Op::OpTypeVmeImageINTEL && _type <= spv::Op::OpTypeAvcSicResultINTEL) // intel ext
@@ -83,7 +83,7 @@ namespace spvgentwo
 		}
 	}
 
-	constexpr bool isTerminator(const spv::Op _instr)
+	constexpr bool isTerminatorOp(const spv::Op _instr)
 	{
 		switch (_instr)
 		{

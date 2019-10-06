@@ -41,7 +41,8 @@ namespace spvgentwo
 		// get StorageClass of OpVariable instructions
 		spv::StorageClass getStorageClass() const;
 	
-		bool isTypeOp() const;
+		bool isType() const;
+		bool isTerminator() const;
 
 		bool hasResult() const { return hasResultId(m_Operation); }
 		bool hasResultType() const { return hasResultTypeId(m_Operation); }

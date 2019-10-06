@@ -35,7 +35,7 @@ spvgentwo::IAllocator* spvgentwo::BasicBlock::getAllocator()
 
 spvgentwo::BasicBlock::Iterator spvgentwo::BasicBlock::getTerminator()
 {
-	if (m_pLast != nullptr && isTerminator((*m_pLast)->getOperation()))
+	if (m_pLast != nullptr && (*m_pLast)->isTerminator())
 	{
 		return Iterator(m_pLast);
 	}
@@ -68,7 +68,7 @@ void spvgentwo::BasicBlock::write(IWriter* _pWriter, spv::Id& _resultId)
 	}
 }
 
-void spvgentwo::BasicBlock::If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock& _mergeBlock, const spv::SelectionControlMask _mask)
+spvgentwo::Instruction* spvgentwo::BasicBlock::If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock& _mergeBlock, const spv::SelectionControlMask _mask)
 {
 	// this block has not been terminated yet
 	//if (getTerminator() == nullptr)
@@ -78,4 +78,14 @@ void spvgentwo::BasicBlock::If(Instruction* _pCondition, BasicBlock& _trueBlock,
 		_trueBlock->opBranchEx(&_mergeBlock);
 		_falseBlock->opBranchEx(&_mergeBlock);
 	}
+
+	for (auto it = _mergeBlock.last(); it != _mergeBlock.begin(); --it)
+	{
+		if (it->isTerminator() == false && it->hasResult()) // hasResultAndType
+		{
+			return it.operator->();
+		}
+	}
+
+	return nullptr;
 }

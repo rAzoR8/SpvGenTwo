@@ -103,9 +103,14 @@ spv::StorageClass spvgentwo::Instruction::getStorageClass() const
 	return spv::StorageClass::Max;
 }
 
-bool spvgentwo::Instruction::isTypeOp() const
+bool spvgentwo::Instruction::isType() const
 {
-	return isType(m_Operation);
+	return isTypeOp(m_Operation);
+}
+
+bool spvgentwo::Instruction::isTerminator() const
+{
+	return isTerminatorOp(m_Operation);
 }
 
 void spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id& _resultId)
