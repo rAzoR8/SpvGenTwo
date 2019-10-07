@@ -38,12 +38,21 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 
 		return module.addType(t);
 	}
+	// types where operands must match result type, no further validation at this point
 	case spv::Op::OpFNegate:
-		return op1TypeInst;
 	case spv::Op::OpIAdd:
 	case spv::Op::OpISub:
 	case spv::Op::OpFAdd:
 	case spv::Op::OpFSub:
+	case spv::Op::OpFMul:
+	case spv::Op::OpUDiv:
+	case spv::Op::OpSDiv:
+	case spv::Op::OpFDiv:
+	case spv::Op::OpUMod:
+	case spv::Op::OpSRem:
+	case spv::Op::OpSMod:
+	case spv::Op::OpFRem:
+	case spv::Op::OpFMod:
 		return op1TypeInst;
 	case spv::Op::OpIAddCarry:
 	case spv::Op::OpISubBorrow:
@@ -77,6 +86,33 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instructi
 			return (op1TypeInst->begin() + 1)->getInstruction();
 		}
 		break;
+	}
+	case spv::Op::OpMatrixTimesMatrix:
+	{
+		// Linear - algebraic multiply of LeftMatrix X RightMatrix.
+		// Result Type must be an OpTypeMatrix whose Column Type is a vector of ﬂoating - point type.
+		// LeftMatrix must be a matrix whose Column Type is the same as the Column Type in Result Type.
+		// RightMatrix must be a matrix with the same Component Type as the Component Type in Result Type.Its number of columns must equal the number of columns in Result Type.Its columnsmusthavethesamenumberofcomponentsasthenumberofcolumnsinLeftMatrix.
+
+		Type matType(stdrep::move(module.newType()));
+		matType.MatrixColumn(op2Type->getMatrixColumnCount()).VectorElement(op2Type->getMatrixColumnCount()).Float(op1Type->front().front().getFloatWidth());
+		return module.addType(matType);
+	}
+	case spv::Op::OpOuterProduct:
+	{
+		// Linear - algebraic outer product of Vector 1 and Vector 2.
+		// Result Type must be an OpTypeMatrix whose Column Type is a vector of ﬂoating - point type.
+		// Vector 1 must have the same type as the Column Type in Result Type.
+		// Vector 2 must be a vector with the same Component Type as the Component Type in Result Type.Its number of components must equal the number of columns in Result Type.
+		Type matType(stdrep::move(module.newType()));
+		matType.MatrixColumn(op2Type->getVectorComponentCount()).VectorElement(op1Type->getVectorComponentCount()).Float(op1Type->front().getFloatWidth());
+		return module.addType(matType);
+	}
+	case spv::Op::OpDot:
+	{
+		Type floatType(stdrep::move(module.newType()));
+		floatType.Float(op1Type->front().getFloatWidth());
+		return module.addType(floatType);
 	}
 	case spv::Op::OpAny:
 	case spv::Op::OpAll:

@@ -140,7 +140,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 
 	auto entry = Entry<Instruction>::create(m_pAllocator, this);
 
-	Instruction* pInstr = node.kv.value = entry->operator->(); // &m_TypesAndConstants.emplace_back(m_pAllocator);
+	Instruction* pInstr = node.kv.value = entry->operator->();
 
 	m_InstrToType.emplaceUnique(pInstr, &node.kv.key);
 
