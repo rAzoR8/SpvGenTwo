@@ -177,11 +177,21 @@ namespace spvgentwo
 		template <class Prop, class ...Props>
 		const Prop* setProperties(const Prop _first, Props ... _props);
 
+		bool isPointer() const { return m_Type == spv::Op::OpTypePointer; }
+		bool isStruct() const { return m_Type == spv::Op::OpTypeStruct; }
+		bool isArray() const { return m_Type == spv::Op::OpTypeArray; }
+		bool isImage() const { return m_Type == spv::Op::OpTypeImage; }
+		bool isSampler() const { return m_Type == spv::Op::OpTypeSampler; }
+		bool isSampledImage() const { return m_Type == spv::Op::OpTypeSampledImage; }
 		bool isVector() const { return m_Type == spv::Op::OpTypeVector; }
 		bool isMatrix() const { return m_Type == spv::Op::OpTypeMatrix; }
 		bool isInt() const { return m_Type == spv::Op::OpTypeInt; }
 		bool isFloat() const { return m_Type == spv::Op::OpTypeFloat; }	
 		bool isSigned() const { return isInt() && m_IntSign; }
+		bool isScalar() const { return isInt() || isFloat(); }
+
+		bool isVectorOf(const spv::Op _type) const { return isVector() && front().getBaseType() == _type; }
+		bool isScalarOrVectorOf(const spv::Op _type) const { return m_Type == _type || isVectorOf(_type); }
 
 	private:
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type

@@ -51,7 +51,10 @@ namespace spvgentwo
 		Node& newNodeUnique(const Hash64& _hash);
 
 		Value* get(const Hash64 _hash);
-		Value* get(const Key& _key); // TODO: const variants
+		const Value* get(const Hash64 _hash) const;
+
+		Value* get(const Key& _key);
+		const Value* get(const Key& _key) const;
 
 		Key* findKey(const Value& _value);
 
@@ -92,6 +95,20 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
+	inline const Value* HashMap<Key, Value>::get(const Hash64 _hash) const
+	{
+		const auto index = _hash % m_Buckets;
+
+		for (const Node& n : m_pBuckets[index])
+		{
+			if (n.hash == _hash)
+				return &n.kv.value;
+		}
+
+		return nullptr;
+	}
+
+	template<class Key, class Value>
 	inline Value* HashMap<Key, Value>::get(const Hash64 _hash)
 	{
 		const auto index = _hash % m_Buckets;
@@ -124,6 +141,12 @@ namespace spvgentwo
 
 	template<class Key, class Value>
 	inline Value* HashMap<Key, Value>::get(const Key& _key) 
+	{
+		return get(hash(_key));
+	}
+
+	template<class Key, class Value>
+	inline const Value* HashMap<Key, Value>::get(const Key& _key) const
 	{
 		return get(hash(_key));
 	}
