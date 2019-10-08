@@ -61,11 +61,7 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 		return _pType1Inst;
 	case spv::Op::OpIAddCarry:
 	case spv::Op::OpISubBorrow:
-	{
-		Type t(stdrep::move(_module.newType()));
-		t.Struct().IntM().IntM();
-		return _module.addType(t);
-	}
+		return _module.compositeType(spv::Op::OpTypeStruct, _pType1Inst, _pType2Inst);
 	case spv::Op::OpVectorTimesScalar:
 		return checkType(spv::Op::OpTypeVector, _pType1Inst);
 	case spv::Op::OpMatrixTimesScalar:
@@ -75,10 +71,10 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 		// Matrix must be a matrix with the same Component Type as the Component Type in Result Type.
 		// Its number of columns must equal the number of components in Result Type.
 		// => return matrix row type:
-		if (_pType1->getBaseType() == spv::Op::OpTypeMatrix)
+		if (_pType1->getType() == spv::Op::OpTypeMatrix)
 		{
 			Type rowType(stdrep::move(_module.newType()));
-			rowType.Vector(_pType1->getMatrixColumnCount()).Member().setBaseType(_pType1->front().getBaseType());
+			rowType.Vector(_pType1->getMatrixColumnCount()).Member().setType(_pType1->front().getType());
 			return _module.addType(rowType);
 		}
 		break;
@@ -86,7 +82,7 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 	case spv::Op::OpMatrixTimesVector:
 	{
 		// Matrix must be an OpTypeMatrix whose Column Type is Result Type.
-		if (_pType1->getBaseType() == spv::Op::OpTypeMatrix)
+		if (_pType1->getType() == spv::Op::OpTypeMatrix)
 		{
 			return (_pType1Inst->begin() + 1)->getInstruction();
 		}
@@ -178,7 +174,7 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 
 const spvgentwo::Type* spvgentwo::selectType(const spv::Op _type, const Type* _left, const Type* _right)
 {
-	return _left->getBaseType() == _type ? _left : (_right->getBaseType() == _type ? _right : nullptr);
+	return _left->getType() == _type ? _left : (_right->getType() == _type ? _right : nullptr);
 }
 
 spvgentwo::Instruction* spvgentwo::selectType(const spv::Op _type, Instruction* _leftTypeInstr, Instruction* _rightTypeInstr)

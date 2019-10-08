@@ -20,5 +20,10 @@ namespace spvgentwo
 
 		// if none of the operands have a parent BasicBlock, _left will be returned
 		Instruction& operator+(Instruction& _left, Instruction& _right);
+
+		Instruction& operator-(Instruction& _left, Instruction& _right);
+
+		Instruction& operator*(Instruction& _left, Instruction& _right);
+
 	} // !ops
 } // !spvgentwo

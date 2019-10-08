@@ -112,7 +112,7 @@ namespace spvgentwo
 	inline Instruction* Module::compositeType(const spv::Op _Type, TypeInstr ..._types)
 	{
 		Type t(m_pAllocator);
-		t.setBaseType(_Type);
+		t.setType(_Type);
 
 		if constexpr (sizeof...(_types) > 0u)
 		{

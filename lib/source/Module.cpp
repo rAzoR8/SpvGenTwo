@@ -144,7 +144,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 
 	m_InstrToType.emplaceUnique(pInstr, &node.kv.key);
 
-	const spv::Op base = _type.getBaseType();
+	const spv::Op base = _type.getType();
 
 	pInstr->makeOpEx(base);
 
@@ -236,7 +236,7 @@ const spvgentwo::Type* spvgentwo::Module::getTypeInfo(Instruction* _pTypeInstr)c
 spvgentwo::Instruction* spvgentwo::Module::compositeType(const spv::Op _Type, const List<Instruction*>& _subTypes)
 {
 	Type t(m_pAllocator);
-	t.setBaseType(_Type);
+	t.setType(_Type);
 	
 	for (Instruction* pSubType : _subTypes)
 	{

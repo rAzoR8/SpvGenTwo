@@ -28,8 +28,12 @@ namespace spvgentwo
 
 		void reset();
 
-		spv::Op getBaseType() const { return m_Type; }
-		void setBaseType(const spv::Op _type);
+		spv::Op getType() const { return m_Type; }
+		void setType(const spv::Op _type);
+
+		// get inner most subtype
+		spv::Op getBaseType() const;
+		bool isBaseTypeOf(const spv::Op _type) const;
 
 		// dimension, bits, elements
 		unsigned int getIntWidth() const { return m_IntWidth; }
@@ -190,7 +194,11 @@ namespace spvgentwo
 		bool isSigned() const { return isInt() && m_IntSign; }
 		bool isScalar() const { return isInt() || isFloat(); }
 
-		bool isVectorOf(const spv::Op _type) const { return isVector() && front().getBaseType() == _type; }
+		bool isVectorOf(const spv::Op _type) const { return isVector() && front().getType() == _type; }
+		bool isVectorOfInt() const { return isVector() && front().isInt(); }
+		bool isVectorOfFloat() const { return isVector() && front().isFloat(); }
+		bool isVectorOfScalar() const { return isVector() && front().isScalar(); }
+
 		bool isScalarOrVectorOf(const spv::Op _type) const { return m_Type == _type || isVectorOf(_type); }
 
 	private:
@@ -381,7 +389,7 @@ namespace spvgentwo
 	{
 		Hash64 operator()(const Type& _type, FNV1aHasher& _hasher) const
 		{
-			_hasher << _type.getBaseType();
+			_hasher << _type.getType();
 			_hasher << _type.getIntWidth(); // image depth, float width
 			_hasher << _type.getIntSign(); // float sign
 			_hasher << _type.getStorageClass(); // pointer
