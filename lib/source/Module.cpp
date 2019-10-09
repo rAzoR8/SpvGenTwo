@@ -220,11 +220,11 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 	return pInstr;
 }
 
-const spvgentwo::Type* spvgentwo::Module::getTypeInfo(Instruction* _pTypeInstr)const 
+const spvgentwo::Type* spvgentwo::Module::getTypeInfo(const Instruction* _pTypeInstr) const 
 {
 	if (_pTypeInstr->isType())
 	{
-		Type* const * t = m_InstrToType.get(_pTypeInstr);
+		const Type*const* t = m_InstrToType.get(_pTypeInstr);
 		if (t != nullptr)
 		{
 			return *t;

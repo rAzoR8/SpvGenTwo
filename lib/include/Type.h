@@ -32,7 +32,9 @@ namespace spvgentwo
 		void setType(const spv::Op _type);
 
 		// get inner most subtype
-		spv::Op getBaseType() const;
+		const Type& getBaseType() const;
+		Type& getBaseType();
+
 		bool isBaseTypeOf(const spv::Op _type) const;
 
 		// dimension, bits, elements

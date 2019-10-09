@@ -15,9 +15,6 @@ namespace spvgentwo
 
 		// helper functions
 
-		// returns type from operands type instruction using module typebuilder lookup
-		const Type* getType(const Instruction& _pOperand);
-
 		// if none of the operands have a parent BasicBlock, _left will be returned
 		Instruction& operator+(Instruction& _left, Instruction& _right);
 

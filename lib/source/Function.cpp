@@ -58,7 +58,7 @@ bool spvgentwo::Function::finalize(Instruction* _pReturnType, const Flag<spv::Fu
 
 	for (Instruction& param : m_Parameters)
 	{
-		m_pFunctionType->addOperand(param.getType());
+		m_pFunctionType->addOperand(param.getTypeInst());
 	}
 
 	m_Function.opFunction(_control, _pReturnType, m_pFunctionType);

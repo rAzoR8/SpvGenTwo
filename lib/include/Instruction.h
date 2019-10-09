@@ -36,7 +36,8 @@ namespace spvgentwo
 		Operand& addOperand(Args&& ... _operand) { return emplace_back(stdrep::forward<Args>(_operand)...); }
 
 		spv::Id getResultId() const;
-		Instruction* getType() const;
+		Instruction* getTypeInst() const;
+		const Type* getType() const;
 
 		// get StorageClass of OpVariable instructions
 		spv::StorageClass getStorageClass() const;

@@ -111,11 +111,21 @@ bool spvgentwo::Type::operator==(const Type& _other) const
 		m_subTypes == _other.m_subTypes;
 }
 
-spv::Op spvgentwo::Type::getBaseType() const
+const spvgentwo::Type& spvgentwo::Type::getBaseType() const
 {
 	if (m_subTypes.empty())
 	{
-		return m_Type;
+		return *this;
+	}
+
+	return front().getBaseType();
+}
+
+spvgentwo::Type& spvgentwo::Type::getBaseType()
+{
+	if (m_subTypes.empty())
+	{
+		return *this;
 	}
 
 	return front().getBaseType();
@@ -123,7 +133,7 @@ spv::Op spvgentwo::Type::getBaseType() const
 
 bool spvgentwo::Type::isBaseTypeOf(const spv::Op _type) const
 {
-	return getBaseType() == _type;
+	return getBaseType().getType() == _type;
 }
 
 void spvgentwo::Type::setType(const spv::Op _type)

@@ -3,6 +3,7 @@
 #include "Type.h"
 #include "Writer.h"
 #include "InferResultType.h"
+#include "Module.h"
 
 spvgentwo::Instruction::~Instruction()
 {
@@ -84,13 +85,24 @@ void spvgentwo::Instruction::resolveId(spv::Id& _resultId)
 	}
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::getType() const
+spvgentwo::Instruction* spvgentwo::Instruction::getTypeInst() const
 {
 	if (hasResultType()/* && empty() == false*/)
 	{
 		return front().getInstruction();
 	}
 	return nullptr;
+}
+
+const spvgentwo::Type* spvgentwo::Instruction::getType() const
+{
+	const Module* pModule = getModule();
+	if (isType()) 
+	{
+		return pModule->getTypeInfo(this);
+	}
+
+	return pModule->getTypeInfo(getTypeInst());
 }
 
 spv::StorageClass spvgentwo::Instruction::getStorageClass() const

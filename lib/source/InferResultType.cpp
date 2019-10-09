@@ -4,9 +4,9 @@
 
 spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instruction* _op1, Instruction* _op2, Instruction* _op3)
 {
-	Instruction* op1TypeInst = _op1 != nullptr ? _op1->getType() : nullptr;
-	Instruction* op2TypeInst = _op2 != nullptr ? _op2->getType() : nullptr;
-	Instruction* op3TypeInst = _op3 != nullptr ? _op3->getType() : nullptr;
+	Instruction* op1TypeInst = _op1 != nullptr ? _op1->getTypeInst() : nullptr;
+	Instruction* op2TypeInst = _op2 != nullptr ? _op2->getTypeInst() : nullptr;
+	Instruction* op3TypeInst = _op3 != nullptr ? _op3->getTypeInst() : nullptr;
 
 	if (op1TypeInst == nullptr)
 	{

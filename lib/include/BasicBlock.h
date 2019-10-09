@@ -42,6 +42,13 @@ namespace spvgentwo
 		// returns last instruction of MergeBlock which creats a result
 		Instruction* If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock& _mergeBlock, const spv::SelectionControlMask _mask = spv::SelectionControlMask::MaskNone);
 
+		// infer op code from operands types, emplace instruction in this basic block
+		Instruction* Add(Instruction* _pLeft, Instruction* _pRight);
+		Instruction* Sub(Instruction* _pLeft, Instruction* _pRight);
+		Instruction* Mul(Instruction* _pLeft, Instruction* _pRight);
+
+
+
 	private:
 		Function* m_pFunction = nullptr; // parent
 	};
