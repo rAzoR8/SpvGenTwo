@@ -168,4 +168,6 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::Mul(Instruction* _pLeft, Instruct
 	{
 		return addInstruction()->makeOp(spv::Op::OpMatrixTimesMatrix, _pLeft, _pRight);
 	}
+
+	return nullptr;
 }

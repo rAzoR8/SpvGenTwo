@@ -53,8 +53,9 @@ namespace spvgentwo
 		Value* get(const Hash64 _hash);
 		const Value* get(const Hash64 _hash) const;
 
-		Value* get(const Key& _key);
-		const Value* get(const Key& _key) const;
+		//template <class U = Value, stdrep::enable_if_t<!stdrep::is_const_v<U>> = 0>
+		Value* get(const Key& _key) { return get(hash(_key)); }
+		const Value* get(const Key _key) const { return get(hash(_key)); }
 
 		Key* findKey(const Value& _value);
 
@@ -139,17 +140,17 @@ namespace spvgentwo
 		return keys;
 	}
 
-	template<class Key, class Value>
-	inline Value* HashMap<Key, Value>::get(const Key& _key) 
-	{
-		return get(hash(_key));
-	}
+	//template<class Key, class Value>
+	//inline Value* HashMap<Key, Value>::get(const Key _key) 
+	//{
+	//	return this->get(hash(_key));
+	//}
 
-	template<class Key, class Value>
-	inline const Value* HashMap<Key, Value>::get(const Key& _key) const
-	{
-		return get(hash(_key));
-	}
+	//template<class Key, class Value>
+	//inline const Value* HashMap<Key, Value>::get(const Key _key) const
+	//{
+	//	return this->get(hash(_key));
+	//}
 
 	template<class Key, class Value>
 	inline Key* HashMap<Key, Value>::findKey(const Value& _value)

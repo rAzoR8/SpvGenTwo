@@ -23,8 +23,8 @@ namespace spvgentwo
 	template<> struct Hasher<long double> { Hash64 operator()(const long double data) const noexcept { return FNV1aHasher(data); } };
 	template<> struct Hasher<const char*> { Hash64 operator()(const char* data) const noexcept { return FNV1aHasher(data); } };	
 
-	template<class T> struct Hasher<T*> { Hash64 operator()(const T* ptr) const noexcept { return reinterpret_cast<Hash64>(ptr); } };
+	template<class T> struct Hasher<T*> { Hash64 operator()(/*const*/ T* ptr) const noexcept { return reinterpret_cast<Hash64>(ptr); } };
 
 	template <class T>
-	Hash64 hash(const T& data) { return Hasher<T>()(data); }
+	const Hash64 hash(const T& data) { return Hasher<T>()(data); }
 } // !spvgentwo

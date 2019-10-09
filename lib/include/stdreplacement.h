@@ -123,6 +123,16 @@ namespace spvgentwo::stdrep
 	struct remove_cv<const volatile T> { using type = T; };
 	template <class T>
 	using remove_cv_t = typename remove_cv<T>::type;
+
+	template <class>
+	inline constexpr bool is_const_v = false;
+
+	template <class T>
+	inline constexpr bool is_const_v<const T> = true;
+
+	//template<class T> struct is_const : std::false_type {};
+	//template<class T> struct is_const<const T> : std::true_type {};
+
 } // !spvgentwo::stdrep
 #endif
 
