@@ -36,6 +36,7 @@ namespace spvgentwo
 		Type& getBaseType();
 
 		bool isBaseTypeOf(const spv::Op _type) const;
+		bool hasSameBase(const Type& _other, const bool _onlyCheckTyeOp = true) const;
 
 		// dimension, bits, elements
 		unsigned int getIntWidth() const { return m_IntWidth; }

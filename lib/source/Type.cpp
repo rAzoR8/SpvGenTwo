@@ -136,6 +136,14 @@ bool spvgentwo::Type::isBaseTypeOf(const spv::Op _type) const
 	return getBaseType().getType() == _type;
 }
 
+bool spvgentwo::Type::hasSameBase(const Type& _other, const bool _onlyCheckTyeOp) const
+{
+	const Type& lBase = getBaseType();
+	const Type& rBase = _other.getBaseType();
+
+	return _onlyCheckTyeOp ? lBase.m_Type == rBase.m_Type : lBase == rBase;
+}
+
 void spvgentwo::Type::setType(const spv::Op _type)
 {
 	if (isTypeOp(_type))

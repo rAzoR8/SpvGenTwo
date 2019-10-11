@@ -127,47 +127,57 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::Mul(Instruction* _pLeft, Instruct
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
 
+	if (lType->hasSameBase(*rType) == false)
+	{
+		return nullptr;
+	}
+
 	// both are scalar or vector of int
 	if ((lType->isInt() && rType->isInt()) ||
-		(lType->isVectorOf(spv::Op::OpTypeInt) && rType->isVectorOf(spv::Op::OpTypeInt)))
+		(lType->isVectorOfInt() && rType->isVectorOfInt()))
 	{
 		return addInstruction()->makeOp(spv::Op::OpIMul, _pLeft, _pRight);
 	}// both are scalar or vector of float
 	else if ((lType->isFloat() && rType->isFloat()) ||
-		(lType->isVectorOf(spv::Op::OpTypeFloat) && rType->isVectorOf(spv::Op::OpTypeFloat)))
+		(lType->isVectorOfFloat() && rType->isVectorOfFloat()))
 	{
 		return addInstruction()->makeOp(spv::Op::OpFMul, _pLeft, _pRight);
 	}// left scalar times right vector float
-	else if ((lType->isFloat() && rType->isVectorOf(spv::Op::OpTypeFloat)) &&
-		(lType->isInt() && rType->isVectorOf(spv::Op::OpTypeInt)))
+	else if ((lType->isFloat() && rType->isVectorOfFloat()) &&
+		(lType->isInt() && rType->isVectorOfInt()))
 	{// OpVectorTimesScalar expects vector as first operand
 		return addInstruction()->makeOp(spv::Op::OpVectorTimesScalar, _pRight, _pLeft);
 	}// left vector times right scalar
-	else if ((lType->isVectorOf(spv::Op::OpTypeFloat) && rType->isFloat()) &&
-		(lType->isVectorOf(spv::Op::OpTypeInt) && rType->isInt()))
+	else if ((lType->isVectorOfFloat() && rType->isFloat()) &&
+		(lType->isVectorOfInt() && rType->isInt()))
 	{
 		return addInstruction()->makeOp(spv::Op::OpVectorTimesScalar, _pLeft, _pRight);
 	}
-	else if (lType->isScalar() && rType->isMatrix()) // TODO: check for same component type
+	else if (lType->isScalar() && rType->isMatrix())
 	{// OpMatrixTimesScalar expects matrix as first operand
 		return addInstruction()->makeOp(spv::Op::OpMatrixTimesScalar, _pRight, _pLeft);
 	}
-	else if (lType->isMatrix() && rType->isScalar()) // TODO: check for same component type
+	else if (lType->isMatrix() && rType->isScalar())
 	{
 		return addInstruction()->makeOp(spv::Op::OpMatrixTimesScalar, _pLeft, _pRight);
 	}
-	else if (lType->isVector() && rType->isMatrix()) // TODO: check for same component type
+	else if (lType->isVector() && rType->isMatrix())
 	{// OpMatrixTimesVector expects matrix as first operand
 		return addInstruction()->makeOp(spv::Op::OpMatrixTimesVector, _pRight, _pLeft);
 	}
-	else if (lType->isMatrix() && rType->isVector()) // TODO: check for same component type
+	else if (lType->isMatrix() && rType->isVector())
 	{
 		return addInstruction()->makeOp(spv::Op::OpMatrixTimesVector, _pLeft, _pRight);
 	}
-	else if (lType->isMatrix() && rType->isMatrix()) // TODO: check for same component type
+	else if (lType->isMatrix() && rType->isMatrix())
 	{
 		return addInstruction()->makeOp(spv::Op::OpMatrixTimesMatrix, _pLeft, _pRight);
 	}
 
+	return nullptr;
+}
+
+spvgentwo::Instruction* spvgentwo::BasicBlock::Div(Instruction* _pLeft, Instruction* _pRight)
+{
 	return nullptr;
 }

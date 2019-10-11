@@ -46,8 +46,7 @@ namespace spvgentwo
 		Instruction* Add(Instruction* _pLeft, Instruction* _pRight);
 		Instruction* Sub(Instruction* _pLeft, Instruction* _pRight);
 		Instruction* Mul(Instruction* _pLeft, Instruction* _pRight);
-
-
+		Instruction* Div(Instruction* _pLeft, Instruction* _pRight);
 
 	private:
 		Function* m_pFunction = nullptr; // parent
