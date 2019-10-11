@@ -93,12 +93,20 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::If(Instruction* _pCondition, Basi
 spvgentwo::Instruction* spvgentwo::BasicBlock::Add(Instruction* _pLeft, Instruction* _pRight)
 {
 	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
 
-	if (lType->isScalarOrVectorOf(spv::Op::OpTypeInt))
+	if (lType->hasSameBase(*rType) == false)
+	{
+		return nullptr;
+	}
+
+	if ((lType->isVectorOfInt() && rType->isVectorOfInt() && lType->getVectorComponentCount() == rType->getVectorComponentCount()) ||
+		(lType->isInt() && rType->isInt()))
 	{
 		addInstruction()->makeOp(spv::Op::OpIAdd, _pLeft, _pRight);
 	}
-	else if (lType->isScalarOrVectorOf(spv::Op::OpTypeFloat))
+	else if ((lType->isVectorOfFloat() && rType->isVectorOfFloat() && lType->getVectorComponentCount() == rType->getVectorComponentCount()) ||
+		(lType->isFloat() && rType->isFloat()))
 	{
 		addInstruction()->makeOp(spv::Op::OpFAdd, _pLeft, _pRight);
 	}
@@ -109,12 +117,20 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::Add(Instruction* _pLeft, Instruct
 spvgentwo::Instruction* spvgentwo::BasicBlock::Sub(Instruction* _pLeft, Instruction* _pRight)
 {
 	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
 
-	if (lType->isScalarOrVectorOf(spv::Op::OpTypeInt))
+	if (lType->hasSameBase(*rType) == false)
+	{
+		return nullptr;
+	}
+
+	if ((lType->isVectorOfInt() && rType->isVectorOfInt() && lType->getVectorComponentCount() == rType->getVectorComponentCount()) ||
+		(lType->isInt() && rType->isInt()))
 	{
 		addInstruction()->makeOp(spv::Op::OpISub, _pLeft, _pRight);
 	}
-	else if (lType->isScalarOrVectorOf(spv::Op::OpTypeFloat))
+	else if ((lType->isVectorOfFloat() && rType->isVectorOfFloat() && lType->getVectorComponentCount() == rType->getVectorComponentCount()) || 
+		(lType->isFloat() && rType->isFloat()))
 	{
 		addInstruction()->makeOp(spv::Op::OpFSub, _pLeft, _pRight);
 	}
