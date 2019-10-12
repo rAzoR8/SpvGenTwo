@@ -61,3 +61,54 @@ spvgentwo::Instruction& spvgentwo::ops::operator*(Instruction& _left, Instructio
 
 	return _left;
 }
+
+spvgentwo::Instruction& spvgentwo::ops::operator/(Instruction& _left, Instruction& _right)
+{
+	BasicBlock* pBB = getBasicBlock(_left, _right);
+	if (pBB != nullptr)
+	{
+		return *pBB->Div(&_left, &_right);
+	}
+
+	return _left;
+}
+
+spvgentwo::BasicBlock& spvgentwo::ops::operator+(BasicBlock& _left, Instruction* _pRight)
+{
+	return _left.Add(_pRight);
+}
+
+spvgentwo::BasicBlock& spvgentwo::ops::operator+(BasicBlock& _left, Instruction& _right)
+{
+	return _left.Add(&_right);
+}
+
+spvgentwo::BasicBlock& spvgentwo::ops::operator-(BasicBlock& _left, Instruction* _pRight)
+{
+	return _left.Sub(_pRight);
+}
+
+spvgentwo::BasicBlock& spvgentwo::ops::operator-(BasicBlock& _left, Instruction& _right)
+{
+	return _left.Sub(&_right);
+}
+
+spvgentwo::BasicBlock& spvgentwo::ops::operator*(BasicBlock& _left, Instruction* _pRight)
+{
+	return _left.Mul(_pRight);
+}
+
+spvgentwo::BasicBlock& spvgentwo::ops::operator*(BasicBlock& _left, Instruction& _right)
+{
+	return _left.Mul(&_right);
+}
+
+spvgentwo::BasicBlock& spvgentwo::ops::operator/(BasicBlock& _left, Instruction* _pRight)
+{
+	return _left.Div(_pRight);
+}
+
+spvgentwo::BasicBlock& spvgentwo::ops::operator/(BasicBlock& _left, Instruction& _right)
+{
+	return _left.Div(&_right);
+}

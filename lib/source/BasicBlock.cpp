@@ -197,3 +197,27 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::Div(Instruction* _pLeft, Instruct
 {
 	return nullptr;
 }
+
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::Add(Instruction* _pRight)
+{
+	Add(m_pLast->operator->(), _pRight);
+	return *this;
+}
+
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::Sub(Instruction* _pRight)
+{
+	Sub(m_pLast->operator->(), _pRight);
+	return *this;
+}
+
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::Mul(Instruction* _pRight)
+{
+	Mul(m_pLast->operator->(), _pRight);
+	return *this;
+}
+
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::Div(Instruction* _pRight)
+{
+	Div(m_pLast->operator->(), _pRight);
+	return *this;
+}

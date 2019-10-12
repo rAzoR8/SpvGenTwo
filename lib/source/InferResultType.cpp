@@ -49,6 +49,7 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 	case spv::Op::OpISub:
 	case spv::Op::OpFAdd:
 	case spv::Op::OpFSub:
+	case spv::Op::OpIMul:
 	case spv::Op::OpFMul:
 	case spv::Op::OpUDiv:
 	case spv::Op::OpSDiv:

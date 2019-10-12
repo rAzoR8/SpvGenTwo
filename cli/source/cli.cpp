@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <cstdlib>
+#include "Operators.h"
 
 using namespace spvgentwo;
 
@@ -81,7 +82,10 @@ int main(int argc, char* argv[])
 		Instruction* y = funcAdd.addParameter(type);
 
 		Instruction* z = bb->makeOp(spv::Op::OpIAdd, x, y);
-		bb.returnValue(z);
+
+		using namespace ops;
+		Instruction* res =  (bb + z) * x;
+		bb.returnValue(res);
 
 		Instruction* vectype = module.type<array_t<float, 3>>();
 		Instruction* mattype = module.type<matrix_t<float, 3, 3>>();
