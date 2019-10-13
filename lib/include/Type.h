@@ -193,12 +193,19 @@ namespace spvgentwo
 		bool isVector() const { return m_Type == spv::Op::OpTypeVector; }
 		bool isMatrix() const { return m_Type == spv::Op::OpTypeMatrix; }
 		bool isInt() const { return m_Type == spv::Op::OpTypeInt; }
-		bool isFloat() const { return m_Type == spv::Op::OpTypeFloat; }	
-		bool isSigned() const { return isInt() && m_IntSign; }
+		bool isUInt() const { return m_Type == spv::Op::OpTypeInt && m_IntSign == false; }
+		bool isSInt() const { return m_Type == spv::Op::OpTypeInt && m_IntSign; }
+		bool isFloat() const { return m_Type == spv::Op::OpTypeFloat; }
+		bool isF16() const { return m_Type == spv::Op::OpTypeFloat && m_FloatWidth == 16u; }
+		bool isF32() const { return m_Type == spv::Op::OpTypeFloat && m_FloatWidth == 32u; }
+		bool isF64() const { return m_Type == spv::Op::OpTypeFloat && m_FloatWidth == 64u; }
+
 		bool isScalar() const { return isInt() || isFloat(); }
 
 		bool isVectorOf(const spv::Op _type) const { return isVector() && front().getType() == _type; }
 		bool isVectorOfInt() const { return isVector() && front().isInt(); }
+		bool isVectorOfSInt() const { return isVector() && front().isSInt(); }
+		bool isVectorOfUInt() const { return isVector() && front().isUInt(); }
 		bool isVectorOfFloat() const { return isVector() && front().isFloat(); }
 		bool isVectorOfScalar() const { return isVector() && front().isScalar(); }
 

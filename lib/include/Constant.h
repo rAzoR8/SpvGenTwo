@@ -17,9 +17,13 @@ namespace spvgentwo
 
 		spv::Op getOperation() const { return m_Operation; }
 		const Type& getType() const { return m_Type; }
+		Type& getType() { return m_Type; }
 
 		const List<unsigned int>& getData() const { return m_literalData; }
+		List<unsigned int>& getData() { return m_literalData; }
+
 		const List<Constant>& getComponents() const { return m_Components; }
+		List<Constant>& getComponents() { return m_Components; }
 
 		template <class T>
 		Constant& make(const T& _value, const bool _spec = false);

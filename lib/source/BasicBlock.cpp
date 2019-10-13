@@ -195,6 +195,52 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::Mul(Instruction* _pLeft, Instruct
 
 spvgentwo::Instruction* spvgentwo::BasicBlock::Div(Instruction* _pLeft, Instruction* _pRight)
 {
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType->hasSameBase(*rType) == false)
+	{
+		return nullptr;
+	}
+
+	if ((lType->isUInt() && rType->isUInt()) || (lType->isVectorOfUInt() && rType->isVectorOfUInt()))
+	{
+		return addInstruction()->makeOp(spv::Op::OpUDiv, _pLeft, _pRight);
+	} 
+	else if ((lType->isInt() && rType->isInt()) || (lType->isVectorOfInt() && rType->isVectorOfInt()))
+	{
+		return addInstruction()->makeOp(spv::Op::OpSDiv, _pLeft, _pRight);
+	}
+	else if ((lType->isFloat() && rType->isFloat()) || (lType->isVectorOfFloat() && rType->isVectorOfFloat()))
+	{
+		return addInstruction()->makeOp(spv::Op::OpFDiv, _pLeft, _pRight);
+	}
+	else if (lType->isVectorOfScalar() && rType->isScalar())
+	{
+		Instruction* one = nullptr;
+		// TODO: find a better way to construct constants from a Type with a value thats not exaclty of type
+		// e.g. getModule()->constant(lType, 1)
+		if(rType->isF32())
+		{
+			one = getModule()->constant(1.f);
+		} 
+		else if (rType->isF64())
+		{
+			one = getModule()->constant(1.0);
+		}
+		else if (rType->getIntWidth() == 32u)
+		{
+			one = getModule()->constant(1);
+		}
+		else if (rType->getIntWidth() == 64u)
+		{
+			one = getModule()->constant(1ull);
+		}
+
+		// vec / scalar => vec * ( 1 / scalar )
+		return Mul(_pLeft, Div(one, _pRight));
+	}
+
 	return nullptr;
 }
 
