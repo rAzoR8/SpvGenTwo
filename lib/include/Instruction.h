@@ -150,8 +150,14 @@ namespace spvgentwo
 		template <class ... Instr>
 		Instruction* opAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ... _pIndices);
 
+		template <class ... IntIndices>
+		Instruction* opAccessChain(Instruction* _pBase, const unsigned int _firstIndex, IntIndices... _indices);
+
 		template <class ... Instr>
 		Instruction* opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ... _pIndices);
+
+		template <class ... Operands>
+		Instruction* opLoad(Instruction* _pPointerToVar, const Flag<MemoryOperands> _memOperands = MemoryOperands::None, Operands ... _operands);
 
 	private:
 		void resolveId(spv::Id& _resultId);
@@ -256,7 +262,7 @@ namespace spvgentwo
 	template<class ...Instr>
 	inline Instruction* Instruction::opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instr ..._initializer)
 	{
-		return makeOpEx(spv::Op::OpVariable, _pResultType, InvalidId, _initializer....);
+		return makeOpEx(spv::Op::OpVariable, _pResultType, InvalidId, _storageClass, _initializer...);
 	}
 
 	template<class ...Decorations>
@@ -310,9 +316,41 @@ namespace spvgentwo
 		return makeOpEx(spv::Op::OpAccessChain, _pResultType, InvalidId, _pBase, _pConstIndex, _pIndices...);
 	}
 
+	template<class ...IntIndices>
+	inline Instruction* Instruction::opAccessChain(Instruction* _pBase, const unsigned int _firstIndex, IntIndices ..._indices)
+	{
+		// Base must be a pointer, pointing to the base of a composite object.
+
+		const Type* pBaseType = _pBase->getType();
+		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...); // base is a pointer type, so 0 is used to get the inner type
+		Module* pModule = _pBase->getModule();
+		Instruction* pResultType = nullptr;
+
+		if (it != nullptr)
+		{
+			// Result Type must be an OpTypePointer.
+			// Its Type operand must be the type reached by walking the Base’s type hierarchy down to the last provided index in Indexes, and its Storage Class operand must be the same as the Storage Class of Base.
+	
+			Type&& ptrType(it->wrap(spv::Op::OpTypePointer));
+			ptrType.setStorageClass(pBaseType->getStorageClass());
+			pResultType = pModule->addType(ptrType);
+		}
+
+		return makeOpEx(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->constant(_firstIndex), pModule->constant<unsigned int>(_indices)...);
+	}
+
 	template<class ...Instr>
 	inline Instruction* Instruction::opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ..._pIndices)
 	{
 		return makeOpEx(spv::Op::OpInBoundsAccessChain, _pResultType, InvalidId, _pBase, _pConstIndex, _pIndices...);
+	}
+
+	template<class ...Operands>
+	inline Instruction* Instruction::opLoad(Instruction* _pPointerToVar, const Flag<MemoryOperands> _memOperands, Operands ..._operands)
+	{
+		// Result Type is the type of the loaded object.It must be a type with ﬁxed size; i.e., it cannot be, nor include, any OpTypeRuntimeArray types.
+		// Pointer is the pointer to load through.Its type must be an OpTypePointer whose Type operand is the same as Result Type.
+		Instruction* pResultType = getModule()->addType(_pPointerToVar->getType()->front());
+		return makeOpEx(spv::Op::OpLoad, pResultType, InvalidId, _pPointerToVar, _memOperands.mask, _operands...);
 	}
 } // !spvgentwo

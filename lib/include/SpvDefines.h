@@ -19,6 +19,17 @@ namespace spvgentwo
 		Normalized = 1
 	};
 
+	enum class MemoryOperands : unsigned int
+	{
+		None = 0x0,
+		Volatile = 0x1,
+		Aligned = 0x2,
+		Nontemporal = 0x4,
+		MakePointerAvailableKHR = 0x8,
+		MakePointerVisibleKHR = 0x10,
+		NonPrivatePointerKHR = 0x20
+	};
+
 	constexpr unsigned int makeGeneratorId(unsigned short _gen, unsigned short _ver) { return _gen << 16 | _ver; }
 
 	constexpr bool isTypeOp(const spv::Op _type)

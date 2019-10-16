@@ -84,13 +84,20 @@ int main(int argc, char* argv[])
 		Instruction* z = bb->makeOp(spv::Op::OpIAdd, x, y);
 
 		using namespace ops;
-		Instruction* res =  (bb + z) * x;
+
+		Instruction* uniformVar = module.addGlobalVariableInstr()->opVariable(module.type<vector_t<float, 3>*>(spv::StorageClass::Uniform), spv::StorageClass::Uniform);
+		Instruction* uniformComp = bb->opAccessChain(uniformVar, 0u);
+		Instruction* component1 = bb->opLoad(uniformComp);
+
+		Instruction* res = (bb + z) * x * component1;
+
 		bb.returnValue(res);
 
 		Instruction* vectype = module.type<array_t<float, 3>>();
 		Instruction* mattype = module.type<matrix_t<float, 3, 3>>();
 
 		Instruction* consvec = module.constant(const_vector_t<float, 3>({ 1.f, 2.f, 3.f }));
+
 		const_matrix_t<float, 2, 2> mat{ 1.f, 2.f, 3.f, 4.f };
 		Instruction* consvmat = module.constant(mat);
 

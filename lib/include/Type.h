@@ -16,6 +16,9 @@ namespace spvgentwo
 		using Iterator = List<Type>::Iterator;
 
 		Type(IAllocator* _pAllocator, Type* _pParent = nullptr);
+		Type(IAllocator* _pAllocator, const Type& _subType, const spv::Op _baseType);
+		Type(IAllocator* _pAllocator, Type&& _subType, const spv::Op _baseType);
+
 		Type(Type&& _other) noexcept;
 		Type(const Type& _other);
 		~Type();
@@ -211,6 +214,15 @@ namespace spvgentwo
 
 		bool isScalarOrVectorOf(const spv::Op _type) const { return m_Type == _type || isVectorOf(_type); }
 
+		template<class... Indices>
+		List<Type>::Iterator getSubType(const unsigned int _i, Indices... _indices) const;
+
+		// wraps a copy of this type in a new type of _baseType
+		Type wrap(const spv::Op _baseType);
+
+		// moves this into wrap type of _baseType
+		Type moveWrap(const spv::Op _baseType);
+
 	private:
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type
 		Type* m_pParent = nullptr;
@@ -242,6 +254,21 @@ namespace spvgentwo
 
 		List<Type> m_subTypes;
 	};
+
+	template<class ...Indices>
+	inline List<Type>::Iterator Type::getSubType(const unsigned int _i, Indices ..._indices) const
+	{
+		auto it = m_subTypes.begin() + _i;
+		
+		if constexpr (sizeof...(_indices) > 0)
+		{
+			if (it != nullptr) 
+			{
+				return it->getSubType(_indices...);
+			}
+		}
+		return it;
+	}
 
 	// opaque types
 	struct sampler_t {};

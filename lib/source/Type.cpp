@@ -6,6 +6,22 @@ spvgentwo::Type::Type(IAllocator* _pAllocator, Type* _pParent) :
 {
 }
 
+spvgentwo::Type::Type(IAllocator* _pAllocator, const Type& _subType, const spv::Op _baseType) :
+	m_subTypes(_pAllocator),
+	m_pParent(nullptr),
+	m_Type(_baseType)
+{
+	m_subTypes.emplace_back(_subType);
+}
+
+spvgentwo::Type::Type(IAllocator* _pAllocator, Type&& _subType, const spv::Op _baseType) :
+	m_subTypes(_pAllocator),
+	m_pParent(nullptr),
+	m_Type(_baseType)
+{
+	m_subTypes.emplace_back(stdrep::move(_subType));
+}
+
 spvgentwo::Type::Type(Type&& _other) noexcept:
 	m_subTypes(stdrep::move(_other.m_subTypes)),
 	m_IntSign(_other.m_IntSign),
@@ -348,4 +364,14 @@ spvgentwo::Type& spvgentwo::Type::Top()
 		if (parent->m_pParent == nullptr) { return *parent; }
 		parent = parent->m_pParent;
 	}
+}
+
+spvgentwo::Type spvgentwo::Type::wrap(const spv::Op _baseType)
+{
+	 return Type(m_subTypes.getAllocator(), *this, _baseType);
+}
+
+spvgentwo::Type spvgentwo::Type::moveWrap(const spv::Op _baseType)
+{
+	return Type(m_subTypes.getAllocator(), stdrep::move(*this), _baseType);
 }
