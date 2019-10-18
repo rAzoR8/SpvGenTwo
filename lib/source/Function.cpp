@@ -81,11 +81,9 @@ void spvgentwo::Function::getGlobalVariableInterface(List<Operand>& _outVarInstr
 {
 	struct VisitedBB
 	{
-		VisitedBB(BasicBlock* _pBB, bool _visited = false) : pBB(_pBB), visited(_visited) {}
+		VisitedBB(BasicBlock* _pBB) : pBB(_pBB), visited(false) {}
 		BasicBlock* pBB = nullptr;
 		bool visited = false;
-
-		bool operator==(const VisitedBB& _other) const { return pBB == _other.pBB; }
 		bool operator==(const BasicBlock* _pBB) const { return pBB == _pBB; }
 	};
 
@@ -97,8 +95,7 @@ void spvgentwo::Function::getGlobalVariableInterface(List<Operand>& _outVarInstr
 		BBs.emplace_back(&bb);
 	}
 
-	// go through all reachable basicblocks (including called functions)
-
+	// go through all basicblocks (including called functions)
 	auto size = 0ull;
 	do 
 	{
@@ -108,6 +105,8 @@ void spvgentwo::Function::getGlobalVariableInterface(List<Operand>& _outVarInstr
 		{
 			if (bb.visited == false)
 			{
+				bb.visited = true;
+
 				// find calls to other functions and add those functions basic blocks
 				for (Instruction& instr : *bb.pBB)
 				{
@@ -120,18 +119,15 @@ void spvgentwo::Function::getGlobalVariableInterface(List<Operand>& _outVarInstr
 						// add unvisited function BBs
 						for (BasicBlock& funcBB : *pFunction)
 						{
-							if (BBs.contains(&funcBB) == false)
+							if (BBs.contains(&funcBB) == false) // skip recursive calls
 							{
 								BBs.emplace_back(&funcBB);
 							}
 						}
 					}
 				}
-
-				bb.visited = true;
 			}
 		}
-
 	} while (size < BBs.size());
 
 	// go through the instructions of the collected basic blocks and look for use of op variable operands
@@ -139,17 +135,19 @@ void spvgentwo::Function::getGlobalVariableInterface(List<Operand>& _outVarInstr
 	{
 		for(Instruction& instr : *bb.pBB)
 		{
-			// TODO: go through operands that are Instructions that consube a OpVariable
-
-			// find valid OpVariable (resultType, resultId, Storage Class)
-			if(instr.getOperation() == spv::Op::OpVariable)
+			// go through operands that are Instructions which consume OpVariable
+			for (Operand& operand : instr) 
 			{
-				const spv::StorageClass storage = instr.getStorageClass();
-
-				// uniquely add the instruction to the interface list
-				if (storage != spv::StorageClass::Function && _outVarInstr.contains(&instr) == false)
+				// find valid OpVariable (resultType, resultId, Storage Class)
+				Instruction* pArg = operand.getInstruction();
+				if (pArg != nullptr && pArg->getOperation() == spv::Op::OpVariable && pArg->getStorageClass() != spv::StorageClass::Function)
 				{
-					_outVarInstr.emplace_back(&instr);
+					// uniquely add the instruction to the interface list
+					if (_outVarInstr.contains(pArg) == false)
+					{
+						_outVarInstr.emplace_back(pArg);
+					}
+					break;
 				}
 			}
 		}

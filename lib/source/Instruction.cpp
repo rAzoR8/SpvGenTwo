@@ -163,12 +163,15 @@ const spvgentwo::Type* spvgentwo::Instruction::getType() const
 
 spv::StorageClass spvgentwo::Instruction::getStorageClass() const
 {
-	if (m_Operation == spv::Op::OpVariable)
+	switch (m_Operation)
 	{
+	case spv::Op::OpTypePointer:
+		return static_cast<spv::StorageClass>((begin() + 1)->getLiteral().value);
+	case spv::Op::OpVariable:
 		return static_cast<spv::StorageClass>((begin() + 2)->getLiteral().value);
+	default:
+		return spv::StorageClass::Max;
 	}
-
-	return spv::StorageClass::Max;
 }
 
 bool spvgentwo::Instruction::isType() const
