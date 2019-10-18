@@ -44,47 +44,8 @@ namespace spvgentwo
 		const literal_t getLiteral() const { return isLiteral() ? value : literal_t{}; }
 		const spv::Id getResultId() const { return isResultId() ? resultId : InvalidId; }
 
-		Operand(const Operand& _other) : type(_other.type)
-		{
-			switch (type)
-			{
-			case Type::Instruction:
-				instruction = _other.instruction;
-				break;
-			case Type::BranchTarget:
-				branchTarget = _other.branchTarget;
-				break;
-			case Type::Literal:
-				value = _other.value;
-				break;
-			case Type::ResultId:
-				resultId = _other.resultId;
-				break;
-			default:
-				break;
-			}
-		}
-
-		Operand(Operand&& _other) noexcept : type(_other.type)
-		{
-			switch (type)
-			{
-			case Type::Instruction:
-				instruction = _other.instruction;
-				break;
-			case Type::BranchTarget:
-				branchTarget = _other.branchTarget;
-				break;
-			case Type::Literal:
-				value = _other.value;
-				break;
-			case Type::ResultId:
-				resultId = _other.resultId;
-				break;
-			default:
-				break;
-			}
-		}
+		Operand(const Operand& _other);
+		Operand(Operand&& _other) noexcept;
 
 		Operand(BasicBlock* _target) : branchTarget(_target), type(Type::BranchTarget) {}
 		Operand(Instruction* _instr) : instruction(_instr), type(Type::Instruction) {}
@@ -92,6 +53,18 @@ namespace spvgentwo
 		Operand(const spv::Id _resutlId) : resultId(_resutlId), type(Type::ResultId) {}
 
 		void write(IWriter* _pWriter) const;
+
+		bool operator==(const Operand& _other) const;
+
+		bool operator==(const BasicBlock* _target) const;
+		bool operator==(const Instruction* _instr) const;
+		bool operator==(const literal_t& _value) const;
+		bool operator==(const spv::Id& _resultId) const;
+
+		bool operator!=(const BasicBlock* _target) const;
+		bool operator!=(const Instruction* _instr) const;
+		bool operator!=(const literal_t& _value) const;
+		bool operator!=(const spv::Id& _resultId) const;
 	};
 
 	template<class Container, class T, class ...Args>
