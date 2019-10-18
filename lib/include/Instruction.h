@@ -19,6 +19,8 @@ namespace spvgentwo
 		template <class ...Args>
 		Instruction(Module* _pModule, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
 		template <class ...Args>
+		Instruction(Function* _pFunction, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
+		template <class ...Args>
 		Instruction(BasicBlock* _pBasicBlock, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
 
 		~Instruction();
@@ -26,8 +28,11 @@ namespace spvgentwo
 		Module* getModule();
 		const Module* getModule() const;
 
-		BasicBlock* getBasicBlock() { return m_pBasicBlock; }
-		const BasicBlock* getBasicBlock() const { return m_pBasicBlock; }
+		Function* getFunction();
+		const Function* getFunction() const;
+
+		BasicBlock* getBasicBlock();
+		const BasicBlock* getBasicBlock() const;
 
 		// manual instruction construction:
 		void setOperation(const spv::Op _op) { m_Operation = _op; };
@@ -171,8 +176,21 @@ namespace spvgentwo
 
 	private:
 		spv::Op m_Operation = spv::Op::OpNop;
-		BasicBlock* m_pBasicBlock = nullptr; // parent
-		Module* m_pModule = nullptr;
+
+		enum class ParentType 
+		{
+			BasicBlock,
+			Function,
+			Module
+		} m_parentType = ParentType::BasicBlock;
+
+		union
+		{
+			BasicBlock* pBasicBlock = nullptr; // parent
+			Function* pFunction;
+			Module* pModule;
+		} m_parent;
+
 	};
 
 	// free helper function
@@ -180,15 +198,25 @@ namespace spvgentwo
 
 	template<class ...Args>
 	inline Instruction::Instruction(Module* _pModule, const spv::Op _op, Args&& ..._args) :
-		m_pBasicBlock(nullptr), m_pModule(_pModule), List(_pModule->getAllocator())
+		m_parentType(ParentType::Module), List(_pModule->getAllocator())
 	{
+		m_parent.pModule = _pModule;
+		makeOpEx(_op, stdrep::forward<Args>(_args)...);
+	}
+
+	template<class ...Args>
+	inline Instruction::Instruction(Function* _pFunction, const spv::Op _op, Args&& ..._args) :
+		m_parentType(ParentType::Function), List(_pFunction->getAllocator())
+	{
+		m_parent.pFunction = _pFunction;
 		makeOpEx(_op, stdrep::forward<Args>(_args)...);
 	}
 
 	template<class ...Args>
 	inline Instruction::Instruction(BasicBlock* _pBasicBlock, const spv::Op _op, Args&& ..._args) :
-		m_pBasicBlock(_pBasicBlock), m_pModule(_pBasicBlock->getModule()), List(_pBasicBlock->getAllocator())
+		m_parentType(ParentType::BasicBlock), List(_pBasicBlock->getAllocator())
 	{
+		m_parent.pBasicBlock = _pBasicBlock;
 		makeOpEx(_op, stdrep::forward<Args>(_args)...);
 	}
 

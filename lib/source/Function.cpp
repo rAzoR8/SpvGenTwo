@@ -3,9 +3,9 @@
 
 spvgentwo::Function::Function(Module* _pModule) :
 	m_pModule(_pModule), List(_pModule->getAllocator()),
-	m_Function(_pModule),
+	m_Function(this),
 	m_Parameters(_pModule->getAllocator()),
-	m_EntryPoint(_pModule),
+	m_EntryPoint(this),
 	m_ExecutionModes(_pModule->getAllocator())
 {
 }
@@ -43,7 +43,7 @@ void spvgentwo::Function::write(IWriter* _pWriter, spv::Id& _resultId)
 
 spvgentwo::Instruction* spvgentwo::Function::addParameter(Instruction* _pType)
 {
-	return m_Parameters.emplace_back(getModule()).opFunctionParameter(_pType);
+	return m_Parameters.emplace_back(this).opFunctionParameter(_pType);
 }
 
 bool spvgentwo::Function::finalize(Instruction* _pReturnType, const Flag<spv::FunctionControlMask> _control)
