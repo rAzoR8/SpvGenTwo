@@ -43,12 +43,13 @@ namespace spvgentwo
 		spv::ExecutionModel getExecutionModel() const { return m_ExecutionModel;}
 		const char* getEntryPointName() const { return m_pEntryPointName; }
 
-		// get all the global OpVariables with StorageClass != Function used in this function
-		List<Instruction*> getGlobalVariableInterface() const; // TODO: make private?
-
 		template <class ... Args>
 		Instruction* addExecutionMode(const spv::ExecutionMode _mode, Args ... _args);
 		const List<Instruction>& getExecutionModes() const { return m_ExecutionModes; }
+
+	private:
+		// get all the global OpVariables with StorageClass != Function used in this function
+		void getGlobalVariableInterface(List<Operand>& _outVarinstr) const;
 
 	private:
 		Module* m_pModule = nullptr; // parent
@@ -68,7 +69,7 @@ namespace spvgentwo
 	template<class ...Args>
 	inline Instruction* Function::addExecutionMode(const spv::ExecutionMode _mode, Args ..._args)
 	{
-		Instruction* pInstr = &m_ExecutionModes.emplace_back(m_pAllocator);
+		Instruction* pInstr = &m_ExecutionModes.emplace_back(this);
 
 		pInstr->makeOpEx(getExecutionModeOp(_mode), &m_Function, _mode, _args...);
 

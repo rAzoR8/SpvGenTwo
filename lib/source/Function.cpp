@@ -74,59 +74,84 @@ void spvgentwo::Function::promoteToEntryPoint(const spv::ExecutionModel _model, 
 	m_EntryPoint.reset();
 	m_EntryPoint.opEntryPoint(_model, &m_Function, m_pEntryPointName);
 
-	for(spvgentwo::Instruction* pVar : getGlobalVariableInterface())
-	{
-		m_EntryPoint.addOperand(pVar);
-	}
+	getGlobalVariableInterface(m_EntryPoint);
 }
 
-spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::getGlobalVariableInterface() const
+void spvgentwo::Function::getGlobalVariableInterface(List<Operand>& _outVarInstr) const
 {
-	List<BasicBlock*> BBs(m_pAllocator);
+	struct VisitedBB
+	{
+		VisitedBB(BasicBlock* _pBB, bool _visited = false) : pBB(_pBB), visited(_visited) {}
+		BasicBlock* pBB = nullptr;
+		bool visited = false;
 
-	// TODO: go through all reachable basicblocks (including called functions)
+		bool operator==(const VisitedBB& _other) const { return pBB == _other.pBB; }
+		bool operator==(const BasicBlock* _pBB) const { return pBB == _pBB; }
+	};
 
+	List<VisitedBB> BBs(m_pAllocator);
+
+	// entry points own basic blocks
 	for (BasicBlock& bb : *this)
 	{
 		BBs.emplace_back(&bb);
 	}
+
+	// go through all reachable basicblocks (including called functions)
 
 	auto size = 0ull;
 	do 
 	{
 		size = BBs.size();
 
-		for (BasicBlock* pBB : BBs)
+		for (VisitedBB& bb : BBs)
 		{
-			
+			if (bb.visited == false)
+			{
+				// find calls to other functions and add those functions basic blocks
+				for (Instruction& instr : *bb.pBB)
+				{
+					if (instr.getOperation() == spv::Op::OpFunctionCall)
+					{
+						// 3rd arg of opFunctionCall is OpFunction whos parent Function class holds the BBs were looking for
+						Instruction* pOpFunc = (instr.begin() + 2)->getInstruction();
+						Function* pFunction = pOpFunc->getFunction();
+
+						// add unvisited function BBs
+						for (BasicBlock& funcBB : *pFunction)
+						{
+							if (BBs.contains(&funcBB) == false)
+							{
+								BBs.emplace_back(&funcBB);
+							}
+						}
+					}
+				}
+
+				bb.visited = true;
+			}
 		}
 
 	} while (size < BBs.size());
 
-	List<Instruction*> vars(m_pAllocator);
-
-	for(BasicBlock& bb : *this)
+	// go through the instructions of the collected basic blocks and look for use of op variable operands
+	for(VisitedBB& bb : BBs)
 	{
-		for(Instruction& instr : bb)
+		for(Instruction& instr : *bb.pBB)
 		{
-			// find valid OpVariable (resultType, resultId, Storage Class)
-			if(instr.getOperation() == spv::Op::OpVariable && instr.size() >= 3)
-			{
-				// get StorageClass operand
-				auto itStorageOperand = instr.begin() + 2u;
-				if(itStorageOperand != instr.end())
-				{
-					const spv::StorageClass storage = static_cast<spv::StorageClass>(itStorageOperand->getLiteral().value);
+			// TODO: go through operands that are Instructions that consube a OpVariable
 
-					// uniquely add the instruction to the interface list
-					if(storage != spv::StorageClass::Function && vars.contains(&instr) == false)
-					{
-						vars.emplace_back(&instr);
-					}
+			// find valid OpVariable (resultType, resultId, Storage Class)
+			if(instr.getOperation() == spv::Op::OpVariable)
+			{
+				const spv::StorageClass storage = instr.getStorageClass();
+
+				// uniquely add the instruction to the interface list
+				if (storage != spv::StorageClass::Function && _outVarInstr.contains(&instr) == false)
+				{
+					_outVarInstr.emplace_back(&instr);
 				}
 			}
 		}
 	}
-
-	return vars;
 }
