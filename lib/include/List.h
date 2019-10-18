@@ -77,12 +77,14 @@ namespace spvgentwo
 
 		size_t size() const { return m_Elements; }
 
-		Iterator find(const T& _val) const;
+		template <class Comparable>
+		Iterator find(const Comparable& _val) const;
 
 		template<class _Pred>
 		Iterator find_if(const _Pred& _pred) const;
 
-		bool contains(const T& _val) const { return find(_val) != nullptr; }
+		template <class Comparable>
+		bool contains(const Comparable& _val) const { return find(_val) != nullptr; }
 
 	protected:
 		Entry<T>* m_pBegin = nullptr;
@@ -277,10 +279,11 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	inline typename List<T>::Iterator List<T>::find(const T& _val) const
+	template<class Comparable>
+	inline typename List<T>::Iterator List<T>::find(const Comparable& _val) const
 	{
 		auto it = begin();
-		for(; it != nullptr && *it != _val; ++it){}
+		for (; it != nullptr && !(*it == _val); ++it) {}
 
 		return it;
 	}
