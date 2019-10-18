@@ -82,6 +82,27 @@ void spvgentwo::Function::promoteToEntryPoint(const spv::ExecutionModel _model, 
 
 spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::getGlobalVariableInterface() const
 {
+	List<BasicBlock*> BBs(m_pAllocator);
+
+	// TODO: go through all reachable basicblocks (including called functions)
+
+	for (BasicBlock& bb : *this)
+	{
+		BBs.emplace_back(&bb);
+	}
+
+	auto size = 0ull;
+	do 
+	{
+		size = BBs.size();
+
+		for (BasicBlock* pBB : BBs)
+		{
+			
+		}
+
+	} while (size < BBs.size());
+
 	List<Instruction*> vars(m_pAllocator);
 
 	for(BasicBlock& bb : *this)

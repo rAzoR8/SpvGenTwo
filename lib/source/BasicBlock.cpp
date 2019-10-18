@@ -103,12 +103,12 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::Add(Instruction* _pLeft, Instruct
 	if ((lType->isVectorOfInt() && rType->isVectorOfInt() && lType->getVectorComponentCount() == rType->getVectorComponentCount()) ||
 		(lType->isInt() && rType->isInt()))
 	{
-		addInstruction()->makeOp(spv::Op::OpIAdd, _pLeft, _pRight);
+		return addInstruction()->makeOp(spv::Op::OpIAdd, _pLeft, _pRight);
 	}
 	else if ((lType->isVectorOfFloat() && rType->isVectorOfFloat() && lType->getVectorComponentCount() == rType->getVectorComponentCount()) ||
 		(lType->isFloat() && rType->isFloat()))
 	{
-		addInstruction()->makeOp(spv::Op::OpFAdd, _pLeft, _pRight);
+		return addInstruction()->makeOp(spv::Op::OpFAdd, _pLeft, _pRight);
 	}
 
 	return nullptr;
@@ -127,12 +127,12 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::Sub(Instruction* _pLeft, Instruct
 	if ((lType->isVectorOfInt() && rType->isVectorOfInt() && lType->getVectorComponentCount() == rType->getVectorComponentCount()) ||
 		(lType->isInt() && rType->isInt()))
 	{
-		addInstruction()->makeOp(spv::Op::OpISub, _pLeft, _pRight);
+		return addInstruction()->makeOp(spv::Op::OpISub, _pLeft, _pRight);
 	}
 	else if ((lType->isVectorOfFloat() && rType->isVectorOfFloat() && lType->getVectorComponentCount() == rType->getVectorComponentCount()) || 
 		(lType->isFloat() && rType->isFloat()))
 	{
-		addInstruction()->makeOp(spv::Op::OpFSub, _pLeft, _pRight);
+		return addInstruction()->makeOp(spv::Op::OpFSub, _pLeft, _pRight);
 	}
 
 	return nullptr;

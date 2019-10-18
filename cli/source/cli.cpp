@@ -77,11 +77,11 @@ int main(int argc, char* argv[])
 	{
 		BasicBlock& bb = funcAdd.addBasicBlock();
 
-		Instruction* type = module.type<int>();
+		Instruction* type = module.type<float>();
 		Instruction* x = funcAdd.addParameter(type);
 		Instruction* y = funcAdd.addParameter(type);
 
-		Instruction* z = bb->makeOp(spv::Op::OpIAdd, x, y);
+		Instruction* z = bb.Add(x, y);
 
 		using namespace ops;
 
@@ -115,10 +115,8 @@ int main(int argc, char* argv[])
 
 	{
 		BasicBlock& bb = entry.addBasicBlock();
-		Instruction* c1 = module.constant(1);
-		Instruction* c2 = module.constant(2);
-
-		Instruction* ptrType = module.type<int*>(spv::StorageClass::Uniform);
+		Instruction* c1 = module.constant(1.f);
+		Instruction* c2 = module.constant(2.f);
 
 		bb->call(&funcAdd, c1, c2);
 		bb.returnValue();
