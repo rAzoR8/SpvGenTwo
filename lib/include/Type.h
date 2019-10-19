@@ -8,7 +8,6 @@ namespace spvgentwo
 {
 	// forward decls
 	class IAllocator;
-	//class Instruction;
 
 	class Type
 	{
@@ -187,6 +186,7 @@ namespace spvgentwo
 		template <class Prop, class ...Props>
 		const Prop* setProperties(const Prop _first, Props ... _props);
 
+		bool isVoid() const { return m_Type == spv::Op::OpTypeVoid; }
 		bool isPointer() const { return m_Type == spv::Op::OpTypePointer; }
 		bool isStruct() const { return m_Type == spv::Op::OpTypeStruct; }
 		bool isArray() const { return m_Type == spv::Op::OpTypeArray; }
@@ -271,6 +271,13 @@ namespace spvgentwo
 	}
 
 	// opaque types
+	struct event_t {};
+	struct device_event_t {};
+	struct reserve_id_t {};
+	struct queue_t {};
+	struct pipe_storage_t {};
+	struct named_barrier_t {};
+
 	struct sampler_t {};
 	struct dyn_sampled_image_t { Type imageType; };
 
@@ -286,12 +293,6 @@ namespace spvgentwo
 		spv::AccessQualifier accessQualier = spv::AccessQualifier::Max;
 	};
 
-	struct event_t {};
-	struct device_event_t {};
-	struct reserve_id_t {};
-	struct queue_t {};
-	struct pipe_storage_t {};
-	struct named_barrier_t {};
 	struct dyn_vector_t { Type elementType; unsigned int elements; };
 	struct dyn_matrix_t { Type columnType; unsigned int columns; /*length of the row*/ };
 	
@@ -454,6 +455,7 @@ namespace spvgentwo
 	template<class Prop, class ...Props>
 	inline const Prop* Type::setProperties(const Prop _first, Props ..._props)
 	{
+		// check for properties first
 		if constexpr (stdrep::is_same_v<Prop, spv::StorageClass>)
 		{
 			m_StorageClass = _first;
@@ -488,6 +490,7 @@ namespace spvgentwo
 			setProperties(_props...);
 		}
 
+		// check for dynamic types
 		if constexpr (stdrep::is_same_v<Prop, dyn_image_t>)
 		{
 			return &_first;
@@ -504,6 +507,14 @@ namespace spvgentwo
 		{
 			return &_first;
 		}
+		else if constexpr (stdrep::is_same_v<Prop, dyn_vector_t>)
+		{
+			return &_first;
+		}
+		else if constexpr (stdrep::is_same_v<Prop, dyn_matrix_t>)
+		{
+			return &_first;
+		}
 
 		return nullptr;
 	}
@@ -511,6 +522,7 @@ namespace spvgentwo
 	template<class T, class ...Props>
 	inline Type& Type::make(Props ..._props)
 	{
+		// first process types that need to be unwraped (non dynamic composite types)
 		if constexpr (stdrep::is_pointer_v<T>)
 		{
 			Pointer().Member().make<stdrep::remove_pointer_t<T>>();
@@ -543,6 +555,10 @@ namespace spvgentwo
 		else if constexpr (is_const_matrix_v<T>)
 		{
 			make<typename T::const_matrix_type>();
+		}
+		else if constexpr (is_const_sampler_v<T>)
+		{
+			make<typename T::const_sampler_type>();
 		}
 		else
 		{
@@ -587,6 +603,18 @@ namespace spvgentwo
 	inline Type& Type::fundamental<device_event_t>(const device_event_t*) { return DeviceEvent(); }
 
 	template <>
+	inline Type& Type::fundamental<reserve_id_t>(const reserve_id_t*) { return ReserveId(); }
+
+	template <>
+	inline Type& Type::fundamental<queue_t>(const queue_t*) { return Queue(); }
+
+	template <>
+	inline Type& Type::fundamental<pipe_storage_t>(const pipe_storage_t*) { return PipeStorage(); }
+
+	template <>
+	inline Type& Type::fundamental<named_barrier_t>(const named_barrier_t*) { return NamedBarrier(); }
+
+	template <>
 	inline Type& Type::fundamental<dyn_array_t>(const dyn_array_t* _prop)
 	{ 
 		return _prop == nullptr ? Array(0) : Array(_prop->length, &_prop->elementType);
@@ -598,11 +626,17 @@ namespace spvgentwo
 		return RuntimeArray(_prop == nullptr ? nullptr : &_prop->elementType);
 	}
 
-	//template<>
-	//inline Type& Type::fundamental<typename vector_t>(vector_t)
-	//{
-	//
-	//}
+	template <>
+	inline Type& Type::fundamental<dyn_vector_t>(const dyn_vector_t* _prop)
+	{
+		return _prop == nullptr ? Vector(0) : Vector(_prop->elements, &_prop->elementType);
+	}
+
+	template <>
+	inline Type& Type::fundamental<dyn_matrix_t>(const dyn_matrix_t* _prop)
+	{
+		return _prop == nullptr ? Matrix(0) : Matrix(_prop->columns, &_prop->columnType);
+	}
 
 	template <>
 	inline Type& Type::fundamental<void>(const void*) { return Void(); }

@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::VulkanMemoryModelKHR);
 	module.addExtension("SPV_KHR_vulkan_memory_model");
-	module.addExtensionInstructionImport("GLSL.std.450");
+	Instruction* ext = module.addExtensionInstructionImport("GLSL.std.450");
 	module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
 
 	Instruction* uniformVar = module.uniform<vector_t<float, 3>>();
@@ -80,9 +80,8 @@ int main(int argc, char* argv[])
 	{
 		BasicBlock& bb = funcAdd.addBasicBlock();
 
-		Instruction* type = module.type<float>();
-		Instruction* x = funcAdd.addParameter(type);
-		Instruction* y = funcAdd.addParameter(type);
+		Instruction* x = funcAdd.addParameter<float>();
+		Instruction* y = funcAdd.addParameter<float>();
 
 		Instruction* z = bb.Add(x, y);
 
@@ -93,17 +92,7 @@ int main(int argc, char* argv[])
 
 		bb.returnValue(res);
 
-		//Instruction* vectype = module.type<array_t<float, 3>>();
-		//Instruction* mattype = module.type<matrix_t<float, 3, 3>>();
-		//Instruction* consvec = module.constant(const_vector_t<float, 3>({ 1.f, 2.f, 3.f }));
-		//const_matrix_t<float, 2, 2> mat{ 1.f, 2.f, 3.f, 4.f };
-		//Instruction* consvmat = module.constant(mat);
-		//auto v = make_vector(1.f, 2.f, 3.f);
-		//auto m = make_matrix(v, v, v);
-		//auto ar = make_array(m, m);
-		//module.constant(ar);
-
-		funcAdd.finalize(type, spv::FunctionControlMask::Const);
+		funcAdd.finalize<float>(spv::FunctionControlMask::Const);
 	}
 
 	Function& entry = module.addFunction();
@@ -117,8 +106,21 @@ int main(int argc, char* argv[])
 		bb.returnValue();
 
 		// void fun();	
-		entry.finalize(module.type<void>(), spv::FunctionControlMask::Const);
+		entry.finalize<void>(spv::FunctionControlMask::Const);
 	}
+
+	// test types and constants
+#if 0
+	Instruction* vectype = module.type<array_t<float, 3>>();
+	Instruction* mattype = module.type<matrix_t<float, 3, 3>>();
+	Instruction* consvec = module.constant(const_vector_t<float, 3>({ 1.f, 2.f, 3.f }));
+	const_matrix_t<float, 2, 2> mat{ 1.f, 2.f, 3.f, 4.f };
+	Instruction* consvmat = module.constant(mat);
+	auto v = make_vector(1.f, 2.f, 3.f);
+	auto m = make_matrix(v, v, v);
+	auto ar = make_array(m, m);
+	module.constant(ar);
+#endif
 
 	entry.promoteToEntryPoint(spv::ExecutionModel::Vertex, "main");
 
