@@ -262,7 +262,7 @@ namespace spvgentwo
 		
 		if constexpr (sizeof...(_indices) > 0)
 		{
-			if (it != nullptr) 
+			if (it != nullptr && it->m_subTypes.empty() == false) 
 			{
 				return it->getSubType(_indices...);
 			}
