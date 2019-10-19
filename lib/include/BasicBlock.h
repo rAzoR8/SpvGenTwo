@@ -13,7 +13,6 @@ namespace spvgentwo
 	{
 	public:
 
-		BasicBlock(IAllocator* _pAllocator);
 		BasicBlock(Function* _pFunction);
 		~BasicBlock();
 
@@ -47,16 +46,20 @@ namespace spvgentwo
 
 		// infer op code from operands types, emplace instruction in this basic block
 		Instruction* Add(Instruction* _pLeft, Instruction* _pRight);
-		BasicBlock& Add(Instruction* _pRight);// add _pRight to last instruction in this basic block and push the result (stack like) to this basic block
-
 		Instruction* Sub(Instruction* _pLeft, Instruction* _pRight);
-		BasicBlock& Sub(Instruction* _pRight);
-
 		Instruction* Mul(Instruction* _pLeft, Instruction* _pRight);
-		BasicBlock& Mul(Instruction* _pRight);
-
 		Instruction* Div(Instruction* _pLeft, Instruction* _pRight);
+
+		BasicBlock& Add(Instruction* _pRight);// add _pRight to last instruction in this basic block and push the result (stack like) to this basic block
+		BasicBlock& Sub(Instruction* _pRight);
+		BasicBlock& Mul(Instruction* _pRight);
 		BasicBlock& Div(Instruction* _pRight);
+
+		Instruction* Eq(Instruction* _pLeft, Instruction* _pRight);
+		Instruction* Neq(Instruction* _pLeft, Instruction* _pRight);
+
+		BasicBlock& Eq(Instruction* _pRight);
+		BasicBlock& Neq(Instruction* _pRight);
 
 	private:
 		Function* m_pFunction = nullptr; // parent

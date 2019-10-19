@@ -147,6 +147,11 @@ spvgentwo::Type& spvgentwo::Type::getBaseType()
 	return front().getBaseType();
 }
 
+spv::Op spvgentwo::Type::getBaseTypeOp() const
+{
+	return getBaseType().m_Type;
+}
+
 bool spvgentwo::Type::isBaseTypeOf(const spv::Op _type) const
 {
 	return getBaseType().getType() == _type;

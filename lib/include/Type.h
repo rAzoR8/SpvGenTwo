@@ -37,6 +37,8 @@ namespace spvgentwo
 		const Type& getBaseType() const;
 		Type& getBaseType();
 
+		spv::Op getBaseTypeOp() const;
+
 		bool isBaseTypeOf(const spv::Op _type) const;
 		bool hasSameBase(const Type& _other, const bool _onlyCheckTyeOp = false) const;
 
@@ -213,6 +215,8 @@ namespace spvgentwo
 		bool isVectorOfScalar() const { return isVector() && front().isScalar(); }
 
 		bool isScalarOrVectorOf(const spv::Op _type) const { return m_Type == _type || isVectorOf(_type); }
+		bool hasSameVectorLength(const Type& _other) const { return isVector() && _other.isVector() && m_VecComponentCount == _other.m_VecComponentCount; }
+		bool hasSameVectorLength(const Type& _other, const spv::Op _componentType) const { return isVectorOf(_componentType) && _other.isVectorOf(_componentType) && m_VecComponentCount == _other.m_VecComponentCount; }
 
 		template<class... Indices>
 		List<Type>::Iterator getSubType(const unsigned int _i, Indices... _indices) const;
