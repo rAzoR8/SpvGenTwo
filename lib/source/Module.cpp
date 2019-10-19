@@ -71,11 +71,6 @@ spvgentwo::Instruction* spvgentwo::Module::addDecorationInstr()
 	return &m_Decorations.emplace_back(this);
 }
 
-spvgentwo::Instruction* spvgentwo::Module::addGlobalVariableInstr()
-{
-	return &m_GlobalVariables.emplace_back(this);
-}
-
 spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 {
 	auto& node = m_ConstantBuilder.emplaceUnique(_const, nullptr);
@@ -329,4 +324,9 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	}
 
 	_pWriter->putAt(m_maxId + 1u, boundsPos);
+}
+
+spvgentwo::Instruction* spvgentwo::Module::variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, Instruction* _pInitialzer)
+{
+	return m_GlobalVariables.emplace_back(this).opVariable(_pPtrType, _storageClass, _pInitialzer);
 }

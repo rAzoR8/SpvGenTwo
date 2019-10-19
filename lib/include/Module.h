@@ -57,13 +57,40 @@ namespace spvgentwo
 		// for use with opDecoration, opMemberDecoration etc
 		Instruction* addDecorationInstr();
 
-		// for use with opVariable with StorageClass != Function
-		Instruction* addGlobalVariableInstr();
-
 		// creates new empty type using this modules allocator
 		Type newType();
 
 		Constant newConstant();
+
+		// _pPtrType needs to be in the same StorageClass as _storageClass
+		Instruction* variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, Instruction* _pInitialzer = nullptr);
+
+		template <class T> // adds Pointer to type T
+		Instruction* variable(const spv::StorageClass _storageClass, Instruction* _pInitialzer = nullptr);
+
+		template <class T>
+		Instruction* variable(const spv::StorageClass _storageClass, const T& _initialValue);
+
+		template <class T> // constant uniform variable
+		Instruction* uniformConstant(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::UniformConstant, _pInitialzer); }
+
+		template <class T> // uniform variable
+		Instruction* uniform(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Uniform, _pInitialzer); }
+
+		template <class T> // input variable
+		Instruction* input(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Input, _pInitialzer); }
+
+		template <class T> // output variable
+		Instruction* output(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Output, _pInitialzer); }
+
+		template <class T> // push constant variable
+		Instruction* pushConstant(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::PushConstant, _pInitialzer); }
+
+		template <class T> // image variable
+		Instruction* image(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Image, _pInitialzer); }
+
+		template <class T> // image variable
+		Instruction* storageBuffer(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::StorageBuffer, _pInitialzer); }
 
 	private:
 		template <class ... TypeInstr>
@@ -135,5 +162,17 @@ namespace spvgentwo
 		{
 			compositeType(_compositeType, _types...);
 		};
+	}
+
+	template<class T>
+	inline Instruction* Module::variable(const spv::StorageClass _storageClass, Instruction* _pInitialzer)
+	{
+		return variable(type<T*>(_storageClass), _storageClass, _pInitialzer);
+	}
+
+	template<class T>
+	inline Instruction* Module::variable(const spv::StorageClass _storageClass, const T& _initialValue)
+	{
+		return variable<T*>(_storageClass, constant(_initialValue));
 	}
 } // !spvgentwo
