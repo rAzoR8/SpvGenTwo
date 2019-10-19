@@ -4,7 +4,9 @@
 #include "Writer.h"
 
 spvgentwo::Module::Module(IAllocator* _pAllocator) :
-	List(_pAllocator),
+	m_pAllocator(_pAllocator),
+	m_Functions(_pAllocator),
+	m_EntryPoints(_pAllocator),
 	m_Capabilities(_pAllocator),
 	m_MemoryModel(this),
 	m_Extensions(_pAllocator),
@@ -276,23 +278,17 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	writeInstructions(_pWriter, m_Decorations, m_maxId);
 
 	// write entry points declarations
-	for (Function& fun : *this)
+	for (EntryPoint& ep : m_EntryPoints)
 	{
-		if (fun.isEntryPoint())
-		{
-			fun.getEntryPoint()->write(_pWriter, m_maxId);
-		}
+		ep.getEntryPoint()->write(_pWriter, m_maxId);
 	}
 
 	// write entrypoint executions modes
-	for (Function& fun : *this)
+	for (EntryPoint& ep : m_EntryPoints)
 	{
-		if (fun.isEntryPoint())
+		for(Instruction& mode : ep.getExecutionModes())
 		{
-			for(Instruction& mode : fun.getExecutionModes())
-			{
-				mode.write(_pWriter, m_maxId);
-			}
+			mode.write(_pWriter, m_maxId);
 		}
 	}
 	
@@ -306,7 +302,7 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	writeInstructions(_pWriter, m_GlobalVariables, m_maxId); // TODO: check StorageClass
 
 	//  All function declarations (function without body)
-	for (Function& fun : *this)
+	for (Function& fun : m_Functions)
 	{
 		if (fun.empty())
 		{
@@ -315,11 +311,18 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	}
 
 	// write functions with bodies
-	for (Function& fun : *this)
+	for (Function& fun : m_Functions)
 	{
 		if (fun.empty() == false) 
 		{
 			fun.write(_pWriter, m_maxId);		
+		}
+	}
+	for (EntryPoint& ep : m_EntryPoints)
+	{
+		if (ep.empty() == false) // can entry points be empty forward decls?
+		{
+			ep.write(_pWriter, m_maxId);
 		}
 	}
 

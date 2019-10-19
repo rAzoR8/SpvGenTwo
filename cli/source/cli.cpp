@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
 		funcAdd.finalize<float>(spv::FunctionControlMask::Const);
 	}
 
-	Function& entry = module.addFunction();
+	EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Vertex, "main");
 
 	{
 		BasicBlock& bb = entry.addBasicBlock();
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 		bb.returnValue();
 
 		// void fun();	
-		entry.finalize<void>(spv::FunctionControlMask::Const);
+		entry.finalizeEP(module.type<void>());
 	}
 
 	// test types and constants
@@ -121,8 +121,6 @@ int main(int argc, char* argv[])
 	auto ar = make_array(m, m);
 	module.constant(ar);
 #endif
-
-	entry.promoteToEntryPoint(spv::ExecutionModel::Vertex, "main");
 
 	{
 		BinaryFileWriter writer("test.spv");

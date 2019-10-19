@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Function.h"
+#include "EntryPoint.h"
 #include "HashMap.h"
 #include "Constant.h"
 
@@ -9,7 +9,7 @@ namespace spvgentwo
 	// forward decls
 	//class IAllocator;
 
-	class Module : public List<Function>
+	class Module
 	{
 	public:
 		Module(IAllocator* _pAllocator);
@@ -17,7 +17,11 @@ namespace spvgentwo
 
 		static constexpr unsigned int GeneratorId = makeGeneratorId('fa', 0);
 
-		Function& addFunction() { return emplace_back(this); }
+		IAllocator* getAllocator() { return m_pAllocator; }
+		const IAllocator* getAllocator() const { return m_pAllocator; }
+
+		Function& addFunction() { return m_Functions.emplace_back(this); }
+		EntryPoint& addEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName) { return m_EntryPoints.emplace_back(this, _model, _pEntryPointName); }
 
 		void addCapability(const spv::Capability _capability);
 		void addExtension(const char* _pExtName);
@@ -97,6 +101,9 @@ namespace spvgentwo
 		void compositeType(Type& _compositeTye, Instruction* _pSubType, TypeInstr ... _types);
 
 	private:
+		IAllocator* m_pAllocator = nullptr;
+		List<Function> m_Functions;
+		List<EntryPoint> m_EntryPoints;
 
 		// preamble
 		List<Instruction> m_Capabilities;

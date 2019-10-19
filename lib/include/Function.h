@@ -12,13 +12,10 @@ namespace spvgentwo
 	{
 	public:
 		Function(Module* _pModule);
-		~Function();
+		virtual ~Function();
 
 		// OpFunction 
 		Instruction* getFunction() { return &m_Function; }
-
-		// OpEntryPoint
-		Instruction* getEntryPoint() { return &m_EntryPoint; }
 
 		// only valid after finalization
 		Instruction* getReturnType();
@@ -43,19 +40,8 @@ namespace spvgentwo
 		template <class ResultType = void>
 		bool finalize(const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone) { return finalize(m_pModule->type<ResultType>(), _control); }
 
-		void promoteToEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName);
-		bool isEntryPoint() const { return m_ExecutionModel != spv::ExecutionModel::Max && m_pEntryPointName != nullptr; }
-
-		spv::ExecutionModel getExecutionModel() const { return m_ExecutionModel;}
-		const char* getEntryPointName() const { return m_pEntryPointName; }
-
-		template <class ... Args>
-		Instruction* addExecutionMode(const spv::ExecutionMode _mode, Args ... _args);
-		const List<Instruction>& getExecutionModes() const { return m_ExecutionModes; }
-
-	private:
-		// get all the global OpVariables with StorageClass != Function used in this function
-		void getGlobalVariableInterface(List<Operand>& _outVarinstr) const;
+		//void promoteToEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName);
+		//bool isEntryPoint() const { return m_ExecutionModel != spv::ExecutionModel::Max && m_pEntryPointName != nullptr; }
 
 	private:
 		Module* m_pModule = nullptr; // parent
@@ -64,22 +50,8 @@ namespace spvgentwo
 		Instruction* m_pFunctionType = nullptr;
 
 		List<Instruction> m_Parameters; // OpFunctionParameters
-
-		// entry point
-		Instruction m_EntryPoint; // OpEntryPoint
-		List<Instruction> m_ExecutionModes;
-		spv::ExecutionModel m_ExecutionModel = spv::ExecutionModel::Max;
-		const char* m_pEntryPointName = nullptr;
 	};
 
-	template<class ...Args>
-	inline Instruction* Function::addExecutionMode(const spv::ExecutionMode _mode, Args ..._args)
-	{
-		Instruction* pInstr = &m_ExecutionModes.emplace_back(this);
 
-		pInstr->makeOpEx(getExecutionModeOp(_mode), &m_Function, _mode, _args...);
-
-		return pInstr;
-	}
 
 } // !spvgentwo
