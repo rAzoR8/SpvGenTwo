@@ -33,9 +33,15 @@ namespace spvgentwo
 		// return OpFunctionParameter
 		Instruction* addParameter(Instruction* _pType);
 
+		template<class T>
+		Instruction* addParameter() { return addParameter(m_pModule->type<T>()); }
+
 		const List<Instruction>& getParameters() const { return m_Parameters; }
 
 		bool finalize(Instruction* _pReturnType, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone);
+
+		template <class ResultType = void>
+		bool finalize(const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone) { return finalize(m_pModule->type<ResultType>(), _control); }
 
 		void promoteToEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName);
 		bool isEntryPoint() const { return m_ExecutionModel != spv::ExecutionModel::Max && m_pEntryPointName != nullptr; }
