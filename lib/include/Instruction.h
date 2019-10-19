@@ -120,8 +120,7 @@ namespace spvgentwo
 		void opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr ... _instr);
 
 		// _pResultType must be of OpTypePointer
-		template <class ...Instr>
-		Instruction* opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instr ... _initializer);
+		Instruction* opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instruction* _pInitializer = nullptr);
 
 		void opName(Instruction* _pTarget, const char* _pName);
 
@@ -163,6 +162,9 @@ namespace spvgentwo
 
 		template <class ... Operands>
 		Instruction* opLoad(Instruction* _pPointerToVar, const Flag<MemoryOperands> _memOperands = MemoryOperands::None, Operands ... _operands);
+
+		template <class ... Operands>
+		void opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<MemoryOperands> _memOperands = MemoryOperands::None, Operands ... _operands);
 
 	private:
 		void resolveId(spv::Id& _resultId);
@@ -287,12 +289,6 @@ namespace spvgentwo
 		makeOpEx(spv::Op::OpEntryPoint, _model, _pFunction, _pName, _instr...);
 	}
 
-	template<class ...Instr>
-	inline Instruction* Instruction::opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instr ..._initializer)
-	{
-		return makeOpEx(spv::Op::OpVariable, _pResultType, InvalidId, _storageClass, _initializer...);
-	}
-
 	template<class ...Decorations>
 	inline void Instruction::opDecorate(Instruction* _pTarget, spv::Decoration _decoration, Decorations ..._decorations)
 	{
@@ -380,5 +376,11 @@ namespace spvgentwo
 		// Pointer is the pointer to load through.Its type must be an OpTypePointer whose Type operand is the same as Result Type.
 		Instruction* pResultType = getModule()->addType(_pPointerToVar->getType()->front());
 		return makeOpEx(spv::Op::OpLoad, pResultType, InvalidId, _pPointerToVar, _memOperands.mask, _operands...);
+	}
+
+	template<class ...Operands>
+	inline void Instruction::opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<MemoryOperands> _memOperands, Operands ..._operands)
+	{
+		return makeOpEx(spv::Op::OpStore, _pPointerToVar, _valueToStore, _memOperands.mask, _operands...);
 	}
 } // !spvgentwo

@@ -204,6 +204,23 @@ void spvgentwo::writeInstructions(IWriter* _pWriter, const List<Instruction>& _i
 	}
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Instruction* _pResultType)
+{
+	Instruction* pResultType = _pResultType != nullptr ? _pResultType : inferType(_instOp, _pOp1, _pOp2, _pOp3);
+	Instruction* pInst = makeOpEx(_instOp, pResultType, InvalidId, _pOp1);
+
+	if (_pOp2 != nullptr)
+	{
+		pInst->addOperand(_pOp2);
+	}
+	if (_pOp3 != nullptr)
+	{
+		pInst->addOperand(_pOp3);
+	}
+
+	return pInst;
+}
+
 void spvgentwo::Instruction::opNop()
 {
 	makeOpEx(spv::Op::OpNop);
@@ -299,19 +316,14 @@ void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, Basic
 	makeOpEx(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock, _trueWeight, _falseWeight);
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Instruction* _pResultType)
+spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instruction* _pInitializer)
 {
-	Instruction* pResultType = _pResultType != nullptr ? _pResultType : inferType(_instOp, _pOp1, _pOp2, _pOp3);
-	Instruction* pInst = makeOpEx(_instOp, pResultType, InvalidId, _pOp1);
-
-	if (_pOp2 != nullptr)
+	if (_pInitializer == nullptr)
 	{
-		pInst->addOperand(_pOp2);
+		return makeOpEx(spv::Op::OpVariable, _pResultType, InvalidId, _storageClass);
 	}
-	if (_pOp3 != nullptr)
+	else
 	{
-		pInst->addOperand(_pOp3);
+		return makeOpEx(spv::Op::OpVariable, _pResultType, InvalidId, _storageClass, _pInitializer);
 	}
-
-	return pInst;
 }
