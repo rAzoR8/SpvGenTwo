@@ -6,8 +6,10 @@ namespace spvgentwo
 {
 	class EntryPoint : public Function
 	{
+		friend class Module;
 	public:
-		EntryPoint(Module* _pModule, const spv::ExecutionModel _model, const char* _pEntryPointName);
+		template <class ... TypeInstr>
+		EntryPoint(Module* _pModule, const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ... _paramTypeInstructions);
 		~EntryPoint() override;
 
 		// get all the global OpVariables with StorageClass != Function used in this function
@@ -23,17 +25,28 @@ namespace spvgentwo
 		Instruction* addExecutionMode(const spv::ExecutionMode _mode, Args ... _args);
 		const List<Instruction>& getExecutionModes() const { return m_ExecutionModes; }
 
+	private:
 		// only to be called by the Module before serialization
-		bool finalizeEP(Instruction* _pReturnType, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone);
+		void finalize();
 
 	private:
-		// entry point
 		Instruction m_EntryPoint; // OpEntryPoint
 		List<Instruction> m_ExecutionModes;
 		spv::ExecutionModel m_ExecutionModel = spv::ExecutionModel::Max;
 		const char* m_pEntryPointName = nullptr;
 		bool m_finalized = false;
 	};
+
+	template<class ...TypeInstr>
+	inline EntryPoint::EntryPoint(Module* _pModule, const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ..._paramTypeInstructions) :
+		Function(_pModule, _control, _pReturnType, _paramTypeInstructions...),
+		m_EntryPoint(this),
+		m_ExecutionModes(_pModule->getAllocator()),
+		m_ExecutionModel(_model),
+		m_pEntryPointName(_pEntryPointName)
+	{
+		m_EntryPoint.opEntryPoint(_model, getFunction(), m_pEntryPointName);
+	}
 
 	template<class ...Args>
 	inline Instruction* EntryPoint::addExecutionMode(const spv::ExecutionMode _mode, Args ..._args)

@@ -76,12 +76,13 @@ int main(int argc, char* argv[])
 
 	Instruction* uniformVar = module.uniform<vector_t<float, 3>>();
 
-	Function& funcAdd = module.addFunction();
+	// float add(float x, float y)
+	Function& funcAdd = module.addFunction<float, float, float>(spv::FunctionControlMask::Const);
 	{
 		BasicBlock& bb = funcAdd.addBasicBlock();
 
-		Instruction* x = funcAdd.addParameter<float>();
-		Instruction* y = funcAdd.addParameter<float>();
+		Instruction* x = funcAdd.getParameter(0);
+		Instruction* y = funcAdd.getParameter(1);
 
 		Instruction* z = bb.Add(x, y);
 
@@ -91,10 +92,9 @@ int main(int argc, char* argv[])
 		Instruction* res = (bb + z) * x * component1;
 
 		bb.returnValue(res);
-
-		funcAdd.finalize<float>(spv::FunctionControlMask::Const);
 	}
 
+	// void entryPoint();	
 	EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Vertex, "main");
 
 	{
@@ -104,9 +104,6 @@ int main(int argc, char* argv[])
 
 		bb->call(&funcAdd, c1, c2);
 		bb.returnValue();
-
-		// void fun();	
-		entry.finalizeEP(module.type<void>());
 	}
 
 	// test types and constants

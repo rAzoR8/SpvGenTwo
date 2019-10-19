@@ -280,6 +280,7 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	// write entry points declarations
 	for (EntryPoint& ep : m_EntryPoints)
 	{
+		ep.finalize(); // fills out global variable interface
 		ep.getEntryPoint()->write(_pWriter, m_maxId);
 	}
 
@@ -292,9 +293,6 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 		}
 	}
 	
-	// TODO:
-	// all decoration instructions (OpDecorate, OpMemberDecorate, OpGroupDecorate, OpGroupMemberDecorate, and OpDecorationGroup).
-
 	// write types and constants
 	writeInstructions(_pWriter, m_TypesAndConstants, m_maxId);
 	

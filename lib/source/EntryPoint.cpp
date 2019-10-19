@@ -1,15 +1,6 @@
 #include "EntryPoint.h"
 #include "Module.h"
 
-spvgentwo::EntryPoint::EntryPoint(Module* _pModule, const spv::ExecutionModel _model, const char* _pEntryPointName) : Function(_pModule),
-	m_EntryPoint(this),
-	m_ExecutionModes(_pModule->getAllocator()),
-	m_ExecutionModel(_model),
-	m_pEntryPointName(_pEntryPointName)
-{
-	m_EntryPoint.opEntryPoint(_model, getFunction(), m_pEntryPointName);
-}
-
 spvgentwo::EntryPoint::~EntryPoint()
 {
 }
@@ -91,16 +82,12 @@ void spvgentwo::EntryPoint::getGlobalVariableInterface(List<Operand>& _outVarIns
 	}
 }
 
-bool spvgentwo::EntryPoint::finalizeEP(Instruction* _pReturnType, const Flag<spv::FunctionControlMask> _control)
+void spvgentwo::EntryPoint::finalize()
 {
 	if (m_finalized == false)
 	{
 		getGlobalVariableInterface(m_EntryPoint);
-
-		Function::finalize(_pReturnType, _control);
 		
 		m_finalized = true;
 	}
-
-	return m_finalized;
 }
