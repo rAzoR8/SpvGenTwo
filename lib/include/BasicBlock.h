@@ -16,6 +16,8 @@ namespace spvgentwo
 		BasicBlock(Function* _pFunction);
 		~BasicBlock();
 
+		BasicBlock(const BasicBlock&) = delete;
+
 		Function* getFunction() { return m_pFunction; }
 		const Function* getFunction() const { return m_pFunction; }
 
@@ -44,19 +46,22 @@ namespace spvgentwo
 		// returns last instruction of MergeBlock which creats a result
 		Instruction* If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock& _mergeBlock, const spv::SelectionControlMask _mask = spv::SelectionControlMask::MaskNone);
 
+		template <class TrueFunc, class FalseFunc>
+		BasicBlock& If(Instruction* _pCondition, TrueFunc& _true, FalseFunc& _false, const spv::SelectionControlMask _mask = spv::SelectionControlMask::MaskNone);
+
 		// infer op code from operands types, emplace instruction in this basic block
-		Instruction* Add(Instruction* _pLeft, Instruction* _pRight);
-		Instruction* Sub(Instruction* _pLeft, Instruction* _pRight);
-		Instruction* Mul(Instruction* _pLeft, Instruction* _pRight);
-		Instruction* Div(Instruction* _pLeft, Instruction* _pRight);
+		BasicBlock& Add(Instruction* _pLeft, Instruction* _pRight);
+		BasicBlock& Sub(Instruction* _pLeft, Instruction* _pRight);
+		BasicBlock& Mul(Instruction* _pLeft, Instruction* _pRight);
+		BasicBlock& Div(Instruction* _pLeft, Instruction* _pRight);
 
 		BasicBlock& Add(Instruction* _pRight);// add _pRight to last instruction in this basic block and push the result (stack like) to this basic block
 		BasicBlock& Sub(Instruction* _pRight);
 		BasicBlock& Mul(Instruction* _pRight);
 		BasicBlock& Div(Instruction* _pRight);
 
-		Instruction* Eq(Instruction* _pLeft, Instruction* _pRight);
-		Instruction* Neq(Instruction* _pLeft, Instruction* _pRight);
+		BasicBlock& Eq(Instruction* _pLeft, Instruction* _pRight);
+		BasicBlock& Neq(Instruction* _pLeft, Instruction* _pRight);
 
 		BasicBlock& Eq(Instruction* _pRight);
 		BasicBlock& Neq(Instruction* _pRight);
@@ -64,4 +69,26 @@ namespace spvgentwo
 	private:
 		Function* m_pFunction = nullptr; // parent
 	};
+
+	template<class TrueFunc, class FalseFunc>
+	inline BasicBlock& BasicBlock::If(Instruction* _pCondition, TrueFunc& _true, FalseFunc& _false, const spv::SelectionControlMask _mask)
+	{
+		static_assert(traits::is_invocable_v<TrueFunc, BasicBlock&>, "TrueFunc _true is not invocable: _true(BasicBlock& trueBranchBB)");
+		static_assert(traits::is_invocable_v<FalseFunc, BasicBlock&>, "FalseFunc _false is not invocable: _true(BasicBlock& falseBranchBB)");
+
+		BasicBlock& trueBB = m_pFunction->addBasicBlock();
+		BasicBlock& falseBB = m_pFunction->addBasicBlock();
+		BasicBlock& mergeBB = m_pFunction->addBasicBlock();
+
+		addInstruction()->opSelectionMerge(&mergeBB, _mask);
+		addInstruction()->opBranchConditional(_pCondition, &trueBB, &falseBB);
+
+		_true(trueBB);
+		_false(falseBB);
+
+		trueBB->opBranch(&mergeBB);
+		falseBB->opBranch(&mergeBB);
+
+		return mergeBB;
+	}
 } // !spvgentwo

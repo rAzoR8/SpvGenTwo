@@ -84,124 +84,122 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::If(Instruction* _pCondition, Basi
 	return nullptr;
 }
 
-spvgentwo::Instruction* spvgentwo::BasicBlock::Add(Instruction* _pLeft, Instruction* _pRight)
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::Add(Instruction* _pLeft, Instruction* _pRight)
 {
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
 
 	if (lType->hasSameBase(*rType) == false)
 	{
-		return nullptr;
-	}
-
-	if ((lType->isVectorOfInt() && rType->isVectorOfInt() && lType->getVectorComponentCount() == rType->getVectorComponentCount()) ||
-		(lType->isInt() && rType->isInt()))
-	{
-		return addInstruction()->makeOp(spv::Op::OpIAdd, _pLeft, _pRight);
-	}
-	else if ((lType->isVectorOfFloat() && rType->isVectorOfFloat() && lType->getVectorComponentCount() == rType->getVectorComponentCount()) ||
-		(lType->isFloat() && rType->isFloat()))
-	{
-		return addInstruction()->makeOp(spv::Op::OpFAdd, _pLeft, _pRight);
-	}
-
-	return nullptr;
-}
-
-spvgentwo::Instruction* spvgentwo::BasicBlock::Sub(Instruction* _pLeft, Instruction* _pRight)
-{
-	const Type* lType = _pLeft->getType();
-	const Type* rType = _pRight->getType();
-
-	if (lType->hasSameBase(*rType) == false)
-	{
-		return nullptr;
+		return *this;
 	}
 
 	if ((lType->isInt() && rType->isInt()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeInt))
 	{
-		return addInstruction()->makeOp(spv::Op::OpISub, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpIAdd, _pLeft, _pRight);
 	}
 	else if ((lType->isFloat() && rType->isFloat()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeFloat))
 	{
-		return addInstruction()->makeOp(spv::Op::OpFSub, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpFAdd, _pLeft, _pRight);
 	}
 
-	return nullptr;
+	return *this;
 }
 
-spvgentwo::Instruction* spvgentwo::BasicBlock::Mul(Instruction* _pLeft, Instruction* _pRight)
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::Sub(Instruction* _pLeft, Instruction* _pRight)
 {
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
 
 	if (lType->hasSameBase(*rType) == false)
 	{
-		return nullptr;
+		return *this;
+	}
+
+	if ((lType->isInt() && rType->isInt()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeInt))
+	{
+		addInstruction()->makeOp(spv::Op::OpISub, _pLeft, _pRight);
+	}
+	else if ((lType->isFloat() && rType->isFloat()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeFloat))
+	{
+		addInstruction()->makeOp(spv::Op::OpFSub, _pLeft, _pRight);
+	}
+
+	return *this;
+}
+
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::Mul(Instruction* _pLeft, Instruction* _pRight)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType->hasSameBase(*rType) == false)
+	{
+		return *this;
 	}
 
 	// both are scalar or vector of int
 	if ((lType->isInt() && rType->isInt()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeInt))
 	{
-		return addInstruction()->makeOp(spv::Op::OpIMul, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpIMul, _pLeft, _pRight);
 	}// both are scalar or vector of float
 	else if ((lType->isFloat() && rType->isFloat()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeFloat))
 	{
-		return addInstruction()->makeOp(spv::Op::OpFMul, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpFMul, _pLeft, _pRight);
 	}// left scalar times right vector float
 	else if ((lType->isFloat() && rType->isVectorOfFloat()) || (lType->isInt() && rType->isVectorOfInt()))
 	{// OpVectorTimesScalar expects vector as first operand
-		return addInstruction()->makeOp(spv::Op::OpVectorTimesScalar, _pRight, _pLeft);
+		addInstruction()->makeOp(spv::Op::OpVectorTimesScalar, _pRight, _pLeft);
 	}// left vector times right scalar
 	else if ((lType->isVectorOfFloat() && rType->isFloat()) || (lType->isVectorOfInt() && rType->isInt()))
 	{
-		return addInstruction()->makeOp(spv::Op::OpVectorTimesScalar, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpVectorTimesScalar, _pLeft, _pRight);
 	}
 	else if (lType->isScalar() && rType->isMatrix())
 	{// OpMatrixTimesScalar expects matrix as first operand
-		return addInstruction()->makeOp(spv::Op::OpMatrixTimesScalar, _pRight, _pLeft);
+		addInstruction()->makeOp(spv::Op::OpMatrixTimesScalar, _pRight, _pLeft);
 	}
 	else if (lType->isMatrix() && rType->isScalar())
 	{
-		return addInstruction()->makeOp(spv::Op::OpMatrixTimesScalar, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpMatrixTimesScalar, _pLeft, _pRight);
 	}
 	else if (lType->isVector() && rType->isMatrix())
 	{// OpMatrixTimesVector expects matrix as first operand
-		return addInstruction()->makeOp(spv::Op::OpMatrixTimesVector, _pRight, _pLeft);
+		addInstruction()->makeOp(spv::Op::OpMatrixTimesVector, _pRight, _pLeft);
 	}
 	else if (lType->isMatrix() && rType->isVector())
 	{
-		return addInstruction()->makeOp(spv::Op::OpMatrixTimesVector, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpMatrixTimesVector, _pLeft, _pRight);
 	}
 	else if (lType->isMatrix() && rType->isMatrix())
 	{
-		return addInstruction()->makeOp(spv::Op::OpMatrixTimesMatrix, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpMatrixTimesMatrix, _pLeft, _pRight);
 	}
 
-	return nullptr;
+	return *this;
 }
 
-spvgentwo::Instruction* spvgentwo::BasicBlock::Div(Instruction* _pLeft, Instruction* _pRight)
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::Div(Instruction* _pLeft, Instruction* _pRight)
 {
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
 
 	if (lType->hasSameBase(*rType) == false)
 	{
-		return nullptr;
+		return *this;
 	}
 
 	if ((lType->isUInt() && rType->isUInt()) || (lType->hasSameVectorLength(*rType) && lType->isUInt()))
 	{
-		return addInstruction()->makeOp(spv::Op::OpUDiv, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpUDiv, _pLeft, _pRight);
 	} 
 	else if ((lType->isInt() && rType->isInt()) || (lType->hasSameVectorLength(*rType) && lType->isSInt()))
 	{
-		return addInstruction()->makeOp(spv::Op::OpSDiv, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpSDiv, _pLeft, _pRight);
 	}
 	else if ((lType->isFloat() && rType->isFloat()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeFloat))
 	{
-		return addInstruction()->makeOp(spv::Op::OpFDiv, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpFDiv, _pLeft, _pRight);
 	}
 	else if (lType->isVectorOfScalar() && rType->isScalar())
 	{
@@ -226,10 +224,10 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::Div(Instruction* _pLeft, Instruct
 		}
 
 		// vec / scalar => vec * ( 1 / scalar )
-		return Mul(_pLeft, Div(one, _pRight));
+		Mul(_pLeft, Div(one, _pRight));
 	}
 
-	return nullptr;
+	return *this;
 }
 
 spvgentwo::BasicBlock& spvgentwo::BasicBlock::Add(Instruction* _pRight)
@@ -256,48 +254,48 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::Div(Instruction* _pRight)
 	return *this;
 }
 
-spvgentwo::Instruction* spvgentwo::BasicBlock::Eq(Instruction* _pLeft, Instruction* _pRight)
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::Eq(Instruction* _pLeft, Instruction* _pRight)
 {
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
 
 	if (lType->hasSameBase(*rType) == false)
 	{
-		return nullptr;
+		return *this;
 	}
 
 	if ((lType->isInt() && rType->isInt()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeInt))
 	{
-		return addInstruction()->makeOp(spv::Op::OpIEqual, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpIEqual, _pLeft, _pRight);
 	}
 	else if ((lType->isFloat() && rType->isFloat()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeFloat))
 	{
-		return addInstruction()->makeOp(spv::Op::OpFOrdEqual, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpFOrdEqual, _pLeft, _pRight);
 	}
 
-	return nullptr;
+	return *this;
 }
 
-spvgentwo::Instruction* spvgentwo::BasicBlock::Neq(Instruction* _pLeft, Instruction* _pRight)
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::Neq(Instruction* _pLeft, Instruction* _pRight)
 {
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
 
 	if (lType->hasSameBase(*rType) == false)
 	{
-		return nullptr;
+		return *this;
 	}
 
 	if ((lType->isInt() && rType->isInt()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeInt))
 	{
-		return addInstruction()->makeOp(spv::Op::OpINotEqual, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpINotEqual, _pLeft, _pRight);
 	}
 	else if ((lType->isFloat() && rType->isFloat()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeFloat))
 	{
-		return addInstruction()->makeOp(spv::Op::OpFOrdNotEqual, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpFOrdNotEqual, _pLeft, _pRight);
 	}
 
-	return nullptr;
+	return *this;
 }
 
 spvgentwo::BasicBlock& spvgentwo::BasicBlock::Eq(Instruction* _pRight)

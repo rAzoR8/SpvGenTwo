@@ -240,7 +240,7 @@ namespace spvgentwo
 	template<class T, class ...Args>
 	inline void Instruction::makeOpInternal(T _first, Args ..._args)
 	{
-		if constexpr (is_same_base_type_v<T, Instruction*> || is_same_base_type_v<T, BasicBlock*> || is_same_base_type_v<T, spv::Id> || is_same_base_type_v<T, literal_t>)
+		if constexpr (traits::is_same_base_type_v<T, Instruction*> || traits::is_same_base_type_v<T, BasicBlock*> || traits::is_same_base_type_v<T, spv::Id> || traits::is_same_base_type_v<T, literal_t>)
 		{
 			addOperand(_first);
 		}
@@ -311,7 +311,7 @@ namespace spvgentwo
 	inline Instruction* Instruction::opPhi(Instruction* _pVar, VarInst* ..._variables)
 	{
 		makeOpEx(spv::Op::OpPhi, _pVar->getType(), InvalidId);
-		return opPhiExInternal(_pVar, _variables...);
+		return opPhiInternal(_pVar, _variables...);
 	}
 
 	template<class ...VarInst>

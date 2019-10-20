@@ -10,7 +10,7 @@ inline void* operator new(size_t size, void* ptr) noexcept { (void)size; return 
 #include <new>
 #endif
 
-//#include <type_traits>
+#include <type_traits>
 
 #ifdef DONT_REPLACE_TRAITS
 #include <type_traits>
@@ -133,11 +133,43 @@ namespace spvgentwo::stdrep
 	//template<class T> struct is_const : std::false_type {};
 	//template<class T> struct is_const<const T> : std::true_type {};
 
+	namespace detail {
+
+		template <class T>
+		struct type_identity { using type = T; }; 
+
+		template <class T>
+		auto try_add_lvalue_reference(int)->type_identity<T&>;
+		template <class T>
+		auto try_add_lvalue_reference(...)->type_identity<T>;
+
+		template <class T>
+		auto try_add_rvalue_reference(int)->type_identity<T&&>;
+		template <class T>
+		auto try_add_rvalue_reference(...)->type_identity<T>;
+
+	} // namespace detail
+
+	template <class T>
+	struct add_lvalue_reference : decltype(detail::try_add_lvalue_reference<T>(0)) {};
+
+	template <class T>
+	struct add_rvalue_reference : decltype(detail::try_add_rvalue_reference<T>(0)) {};
+
+	template <class T>
+	using add_lvalue_reference_t = typename add_lvalue_reference<T>::type;
+
+	template <class T>
+	using add_rvalue_reference_t = typename add_rvalue_reference<T>::type;
+
+	template<class T>
+	typename add_rvalue_reference<T>::type declval() noexcept;
+
 } // !spvgentwo::stdrep
 #endif
 
 // custom traits
-namespace spvgentwo
+namespace spvgentwo::traits
 {
 	// cpp20
 	template <class T>
@@ -147,4 +179,32 @@ namespace spvgentwo
 
 	template <class T, class BASE>
 	inline constexpr bool is_same_base_type_v = stdrep::is_same_v<remove_cvref_t<T>, BASE>;
+
+	template <class F, class... Args>
+	struct is_invocable
+	{
+		template <class U>
+		static auto test(U* p) -> decltype((*p)(std::declval<Args>()...), void(), std::true_type());
+		template <class U>
+		static auto test(...) -> decltype(stdrep::false_type());
+
+		static constexpr bool value = decltype(test<F>(0))::value;
+	};
+
+	template <class F, class... Args>
+	inline constexpr bool is_invocable_v = is_invocable<F, Args...>::value;
+
+	//template <class F, class R, class... Args>
+	//struct is_invocable_r
+	//{
+	//	template <class U>
+	//	static auto test(U* p) -> decltype((*p)(std::declval<Args>()...), stdrep::true_type());
+	//	template <class U>
+	//	static auto test(...) -> decltype(stdrep::false_type());
+
+	//	static constexpr bool value = decltype(test<F>(0))::value;
+	//};
+
+	//template <class F, class R, class... Args>
+	//inline constexpr bool is_invocable_r_v = is_invocable_r<F, R, Args...>::value;
 } // !spvgentwo

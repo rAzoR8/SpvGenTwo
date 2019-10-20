@@ -87,11 +87,24 @@ int main(int argc, char* argv[])
 		Instruction* z = bb.Add(x, y);
 
 		Instruction* uniformComp = bb->opAccessChain(uniformVar, 0u);
-		Instruction* component1 = bb->opLoad(uniformComp);
+		Instruction* uniX = bb->opLoad(uniformComp);
 
-		Instruction* res = (bb + z) * x * component1;
+		Instruction* cond = bb.Eq(uniX);
 
-		bb.returnValue(res);
+		Instruction* res1 = nullptr;
+		Instruction* res2 = nullptr;
+
+		BasicBlock& merge = bb.If(cond, [&](BasicBlock& trueBB)
+		{
+			res1 = trueBB.Add(z, x) * uniX;
+		}, [&](BasicBlock& falseBB)
+		{
+			res2 = falseBB.Sub(z, x) * uniX;
+		});		
+		
+		Instruction* res = merge->opPhi(res1, res2);
+
+		merge.returnValue(res);
 	}
 
 	// void entryPoint();	
