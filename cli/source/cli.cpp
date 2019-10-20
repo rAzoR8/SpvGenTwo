@@ -102,9 +102,7 @@ int main(int argc, char* argv[])
 			res2 = falseBB.Sub(z, x) * uniX;
 		});		
 		
-		Instruction* res = merge->opPhi(res1, res2);
-
-		merge.returnValue(res);
+		merge.returnValue(merge->opPhi(res1, res2));
 	}
 
 	// void entryPoint();	

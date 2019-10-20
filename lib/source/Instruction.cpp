@@ -118,6 +118,7 @@ void spvgentwo::Instruction::resolveId(spv::Id& _resultId)
 			break;
 		case Operand::Type::BranchTarget:
 			op.branchTarget->front().resolveId(_resultId);
+			break;
 		default:
 			break;
 		}

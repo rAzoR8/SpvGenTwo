@@ -46,8 +46,23 @@ namespace spvgentwo
 		// returns last instruction of MergeBlock which creats a result
 		Instruction* If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock& _mergeBlock, const spv::SelectionControlMask _mask = spv::SelectionControlMask::MaskNone);
 
+		// MergeBlock for selection merge is returned. If _pMergeBlock is nullptr, a new block will be added to the function
+		// Example usage:
+		
+		/*Instruction* res1 = nullptr;
+		Instruction* res2 = nullptr;
+
+		BasicBlock& merge = bb.If(cond, [&](BasicBlock& trueBB)
+		{
+			res1 = trueBB.Add(z, x) * uniX;
+		}, [&](BasicBlock& falseBB)
+		{
+			res2 = falseBB.Sub(z, x) * uniX;
+		});
+
+		merge.returnValue(merge->opPhi(res1, res2));*/
 		template <class TrueFunc, class FalseFunc>
-		BasicBlock& If(Instruction* _pCondition, TrueFunc& _true, FalseFunc& _false, const spv::SelectionControlMask _mask = spv::SelectionControlMask::MaskNone);
+		BasicBlock& If(Instruction* _pCondition, TrueFunc& _true, FalseFunc& _false, BasicBlock* _pMergeBlock = nullptr, const spv::SelectionControlMask _mask = spv::SelectionControlMask::MaskNone);
 
 		// infer op code from operands types, emplace instruction in this basic block
 		BasicBlock& Add(Instruction* _pLeft, Instruction* _pRight);
@@ -71,14 +86,14 @@ namespace spvgentwo
 	};
 
 	template<class TrueFunc, class FalseFunc>
-	inline BasicBlock& BasicBlock::If(Instruction* _pCondition, TrueFunc& _true, FalseFunc& _false, const spv::SelectionControlMask _mask)
+	inline BasicBlock& BasicBlock::If(Instruction* _pCondition, TrueFunc& _true, FalseFunc& _false, BasicBlock* _pMergeBlock, const spv::SelectionControlMask _mask)
 	{
 		static_assert(traits::is_invocable_v<TrueFunc, BasicBlock&>, "TrueFunc _true is not invocable: _true(BasicBlock& trueBranchBB)");
 		static_assert(traits::is_invocable_v<FalseFunc, BasicBlock&>, "FalseFunc _false is not invocable: _true(BasicBlock& falseBranchBB)");
 
 		BasicBlock& trueBB = m_pFunction->addBasicBlock();
 		BasicBlock& falseBB = m_pFunction->addBasicBlock();
-		BasicBlock& mergeBB = m_pFunction->addBasicBlock();
+		BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock();
 
 		addInstruction()->opSelectionMerge(&mergeBB, _mask);
 		addInstruction()->opBranchConditional(_pCondition, &trueBB, &falseBB);

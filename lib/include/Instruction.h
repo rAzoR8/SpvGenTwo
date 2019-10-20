@@ -244,14 +244,15 @@ namespace spvgentwo
 		{
 			addOperand(_first);
 		}
-		else if constexpr (sizeof(T) == sizeof(literal_t)) // bitcast to 32 bit literal
+		else if constexpr (stdrep::is_same_v<traits::remove_cvref_t<T>, int> || stdrep::is_same_v<traits::remove_cvref_t<T>, unsigned int>) // bitcast to 32 bit literal
 		{
-			addOperand(*reinterpret_cast<const literal_t*>(&_first));
+			addOperand(literal_t{_first});
 		}
 		else
 		{
 			appendLiterals(_first);
 		}
+
 
 		if constexpr (sizeof...(_args) > 0u)
 		{
@@ -310,7 +311,7 @@ namespace spvgentwo
 	template<class ...VarInst>
 	inline Instruction* Instruction::opPhi(Instruction* _pVar, VarInst* ..._variables)
 	{
-		makeOpEx(spv::Op::OpPhi, _pVar->getType(), InvalidId);
+		makeOpEx(spv::Op::OpPhi, _pVar->getTypeInst(), InvalidId);
 		return opPhiInternal(_pVar, _variables...);
 	}
 
