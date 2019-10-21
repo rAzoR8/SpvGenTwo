@@ -105,15 +105,48 @@ int main(int argc, char* argv[])
 		merge.returnValue(merge->opPhi(res1, res2));
 	}
 
+	Function& loopFunc = module.addFunction<void>(spv::FunctionControlMask::Const);
+	{
+		BasicBlock& bb = loopFunc.addBasicBlock();
+
+		Instruction* one = module.constant(1);
+		Instruction* loopCount = module.constant(10);
+		Instruction* varI = bb.variable<int>(0);
+		Instruction* varSum = bb.variable<float>(1.1f);
+
+		BasicBlock& loop = loopFunc.addBasicBlock();
+		bb->opBranch(&loop);
+
+		BasicBlock& merge = loop.Loop([&](BasicBlock& cond)
+		{
+			auto i = cond->opLoad(varI);
+			cond.Eq(i, loopCount);
+		}, [&](BasicBlock& inc)
+		{
+			auto i = inc->opLoad(varI);
+			i = inc.Add(i, one);
+			inc->opStore(varI, i); // i++
+		}, [&](BasicBlock& body)
+		{
+			auto s = body->opLoad(varSum);
+			s = body.Mul(s, s);
+			body->opStore(varSum, s); // sum += sum
+		});
+
+		auto s = merge->opLoad(varSum);
+
+		merge->call(&funcAdd, s, s);
+		merge.returnValue();
+		//merge.returnValue(funcAdd.getFunction());
+	}
+
 	// void entryPoint();	
 	EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Vertex, "main");
 
 	{
 		BasicBlock& bb = entry.addBasicBlock();
-		Instruction* c1 = module.constant(1.f);
-		Instruction* c2 = module.constant(2.f);
 
-		bb->call(&funcAdd, c1, c2);
+		bb->call(&loopFunc);
 		bb.returnValue();
 	}
 

@@ -62,26 +62,37 @@ void spvgentwo::BasicBlock::write(IWriter* _pWriter, spv::Id& _resultId)
 	}
 }
 
-spvgentwo::Instruction* spvgentwo::BasicBlock::If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock& _mergeBlock, const spv::SelectionControlMask _mask)
+spvgentwo::Instruction* spvgentwo::BasicBlock::variable(Instruction* _pPtrType, Instruction* _pInitialzer)
+{
+	return addInstruction()->opVariable(_pPtrType, spv::StorageClass::Function, _pInitialzer);
+}
+
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock* _pMergeBlock, const Flag<spv::SelectionControlMask> _mask)
 {
 	// this block has not been terminated yet
-	//if (getTerminator() == nullptr)
-	{
-		addInstruction()->opSelectionMerge(&_mergeBlock, _mask);
-		addInstruction()->opBranchConditional(_pCondition, &_trueBlock, &_falseBlock);
-		_trueBlock->opBranch(&_mergeBlock);
-		_falseBlock->opBranch(&_mergeBlock);
-	}
+	BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock();
 
-	for (auto it = _mergeBlock.last(); it != _mergeBlock.begin(); --it)
-	{
-		if (it->isTerminator() == false && it->hasResult()) // hasResultAndType
-		{
-			return it.operator->();
-		}
-	}
+	addInstruction()->opSelectionMerge(&mergeBB, _mask);
+	addInstruction()->opBranchConditional(_pCondition, &_trueBlock, &_falseBlock);
+	_trueBlock->opBranch(&mergeBB);
+	_falseBlock->opBranch(&mergeBB);
 
-	return nullptr;
+	return mergeBB;
+}
+
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::Loop(Instruction* _pCondition, BasicBlock& _continue, BasicBlock& _body, BasicBlock* _pMergeBlock, const Flag<spv::LoopControlMask> _mask)
+{
+	BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock();
+	BasicBlock& condBB = *_pCondition->getBasicBlock();
+
+	addInstruction()->opLoopMerge(&mergeBB, &_continue, _mask);
+	addInstruction()->opBranch(&condBB);
+
+	condBB->opBranchConditional(_pCondition, &_body, &mergeBB);
+	_body->opBranch(&_continue); // branch to "increment" / continue block
+	_continue->opBranch(this); // back edge to loop merge
+
+	return mergeBB;
 }
 
 spvgentwo::BasicBlock& spvgentwo::BasicBlock::Add(Instruction* _pLeft, Instruction* _pRight)
