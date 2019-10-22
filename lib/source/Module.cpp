@@ -2,9 +2,11 @@
 #include "Function.h"
 #include "Type.h"
 #include "Writer.h"
+#include "Logger.h"
 
-spvgentwo::Module::Module(IAllocator* _pAllocator) :
+spvgentwo::Module::Module(IAllocator* _pAllocator, ILogger* _pLogger) :
 	m_pAllocator(_pAllocator),
+	m_pLogger(_pLogger),
 	m_Functions(_pAllocator),
 	m_EntryPoints(_pAllocator),
 	m_Capabilities(_pAllocator),

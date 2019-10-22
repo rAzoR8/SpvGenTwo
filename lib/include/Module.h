@@ -6,10 +6,13 @@
 
 namespace spvgentwo
 {
+	// forward delcs
+	class ILogger;
+
 	class Module
 	{
 	public:
-		Module(IAllocator* _pAllocator);
+		Module(IAllocator* _pAllocator, ILogger* _pLogger = nullptr);
 		~Module();
 
 		static constexpr unsigned int GeneratorId = makeGeneratorId('fa', 0);
@@ -102,6 +105,7 @@ namespace spvgentwo
 
 	private:
 		IAllocator* m_pAllocator = nullptr;
+		ILogger* m_pLogger = nullptr;
 		List<Function> m_Functions;
 		List<EntryPoint> m_EntryPoints;
 
