@@ -80,23 +80,36 @@ namespace spvgentwo
 		BasicBlock& Loop(ConditionFunc& _condition, ContinueFunc& _continue, LoopBodyFunc& _body, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::LoopControlMask> _mask = spv::LoopControlMask::MaskNone);
 
 		// infer op code from operands types, emplace instruction in this basic block
-		BasicBlock& Add(Instruction* _pLeft, Instruction* _pRight);
-		BasicBlock& Sub(Instruction* _pLeft, Instruction* _pRight);
+		BasicBlock& Add(Instruction* _pLeft, Instruction* _pRight) { return IntFltOp(_pLeft, _pRight, spv::Op::OpIAdd, spv::Op::OpFAdd); }
+		BasicBlock& Sub(Instruction* _pLeft, Instruction* _pRight) { return IntFltOp(_pLeft, _pRight, spv::Op::OpISub, spv::Op::OpFSub); }
 		BasicBlock& Mul(Instruction* _pLeft, Instruction* _pRight);
 		BasicBlock& Div(Instruction* _pLeft, Instruction* _pRight);
 
-		BasicBlock& Add(Instruction* _pRight);// add _pRight to last instruction in this basic block and push the result (stack like) to this basic block
-		BasicBlock& Sub(Instruction* _pRight);
-		BasicBlock& Mul(Instruction* _pRight);
-		BasicBlock& Div(Instruction* _pRight);
+		BasicBlock& Eq(Instruction* _pLeft, Instruction* _pRight) { return IntFltOp(_pLeft, _pRight, spv::Op::OpIEqual, spv::Op::OpFOrdEqual); }
+		BasicBlock& Neq(Instruction* _pLeft, Instruction* _pRight) { return IntFltOp(_pLeft, _pRight, spv::Op::OpINotEqual, spv::Op::OpFOrdNotEqual); }
+		BasicBlock& Lt(Instruction* _pLeft, Instruction* _pRight) {	return SUIntFltOp(_pLeft, _pRight, spv::Op::OpSLessThan, spv::Op::OpULessThan, spv::Op::OpFOrdLessThan); }
+		BasicBlock& Lte(Instruction* _pLeft, Instruction* _pRight) { return SUIntFltOp(_pLeft, _pRight, spv::Op::OpSLessThanEqual, spv::Op::OpULessThanEqual, spv::Op::OpFOrdLessThanEqual); }
+		BasicBlock& Gt(Instruction* _pLeft, Instruction* _pRight) { return SUIntFltOp(_pLeft, _pRight, spv::Op::OpSGreaterThan, spv::Op::OpUGreaterThan, spv::Op::OpFOrdGreaterThan); }
+		BasicBlock& Gte(Instruction* _pLeft, Instruction* _pRight) { return SUIntFltOp(_pLeft, _pRight, spv::Op::OpSGreaterThanEqual, spv::Op::OpUGreaterThanEqual, spv::Op::OpFOrdGreaterThanEqual); }
 
-		BasicBlock& Eq(Instruction* _pLeft, Instruction* _pRight);
-		BasicBlock& Neq(Instruction* _pLeft, Instruction* _pRight);
-
-		BasicBlock& Eq(Instruction* _pRight);
-		BasicBlock& Neq(Instruction* _pRight);
+		// add _pRight to last instruction in this basic block and push the result (stack like) to this basic block
+		BasicBlock& Add(Instruction* _pRight) { Add(m_pLast->operator->(), _pRight); return *this; }
+		BasicBlock& Sub(Instruction* _pRight) { Sub(m_pLast->operator->(), _pRight); return *this; }
+		BasicBlock& Mul(Instruction* _pRight) { Mul(m_pLast->operator->(), _pRight); return *this; }
+		BasicBlock& Div(Instruction* _pRight) { Div(m_pLast->operator->(), _pRight); return *this; }
+		BasicBlock& Eq(Instruction* _pRight) { Eq(m_pLast->operator->(), _pRight); return *this; }
+		BasicBlock& Neq(Instruction* _pRight) { Neq(m_pLast->operator->(), _pRight); return *this; }
+		BasicBlock& Lt(Instruction* _pRight) { Lt(m_pLast->operator->(), _pRight); return *this; }
+		BasicBlock& Lte(Instruction* _pRight) { Lte(m_pLast->operator->(), _pRight); return *this; }
+		BasicBlock& Gt(Instruction* _pRight) { Gt(m_pLast->operator->(), _pRight); return *this; }
+		BasicBlock& Gte(Instruction* _pRight) { Gte(m_pLast->operator->(), _pRight); return *this; }
 
 	private:
+		BasicBlock& IntFltOp(Instruction* _pLeft, Instruction* _pRight, const spv::Op _int, const spv::Op _float);
+		BasicBlock& SUIntFltOp(Instruction* _pLeft, Instruction* _pRight, const spv::Op _unsigned, const spv::Op _signed, const spv::Op _float);
+
+	private:
+
 		Function* m_pFunction = nullptr; // parent
 	};
 
