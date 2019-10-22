@@ -34,6 +34,10 @@ namespace spvgentwo
 		BasicBlock* getBasicBlock();
 		const BasicBlock* getBasicBlock() const;
 
+		// not so sure this is a good idea
+		operator BasicBlock& () { return *getBasicBlock(); }
+		operator const BasicBlock& () const { return *getBasicBlock(); }
+
 		// manual instruction construction:
 		void setOperation(const spv::Op _op) { m_Operation = _op; };
 		spv::Op getOperation() const { return m_Operation; }
