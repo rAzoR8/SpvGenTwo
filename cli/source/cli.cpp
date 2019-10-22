@@ -120,7 +120,7 @@ int main(int argc, char* argv[])
 		BasicBlock& merge = loop.Loop([&](BasicBlock& cond)
 		{
 			auto i = cond->opLoad(varI);
-			cond.Eq(i, loopCount);
+			cond < loopCount;
 		}, [&](BasicBlock& inc)
 		{
 			auto i = inc->opLoad(varI);
