@@ -10,7 +10,7 @@ inline void* operator new(size_t size, void* ptr) noexcept { (void)size; return 
 #include <new>
 #endif
 
-#include <type_traits>
+//#include <type_traits>
 
 #ifdef DONT_REPLACE_TRAITS
 #include <type_traits>
@@ -130,9 +130,6 @@ namespace spvgentwo::stdrep
 	template <class T>
 	inline constexpr bool is_const_v<const T> = true;
 
-	//template<class T> struct is_const : std::false_type {};
-	//template<class T> struct is_const<const T> : std::true_type {};
-
 	namespace detail {
 
 		template <class T>
@@ -184,7 +181,7 @@ namespace spvgentwo::traits
 	struct is_invocable
 	{
 		template <class U>
-		static auto test(U* p) -> decltype((*p)(std::declval<Args>()...), void(), std::true_type());
+		static auto test(U* p) -> decltype((*p)(stdrep::declval<Args>()...), void(), stdrep::true_type());
 		template <class U>
 		static auto test(...) -> decltype(stdrep::false_type());
 
@@ -198,7 +195,7 @@ namespace spvgentwo::traits
 	//struct is_invocable_r
 	//{
 	//	template <class U>
-	//	static auto test(U* p) -> decltype((*p)(std::declval<Args>()...), stdrep::true_type());
+	//	static auto test(U* p) -> decltype((*p)(stdrep::declval<Args>()...), stdrep::true_type());
 	//	template <class U>
 	//	static auto test(...) -> decltype(stdrep::false_type());
 
