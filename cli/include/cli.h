@@ -2,6 +2,7 @@
 
 #include "lib.h"
 #include "Writer.h"
+#include "Logger.h"
 #include <malloc.h>
 #include <cstdio>
 
@@ -28,5 +29,11 @@ namespace spvgentwo
 
 	private:
 		FILE* m_pFile = nullptr;
+	};
+
+	class ConsoleLogger : public ILogger
+	{
+	public:
+		void log(const LogLevel _level, const char* _pMsg) final;
 	};
 } //! spvgentwo

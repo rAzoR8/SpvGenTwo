@@ -102,6 +102,7 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::Mul(Instruction* _pLeft, Instructi
 
 	if (lType->hasSameBase(*rType) == false)
 	{
+		getModule()->logError("Operands of Mul() must have the same component type");
 		return *this;
 	}
 
@@ -142,6 +143,10 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::Mul(Instruction* _pLeft, Instructi
 	{
 		addInstruction()->makeOp(spv::Op::OpMatrixTimesMatrix, _pLeft, _pRight);
 	}
+	else
+	{
+		getModule()->logError("Failed to match Mul()'s operand types for this instruction");
+	}
 
 	return *this;
 }
@@ -153,6 +158,7 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::Div(Instruction* _pLeft, Instructi
 
 	if (lType->hasSameBase(*rType) == false)
 	{
+		getModule()->logError("Operands of Div() must have the same component type");
 		return *this;
 	}
 
@@ -193,6 +199,10 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::Div(Instruction* _pLeft, Instructi
 		// vec / scalar => vec * ( 1 / scalar )
 		Mul(_pLeft, Div(one, _pRight));
 	}
+	else
+	{
+		getModule()->logError("Failed to match Div()'s operand types for this instruction");
+	}
 
 	return *this;
 }
@@ -204,6 +214,7 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::IntFltOp(Instruction* _pLeft, Inst
 
 	if (lType->hasSameBase(*rType) == false)
 	{
+		getModule()->logError("Operands of IntFltOp() must have the same component type");
 		return *this;
 	}
 
@@ -214,6 +225,10 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::IntFltOp(Instruction* _pLeft, Inst
 	else if ((lType->isFloat() && rType->isFloat()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeFloat))
 	{
 		addInstruction()->makeOp(_float, _pLeft, _pRight);
+	}
+	else
+	{
+		getModule()->logError("Failed to match IntFltOp()'s operand types for this instruction");
 	}
 
 	return *this;
@@ -226,6 +241,7 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::SUIntFltOp(Instruction* _pLeft, In
 
 	if (lType->hasSameBase(*rType) == false)
 	{
+		getModule()->logError("Operands of SUIntFltOp() must have the same component type");
 		return *this;
 	}
 
@@ -240,6 +256,10 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::SUIntFltOp(Instruction* _pLeft, In
 	else if ((lType->isFloat() && rType->isFloat()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeFloat))
 	{
 		addInstruction()->makeOp(_float, _pLeft, _pRight);
+	}
+	else
+	{
+		getModule()->logError("Failed to match SUIntFltOp()'s operand types for this instruction");
 	}
 
 	return *this;

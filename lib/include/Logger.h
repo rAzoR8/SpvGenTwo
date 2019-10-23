@@ -14,9 +14,7 @@ namespace spvgentwo
 	class ILogger
 	{
 	public:
-		ILogger();
-		virtual ~ILogger();
-
+		virtual ~ILogger() {}
 		virtual void log(const LogLevel _level, const char* _pMsg) = 0;
 	};
 } //! spvgentwo

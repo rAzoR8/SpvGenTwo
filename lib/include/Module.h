@@ -3,12 +3,10 @@
 #include "EntryPoint.h"
 #include "HashMap.h"
 #include "Constant.h"
+#include "Logger.h"
 
 namespace spvgentwo
 {
-	// forward delcs
-	class ILogger;
-
 	class Module
 	{
 	public:
@@ -16,6 +14,13 @@ namespace spvgentwo
 		~Module();
 
 		static constexpr unsigned int GeneratorId = makeGeneratorId('fa', 0);
+
+		void log(const LogLevel _level, const char* _pMsg);
+		void logDebug(const char* _pMsg) { log(LogLevel::Debug, _pMsg); }
+		void logInfo(const char* _pMsg) { log(LogLevel::Info, _pMsg); }
+		void logWarning(const char* _pMsg) { log(LogLevel::Warning, _pMsg); }
+		void logError(const char* _pMsg) { log(LogLevel::Error, _pMsg); }
+		void logFatal(const char* _pMsg) { log(LogLevel::Fatal, _pMsg); }
 
 		IAllocator* getAllocator() { return m_pAllocator; }
 		const IAllocator* getAllocator() const { return m_pAllocator; }

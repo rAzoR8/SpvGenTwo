@@ -62,11 +62,34 @@ void BinaryFileWriter::putAt(unsigned int _word, const long _offset)
 	}
 }
 
+void spvgentwo::ConsoleLogger::log(const LogLevel _level, const char* _pMsg)
+{
+	switch (_level)
+	{
+	case LogLevel::Debug:
+		printf("Debug: "); break;
+	case LogLevel::Info:
+		printf("Info: "); break;
+	case LogLevel::Warning:
+		printf("Warning: "); break;
+	case LogLevel::Error:
+		printf("Error: "); break;
+	case LogLevel::Fatal:
+		printf("Fatal: "); break;
+	default:
+		break;
+	}
+
+	printf(_pMsg);
+	printf("\n");
+}
+
 int main(int argc, char* argv[])
 {
+	ConsoleLogger log;
 	HeapAllocator alloc;
 
-	Module module(&alloc);
+	Module module(&alloc, &log);
 
 	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::VulkanMemoryModelKHR);

@@ -29,6 +29,16 @@ spvgentwo::Module::~Module()
 {
 }
 
+void spvgentwo::Module::log(const LogLevel _level, const char* _pMsg)
+{
+#ifndef SPVGENTWO_NO_LOGGING
+	if (m_pLogger != nullptr)
+	{
+		m_pLogger->log(_level, _pMsg);
+	}
+#endif
+}
+
 spvgentwo::Type spvgentwo::Module::newType()
 {
 	return Type(m_pAllocator);
