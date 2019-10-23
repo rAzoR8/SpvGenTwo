@@ -189,6 +189,7 @@ namespace spvgentwo
 		const Prop* setProperties(const Prop _first, Props ... _props);
 
 		bool isVoid() const { return m_Type == spv::Op::OpTypeVoid; }
+		bool isBool() const { return m_Type == spv::Op::OpTypeBool;	}
 		bool isPointer() const { return m_Type == spv::Op::OpTypePointer; }
 		bool isStruct() const { return m_Type == spv::Op::OpTypeStruct; }
 		bool isArray() const { return m_Type == spv::Op::OpTypeArray; }

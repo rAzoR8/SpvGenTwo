@@ -85,6 +85,7 @@ namespace spvgentwo
 		BasicBlock& Mul(Instruction* _pLeft, Instruction* _pRight);
 		BasicBlock& Div(Instruction* _pLeft, Instruction* _pRight);
 
+		BasicBlock& Not(Instruction* _pLeft);
 		BasicBlock& Eq(Instruction* _pLeft, Instruction* _pRight) { return IntFltOp(_pLeft, _pRight, spv::Op::OpIEqual, spv::Op::OpFOrdEqual); }
 		BasicBlock& Neq(Instruction* _pLeft, Instruction* _pRight) { return IntFltOp(_pLeft, _pRight, spv::Op::OpINotEqual, spv::Op::OpFOrdNotEqual); }
 		BasicBlock& Lt(Instruction* _pLeft, Instruction* _pRight) {	return SUIntFltOp(_pLeft, _pRight, spv::Op::OpSLessThan, spv::Op::OpULessThan, spv::Op::OpFOrdLessThan); }
@@ -97,6 +98,7 @@ namespace spvgentwo
 		BasicBlock& Sub(Instruction* _pRight) { Sub(m_pLast->operator->(), _pRight); return *this; }
 		BasicBlock& Mul(Instruction* _pRight) { Mul(m_pLast->operator->(), _pRight); return *this; }
 		BasicBlock& Div(Instruction* _pRight) { Div(m_pLast->operator->(), _pRight); return *this; }
+		BasicBlock& Not() { Not(m_pLast->operator->()); return *this; }
 		BasicBlock& Eq(Instruction* _pRight) { Eq(m_pLast->operator->(), _pRight); return *this; }
 		BasicBlock& Neq(Instruction* _pRight) { Neq(m_pLast->operator->(), _pRight); return *this; }
 		BasicBlock& Lt(Instruction* _pRight) { Lt(m_pLast->operator->(), _pRight); return *this; }

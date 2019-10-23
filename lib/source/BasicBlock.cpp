@@ -207,6 +207,22 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::Div(Instruction* _pLeft, Instructi
 	return *this;
 }
 
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::Not(Instruction* _pLeft)
+{
+	const Type* lType = _pLeft->getType();
+
+	if (lType->isScalarOrVectorOf(spv::Op::OpTypeBool))
+	{
+		addInstruction()->makeOp(spv::Op::OpLogicalNot, _pLeft);
+	}
+	else
+	{
+		getModule()->logError("Failed to match Not()'s operand types for this instruction (scalar or vector of bool)");
+	}
+
+	return *this;
+}
+
 spvgentwo::BasicBlock& spvgentwo::BasicBlock::IntFltOp(Instruction* _pLeft, Instruction* _pRight, const spv::Op _int, const spv::Op _float)
 {
 	const Type* lType = _pLeft->getType();
