@@ -9,6 +9,8 @@ namespace spvgentwo
 
 	namespace ops
 	{
+		BasicBlock& operator!(BasicBlock& _left);
+
 		BasicBlock& operator+(BasicBlock& _left, Instruction* _pRight);
 		BasicBlock& operator+(BasicBlock& _left, Instruction& _right);
 

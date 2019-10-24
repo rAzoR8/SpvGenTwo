@@ -2,6 +2,11 @@
 #include "Instruction.h"
 #include "Module.h"
 
+spvgentwo::BasicBlock& spvgentwo::ops::operator!(BasicBlock& _left)
+{
+	return _left.Not();
+}
+
 spvgentwo::BasicBlock& spvgentwo::ops::operator+(BasicBlock& _left, Instruction* _pRight)
 {
 	return _left.Add(_pRight);
