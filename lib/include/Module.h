@@ -55,7 +55,7 @@ namespace spvgentwo
 
 		const List<Instruction>& getCapabilities() const { return m_Capabilities; }
 
-		void write(IWriter* _pWriter);
+		void write(IWriter* _pWriter, const unsigned int _spvVersion = spv::Version);
 
 		// for use with opString, opSource, opSourceContinued, opSourceExtension
 		Instruction* addSourceStringInstr();
@@ -75,34 +75,34 @@ namespace spvgentwo
 		Constant newConstant();
 
 		// _pPtrType needs to be in the same StorageClass as _storageClass
-		Instruction* variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, Instruction* _pInitialzer = nullptr);
+		Instruction* variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, const char* _pName = nullptr, Instruction* _pInitialzer = nullptr);
 
 		template <class T> // adds Pointer to type T
-		Instruction* variable(const spv::StorageClass _storageClass, Instruction* _pInitialzer = nullptr);
+		Instruction* variable(const spv::StorageClass _storageClass, const char* _pName = nullptr, Instruction* _pInitialzer = nullptr);
 
 		template <class T>
-		Instruction* variable(const spv::StorageClass _storageClass, const T& _initialValue);
+		Instruction* variable(const spv::StorageClass _storageClass, const T& _initialValue, const char* _pName = nullptr);
 
 		template <class T> // constant uniform variable
-		Instruction* uniformConstant(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::UniformConstant, _pInitialzer); }
+		Instruction* uniformConstant(const char* _pName = nullptr, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::UniformConstant, _pName, _pInitialzer); }
 
 		template <class T> // uniform variable
-		Instruction* uniform(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Uniform, _pInitialzer); }
+		Instruction* uniform(const char* _pName = nullptr, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Uniform, _pName, _pInitialzer); }
 
 		template <class T> // input variable
-		Instruction* input(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Input, _pInitialzer); }
+		Instruction* input(const char* _pName = nullptr, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Input, _pName, _pInitialzer); }
 
 		template <class T> // output variable
-		Instruction* output(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Output, _pInitialzer); }
+		Instruction* output(const char* _pName = nullptr, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Output, _pName, _pInitialzer); }
 
 		template <class T> // push constant variable
-		Instruction* pushConstant(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::PushConstant, _pInitialzer); }
+		Instruction* pushConstant(const char* _pName = nullptr, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::PushConstant, _pName, _pInitialzer); }
 
 		template <class T> // image variable
-		Instruction* image(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Image, _pInitialzer); }
+		Instruction* image(const char* _pName = nullptr, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Image, _pName, _pInitialzer); }
 
 		template <class T> // image variable
-		Instruction* storageBuffer(Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::StorageBuffer, _pInitialzer); }
+		Instruction* storageBuffer(const char* _pName = nullptr, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::StorageBuffer, _pName, _pInitialzer); }
 
 	private:
 		template <class ... TypeInstr>
@@ -193,14 +193,14 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	inline Instruction* Module::variable(const spv::StorageClass _storageClass, Instruction* _pInitialzer)
+	inline Instruction* Module::variable(const spv::StorageClass _storageClass, const char* _pName, Instruction* _pInitialzer)
 	{
-		return variable(type<T*>(_storageClass), _storageClass, _pInitialzer);
+		return variable(type<T*>(_storageClass), _storageClass, _pName, _pInitialzer);
 	}
 
 	template<class T>
-	inline Instruction* Module::variable(const spv::StorageClass _storageClass, const T& _initialValue)
+	inline Instruction* Module::variable(const spv::StorageClass _storageClass, const T& _initialValue, const char* _pName)
 	{
-		return variable<T>(_storageClass, constant(_initialValue));
+		return variable<T>(_storageClass, _pName, constant(_initialValue));
 	}
 } // !spvgentwo

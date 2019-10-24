@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
 	Instruction* ext = module.addExtensionInstructionImport("GLSL.std.450");
 	module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
 
-	Instruction* uniformVar = module.uniform<vector_t<float, 3>>();
+	Instruction* uniformVar = module.uniform<vector_t<float, 3>>("u_Position");
 
 	// float add(float x, float y)
 	Function& funcAdd = module.addFunction<float, float, float>(spv::FunctionControlMask::Const);

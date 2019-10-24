@@ -5,7 +5,7 @@ spvgentwo::EntryPoint::~EntryPoint()
 {
 }
 
-void spvgentwo::EntryPoint::getGlobalVariableInterface(List<Operand>& _outVarInstr) const
+void spvgentwo::EntryPoint::getGlobalVariableInterface(List<Operand>& _outVarInstr, const GlobalInterfaceVersion _version) const
 {
 	struct VisitedBB
 	{
@@ -68,8 +68,18 @@ void spvgentwo::EntryPoint::getGlobalVariableInterface(List<Operand>& _outVarIns
 			{
 				// find valid OpVariable (resultType, resultId, Storage Class)
 				Instruction* pArg = operand.getInstruction();
-				if (pArg != nullptr && pArg->getOperation() == spv::Op::OpVariable && pArg->getStorageClass() != spv::StorageClass::Function)
+				if (pArg != nullptr && pArg->getOperation() == spv::Op::OpVariable)
 				{
+					const spv::StorageClass storage = pArg->getStorageClass();
+					if (_version == GlobalInterfaceVersion::SpirV1_3 && storage != spv::StorageClass::Input && storage != spv::StorageClass::Output)
+					{
+						continue;
+					}
+					else if (_version == GlobalInterfaceVersion::SpirV14_x && storage == spv::StorageClass::Function)
+					{
+						continue;
+					}
+
 					// uniquely add the instruction to the interface list
 					if (_outVarInstr.contains(pArg) == false)
 					{
@@ -82,11 +92,11 @@ void spvgentwo::EntryPoint::getGlobalVariableInterface(List<Operand>& _outVarIns
 	}
 }
 
-void spvgentwo::EntryPoint::finalize()
+void spvgentwo::EntryPoint::finalize(const GlobalInterfaceVersion _version)
 {
 	if (m_finalized == false)
 	{
-		getGlobalVariableInterface(m_EntryPoint);
+		getGlobalVariableInterface(m_EntryPoint, _version);
 		
 		m_finalized = true;
 	}

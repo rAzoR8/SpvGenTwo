@@ -5,6 +5,11 @@
 
 namespace spvgentwo
 {
+	constexpr unsigned int makeGeneratorId(unsigned short _gen, unsigned short _ver) { return _gen << 16 | _ver; }
+	constexpr unsigned int makeVersion(unsigned char _major, unsigned char _minor) { return _major << 16 | (_minor << 8); }
+	constexpr unsigned char getMajorVersion(unsigned int _version) { return (_version & 0x00FF0000) >> 16; }
+	constexpr unsigned char getMinorVersion(unsigned int _version) { return (_version & 0x0000FF00) >> 8; }
+
 	// Sampled indicates whether or not this image will be accessed in combination with a sampler, and must be one of the following values:
 	enum class SamplerImageAccess : unsigned int
 	{
@@ -29,8 +34,6 @@ namespace spvgentwo
 		MakePointerVisibleKHR = 0x10,
 		NonPrivatePointerKHR = 0x20
 	};
-
-	constexpr unsigned int makeGeneratorId(unsigned short _gen, unsigned short _ver) { return _gen << 16 | _ver; }
 
 	constexpr bool isTypeOp(const spv::Op _type)
 	{		

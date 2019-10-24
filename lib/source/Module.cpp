@@ -266,13 +266,13 @@ void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel,
 	m_MemoryModel.opMemoryModel(_addressModel, _memoryModel);
 }
 
-void spvgentwo::Module::write(IWriter* _pWriter)
+void spvgentwo::Module::write(IWriter* _pWriter, const unsigned int _spvVersion)
 {
 	m_maxId = 0u;
 
 	// write header
 	_pWriter->put(spv::MagicNumber);
-	_pWriter->put(spv::Version);
+	_pWriter->put(_spvVersion);
 	_pWriter->put(GeneratorId);
 	const long boundsPos = _pWriter->put(1024u); // bounds dummy
 	_pWriter->put(0u); // schema
@@ -283,27 +283,34 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	writeInstructions(_pWriter, m_ExtInstrImport, m_maxId);
 	m_MemoryModel.write(_pWriter, m_maxId);
 
-	writeInstructions(_pWriter, m_SourceStrings, m_maxId);
-	writeInstructions(_pWriter, m_Names, m_maxId);
-	writeInstructions(_pWriter, m_ModuleProccessed, m_maxId);
-
-	writeInstructions(_pWriter, m_Decorations, m_maxId);
-
 	// write entry points declarations
 	for (EntryPoint& ep : m_EntryPoints)
 	{
-		ep.finalize(); // fills out global variable interface
+		if(_spvVersion < makeVersion(1u, 4u))
+		{
+			ep.finalize(GlobalInterfaceVersion::SpirV1_3);
+		}
+		else
+		{
+			ep.finalize(GlobalInterfaceVersion::SpirV14_x);
+		}
+
 		ep.getEntryPoint()->write(_pWriter, m_maxId);
 	}
 
 	// write entrypoint executions modes
 	for (EntryPoint& ep : m_EntryPoints)
 	{
-		for(Instruction& mode : ep.getExecutionModes())
+		for (Instruction& mode : ep.getExecutionModes())
 		{
 			mode.write(_pWriter, m_maxId);
 		}
 	}
+
+	writeInstructions(_pWriter, m_SourceStrings, m_maxId);
+	writeInstructions(_pWriter, m_Names, m_maxId);
+	writeInstructions(_pWriter, m_ModuleProccessed, m_maxId);
+	writeInstructions(_pWriter, m_Decorations, m_maxId);
 	
 	// write types and constants
 	writeInstructions(_pWriter, m_TypesAndConstants, m_maxId);
@@ -339,7 +346,14 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	_pWriter->putAt(m_maxId + 1u, boundsPos);
 }
 
-spvgentwo::Instruction* spvgentwo::Module::variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, Instruction* _pInitialzer)
+spvgentwo::Instruction* spvgentwo::Module::variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, const char* _pName, Instruction* _pInitialzer)
 {
-	return m_GlobalVariables.emplace_back(this).opVariable(_pPtrType, _storageClass, _pInitialzer);
+	Instruction* pVar = m_GlobalVariables.emplace_back(this).opVariable(_pPtrType, _storageClass, _pInitialzer);
+
+	if (_pName != nullptr)
+	{
+		addNameInstr()->opName(pVar, _pName);
+	}
+
+	return pVar;
 }
