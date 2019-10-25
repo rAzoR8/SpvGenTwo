@@ -33,7 +33,7 @@ namespace spvgentwo
 
 		void addCapability(const spv::Capability _capability);
 		void addExtension(const char* _pExtName);
-		Instruction* addExtensionInstructionImport(const char* _pExtName);
+		Instruction* getExtensionInstructionImport(const char* _pExtName);
 
 		Instruction* addType(const Type& _type);
 		const Type* getTypeInfo(const Instruction* _pTypeInstr) const;
@@ -117,7 +117,7 @@ namespace spvgentwo
 		// preamble
 		List<Instruction> m_Capabilities;
 		List<Instruction> m_Extensions;
-		List<Instruction> m_ExtInstrImport; // todo: map between ext names and Instruction*
+		HashMap<const char*, Instruction> m_ExtInstrImport; // todo: map between ext names and Instruction*
 		Instruction m_MemoryModel;
 
 		List<Instruction> m_SourceStrings; // opString, opSource, opSourceContinued, opSourceExtension

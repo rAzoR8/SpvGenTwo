@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::VulkanMemoryModelKHR);
 	module.addExtension("SPV_KHR_vulkan_memory_model");
-	Instruction* ext = module.addExtensionInstructionImport("GLSL.std.450");
+	Instruction* ext = module.getExtensionInstructionImport("GLSL.std.450");
 	module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
 
 	Instruction* uniformVar = module.uniform<vector_t<float, 3>>("u_Position");

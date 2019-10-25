@@ -60,9 +60,15 @@ void spvgentwo::Module::addExtension(const char* _pExtName)
 	m_Extensions.emplace_back(this).opExtension(_pExtName);
 }
 
-spvgentwo::Instruction* spvgentwo::Module::addExtensionInstructionImport(const char* _pExtName)
+spvgentwo::Instruction* spvgentwo::Module::getExtensionInstructionImport(const char* _pExtName)
 {
-	return m_ExtInstrImport.emplace_back(this).opExtInstImport(_pExtName);
+	Instruction& opExtInst = m_ExtInstrImport.emplaceUnique(_pExtName, this).kv.value;
+	if (opExtInst.empty())
+	{
+		opExtInst.opExtInstImport(_pExtName);
+	}
+
+	return &opExtInst;
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addSourceStringInstr()
@@ -280,7 +286,17 @@ void spvgentwo::Module::write(IWriter* _pWriter, const unsigned int _spvVersion)
 	// write preamble
 	writeInstructions(_pWriter, m_Capabilities, m_maxId);
 	writeInstructions(_pWriter, m_Extensions, m_maxId);
-	writeInstructions(_pWriter, m_ExtInstrImport, m_maxId);
+	//writeInstructions(_pWriter, m_ExtInstrImport, m_maxId);
+
+	// TODO: impl iterator
+	for (auto i = 0; i < m_ExtInstrImport.getBucketCount(); ++i)
+	{
+		for(auto& kv : m_ExtInstrImport.getBucket(i))
+		{
+			kv.kv.value.write(_pWriter, m_maxId);		
+		}
+	}
+
 	m_MemoryModel.write(_pWriter, m_maxId);
 
 	// write entry points declarations
