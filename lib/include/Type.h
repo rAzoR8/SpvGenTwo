@@ -65,7 +65,7 @@ namespace spvgentwo
 		void setImageMultiSampled(const bool _ms) { m_ImgMultiSampled = _ms; }
 
 		SamplerImageAccess getImageSamplerAccess() const { return m_ImgSamplerAccess; }
-		void setImageSamplerAccess(const SamplerImageAccess _access) { m_ImgSamplerAccess; }
+		void setImageSamplerAccess(const SamplerImageAccess _access) { m_ImgSamplerAccess = _access; }
 
 		spv::ImageFormat getImageFormat() const { return m_ImgFormat; }
 		void setImageFormat(const spv::ImageFormat _format) { m_ImgFormat = _format; }

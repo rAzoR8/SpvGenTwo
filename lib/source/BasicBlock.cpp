@@ -2,8 +2,8 @@
 #include "Function.h"
 #include "Module.h"
 
-spvgentwo::BasicBlock::BasicBlock(Function* _pFunction) :
-	m_pFunction(_pFunction), List(_pFunction->getAllocator())
+spvgentwo::BasicBlock::BasicBlock(Function* _pFunction) : List(_pFunction->getAllocator()),
+	m_pFunction(_pFunction)
 {
 	addInstruction()->opLabel();
 }

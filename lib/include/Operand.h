@@ -47,10 +47,10 @@ namespace spvgentwo
 		Operand(const Operand& _other);
 		Operand(Operand&& _other) noexcept;
 
-		Operand(BasicBlock* _target) : branchTarget(_target), type(Type::BranchTarget) {}
-		Operand(Instruction* _instr) : instruction(_instr), type(Type::Instruction) {}
-		Operand(const literal_t _value) : value(_value), type(Type::Literal) {}
-		Operand(const spv::Id _resutlId) : resultId(_resutlId), type(Type::ResultId) {}
+		Operand(BasicBlock* _target) : type(Type::BranchTarget), branchTarget(_target) {}
+		Operand(Instruction* _instr) : type(Type::Instruction), instruction(_instr) {}
+		Operand(const literal_t _value) : type(Type::Literal), value(_value) {}
+		Operand(const spv::Id _resutlId) : type(Type::ResultId), resultId(_resutlId) {}
 
 		void write(IWriter* _pWriter) const;
 

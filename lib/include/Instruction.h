@@ -203,24 +203,24 @@ namespace spvgentwo
 	void writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions, spv::Id& _resultId);
 
 	template<class ...Args>
-	inline Instruction::Instruction(Module* _pModule, const spv::Op _op, Args&& ..._args) :
-		m_parentType(ParentType::Module), List(_pModule->getAllocator())
+	inline Instruction::Instruction(Module* _pModule, const spv::Op _op, Args&& ..._args) :List(_pModule->getAllocator()),
+		m_parentType(ParentType::Module)
 	{
 		m_parent.pModule = _pModule;
 		makeOpEx(_op, stdrep::forward<Args>(_args)...);
 	}
 
 	template<class ...Args>
-	inline Instruction::Instruction(Function* _pFunction, const spv::Op _op, Args&& ..._args) :
-		m_parentType(ParentType::Function), List(_pFunction->getAllocator())
+	inline Instruction::Instruction(Function* _pFunction, const spv::Op _op, Args&& ..._args) : List(_pFunction->getAllocator()),
+		m_parentType(ParentType::Function)
 	{
 		m_parent.pFunction = _pFunction;
 		makeOpEx(_op, stdrep::forward<Args>(_args)...);
 	}
 
 	template<class ...Args>
-	inline Instruction::Instruction(BasicBlock* _pBasicBlock, const spv::Op _op, Args&& ..._args) :
-		m_parentType(ParentType::BasicBlock), List(_pBasicBlock->getAllocator())
+	inline Instruction::Instruction(BasicBlock* _pBasicBlock, const spv::Op _op, Args&& ..._args) : List(_pBasicBlock->getAllocator()),
+		m_parentType(ParentType::BasicBlock)
 	{
 		m_parent.pBasicBlock = _pBasicBlock;
 		makeOpEx(_op, stdrep::forward<Args>(_args)...);
