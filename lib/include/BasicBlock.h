@@ -72,12 +72,12 @@ namespace spvgentwo
 		merge.returnValue(merge->opPhi(res1, res2));*/
 
 		template <class TrueFunc, class FalseFunc>
-		BasicBlock& If(Instruction* _pCondition, TrueFunc& _true, FalseFunc& _false, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::SelectionControlMask> _mask = spv::SelectionControlMask::MaskNone);
+		BasicBlock& If(Instruction* _pCondition, TrueFunc _true, FalseFunc _false, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::SelectionControlMask> _mask = spv::SelectionControlMask::MaskNone);
 
 		BasicBlock& Loop(Instruction* _pCondition, BasicBlock& _continue, BasicBlock& _body, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::LoopControlMask> _mask = spv::LoopControlMask::MaskNone);
 
 		template <class ConditionFunc, class ContinueFunc, class LoopBodyFunc>
-		BasicBlock& Loop(ConditionFunc& _condition, ContinueFunc& _continue, LoopBodyFunc& _body, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::LoopControlMask> _mask = spv::LoopControlMask::MaskNone);
+		BasicBlock& Loop(ConditionFunc _condition, ContinueFunc _continue, LoopBodyFunc _body, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::LoopControlMask> _mask = spv::LoopControlMask::MaskNone);
 
 		// infer op code from operands types, emplace instruction in this basic block
 		BasicBlock& Add(Instruction* _pLeft, Instruction* _pRight) { return IntFltOp(_pLeft, _pRight, spv::Op::OpIAdd, spv::Op::OpFAdd); }
@@ -128,7 +128,7 @@ namespace spvgentwo
 	}
 
 	template<class TrueFunc, class FalseFunc>
-	inline BasicBlock& BasicBlock::If(Instruction* _pCondition, TrueFunc& _true, FalseFunc& _false, BasicBlock* _pMergeBlock, const Flag < spv::SelectionControlMask> _mask)
+	inline BasicBlock& BasicBlock::If(Instruction* _pCondition, TrueFunc _true, FalseFunc _false, BasicBlock* _pMergeBlock, const Flag < spv::SelectionControlMask> _mask)
 	{
 		static_assert(traits::is_invocable_v<TrueFunc, BasicBlock&>, "TrueFunc _true is not invocable: _true(BasicBlock& trueBranchBB)");
 		static_assert(traits::is_invocable_v<FalseFunc, BasicBlock&>, "FalseFunc _false is not invocable: _true(BasicBlock& falseBranchBB)");
@@ -151,7 +151,7 @@ namespace spvgentwo
 
 	// ContinueFunc is increment func
 	template<class ConditionFunc, class ContinueFunc, class LoopBodyFunc>
-	inline BasicBlock& BasicBlock::Loop(ConditionFunc& _condition, ContinueFunc& _continue, LoopBodyFunc& _body, BasicBlock* _pMergeBlock, const Flag<spv::LoopControlMask> _mask)
+	inline BasicBlock& BasicBlock::Loop(ConditionFunc _condition, ContinueFunc _continue, LoopBodyFunc _body, BasicBlock* _pMergeBlock, const Flag<spv::LoopControlMask> _mask)
 	{
 		static_assert(traits::is_invocable_v<ConditionFunc, BasicBlock&>, "ConditionFunc _condition is not invocable: _condition(BasicBlock& condBB)");
 		static_assert(traits::is_invocable_v<ContinueFunc, BasicBlock&>, "ContinueFunc _continue is not invocable: _continue(BasicBlock& continueBB)");

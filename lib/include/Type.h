@@ -380,7 +380,7 @@ namespace spvgentwo
 
 	template <class T, class ...Elems>
 	auto make_vector(T&& val, Elems&& ... _elements) {
-		return const_vector_t<remove_cvref_t<T>, 1 + sizeof...(_elements)>{stdrep::forward<T>(val), stdrep::forward<Elems>(_elements)...};
+		return const_vector_t<traits::remove_cvref_t<T>, 1 + sizeof...(_elements)>{stdrep::forward<T>(val), stdrep::forward<Elems>(_elements)...};
 	};
 
 	template <class T, unsigned int _Columns, unsigned int _Rows>
@@ -402,7 +402,7 @@ namespace spvgentwo
 
 	template <class T, unsigned int Rows, class ...Columns>
 	auto make_matrix(const_vector_t<T, Rows> col0, Columns ... _columns) {
-		return const_matrix_t<remove_cvref_t<T>, 1 + sizeof...(_columns), Rows>{col0, _columns...};
+		return const_matrix_t<traits::remove_cvref_t<T>, 1 + sizeof...(_columns), Rows>{col0, _columns...};
 	};
 
 	template <class T, unsigned int N>
@@ -423,7 +423,7 @@ namespace spvgentwo
 
 	template <class T, class ...Elems>
 	auto make_array(T&& val, Elems&& ... _elements) {
-		return const_array_t<remove_cvref_t<T>, 1 + sizeof...(_elements)>{stdrep::forward<T>(val), stdrep::forward<Elems>(_elements)...};
+		return const_array_t<traits::remove_cvref_t<T>, 1 + sizeof...(_elements)>{stdrep::forward<T>(val), stdrep::forward<Elems>(_elements)...};
 	};
 #pragma endregion
 

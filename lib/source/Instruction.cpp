@@ -88,7 +88,7 @@ unsigned int spvgentwo::Instruction::getWordCount() const
 
 unsigned int spvgentwo::Instruction::getOpCode() const
 {
-	return (unsigned int (m_Operation) & spv::OpCodeMask) | (getWordCount() << spv::WordCountShift);
+	return ((unsigned int )m_Operation & spv::OpCodeMask) | (getWordCount() << spv::WordCountShift);
 }
 
 spv::Id spvgentwo::Instruction::getResultId() const

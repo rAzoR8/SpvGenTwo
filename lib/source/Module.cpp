@@ -175,7 +175,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 	case spv::Op::OpTypeNamedBarrier:
 		break; // nothing to do
 	case spv::Op::OpTypeInt:
-		pInstr->appendLiterals(_type.getIntWidth(), unsigned int (_type.getIntSign()));
+		pInstr->appendLiterals(_type.getIntWidth(), (unsigned int) _type.getIntSign());
 		break;
 	case spv::Op::OpTypeFloat:
 		pInstr->appendLiterals(_type.getFloatWidth());

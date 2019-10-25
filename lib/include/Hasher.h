@@ -5,7 +5,7 @@
 namespace spvgentwo
 {
 	template <class Key>
-	class Hasher;
+	struct Hasher;
 
 	template<> struct Hasher<bool> { Hash64 operator()(const bool data) const noexcept { return FNV1aHasher(data); } };
 	template<> struct Hasher<char> { Hash64 operator()(const char data) const noexcept { return FNV1aHasher(data); } };
