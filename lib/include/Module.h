@@ -13,7 +13,7 @@ namespace spvgentwo
 		Module(IAllocator* _pAllocator, ILogger* _pLogger = nullptr);
 		~Module();
 
-		static constexpr unsigned int GeneratorId = makeGeneratorId('fa', 0);
+		static constexpr unsigned int GeneratorId = makeGeneratorId(0xfa, 0);
 
 		void log(const LogLevel _level, const char* _pMsg);
 		void logDebug(const char* _pMsg) { log(LogLevel::Debug, _pMsg); }
