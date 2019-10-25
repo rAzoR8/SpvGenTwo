@@ -80,7 +80,7 @@ void spvgentwo::ConsoleLogger::log(const LogLevel _level, const char* _pMsg)
 		break;
 	}
 
-	printf(_pMsg);
+	printf("%s", _pMsg);
 	printf("\n");
 }
 

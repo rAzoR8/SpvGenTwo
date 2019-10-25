@@ -539,7 +539,7 @@ namespace spvgentwo
 		}
 		else if constexpr (is_array_v<T>)
 		{
-			Array(T::Elements).Member().make<typename T::array_element_type>();
+			Array(T::Elements).Member().template make<typename T::array_element_type>();
 		}
 		else if constexpr (is_const_array_v<T>)
 		{
@@ -547,7 +547,7 @@ namespace spvgentwo
 		}
 		else if constexpr (is_vector_v<T>)
 		{
-			Vector(T::Elements).Member().make<typename T::vec_element_type>();
+			Vector(T::Elements).Member().template make<typename T::vec_element_type>();
 		}
 		else if constexpr (is_const_vector_v<T>)
 		{
@@ -555,7 +555,7 @@ namespace spvgentwo
 		}
 		else if constexpr(is_matrix_v<T>)
 		{
-			Matrix(T::Columns).Member().make<typename T::mat_column_type>();
+			Matrix(T::Columns).Member().template make<typename T::mat_column_type>();
 		}
 		else if constexpr (is_const_matrix_v<T>)
 		{

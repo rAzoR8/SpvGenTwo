@@ -1,38 +1,39 @@
 #include "Type.h"
 
 spvgentwo::Type::Type(IAllocator* _pAllocator, Type* _pParent) :
-	m_subTypes(_pAllocator),
-	m_pParent(_pParent)
+	m_pParent(_pParent),
+	m_subTypes(_pAllocator)
 {
 }
 
 spvgentwo::Type::Type(IAllocator* _pAllocator, const Type& _subType, const spv::Op _baseType) :
-	m_subTypes(_pAllocator),
+	m_Type(_baseType),
 	m_pParent(nullptr),
-	m_Type(_baseType)
+	m_subTypes(_pAllocator)
 {
 	m_subTypes.emplace_back(_subType);
 }
 
 spvgentwo::Type::Type(IAllocator* _pAllocator, Type&& _subType, const spv::Op _baseType) :
-	m_subTypes(_pAllocator),
+	m_Type(_baseType),
 	m_pParent(nullptr),
-	m_Type(_baseType)
+	m_subTypes(_pAllocator)
 {
 	m_subTypes.emplace_back(stdrep::move(_subType));
 }
 
 spvgentwo::Type::Type(Type&& _other) noexcept:
-	m_subTypes(stdrep::move(_other.m_subTypes)),
-	m_IntSign(_other.m_IntSign),
+	m_Type(_other.m_Type),
 	m_IntWidth(_other.m_IntWidth),
+	m_IntSign(_other.m_IntSign),
+	m_StorageClass(_other.m_StorageClass),
 	m_ImgDimension(_other.m_ImgDimension),
 	m_ImgArray(_other.m_ImgArray),
 	m_ImgMultiSampled(_other.m_ImgMultiSampled),
 	m_ImgSamplerAccess(_other.m_ImgSamplerAccess),
 	m_ImgFormat(_other.m_ImgFormat),
-	m_StorageClass(_other.m_StorageClass),
-	m_AccessQualier(_other.m_AccessQualier)
+	m_AccessQualier(_other.m_AccessQualier),
+	m_subTypes(stdrep::move(_other.m_subTypes))
 {
 	for (Type& t : m_subTypes)
 	{
@@ -41,17 +42,17 @@ spvgentwo::Type::Type(Type&& _other) noexcept:
 }
 
 spvgentwo::Type::Type(const Type& _other) : 
-	m_subTypes(_other.m_subTypes),
 	m_Type(_other.m_Type),
-	m_IntSign(_other.m_IntSign),
 	m_IntWidth(_other.m_IntWidth),
+	m_IntSign(_other.m_IntSign),
+	m_StorageClass(_other.m_StorageClass),
 	m_ImgDimension(_other.m_ImgDimension),
 	m_ImgArray(_other.m_ImgArray),
 	m_ImgMultiSampled(_other.m_ImgMultiSampled),
 	m_ImgSamplerAccess(_other.m_ImgSamplerAccess),
 	m_ImgFormat(_other.m_ImgFormat),
-	m_StorageClass(_other.m_StorageClass),
-	m_AccessQualier(_other.m_AccessQualier)
+	m_AccessQualier(_other.m_AccessQualier),
+	m_subTypes(_other.m_subTypes)
 {
 	for (Type& t : m_subTypes)
 	{

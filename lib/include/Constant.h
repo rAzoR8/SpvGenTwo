@@ -35,8 +35,8 @@ namespace spvgentwo
 		spv::Op m_Operation = spv::Op::OpConstantNull;
 		Type m_Type;
 
-		List<unsigned int> m_literalData;
 		List<Constant> m_Components;
+		List<unsigned int> m_literalData;
 	};
 
 	template <class T>

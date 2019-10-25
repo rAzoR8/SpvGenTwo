@@ -19,6 +19,7 @@ namespace spvgentwo
 		// OpFunction 
 		Instruction* getFunction() { return &m_Function; }
 		Instruction* getReturnType() { return m_pReturnType; }
+		Instruction* getFunctionType() { return m_pFunctionType; }
 
 		Module* getModule() { return m_pModule; }
 		const Module* getModule() const { return m_pModule; }

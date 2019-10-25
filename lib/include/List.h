@@ -110,10 +110,10 @@ namespace spvgentwo
 
 	template<class T>
 	inline List<T>::List(List&& _other) noexcept:
-		m_pAllocator(_other.m_pAllocator),
 		m_pBegin(_other.m_pBegin),
 		m_pLast(_other.m_pLast),
-		m_Elements(_other.m_Elements)
+		m_Elements(_other.m_Elements),
+		m_pAllocator(_other.m_pAllocator)
 	{
 		_other.m_pAllocator = nullptr;
 		_other.m_pBegin = nullptr;

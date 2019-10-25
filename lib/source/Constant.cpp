@@ -3,17 +3,17 @@
 
 spvgentwo::Constant::Constant(IAllocator* _pAllocator, Constant* _pParent) : 
 	m_pParent(_pParent),
+	m_Type(_pAllocator),
 	m_Components(_pAllocator),
-	m_literalData(_pAllocator),
-	m_Type(_pAllocator)
+	m_literalData(_pAllocator)
 {
 }
 
 spvgentwo::Constant::Constant(const Constant& _other) :
 	m_Operation(_other.m_Operation),
+	m_Type(_other.m_Type),
 	m_Components(_other.m_Components),
-	m_literalData(_other.m_literalData),
-	m_Type(_other.m_Type)
+	m_literalData(_other.m_literalData)
 {
 	for(Constant& comp : m_Components)
 	{
@@ -23,9 +23,9 @@ spvgentwo::Constant::Constant(const Constant& _other) :
 
 spvgentwo::Constant::Constant(Constant&& _other) noexcept:
 	m_Operation(stdrep::move(_other.m_Operation)),
+	m_Type(stdrep::move(_other.m_Type)),
 	m_Components(stdrep::move(_other.m_Components)),
-	m_literalData(stdrep::move(_other.m_literalData)),
-	m_Type(stdrep::move(_other.m_Type))
+	m_literalData(stdrep::move(_other.m_literalData))
 {
 	for (Constant& comp : m_Components)
 	{
