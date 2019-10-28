@@ -23,7 +23,7 @@ namespace spvgentwo
 		template <class ...Args>
 		Instruction(BasicBlock* _pBasicBlock, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
 
-		~Instruction();
+		virtual ~Instruction();
 
 		Module* getModule();
 		const Module* getModule() const;
@@ -100,6 +100,9 @@ namespace spvgentwo
 
 		template <class ...Operands>
 		Instruction* opExtInst(Instruction* _pResultType, Instruction* _pExtensionId, unsigned int _instOpCode, Operands ... _operands);
+
+		template <class ...Operands>
+		Instruction* opExtInst(Instruction* _pResultType, const char* _pExtName, unsigned int _instOpCode, Operands ... _operands);
 
 		Instruction* opLabel();
 
@@ -274,6 +277,13 @@ namespace spvgentwo
 	inline Instruction* Instruction::opExtInst(Instruction* _pResultType, Instruction* _pExtensionId, unsigned int _instOpCode, Operands ..._operands)
 	{
 		return makeOpEx(spv::Op::OpExtInst, _pResultType, InvalidId, _pExtensionId, literal_t{ _instOpCode }, _operands...);
+	}
+
+	template<class ...Operands>
+	inline Instruction* Instruction::opExtInst(Instruction* _pResultType, const char* _pExtName, unsigned int _instOpCode, Operands ..._operands)
+	{
+		Instruction* _pExtImport = getModule()->getExtensionInstructionImport(_pExtName);
+		return makeOpEx(spv::Op::OpExtInst, _pResultType, InvalidId, _pExtImport, literal_t{ _instOpCode }, _operands...);
 	}
 
 	template<class ...ArgInstr>

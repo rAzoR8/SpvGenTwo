@@ -208,12 +208,13 @@ namespace spvgentwo
 
 		bool isScalar() const { return isInt() || isFloat(); }
 
-		bool isVectorOf(const spv::Op _type) const { return isVector() && front().getType() == _type; }
-		bool isVectorOfInt() const { return isVector() && front().isInt(); }
-		bool isVectorOfSInt() const { return isVector() && front().isSInt(); }
-		bool isVectorOfUInt() const { return isVector() && front().isUInt(); }
-		bool isVectorOfFloat() const { return isVector() && front().isFloat(); }
-		bool isVectorOfScalar() const { return isVector() && front().isScalar(); }
+		bool isVectorOf(const spv::Op _type, const unsigned int _length = 0u) const { return isVector() && front().getType() == _type && (_length == 0u || m_VecComponentCount == _length); }
+		bool isVectorOfLength(const unsigned int _length) const { return isVector() && (_length == 0u || m_VecComponentCount == _length); }
+		bool isVectorOfInt(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isInt(); }
+		bool isVectorOfSInt(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isSInt(); }
+		bool isVectorOfUInt(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isUInt(); }
+		bool isVectorOfFloat(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isFloat(); }
+		bool isVectorOfScalar(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isScalar(); }
 
 		bool isScalarOrVectorOf(const spv::Op _type) const { return m_Type == _type || isVectorOf(_type); }
 		bool hasSameVectorLength(const Type& _other) const { return isVector() && _other.isVector() && m_VecComponentCount == _other.m_VecComponentCount; }
