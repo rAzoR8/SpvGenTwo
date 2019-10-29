@@ -116,6 +116,8 @@ int main(int argc, char* argv[])
 		Instruction* cross = bb.ext<GLSL>()->opCross(uniVec, uniVec);
 		bb->opDot(cross, uniVec);
 
+		bb->opOuterProduct(uniVec, uniVec);
+
 		Instruction* uniformComp = bb->opAccessChain(uniformVar, 0u);
 		Instruction* uniX = bb->opLoad(uniformComp);
 

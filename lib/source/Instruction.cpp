@@ -329,6 +329,24 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResult
 	}
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLeft, Instruction* _pRight)
+{
+	Instruction* _pLeftTypeInstr = _pLeft->getTypeInst();
+	Instruction* _pRightTypeInstr = _pRight->getTypeInst();
+
+	const Type* pLeftType = _pLeftTypeInstr->getType();
+	const Type* pRightType = _pLeftTypeInstr->getType();
+
+	if (pLeftType->isVectorOfFloat() && pRightType->isVectorOfFloat() && pLeftType->hasSameBase(*pRightType))
+	{
+		return makeOp(spv::Op::OpOuterProduct, _pLeft, _pRight);
+	}
+
+	getModule()->logError("Operands of opOuterProduct are not scalar vector of length 3");
+
+	return nullptr;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opDot(Instruction* _pLeft, Instruction* _pRight)
 {
 	Instruction* _pLeftTypeInstr = _pLeft->getTypeInst();
