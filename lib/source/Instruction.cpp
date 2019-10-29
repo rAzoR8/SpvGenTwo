@@ -328,3 +328,19 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResult
 		return makeOpEx(spv::Op::OpVariable, _pResultType, InvalidId, _storageClass, _pInitializer);
 	}
 }
+
+spvgentwo::Instruction* spvgentwo::Instruction::opDot(Instruction* _pLeft, Instruction* _pRight)
+{
+	Instruction* _pLeftTypeInstr = _pLeft->getTypeInst();
+	Instruction* _pRightTypeInstr = _pRight->getTypeInst();
+
+	const Type* pType = _pLeftTypeInstr->getType();
+	if (_pLeftTypeInstr == _pRightTypeInstr && pType->isVectorOfFloat())
+	{
+		return makeOp(spv::Op::OpDot, _pLeft, _pRight);
+	}
+
+	getModule()->logError("Operands of opDot are not scalar vector of length 3");
+
+	return nullptr;
+}

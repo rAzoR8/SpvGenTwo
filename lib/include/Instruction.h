@@ -173,6 +173,8 @@ namespace spvgentwo
 		template <class ... Operands>
 		void opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<MemoryOperands> _memOperands = MemoryOperands::None, Operands ... _operands);
 
+		Instruction* opDot(Instruction* _pLeft, Instruction* _pRight);
+
 	private:
 		void resolveId(spv::Id& _resultId);
 
