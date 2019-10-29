@@ -4,7 +4,7 @@
 
 namespace spvgentwo
 {
-	class GLSL450Intruction : public Instruction
+	class GLSL450Intruction : protected Instruction
 	{
 	public:
 		using Instruction::Instruction;
@@ -14,4 +14,10 @@ namespace spvgentwo
 		Instruction* opCross(Instruction* _pLeft, Instruction* _pRight);
 
 	};
+
+	// namespace for shortening extension names
+	namespace ext
+	{
+		using GLSL = GLSL450Intruction;
+	} // !ext
 } // !spvgentwo

@@ -4,9 +4,11 @@
 #include <stdio.h>
 #include <cstdlib>
 #include "Operators.h"
+#include "GLSL450Instruction.h"
 
 using namespace spvgentwo;
 using namespace ops;
+using namespace ext;
 
 void* HeapAllocator::allocate(const size_t _bytes, const unsigned int _aligment) 
 {
@@ -108,6 +110,10 @@ int main(int argc, char* argv[])
 		Instruction* y = funcAdd.getParameter(1);
 
 		Instruction* z = bb.Add(x, y);
+
+		Instruction* uniVec = bb->opLoad(uniformVar);
+
+		bb.ext<GLSL>()->opCross(uniVec, uniVec);
 
 		Instruction* uniformComp = bb->opAccessChain(uniformVar, 0u);
 		Instruction* uniX = bb->opLoad(uniformComp);

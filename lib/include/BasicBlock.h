@@ -34,6 +34,9 @@ namespace spvgentwo
 
 		Instruction* operator->() { return &emplace_back(this); }
 
+		template <class ExtInstr>
+		ExtInstr* ext() { return reinterpret_cast<ExtInstr*>(addInstruction()); }
+
 		// set return value of this block (used in function), returns opReturn/opReturnValue instruction
 		Instruction* returnValue(Instruction* _pValue = nullptr);
 
