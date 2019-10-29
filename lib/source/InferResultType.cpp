@@ -170,6 +170,8 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 		break;
 	}
 
+	_module.logError("Could not infer result type for operation");
+
 	return nullptr;
 }
 
