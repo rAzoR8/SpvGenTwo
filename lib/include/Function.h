@@ -26,6 +26,11 @@ namespace spvgentwo
 
 		BasicBlock& addBasicBlock() { return emplace_back(this); }
 
+		// return entry bb (avoid confusion when adding a BB to this function and instructions are "magically" added to the last BB if using m_pLast
+		BasicBlock& operator->() { return m_pBegin->inner(); }
+		operator BasicBlock& () {return m_pBegin->inner();}
+		BasicBlock& operator*() { return m_pBegin->inner(); }
+
 		Instruction* getParameter(unsigned int _index);
 
 		void write(IWriter* _pWriter, spv::Id& _resultId);		

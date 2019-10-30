@@ -26,10 +26,10 @@ namespace spvgentwo
 		const IAllocator* getAllocator() const { return m_pAllocator; }
 
 		template <class ReturnType = void, class ... ParameterTypes>
-		Function& addFunction(const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone);
+		Function& addFunction(const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
 
 		template <class ReturnType = void, class ... ParameterTypes>
-		EntryPoint& addEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone);
+		EntryPoint& addEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
 
 		void addCapability(const spv::Capability _capability);
 		void addExtension(const char* _pExtName);
@@ -138,15 +138,29 @@ namespace spvgentwo
 	};
 
 	template<class ReturnType, class ...ParameterTypes>
-	inline Function& Module::addFunction(const Flag<spv::FunctionControlMask> _control)
+	inline Function& Module::addFunction(const Flag<spv::FunctionControlMask> _control, const bool _addEntryBasicBlock)
 	{
-		return m_Functions.emplace_back(this, _control, type<ReturnType>(), type<ParameterTypes>()...);
+		Function& func = m_Functions.emplace_back(this, _control, type<ReturnType>(), type<ParameterTypes>()...);
+
+		if (_addEntryBasicBlock)
+		{
+			func.addBasicBlock();		
+		}
+
+		return func;
 	}
 
 	template<class ReturnType, class ...ParameterTypes>
-	inline EntryPoint& Module::addEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control)
+	inline EntryPoint& Module::addEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control, const bool _addEntryBasicBlock)
 	{
-		return m_EntryPoints.emplace_back(this, _model, _pEntryPointName, _control, type<ReturnType>(), type<ParameterTypes>()...);
+		EntryPoint& entry = m_EntryPoints.emplace_back(this, _model, _pEntryPointName, _control, type<ReturnType>(), type<ParameterTypes>()...);
+
+		if (_addEntryBasicBlock)
+		{
+			entry.addBasicBlock();
+		}
+
+		return entry;
 	}
 
 	template<class T, class ...Props>

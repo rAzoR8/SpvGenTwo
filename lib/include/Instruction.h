@@ -81,6 +81,15 @@ namespace spvgentwo
 		template <class ...Args>
 		void appendLiterals(Args ... _args);
 
+		// storage class is Function
+		Instruction* variable(Instruction* _pPtrType, const spv::StorageClass _storageClass = spv::StorageClass::Function, Instruction* _pInitialzer = nullptr);
+
+		template <class T> // adds Pointer to type T
+		Instruction* variable(const spv::StorageClass _storageClass = spv::StorageClass::Function, Instruction* _pInitialzer = nullptr);
+
+		template <class T>
+		Instruction* variable(const T& _initialValue, const spv::StorageClass _storageClass = spv::StorageClass::Function);
+
 		void opNop();
 
 		Instruction* opUndef(Instruction* _pResultType);
@@ -275,6 +284,18 @@ namespace spvgentwo
 	inline void Instruction::appendLiterals(Args ..._args)
 	{
 		appendLiteralsToContainer(*this, _args...);
+	}
+
+	template<class T>
+	inline Instruction* Instruction::variable(const spv::StorageClass _storageClass, Instruction* _pInitialzer)
+	{
+		return variable(getModule()->type<T*>(_storageClass), _storageClass, _pInitialzer);
+	}
+
+	template<class T>
+	inline Instruction* Instruction::variable(const T& _initialValue, const spv::StorageClass _storageClass)
+	{
+		return variable<T>(_storageClass, getModule()->constant(_initialValue));
 	}
 
 	template<class ...Operands>

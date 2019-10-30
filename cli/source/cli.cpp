@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
 	// float add(float x, float y)
 	Function& funcAdd = module.addFunction<float, float, float>(spv::FunctionControlMask::Const);
 	{
-		BasicBlock& bb = funcAdd.addBasicBlock();
+		BasicBlock& bb = *funcAdd;
 
 		Instruction* x = funcAdd.getParameter(0);
 		Instruction* y = funcAdd.getParameter(1);
@@ -139,15 +139,13 @@ int main(int argc, char* argv[])
 
 	Function& loopFunc = module.addFunction<void>(spv::FunctionControlMask::Const);
 	{
-		BasicBlock& bb = loopFunc.addBasicBlock();
-
 		Instruction* one = module.constant(1);
 		Instruction* loopCount = module.constant(10);
-		Instruction* varI = bb.variable<int>(0);
-		Instruction* varSum = bb.variable<float>(1.1f);
+		Instruction* varI = loopFunc->variable<int>(0);
+		Instruction* varSum = loopFunc->variable<float>(1.1f);
 
 		BasicBlock& loop = loopFunc.addBasicBlock();
-		bb->opBranch(&loop);
+		loopFunc->opBranch(&loop);
 
 		BasicBlock& merge = loop.Loop([&](BasicBlock& cond)
 		{
@@ -172,14 +170,11 @@ int main(int argc, char* argv[])
 		//merge.returnValue(funcAdd.getFunction());
 	}
 
-	// void entryPoint();	
-	EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Vertex, "main");
-
+	// void entryPoint();
 	{
-		BasicBlock& bb = entry.addBasicBlock();
-
-		bb->call(&loopFunc);
-		bb.returnValue();
+		EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Vertex, "main");
+		entry->call(&loopFunc);
+		entry->opReturn();
 	}
 
 	// test types and constants

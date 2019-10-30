@@ -62,11 +62,6 @@ void spvgentwo::BasicBlock::write(IWriter* _pWriter, spv::Id& _resultId)
 	}
 }
 
-spvgentwo::Instruction* spvgentwo::BasicBlock::variable(Instruction* _pPtrType, Instruction* _pInitialzer)
-{
-	return addInstruction()->opVariable(_pPtrType, spv::StorageClass::Function, _pInitialzer);
-}
-
 spvgentwo::BasicBlock& spvgentwo::BasicBlock::If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock* _pMergeBlock, const Flag<spv::SelectionControlMask> _mask)
 {
 	// this block has not been terminated yet

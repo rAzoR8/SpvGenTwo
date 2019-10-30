@@ -45,15 +45,6 @@ namespace spvgentwo
 
 		void write(IWriter* _pWriter, spv::Id& _resultId);
 
-		// storage class is Function
-		Instruction* variable(Instruction* _pPtrType, Instruction* _pInitialzer = nullptr);
-
-		template <class T> // adds Pointer to type T
-		Instruction* variable(Instruction* _pInitialzer = nullptr);
-
-		template <class T>
-		Instruction* variable(const T& _initialValue);
-
 		// structured if: true and false block must NOT have a terminator yet!
 		// returns last instruction of MergeBlock which creats a result
 		BasicBlock& If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::SelectionControlMask> _mask = spv::SelectionControlMask::MaskNone);
@@ -117,18 +108,6 @@ namespace spvgentwo
 
 		Function* m_pFunction = nullptr; // parent
 	};
-
-	template<class T>
-	inline Instruction* BasicBlock::variable(Instruction* _pInitialzer)
-	{
-		return variable(getModule()->type<T*>(spv::StorageClass::Function), _pInitialzer);
-	}
-
-	template<class T>
-	inline Instruction* BasicBlock::variable(const T& _initialValue)
-	{
-		return variable<T>(getModule()->constant(_initialValue));
-	}
 
 	template<class TrueFunc, class FalseFunc>
 	inline BasicBlock& BasicBlock::If(Instruction* _pCondition, TrueFunc _true, FalseFunc _false, BasicBlock* _pMergeBlock, const Flag < spv::SelectionControlMask> _mask)
