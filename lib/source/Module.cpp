@@ -289,7 +289,7 @@ void spvgentwo::Module::write(IWriter* _pWriter, const unsigned int _spvVersion)
 	//writeInstructions(_pWriter, m_ExtInstrImport, m_maxId);
 
 	// TODO: impl iterator
-	for (auto i = 0; i < m_ExtInstrImport.getBucketCount(); ++i)
+	for (unsigned int i = 0; i < m_ExtInstrImport.getBucketCount(); ++i)
 	{
 		for(auto& kv : m_ExtInstrImport.getBucket(i))
 		{

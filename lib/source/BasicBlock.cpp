@@ -75,6 +75,18 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::If(Instruction* _pCondition, Basic
 	return mergeBB;
 }
 
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock* _pMergeBlock, const Flag<spv::SelectionControlMask> _mask)
+{
+	// this block has not been terminated yet
+	BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock();
+
+	addInstruction()->opSelectionMerge(&mergeBB, _mask);
+	addInstruction()->opBranchConditional(_pCondition, &_trueBlock, &mergeBB);
+	_trueBlock->opBranch(&mergeBB);
+
+	return mergeBB;
+}
+
 spvgentwo::BasicBlock& spvgentwo::BasicBlock::Loop(Instruction* _pCondition, BasicBlock& _continue, BasicBlock& _body, BasicBlock* _pMergeBlock, const Flag<spv::LoopControlMask> _mask)
 {
 	BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock();

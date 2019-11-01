@@ -49,6 +49,9 @@ namespace spvgentwo
 		// returns last instruction of MergeBlock which creats a result
 		BasicBlock& If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::SelectionControlMask> _mask = spv::SelectionControlMask::MaskNone);
 
+		// If without else block
+		BasicBlock& If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::SelectionControlMask> _mask = spv::SelectionControlMask::MaskNone);
+		
 		// MergeBlock for selection merge is returned. If _pMergeBlock is nullptr, a new block will be added to the function
 		// Example usage:
 		
@@ -67,6 +70,9 @@ namespace spvgentwo
 
 		template <class TrueFunc, class FalseFunc>
 		BasicBlock& If(Instruction* _pCondition, TrueFunc _true, FalseFunc _false, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::SelectionControlMask> _mask = spv::SelectionControlMask::MaskNone);
+
+		template <class TrueFunc> // If without else block
+		BasicBlock& If(Instruction* _pCondition, TrueFunc _true, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::SelectionControlMask> _mask = spv::SelectionControlMask::MaskNone);
 
 		BasicBlock& Loop(Instruction* _pCondition, BasicBlock& _continue, BasicBlock& _body, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::LoopControlMask> _mask = spv::LoopControlMask::MaskNone);
 
@@ -127,6 +133,24 @@ namespace spvgentwo
 
 		trueBB->opBranch(&mergeBB);
 		falseBB->opBranch(&mergeBB);
+
+		return mergeBB;
+	}
+
+	template<class TrueFunc>
+	inline BasicBlock& BasicBlock::If(Instruction* _pCondition, TrueFunc _true, BasicBlock* _pMergeBlock, const Flag<spv::SelectionControlMask> _mask)
+	{
+		static_assert(traits::is_invocable_v<TrueFunc, BasicBlock&>, "TrueFunc _true is not invocable: _true(BasicBlock& trueBranchBB)");
+
+		BasicBlock& trueBB = m_pFunction->addBasicBlock();
+		BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock();
+
+		addInstruction()->opSelectionMerge(&mergeBB, _mask);
+		addInstruction()->opBranchConditional(_pCondition, &trueBB, &mergeBB);
+
+		_true(trueBB);
+
+		trueBB->opBranch(&mergeBB);
 
 		return mergeBB;
 	}
