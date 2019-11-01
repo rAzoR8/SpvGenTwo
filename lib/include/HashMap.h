@@ -1,7 +1,6 @@
 #pragma once
 
-#include "List.h"
-#include "Hasher.h"
+#include "HashMapIterator.h"
 
 namespace spvgentwo
 {
@@ -12,27 +11,14 @@ namespace spvgentwo
 	public:
 		static constexpr auto DefaultBucktCount = 64u;
 
-		// TODO: implement iterator
-
-		struct Node
-		{
-			template <class Key, class Value>
-			friend class HashMap;
-
-			template <class ...Args>
-			Node(Args&& ... _args) : kv{ stdrep::forward<Args>(_args)... }, hash{ 0u }{}
-
-			struct //KV
-			{
-				Key key;
-				Value value;
-			} kv;
-
-		private:
-			Hash64 hash;
-		};
-
+		using Node = NodeT<Key, Value>;
 		using Bucket = List<Node>;
+
+		using Iterator = HashMapIterator<Key, Value>;
+		using ValueType = Node;
+		using ReferenceType = Node&;
+		using PointerType = Node*;
+
 	public:
 
 		HashMap(IAllocator* _pAllocator, const unsigned int _buckets = DefaultBucktCount);
@@ -64,11 +50,15 @@ namespace spvgentwo
 		const Bucket& getBucket(const unsigned int _index) const { return m_pBuckets[_index]; }
 		unsigned int getBucketCount() const { return m_Buckets; }
 
+		Iterator begin();
+		Iterator end() { return Iterator(m_pBuckets + m_Buckets, m_pBuckets + m_Buckets, nullptr); }
+
 	private:
 		Bucket* m_pBuckets = nullptr;
 		IAllocator* m_pAllocator = nullptr;
 		unsigned int m_Buckets = 0u;
 	};
+
 	template<class Key, class Value>
 	inline HashMap<Key, Value>::HashMap(IAllocator* _pAllocator, const unsigned int _buckets) :
 		m_pAllocator(_pAllocator), m_Buckets(_buckets)
@@ -250,5 +240,19 @@ namespace spvgentwo
 		Node& n = m_pBuckets[index].emplace_back();
 		n.hash = _hash;
 		return n;
+	}
+
+	template<class Key, class Value>
+	inline typename HashMap<Key, Value>::Iterator HashMap<Key, Value>::begin()
+	{
+		for (unsigned int i = 0u; i < m_Buckets; ++i)
+		{
+			if (m_pBuckets[i].empty() == false)
+			{
+				return Iterator(m_pBuckets + i, m_pBuckets + m_Buckets, m_pBuckets[i].begin());
+			}
+		}
+
+		return end();
 	}
 } // !spvgentwo

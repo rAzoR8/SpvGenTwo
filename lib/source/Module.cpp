@@ -286,15 +286,10 @@ void spvgentwo::Module::write(IWriter* _pWriter, const unsigned int _spvVersion)
 	// write preamble
 	writeInstructions(_pWriter, m_Capabilities, m_maxId);
 	writeInstructions(_pWriter, m_Extensions, m_maxId);
-	//writeInstructions(_pWriter, m_ExtInstrImport, m_maxId);
 
-	// TODO: impl iterator
-	for (unsigned int i = 0; i < m_ExtInstrImport.getBucketCount(); ++i)
+	for (auto& [key, value] : m_ExtInstrImport)
 	{
-		for(auto& kv : m_ExtInstrImport.getBucket(i))
-		{
-			kv.kv.value.write(_pWriter, m_maxId);		
-		}
+		value.write(_pWriter, m_maxId);
 	}
 
 	m_MemoryModel.write(_pWriter, m_maxId);
