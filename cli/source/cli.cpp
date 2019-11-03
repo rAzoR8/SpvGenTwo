@@ -110,6 +110,7 @@ int main(int argc, char* argv[])
 		Instruction* y = funcAdd.getParameter(1);
 
 		Instruction* z = bb.Add(x, y);
+		z = bb.ext<GLSL>()->opRound(z);
 
 		Instruction* uniVec = bb->opLoad(uniformVar);
 
