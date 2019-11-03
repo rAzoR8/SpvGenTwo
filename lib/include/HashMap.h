@@ -19,6 +19,15 @@ namespace spvgentwo
 		using ReferenceType = Node&;
 		using PointerType = Node*;
 
+		struct Range
+		{
+			typename Bucket::Iterator m_Begin;
+			typename Bucket::Iterator m_End;
+
+			typename Bucket::Iterator begin() const { return m_Begin; }
+			typename Bucket::Iterator end() const { return m_End; }
+		};
+
 	public:
 
 		HashMap(IAllocator* _pAllocator, const unsigned int _buckets = DefaultBucktCount);
@@ -39,9 +48,12 @@ namespace spvgentwo
 		Value* get(const Hash64 _hash);
 		const Value* get(const Hash64 _hash) const;
 
+		Range getRange(const Hash64 _hash) const;
+		Range getRange(const Key& _key) const { return getRange(hash(_key)); }
+
 		//template <class U = Value, stdrep::enable_if_t<!stdrep::is_const_v<U>> = 0>
 		Value* get(const Key& _key) { return get(hash(_key)); }
-		const Value* get(const Key _key) const { return get(hash(_key)); }
+		const Value* get(const Key& _key) const { return get(hash(_key)); }
 
 		Key* findKey(const Value& _value);
 
@@ -114,6 +126,32 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
+	inline typename HashMap<Key, Value>::Range HashMap<Key, Value>::getRange(const Hash64 _hash) const
+	{
+		const auto index = _hash % m_Buckets;
+		const Bucket& bucket = m_pBuckets[index];
+
+		auto first = bucket.end();
+		auto last = first;
+
+		for (auto it = bucket.begin(); it != bucket.end(); ++it)
+		{
+			const Node& n = *it;
+			if (n.hash == _hash)
+			{
+				if (first == bucket.end())
+				{
+					first = it;
+				}
+				last = it + 1;
+			}
+			
+		}
+
+		return { first , last};
+	}
+
+	template<class Key, class Value>
 	inline const unsigned int HashMap<Key, Value>::count(const Hash64 _hash) const
 	{
 		unsigned int keys = 0u;
@@ -129,18 +167,6 @@ namespace spvgentwo
 
 		return keys;
 	}
-
-	//template<class Key, class Value>
-	//inline Value* HashMap<Key, Value>::get(const Key _key) 
-	//{
-	//	return this->get(hash(_key));
-	//}
-
-	//template<class Key, class Value>
-	//inline const Value* HashMap<Key, Value>::get(const Key _key) const
-	//{
-	//	return this->get(hash(_key));
-	//}
 
 	template<class Key, class Value>
 	inline Key* HashMap<Key, Value>::findKey(const Value& _value)
