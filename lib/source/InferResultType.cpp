@@ -150,6 +150,11 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 	case spv::Op::OpFUnordLessThanEqual:
 	case spv::Op::OpFOrdGreaterThanEqual:
 	case spv::Op::OpFUnordGreaterThanEqual:
+	case spv::Op::OpIsNan:
+	case spv::Op::OpIsInf:
+	case spv::Op::OpIsFinite:
+	case spv::Op::OpIsNormal:
+	case spv::Op::OpSignBitSet:
 	{
 		Type t(stdrep::move(_module.newType()));
 
