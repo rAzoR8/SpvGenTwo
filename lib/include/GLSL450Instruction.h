@@ -59,6 +59,7 @@ namespace spvgentwo
 		Instruction* opInverseSqrt(Instruction* _pFloat) { return scalarOrFloatVec1(extinstr::GLSLstd450::GLSLstd450InverseSqrt, _pFloat); }
 
 		Instruction* opDeterminant(Instruction* _pMatrix);
+		Instruction* opMatrixInverse(Instruction* _pMatrix);
 
 		Instruction* opCross(Instruction* _pLeft, Instruction* _pRight);
 
