@@ -31,3 +31,19 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opCross(Instruction* _pLef
 
 	return nullptr;
 }
+
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opDeterminant(Instruction* _pMatrix)
+{
+	Instruction* _pTypeInstr = _pMatrix->getTypeInst();
+	const Type* pType = _pTypeInstr->getType();
+
+	if (pType->isSqareMatrix())
+	{
+		Instruction* pResultType = getModule()->addType(pType->getBaseType());
+		return opExtInst(pResultType, ExtName, extinstr::GLSLstd450::GLSLstd450Determinant, _pMatrix);
+	}
+
+	getModule()->logError("Operand of opDeterminant is not a square matirx");
+
+	return nullptr;
+}
