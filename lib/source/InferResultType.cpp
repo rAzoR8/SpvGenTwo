@@ -155,6 +155,9 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 	case spv::Op::OpIsFinite:
 	case spv::Op::OpIsNormal:
 	case spv::Op::OpSignBitSet:
+	case spv::Op::OpLessOrGreater:
+	case spv::Op::OpOrdered:
+	case spv::Op::OpUnordered:
 	{
 		Type t(stdrep::move(_module.newType()));
 
@@ -171,6 +174,8 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 	}
 	case spv::Op::OpPhi:
 		return _pType1Inst;
+	case spv::Op::OpSelect:
+		return _pType2Inst;
 	default:
 		break;
 	}
