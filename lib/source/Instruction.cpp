@@ -367,3 +367,27 @@ spvgentwo::Instruction* spvgentwo::Instruction::opDot(Instruction* _pLeft, Instr
 
 	return nullptr;
 }
+
+spvgentwo::Instruction* spvgentwo::Instruction::opAny(Instruction* _pBoolVec)
+{
+	if (_pBoolVec->getType()->isVectorOfBool())
+	{
+		return makeOp(spv::Op::OpAny, _pBoolVec);
+	}
+
+	getModule()->logError("Operands of opAny is not a vector of bool");
+
+	return nullptr;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opAll(Instruction* _pBoolVec)
+{
+	if (_pBoolVec->getType()->isVectorOfBool())
+	{
+		return makeOp(spv::Op::OpAll, _pBoolVec);
+	}
+
+	getModule()->logError("Operands of opAll is not a vector of bool");
+
+	return nullptr;
+}

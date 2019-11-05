@@ -215,6 +215,7 @@ namespace spvgentwo
 		bool isVectorOfUInt(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isUInt(); }
 		bool isVectorOfFloat(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isFloat(); }
 		bool isVectorOfScalar(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isScalar(); }
+		bool isVectorOfBool(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isBool(); }
 
 		bool isScalarOrVectorOf(const spv::Op _type) const { return m_Type == _type || isVectorOf(_type); }
 		bool hasSameVectorLength(const Type& _other) const { return isVector() && _other.isVector() && m_VecComponentCount == _other.m_VecComponentCount; }

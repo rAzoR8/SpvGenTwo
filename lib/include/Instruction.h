@@ -186,6 +186,10 @@ namespace spvgentwo
 
 		Instruction* opDot(Instruction* _pLeft, Instruction* _pRight);
 
+		Instruction* opAny(Instruction* _pBoolVec);
+
+		Instruction* opAll(Instruction* _pBoolVec);
+
 	private:
 		void resolveId(spv::Id& _resultId);
 
