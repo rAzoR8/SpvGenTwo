@@ -391,3 +391,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAll(Instruction* _pBoolVec)
 
 	return nullptr;
 }
+
+spvgentwo::Instruction* spvgentwo::Instruction::opCopyObject(Instruction* _pObject)
+{
+	return makeOpEx(spv::Op::OpCopyObject, _pObject->getTypeInst(), InvalidId, _pObject);
+}

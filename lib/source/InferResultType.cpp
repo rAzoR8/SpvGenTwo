@@ -173,6 +173,7 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 		return _module.addType(t);
 	}
 	case spv::Op::OpPhi:
+	case spv::Op::OpCopyObject:
 		return _pType1Inst;
 	case spv::Op::OpSelect:
 		return _pType2Inst;

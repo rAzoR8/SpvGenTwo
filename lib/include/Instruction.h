@@ -196,6 +196,8 @@ namespace spvgentwo
 		template <class ... IntIndices>
 		Instruction* opCompositeInsert(Instruction* _pComposite,  Instruction* _pValue, const unsigned int _firstIndex, IntIndices ... _indices);
 
+		Instruction* opCopyObject(Instruction* _pObject);
+
 	private:
 		void resolveId(spv::Id& _resultId);
 

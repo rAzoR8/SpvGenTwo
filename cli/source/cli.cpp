@@ -121,6 +121,7 @@ int main(int argc, char* argv[])
 
 		Instruction* uniY = bb->opCompositeExtract(uniVec, 1u);
 		Instruction* insert = bb->opCompositeInsert(uniVec, z, 2u); // insert at z
+		insert = bb->opCopyObject(insert);
 
 		Instruction* uniformComp = bb->opAccessChain(uniformVar, 0u);
 		Instruction* uniX = bb->opLoad(uniformComp);
