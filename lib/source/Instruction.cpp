@@ -396,3 +396,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opCopyObject(Instruction* _pObje
 {
 	return makeOpEx(spv::Op::OpCopyObject, _pObject->getTypeInst(), InvalidId, _pObject);
 }
+
+spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatrix)
+{
+	return makeOp(spv::Op::OpTranspose, _pMatrix);
+}

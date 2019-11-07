@@ -116,6 +116,15 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 		floatType.Float(_pType1->front().getFloatWidth());
 		return _module.addType(floatType);
 	}
+	case spv::Op::OpTranspose: 
+	{
+		// Matrix must be an object of type OpTypeMatrix.
+		// The number of columnsand the column size of Matrix must be the reverse of those in Result Type.
+		// The types of the scalar components in Matrixand Result Type must be the same.
+		Type matType(stdrep::move(_module.newType()));
+		matType.MatrixColumn(_pType1->front().getVectorComponentCount()).VectorElement(_pType1->getMatrixColumnCount()) = _pType1->getBaseType();
+		return _module.addType(matType);
+	}
 	case spv::Op::OpAny:
 	case spv::Op::OpAll:
 		return _module.type<bool>();

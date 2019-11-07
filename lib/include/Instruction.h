@@ -198,6 +198,8 @@ namespace spvgentwo
 
 		Instruction* opCopyObject(Instruction* _pObject);
 
+		Instruction* opTranspose(Instruction* _pMatrix);
+
 	private:
 		void resolveId(spv::Id& _resultId);
 
