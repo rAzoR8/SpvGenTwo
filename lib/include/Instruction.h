@@ -193,6 +193,9 @@ namespace spvgentwo
 		template <class ... IntIndices>
 		Instruction* opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ... _indices);
 
+		template <class ... IntIndices>
+		Instruction* opCompositeInsert(Instruction* _pComposite,  Instruction* _pValue, const unsigned int _firstIndex, IntIndices ... _indices);
+
 	private:
 		void resolveId(spv::Id& _resultId);
 
@@ -452,6 +455,38 @@ namespace spvgentwo
 		}
 
 		pModule->logError("Invalid index sequence specified for composite type extraction");
+
+		return nullptr;
+	}
+
+	template<class ...IntIndices>
+	inline Instruction* Instruction::opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, const unsigned int _firstIndex, IntIndices ..._indices)
+	{
+		const Type* pBaseType = _pComposite->getType();
+		Module* pModule = _pComposite->getModule();
+
+		if (pBaseType->getSubTypes().empty())
+		{
+			pModule->logError("Argument of opCompositeInsert is not a composite type");
+			return nullptr;
+		}
+
+		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...);
+
+		if (it != nullptr)
+		{
+			const Type* pValueType = _pValue->getType();
+
+			if (*it == *pValueType)
+			{
+				return makeOpEx(spv::Op::OpCompositeInsert, _pComposite->getTypeInst(), InvalidId, _pValue, _pComposite, literal_t{ _firstIndex }, literal_t{ _indices }...);
+			}
+
+			pModule->logError("Value type does not match composite insertion type");
+			return nullptr;
+		}
+
+		pModule->logError("Invalid index sequence specified for composite insertion");
 
 		return nullptr;
 	}
