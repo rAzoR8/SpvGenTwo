@@ -190,6 +190,9 @@ namespace spvgentwo
 
 		Instruction* opAll(Instruction* _pBoolVec);
 
+		template <class ... IntIndices>
+		Instruction* opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ... _indices);
+
 	private:
 		void resolveId(spv::Id& _resultId);
 
@@ -426,5 +429,30 @@ namespace spvgentwo
 	inline void Instruction::opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<MemoryOperands> _memOperands, Operands ..._operands)
 	{
 		makeOpEx(spv::Op::OpStore, _pPointerToVar, _valueToStore, _memOperands.mask, _operands...);
+	}
+
+	template<class ...IntIndices>
+	inline Instruction* Instruction::opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ..._indices)
+	{
+		const Type* pBaseType = _pComposite->getType();
+		Module* pModule = _pComposite->getModule();
+
+		if (pBaseType->getSubTypes().empty())
+		{
+			pModule->logError("Argument of opCompositeExtract is not a composite type");
+			return nullptr;
+		}
+
+		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...);
+
+		if (it != nullptr)
+		{
+			Instruction* pResultType = pModule->addType(*it);
+			return makeOpEx(spv::Op::OpCompositeExtract, pResultType, InvalidId, _pComposite, literal_t{ _firstIndex }, literal_t{ _indices }...);
+		}
+
+		pModule->logError("Invalid index sequence specified for composite type extraction");
+
+		return nullptr;
 	}
 } // !spvgentwo

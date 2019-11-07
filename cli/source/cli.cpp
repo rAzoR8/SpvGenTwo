@@ -119,10 +119,12 @@ int main(int argc, char* argv[])
 
 		bb->opOuterProduct(uniVec, uniVec);
 
+		Instruction* uniY = bb->opCompositeExtract(uniVec, 1u);
+
 		Instruction* uniformComp = bb->opAccessChain(uniformVar, 0u);
 		Instruction* uniX = bb->opLoad(uniformComp);
 
-		Instruction* cond = bb.Eq(uniX);
+		Instruction* cond = bb.Eq(uniX, uniY);
 
 		Instruction* res1 = nullptr;
 		Instruction* res2 = nullptr;
