@@ -190,6 +190,9 @@ namespace spvgentwo
 
 		Instruction* opAll(Instruction* _pBoolVec);
 
+		template <class ... ConstituentInstr>
+		Instruction* opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituents, ConstituentInstr* ... _constituents);
+
 		template <class ... IntIndices>
 		Instruction* opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ... _indices);
 
@@ -436,6 +439,18 @@ namespace spvgentwo
 	inline void Instruction::opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<MemoryOperands> _memOperands, Operands ..._operands)
 	{
 		makeOpEx(spv::Op::OpStore, _pPointerToVar, _valueToStore, _memOperands.mask, _operands...);
+	}
+
+	template<class ...ConstituentInstr>
+	inline Instruction* Instruction::opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituent, ConstituentInstr* ..._constituents)
+	{
+		if (_pResultType->getType()->getSubTypes().empty())
+		{
+			getModule()->logError("Result type of opCompositeConstruct is not a composite type");
+			return nullptr;
+		}
+
+		return makeOpEx(spv::Op::OpCompositeConstruct, _pResultType, InvalidId, _pFirstConstituent, _constituents...);
 	}
 
 	template<class ...IntIndices>

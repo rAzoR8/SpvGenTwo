@@ -126,6 +126,9 @@ int main(int argc, char* argv[])
 		Instruction* mat = bb->opOuterProduct(insert, module.constant(const_vector_t<float, 4>{1.f, 2.f, 3.f, 4.f}));
 		mat = bb->opTranspose(mat);
 
+		Instruction* vecType = module.type <vector_t<float, 3>>();
+		bb->opCompositeConstruct(vecType, x, y, z);
+
 		Instruction* uniformComp = bb->opAccessChain(uniformVar, 0u);
 		Instruction* uniX = bb->opLoad(uniformComp);
 
