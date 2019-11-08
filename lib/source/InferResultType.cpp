@@ -125,6 +125,8 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 		matType.MatrixColumn(_pType1->front().getVectorComponentCount()).VectorElement(_pType1->getMatrixColumnCount()) = _pType1->getBaseType();
 		return _module.addType(matType);
 	}
+	case spv::Op::OpVectorExtractDynamic:
+		return _module.addType(_pType1->front()); 
 	case spv::Op::OpAny:
 	case spv::Op::OpAll:
 		return _module.type<bool>();
@@ -183,6 +185,7 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 	}
 	case spv::Op::OpPhi:
 	case spv::Op::OpCopyObject:
+	case spv::Op::OpVectorInsertDynamic:
 		return _pType1Inst;
 	case spv::Op::OpSelect:
 		return _pType2Inst;
