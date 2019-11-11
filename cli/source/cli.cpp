@@ -133,7 +133,8 @@ int main(int argc, char* argv[])
 		mat = bb->opTranspose(mat);
 
 		Instruction* vecType = module.type <vector_t<float, 3>>();
-		bb->opCompositeConstruct(vecType, x, y, z);
+		Instruction* newVec = bb->opCompositeConstruct(vecType, x, y, z);
+		newVec = bb->opVectorInsertDynamic(newVec, extracted, index);
 
 		Instruction* uniformComp = bb->opAccessChain(uniformVar, 0u);
 		Instruction* uniX = bb->opLoad(uniformComp);

@@ -196,6 +196,8 @@ namespace spvgentwo
 
 		Instruction* opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt);
 
+		Instruction* opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt);
+
 	private:
 		void resolveId(spv::Id& _resultId);
 
@@ -282,7 +284,6 @@ namespace spvgentwo
 		{
 			appendLiterals(_first);
 		}
-
 
 		if constexpr (sizeof...(_args) > 0u)
 		{

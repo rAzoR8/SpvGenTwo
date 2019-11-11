@@ -401,3 +401,17 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instructi
 {
 	return makeOp(spv::Op::OpVectorExtractDynamic, _pVector, _pIndexInt);
 }
+
+spvgentwo::Instruction* spvgentwo::Instruction::opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt)
+{
+	const Type* pVecType = _pVector->getType();
+
+	if (pVecType->isVector() && pVecType->front() == *_pComponent->getType())
+	{
+		return makeOp(spv::Op::OpVectorInsertDynamic, _pVector, _pComponent, _pIndexInt);
+	}
+
+	getModule()->logError("opVectorInsertDyanmic: _pVector component type does not match type of _pComponent");
+
+	return nullptr;
+}
