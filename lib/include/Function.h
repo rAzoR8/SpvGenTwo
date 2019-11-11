@@ -37,6 +37,15 @@ namespace spvgentwo
 
 		const List<Instruction>& getParameters() const { return m_Parameters; }
 
+		// storage class is Function
+		Instruction* variable(Instruction* _pPtrType, const spv::StorageClass _storageClass = spv::StorageClass::Function, Instruction* _pInitialzer = nullptr);
+
+		template <class T> // adds Pointer to type T
+		Instruction* variable(const spv::StorageClass _storageClass = spv::StorageClass::Function, Instruction* _pInitialzer = nullptr);
+
+		template <class T>
+		Instruction* variable(const T& _initialValue, const spv::StorageClass _storageClass = spv::StorageClass::Function);
+
 	private:
 		template <class ... TypeInstr>
 		void addParameters(Instruction* _pParamType, TypeInstr* ... _paramTypeInstructions);
@@ -82,4 +91,15 @@ namespace spvgentwo
 		}
 	}
 
+	template<class T>
+	inline Instruction* Function::variable(const spv::StorageClass _storageClass, Instruction* _pInitialzer)
+	{
+		return variable(getModule()->type<T*>(_storageClass), _storageClass, _pInitialzer);
+	}
+
+	template<class T>
+	inline Instruction* Function::variable(const T& _initialValue, const spv::StorageClass _storageClass)
+	{
+		return variable<T>(_storageClass, getModule()->constant(_initialValue));
+	}
 } // !spvgentwo

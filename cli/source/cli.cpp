@@ -120,6 +120,12 @@ int main(int argc, char* argv[])
 		bb->opOuterProduct(uniVec, uniVec);
 
 		Instruction* uniY = bb->opCompositeExtract(uniVec, 1u);
+		
+		Instruction* index = funcAdd.variable<int>(2);
+		index = bb->opLoad(index);
+
+		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
+
 		Instruction* insert = bb->opCompositeInsert(uniVec, z, 2u); // insert at z
 		insert = bb->opCopyObject(insert);
 
@@ -152,8 +158,8 @@ int main(int argc, char* argv[])
 	{
 		Instruction* one = module.constant(1);
 		Instruction* loopCount = module.constant(10);
-		Instruction* varI = loopFunc->variable<int>(0);
-		Instruction* varSum = loopFunc->variable<float>(1.1f);
+		Instruction* varI = loopFunc.variable<int>(0);
+		Instruction* varSum = loopFunc.variable<float>(1.1f);
 
 		BasicBlock& loop = loopFunc.addBasicBlock();
 		loopFunc->opBranch(&loop);

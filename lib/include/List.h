@@ -53,7 +53,11 @@ namespace spvgentwo
 
 		// insert new entry before this entry
 		template<class ...Args>
-		Entry<T>* insert(Iterator _pos, Args&& ..._args);
+		Entry<T>* insert_before(Iterator _pos, Args&& ..._args);
+
+		// insert new entry before this entry
+		template<class ...Args>
+		Entry<T>* insert_after(Iterator _pos, Args&& ..._args);
 
 		// removes element at pos from list, returns next element
 		Entry<T>* erase(Iterator _pos, const bool _destruct = true);
@@ -265,10 +269,18 @@ namespace spvgentwo
 
 	template<class T>
 	template<class ...Args>
-	inline Entry<T>* List<T>::insert(Iterator _pos, Args&& ..._args)
+	inline Entry<T>* List<T>::insert_before(Iterator _pos, Args&& ..._args)
 	{
 		++m_Elements;
-		return _pos.entry()->insert(m_pAllocator, stdrep::forward<Args>(_args)...);
+		return _pos.entry()->insertBefore(m_pAllocator, stdrep::forward<Args>(_args)...);
+	}
+
+	template<class T>
+	template<class ...Args>
+	inline Entry<T>* List<T>::insert_after(Iterator _pos, Args&& ..._args)
+	{
+		++m_Elements;
+		return _pos.entry()->insertAfter(m_pAllocator, stdrep::forward<Args>(_args)...);
 	}
 
 	template<class T>

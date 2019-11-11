@@ -29,7 +29,11 @@ namespace spvgentwo
 
 		// insert new entry before this entry
 		template<class ...Args>
-		Entry* insert(IAllocator* _pAlloc, Args&& ..._args);
+		Entry* insertBefore(IAllocator* _pAlloc, Args&& ..._args);
+
+		// insert new entry after this entry
+		template<class ...Args>
+		Entry* insertAfter(IAllocator* _pAlloc, Args&& ..._args);
 
 		// removes this entry from the list (and destroys it if allocator is provieded), returns next entry
 		Entry* remove(IAllocator* _pAlloc);
@@ -133,7 +137,7 @@ namespace spvgentwo
 	
 	template<class T>
 	template<class ...Args>
-	inline Entry<T>* Entry<T>::insert(IAllocator* _pAlloc, Args&& ..._args)
+	inline Entry<T>* Entry<T>::insertBefore(IAllocator* _pAlloc, Args&& ..._args)
 	{
 		Entry<T>* entry = create(_pAlloc, static_cast<Args&&>(_args)...);
 
@@ -152,6 +156,31 @@ namespace spvgentwo
 		
 		return entry;
 	}
+
+	template<class T>
+	template<class ...Args>
+	inline Entry<T>* Entry<T>::insertAfter(IAllocator* _pAlloc, Args&& ..._args)
+	{
+		Entry<T>* entry = create(_pAlloc, static_cast<Args&&>(_args)...);
+
+		if (entry == nullptr)
+		{
+			return nullptr;
+		}
+
+		entry->m_pPrev = this;
+		entry->m_pNext = m_pNext;
+
+		if (m_pNext != nullptr)
+		{
+			m_pNext->m_pPrev = entry;
+		}
+
+		m_pNext = entry;
+
+		return entry;
+	}
+
 	template<class T>
 	inline Entry<T>* Entry<T>::remove(IAllocator* _pAlloc)
 	{

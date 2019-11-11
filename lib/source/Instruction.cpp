@@ -222,11 +222,6 @@ spvgentwo::Instruction* spvgentwo::Instruction::makeOp(const spv::Op _instOp, In
 	return pInst;
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, Instruction* _pInitialzer)
-{
-	return opVariable(_pPtrType, _storageClass, _pInitialzer);
-}
-
 void spvgentwo::Instruction::opNop()
 {
 	makeOpEx(spv::Op::OpNop);
@@ -400,4 +395,9 @@ spvgentwo::Instruction* spvgentwo::Instruction::opCopyObject(Instruction* _pObje
 spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatrix)
 {
 	return makeOp(spv::Op::OpTranspose, _pMatrix);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt)
+{
+	return makeOp(spv::Op::OpVectorExtractDynamic, _pVector, _pIndexInt);
 }
