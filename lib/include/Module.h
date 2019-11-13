@@ -10,10 +10,12 @@ namespace spvgentwo
 	class Module
 	{
 	public:
-		Module(IAllocator* _pAllocator, ILogger* _pLogger = nullptr);
+		Module(const unsigned int _spvVersion, IAllocator* _pAllocator, ILogger* _pLogger = nullptr);
 		~Module();
 
 		static constexpr unsigned int GeneratorId = makeGeneratorId(0xfa, 0);
+
+		unsigned int getSpvVersion() const { return m_spvVersion; }
 
 		void log(const LogLevel _level, const char* _pMsg);
 		void logDebug(const char* _pMsg) { log(LogLevel::Debug, _pMsg); }
@@ -55,7 +57,7 @@ namespace spvgentwo
 
 		const List<Instruction>& getCapabilities() const { return m_Capabilities; }
 
-		void write(IWriter* _pWriter, const unsigned int _spvVersion = spv::Version);
+		void write(IWriter* _pWriter);
 
 		// for use with opString, opSource, opSourceContinued, opSourceExtension
 		Instruction* addSourceStringInstr();
@@ -111,6 +113,7 @@ namespace spvgentwo
 	private:
 		IAllocator* m_pAllocator = nullptr;
 		ILogger* m_pLogger = nullptr;
+		unsigned int m_spvVersion = spv::Version;
 		List<Function> m_Functions;
 		List<EntryPoint> m_EntryPoints;
 

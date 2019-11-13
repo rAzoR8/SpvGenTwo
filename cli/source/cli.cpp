@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 	ConsoleLogger log;
 	HeapAllocator alloc;
 
-	Module module(&alloc, &log);
+	Module module(spv::Version, &alloc, &log);
 
 	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::VulkanMemoryModelKHR);

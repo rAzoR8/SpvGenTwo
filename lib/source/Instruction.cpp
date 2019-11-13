@@ -415,3 +415,31 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorInsertDynamic(Instructio
 
 	return nullptr;
 }
+
+spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool, Instruction* _pTrueObj, Instruction* _pFalseObj)
+{
+	const Type* trueType = _pTrueObj->getType();
+	const Type* falseType = _pFalseObj->getType();
+	const Type* condType = _pCondBool->getType();
+
+	if (*trueType == *falseType && condType->isScalarOrVectorOf(spv::Op::OpTypeBool) && 
+		condType->getVectorComponentCount() == trueType->getVectorComponentCount())
+	{
+		// Before version1.4, results are only computed per component.
+		// Before version1.4, Result Type must be a pointer, scalar, or vector.Starting withv ersion1.4, Result Type can additionally be a composite type other than a vector.
+
+		if (trueType->isScalar() || trueType->isVector() || trueType->isPointer() ||
+			(getModule()->getSpvVersion() >= makeVersion(1u, 4u) && trueType->isComposite()))
+		{
+			return makeOpEx(spv::Op::OpSelect, _pTrueObj->getTypeInst(), InvalidId, _pCondBool, _pTrueObj, _pFalseObj);
+		}
+
+		getModule()->logError("Object arguments of opSelect are not of type Scalar|Vector|Pointer|Composite");
+
+		return nullptr;
+	}
+
+	getModule()->logError("Condition type does not match extent of object arguments");
+
+	return nullptr;
+}

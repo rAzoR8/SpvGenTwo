@@ -4,9 +4,10 @@
 #include "Writer.h"
 #include "Logger.h"
 
-spvgentwo::Module::Module(IAllocator* _pAllocator, ILogger* _pLogger) :
+spvgentwo::Module::Module(const unsigned int _spvVersion, IAllocator* _pAllocator, ILogger* _pLogger) :
 	m_pAllocator(_pAllocator),
 	m_pLogger(_pLogger),
+	m_spvVersion(_spvVersion),
 	m_Functions(_pAllocator),
 	m_EntryPoints(_pAllocator),
 	m_Capabilities(_pAllocator),
@@ -272,13 +273,13 @@ void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel,
 	m_MemoryModel.opMemoryModel(_addressModel, _memoryModel);
 }
 
-void spvgentwo::Module::write(IWriter* _pWriter, const unsigned int _spvVersion)
+void spvgentwo::Module::write(IWriter* _pWriter)
 {
 	m_maxId = 0u;
 
 	// write header
 	_pWriter->put(spv::MagicNumber);
-	_pWriter->put(_spvVersion);
+	_pWriter->put(m_spvVersion);
 	_pWriter->put(GeneratorId);
 	const long boundsPos = _pWriter->put(1024u); // bounds dummy
 	_pWriter->put(0u); // schema
@@ -297,7 +298,7 @@ void spvgentwo::Module::write(IWriter* _pWriter, const unsigned int _spvVersion)
 	// write entry points declarations
 	for (EntryPoint& ep : m_EntryPoints)
 	{
-		if(_spvVersion < makeVersion(1u, 4u))
+		if(m_spvVersion < makeVersion(1u, 4u))
 		{
 			ep.finalize(GlobalInterfaceVersion::SpirV1_3);
 		}

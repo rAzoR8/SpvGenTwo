@@ -144,7 +144,9 @@ namespace spvgentwo
 
 		// deduce parent form input variables
 		template <class ... VarInst>
-		Instruction* opPhi(Instruction* _pVar, VarInst* ... _variables);	
+		Instruction* opPhi(Instruction* _pVar, VarInst* ... _variables);
+
+		Instruction* opSelect(Instruction* _pCondBool, Instruction* _pTrueObj, Instruction* _pFalseObj);
 
 		template <class ...LoopControlParams>
 		void opLoopMerge(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ... _params);

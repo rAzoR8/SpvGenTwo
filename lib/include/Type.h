@@ -208,6 +208,9 @@ namespace spvgentwo
 
 		bool isScalar() const { return isInt() || isFloat(); }
 
+		bool isAggregate() const { return isStruct() || isArray(); }
+		bool isComposite() const { return isAggregate() || isMatrix() || isVector(); }
+
 		bool isVectorOf(const spv::Op _type, const unsigned int _length = 0u) const { return isVector() && front().getType() == _type && (_length == 0u || m_VecComponentCount == _length); }
 		bool isVectorOfLength(const unsigned int _length) const { return isVector() && (_length == 0u || m_VecComponentCount == _length); }
 		bool isVectorOfInt(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isInt(); }
