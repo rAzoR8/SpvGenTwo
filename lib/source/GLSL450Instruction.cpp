@@ -33,6 +33,21 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const ex
 	return nullptr;
 }
 
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrSIntVec1(const extinstr::GLSLstd450 _op, Instruction* _pSInt)
+{
+	Instruction* _pTypeInstr = _pSInt->getTypeInst();
+	const Type* pType = _pTypeInstr->getType();
+
+	if ((pType->isSInt() || pType->isVectorOfSInt()))
+	{
+		return opExtInst(_pTypeInstr, ExtName, _op, _pSInt);
+	}
+
+	getModule()->logError("Operands of scalarOrSInt1 opeartion are not vector or scalar of float");
+
+	return nullptr;
+}
+
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opCross(Instruction* _pLeft, Instruction* _pRight)
 {
 	Instruction* _pLeftTypeInstr = _pLeft->getTypeInst();

@@ -112,6 +112,11 @@ int main(int argc, char* argv[])
 		Instruction* atan2 = bb.ext<GLSL>()->opAtan2(y, x);
 		Instruction* pow = bb.ext<GLSL>()->opPow(atan2, y);
 
+		Instruction* intvec = module.constant(const_vector_t<int, 3>{1, -3, 2});
+
+		Instruction* signs = bb.ext<GLSL>()->opSSign(intvec);
+		Instruction* abs = bb.ext<GLSL>()->opSAbs(signs);
+
 		Instruction* z = bb.Add(x, y);
 		z = bb.ext<GLSL>()->opRound(z);
 
