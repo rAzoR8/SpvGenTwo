@@ -59,6 +59,17 @@ namespace spvgentwo
 		Instruction* opDeterminant(Instruction* _pMatrix);
 		Instruction* opMatrixInverse(Instruction* _pMatrix);
 
+		// Modf
+		// ModfStruct
+
+		Instruction* opFMin(Instruction* _pX, Instruction* _pY) { return scalarOrFloatVec2(extinstr::GLSLstd450::GLSLstd450FMin, _pX, _pY); }
+		//Instruction* opUMin(Instruction* _pX, Instruction* _pY) { return scalarOrFloatUInt2(extinstr::GLSLstd450::GLSLstd450FMin, _pX, _pY); }
+		//Instruction* opSMin(Instruction* _pX, Instruction* _pY) { return scalarOrFloatSInt2(extinstr::GLSLstd450::GLSLstd450FMin, _pX, _pY); }
+
+		Instruction* opFMax(Instruction* _pX, Instruction* _pY) { return scalarOrFloatVec2(extinstr::GLSLstd450::GLSLstd450FMax, _pX, _pY); }
+		//Instruction* opUMax(Instruction* _pX, Instruction* _pY) { return scalarOrFloatUInt2(extinstr::GLSLstd450::GLSLstd450FMin, _pX, _pY); }
+		//Instruction* opSMax(Instruction* _pX, Instruction* _pY) { return scalarOrFloatSInt2(extinstr::GLSLstd450::GLSLstd450FMin, _pX, _pY); }
+
 		Instruction* opCross(Instruction* _pLeft, Instruction* _pRight);
 
 	private:
