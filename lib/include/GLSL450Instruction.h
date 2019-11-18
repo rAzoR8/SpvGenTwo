@@ -47,8 +47,8 @@ namespace spvgentwo
 		Instruction* opAcosh(Instruction* _pFloat) { return scalarOrFloatVec1(extinstr::GLSLstd450::GLSLstd450Acosh, _pFloat, true); }
 		Instruction* opAtanh(Instruction* _pFloat) { return scalarOrFloatVec1(extinstr::GLSLstd450::GLSLstd450Atanh, _pFloat, true); }
 
-		//Instruction* opAtan2(Instruction* _pLeft, Instruction* _pRight) { return ; }
-		//Instruction* opPow(Instruction* _pX, Instruction* _pY) { return ; }
+		Instruction* opAtan2(Instruction* _pY, Instruction* _pX) { return scalarOrFloatVec2(extinstr::GLSLstd450::GLSLstd450Atan2, _pY, _pX); }
+		Instruction* opPow(Instruction* _pX, Instruction* _pY) { return scalarOrFloatVec2(extinstr::GLSLstd450::GLSLstd450Pow, _pX, _pY); }
 
 		Instruction* opExp(Instruction* _pFloat) { return scalarOrFloatVec1(extinstr::GLSLstd450::GLSLstd450Exp, _pFloat, true); }
 		Instruction* opLog(Instruction* _pFloat) { return scalarOrFloatVec1(extinstr::GLSLstd450::GLSLstd450Log, _pFloat, true); }
@@ -65,6 +65,7 @@ namespace spvgentwo
 
 	private:
 		Instruction* scalarOrFloatVec1(const extinstr::GLSLstd450 _op, Instruction* _pFloat, const bool _no64Bit = false);
+		Instruction* scalarOrFloatVec2(const extinstr::GLSLstd450 _op, Instruction* _pOp1, Instruction* _pOp2);
 	};
 
 	// namespace for shortening extension names

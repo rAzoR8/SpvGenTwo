@@ -109,6 +109,9 @@ int main(int argc, char* argv[])
 		Instruction* x = funcAdd.getParameter(0);
 		Instruction* y = funcAdd.getParameter(1);
 
+		Instruction* atan2 = bb.ext<GLSL>()->opAtan2(y, x);
+		Instruction* pow = bb.ext<GLSL>()->opPow(atan2, y);
+
 		Instruction* z = bb.Add(x, y);
 		z = bb.ext<GLSL>()->opRound(z);
 
