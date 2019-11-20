@@ -6,7 +6,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const ex
 	Instruction* _pTypeInstr = _pFloat->getTypeInst();
 	const Type* pType = _pTypeInstr->getType();
 
-	if ((pType->isFloat() || pType->isVectorOfFloat()) && (_no64Bit ? pType->getFloatWidth() <= 32u : true))
+	if ((pType->isFloat() || pType->isVectorOfFloat()) && (_no64Bit ? pType->getBaseType().getFloatWidth() <= 32u : true))
 	{
 		return opExtInst(_pTypeInstr, ExtName, _op, _pFloat);
 	}
@@ -23,7 +23,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const ex
 	const Type* leftType = returnType->getType();
 	const Type* rightType = _pOp2->getType();
 
-	if (*rightType == *rightType && leftType->isScalarOrVectorOf(spv::Op::OpTypeFloat))
+	if (leftType->isScalarOrVectorOf(spv::Op::OpTypeFloat) && *rightType == *rightType)
 	{
 		return opExtInst(returnType, ExtName, _op, _pOp1, _pOp2);
 	}
@@ -33,17 +33,35 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const ex
 	return nullptr;
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrSIntVec1(const extinstr::GLSLstd450 _op, Instruction* _pSInt)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(const extinstr::GLSLstd450 _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3)
 {
-	Instruction* _pTypeInstr = _pSInt->getTypeInst();
-	const Type* pType = _pTypeInstr->getType();
+	Instruction* returnType = _pOp1->getTypeInst();
 
-	if ((pType->isSInt() || pType->isVectorOfSInt()))
+	const Type* type1 = returnType->getType();
+	const Type* type2 = _pOp2->getType();
+	const Type* type3 = _pOp3->getType();
+
+	if (type1->isScalarOrVectorOf(spv::Op::OpTypeFloat) && *type1 == *type2 && *type2 == *type3)
 	{
-		return opExtInst(_pTypeInstr, ExtName, _op, _pSInt);
+		return opExtInst(returnType, ExtName, _op, _pOp1, _pOp2, _pOp3);
 	}
 
-	getModule()->logError("Operands of scalarOrSInt1 opeartion are not vector or scalar of float");
+	getModule()->logError("Operands of scalarOrFloatVec3 opeartion are not vector or scalar of float");
+
+	return nullptr;
+}
+
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(const extinstr::GLSLstd450 _op, Instruction* _pInt, const bool _signed)
+{
+	Instruction* _pTypeInstr = _pInt->getTypeInst();
+	const Type* pType = _pTypeInstr->getType();
+
+	if (pType->isScalarOrVectorOf(spv::Op::OpTypeInt) && _signed == pType->getBaseType().getIntSign())
+	{
+		return opExtInst(_pTypeInstr, ExtName, _op, _pInt);
+	}
+
+	getModule()->logError("Operands of scalarOrInt1 opeartion are not vector or scalar of int");
 
 	return nullptr;
 }
@@ -55,12 +73,30 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(const exti
 	const Type* leftType = returnType->getType();
 	const Type* rightType = _pOp2->getType();
 
-	if (*rightType == *rightType && leftType->isScalarOrVectorOf(spv::Op::OpTypeInt) && _signed == leftType->getIntSign())
+	if (leftType->isScalarOrVectorOf(spv::Op::OpTypeInt) && _signed == leftType->getBaseType().getIntSign()  && *rightType == *rightType)
 	{
 		return opExtInst(returnType, ExtName, _op, _pOp1, _pOp2);
 	}
 
-	getModule()->logError("Operands of scalarOrIntVec2 opeartion are not vector or scalar of float");
+	getModule()->logError("Operands of scalarOrIntVec2 opeartion are not vector or scalar of int");
+
+	return nullptr;
+}
+
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(const extinstr::GLSLstd450 _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed)
+{
+	Instruction* returnType = _pOp1->getTypeInst();
+
+	const Type* type1 = returnType->getType();
+	const Type* type2 = _pOp2->getType();
+	const Type* type3 = _pOp3->getType();
+
+	if (type1->isScalarOrVectorOf(spv::Op::OpTypeInt) && _signed == type1->getBaseType().getIntSign() && *type1 == *type2 && *type2 == *type3)
+	{
+		return opExtInst(returnType, ExtName, _op, _pOp1, _pOp2, _pOp3);
+	}
+
+	getModule()->logError("Operands of scalarOrIntVec3 opeartion are not vector or scalar of int");
 
 	return nullptr;
 }
