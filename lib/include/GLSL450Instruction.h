@@ -63,12 +63,12 @@ namespace spvgentwo
 		// ModfStruct
 
 		Instruction* opFMin(Instruction* _pX, Instruction* _pY) { return scalarOrFloatVec2(extinstr::GLSLstd450::GLSLstd450FMin, _pX, _pY); }
-		//Instruction* opUMin(Instruction* _pX, Instruction* _pY) { return scalarOrFloatUInt2(extinstr::GLSLstd450::GLSLstd450FMin, _pX, _pY); }
-		//Instruction* opSMin(Instruction* _pX, Instruction* _pY) { return scalarOrFloatSInt2(extinstr::GLSLstd450::GLSLstd450FMin, _pX, _pY); }
+		Instruction* opUMin(Instruction* _pX, Instruction* _pY) { return scalarOrIntVec2(extinstr::GLSLstd450::GLSLstd450UMin, _pX, _pY, false); }
+		Instruction* opSMin(Instruction* _pX, Instruction* _pY) { return scalarOrIntVec2(extinstr::GLSLstd450::GLSLstd450SMin, _pX, _pY, true); }
 
 		Instruction* opFMax(Instruction* _pX, Instruction* _pY) { return scalarOrFloatVec2(extinstr::GLSLstd450::GLSLstd450FMax, _pX, _pY); }
-		//Instruction* opUMax(Instruction* _pX, Instruction* _pY) { return scalarOrFloatUInt2(extinstr::GLSLstd450::GLSLstd450FMin, _pX, _pY); }
-		//Instruction* opSMax(Instruction* _pX, Instruction* _pY) { return scalarOrFloatSInt2(extinstr::GLSLstd450::GLSLstd450FMin, _pX, _pY); }
+		Instruction* opUMax(Instruction* _pX, Instruction* _pY) { return scalarOrIntVec2(extinstr::GLSLstd450::GLSLstd450UMax, _pX, _pY, false); }
+		Instruction* opSMax(Instruction* _pX, Instruction* _pY) { return scalarOrIntVec2(extinstr::GLSLstd450::GLSLstd450SMax, _pX, _pY, true); }
 
 		Instruction* opCross(Instruction* _pLeft, Instruction* _pRight);
 
@@ -77,7 +77,7 @@ namespace spvgentwo
 		Instruction* scalarOrFloatVec2(const extinstr::GLSLstd450 _op, Instruction* _pOp1, Instruction* _pOp2);
 
 		Instruction* scalarOrSIntVec1(const extinstr::GLSLstd450 _op, Instruction* _pSInt);
-
+		Instruction* scalarOrIntVec2(const extinstr::GLSLstd450 _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed);
 	};
 
 	// namespace for shortening extension names

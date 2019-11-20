@@ -116,6 +116,7 @@ int main(int argc, char* argv[])
 
 		Instruction* signs = bb.ext<GLSL>()->opSSign(intvec);
 		Instruction* abs = bb.ext<GLSL>()->opSAbs(signs);
+		Instruction* smin = bb.ext<GLSL>()->opSMin(abs, signs);
 
 		Instruction* z = bb.Add(x, y);
 		z = bb.ext<GLSL>()->opRound(z);
