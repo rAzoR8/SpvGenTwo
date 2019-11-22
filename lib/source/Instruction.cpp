@@ -127,11 +127,11 @@ void spvgentwo::Instruction::resolveId(spv::Id& _resultId)
 	bool resultId = false, resultType = false;
 	spv::HasResultAndType(m_Operation, &resultId, &resultType);
 
-	if (resultId == false /*|| empty()*/)
+	if (resultId == false)
 		return;
 
 	auto it = begin();
-	if (resultType /*&& size() > 1u*/) // skip resultType operand 
+	if (resultType) // skip resultType operand 
 	{
 		++it;
 	}
@@ -144,7 +144,7 @@ void spvgentwo::Instruction::resolveId(spv::Id& _resultId)
 
 spvgentwo::Instruction* spvgentwo::Instruction::getTypeInst() const
 {
-	if (hasResultType()/* && empty() == false*/)
+	if (hasResultType())
 	{
 		return front().getInstruction();
 	}
@@ -441,5 +441,20 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 
 	getModule()->logError("Condition type does not match extent of object arguments");
 
+	return nullptr;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pImage, Instruction* _pSampler)
+{
+	const Type* imageType = _pImage->getType();
+	const Type* samplerType = _pSampler->getType();
+
+	if (imageType->isImage() && samplerType->isSampler() && imageType->getImageSamplerAccess() != SamplerImageAccess::Storage && imageType->getImageDimension() != spv::Dim::SubpassData)
+	{
+		return makeOp(spv::Op::OpSampledImage, _pImage, _pSampler);
+	}
+
+	getModule()->logError("Image or sampler type does not match (storage / subpass image not allowed");
+	
 	return nullptr;
 }

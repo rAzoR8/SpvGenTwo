@@ -253,8 +253,14 @@ spvgentwo::Type& spvgentwo::Type::Pointer(const spv::StorageClass _storageClass)
 
 spvgentwo::Type& spvgentwo::Type::ForwardPointer(const spv::StorageClass _storageClass)
 {
-	m_Type = spv::Op::OpTypePointer;
+	m_Type = spv::Op::OpTypeForwardPointer;
 	m_StorageClass = _storageClass;
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::Sampler()
+{
+	m_Type = spv::Op::OpTypeSampler;
 	return *this;
 }
 
@@ -372,9 +378,9 @@ spvgentwo::Type& spvgentwo::Type::Top()
 	}
 }
 
-spvgentwo::Type spvgentwo::Type::wrap(const spv::Op _baseType)
+spvgentwo::Type spvgentwo::Type::wrap(const spv::Op _baseType) const
 {
-	 return Type(m_subTypes.getAllocator(), *this, _baseType);
+	 return Type(const_cast<IAllocator*>(m_subTypes.getAllocator()), *this, _baseType);
 }
 
 spvgentwo::Type spvgentwo::Type::moveWrap(const spv::Op _baseType)

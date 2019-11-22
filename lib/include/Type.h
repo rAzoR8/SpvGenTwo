@@ -191,6 +191,7 @@ namespace spvgentwo
 		bool isVoid() const { return m_Type == spv::Op::OpTypeVoid; }
 		bool isBool() const { return m_Type == spv::Op::OpTypeBool;	}
 		bool isPointer() const { return m_Type == spv::Op::OpTypePointer; }
+		bool isForwardPointer() const { return m_Type == spv::Op::OpTypeForwardPointer; }
 		bool isStruct() const { return m_Type == spv::Op::OpTypeStruct; }
 		bool isArray() const { return m_Type == spv::Op::OpTypeArray; }
 		bool isImage() const { return m_Type == spv::Op::OpTypeImage; }
@@ -232,7 +233,7 @@ namespace spvgentwo
 		List<Type>::Iterator getSubType(const unsigned int _i, Indices... _indices) const;
 
 		// wraps a copy of this type in a new type of _baseType
-		Type wrap(const spv::Op _baseType);
+		Type wrap(const spv::Op _baseType) const;
 
 		// moves this into wrap type of _baseType
 		Type moveWrap(const spv::Op _baseType);

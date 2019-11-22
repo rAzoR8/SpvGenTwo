@@ -200,6 +200,8 @@ namespace spvgentwo
 
 		Instruction* opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt);
 
+		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
+
 	private:
 		void resolveId(spv::Id& _resultId);
 

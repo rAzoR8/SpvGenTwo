@@ -189,6 +189,8 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 		return _pType1Inst;
 	case spv::Op::OpSelect:
 		return _pType2Inst;
+	case spv::Op::OpSampledImage:
+		return _module.addType(_pType1->wrap(spv::Op::OpTypeSampledImage));
 	default:
 		break;
 	}
