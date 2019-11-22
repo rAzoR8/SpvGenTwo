@@ -28,8 +28,7 @@ namespace spvgentwo
 		bool operator==(const List<T>&  other) const;
 		bool operator!=(const List<T>& _other) const { return !operator==(_other); }
 
-		IAllocator* getAllocator() { return m_pAllocator; }
-		const IAllocator* getAllocator() const { return m_pAllocator; }
+		IAllocator* getAllocator()  const{ return m_pAllocator; }
 
 		void clear(); // destroy entries
 

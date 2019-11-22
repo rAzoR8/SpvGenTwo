@@ -24,8 +24,7 @@ namespace spvgentwo
 		void logError(const char* _pMsg) { log(LogLevel::Error, _pMsg); }
 		void logFatal(const char* _pMsg) { log(LogLevel::Fatal, _pMsg); }
 
-		IAllocator* getAllocator() { return m_pAllocator; }
-		const IAllocator* getAllocator() const { return m_pAllocator; }
+		IAllocator* getAllocator() const { return m_pAllocator; }
 
 		template <class ReturnType = void, class ... ParameterTypes>
 		Function& addFunction(const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);

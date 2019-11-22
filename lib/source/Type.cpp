@@ -380,7 +380,7 @@ spvgentwo::Type& spvgentwo::Type::Top()
 
 spvgentwo::Type spvgentwo::Type::wrap(const spv::Op _baseType) const
 {
-	 return Type(const_cast<IAllocator*>(m_subTypes.getAllocator()), *this, _baseType);
+	 return Type(m_subTypes.getAllocator(), *this, _baseType);
 }
 
 spvgentwo::Type spvgentwo::Type::moveWrap(const spv::Op _baseType)
