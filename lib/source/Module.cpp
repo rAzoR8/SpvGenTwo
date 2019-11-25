@@ -138,6 +138,8 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 	case spv::Op::OpConstantSampler:
 	case spv::Op::OpSpecConstantOp:
 	default:
+
+		logFatal("Constant not implemented");
 		break;
 	}
 
@@ -228,6 +230,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 		}
 		break;
 	default:
+		logFatal("Type not implemented");
 		break; // unknown type
 	}
 

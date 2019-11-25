@@ -101,6 +101,12 @@ int main(int argc, char* argv[])
 
 	Instruction* uniformVar = module.uniform<vector_t<float, 3>>("u_Position");
 
+	dyn_sampled_image_t img{ module.newType<float>() };
+
+	Instruction* samplerType = module.type<dyn_sampled_image_t>(img);
+
+	//module.uniformConstant<dyn_sampled_image_t>("u_normalMap",)
+
 	// float add(float x, float y)
 	Function& funcAdd = module.addFunction<float, float, float>(spv::FunctionControlMask::Const);
 	{

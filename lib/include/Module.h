@@ -40,7 +40,7 @@ namespace spvgentwo
 		const Type* getTypeInfo(const Instruction* _pTypeInstr) const;
 
 		template <class T, class ... Props>
-		Instruction* type(Props ... _props);
+		Instruction* type(const Props& ... _props);
 
 		Instruction* compositeType(const spv::Op _Type, const List<Instruction*>& _subTypes);
 		
@@ -72,6 +72,10 @@ namespace spvgentwo
 
 		// creates new empty type using this modules allocator
 		Type newType();
+
+		// creates new type, calls make with Args using this modules allocator
+		template <class T, class ... Props>
+		Type newType(const Props& ... _props);
 
 		Constant newConstant();
 
@@ -165,8 +169,8 @@ namespace spvgentwo
 		return entry;
 	}
 
-	template<class T, class ...Props>
-	inline Instruction* Module::type(Props ... _props)
+	template<class T, class ... Props>
+	inline Instruction* Module::type(const Props& ... _props)
 	{
 		Type dummy(m_pAllocator);
 		return addType(dummy.make<T>(_props...));
@@ -206,6 +210,14 @@ namespace spvgentwo
 		{
 			compositeType(_compositeType, _types...);
 		};
+	}
+
+	template<class T, class ... Props>
+	inline Type Module::newType(const Props& ... _props)
+	{
+		Type t(m_pAllocator);
+		t.make<T>(_props...);
+		return t;
 	}
 
 	template<class T>

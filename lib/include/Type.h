@@ -9,6 +9,8 @@ namespace spvgentwo
 	// forward decls
 	class IAllocator;
 
+	struct dyn_image_t;
+
 	class Type
 	{
 	public:
@@ -82,8 +84,8 @@ namespace spvgentwo
 		spv::StorageClass getStorageClass() const { return m_StorageClass; }
 		void setStorageClass(const spv::StorageClass _storageClass) { m_StorageClass = _storageClass; }
 		
-		spv::AccessQualifier getAccessQualifier() const { return m_AccessQualier; }
-		void setAccessQualifier(const spv::AccessQualifier _access) { m_AccessQualier = _access; }
+		spv::AccessQualifier getAccessQualifier() const { return m_AccessQualifier; }
+		void setAccessQualifier(const spv::AccessQualifier _access) { m_AccessQualifier = _access; }
 
 		const List<Type>& getSubTypes() const { return m_subTypes; }
 		List<Type>& getSubTypes() { return m_subTypes; }
@@ -144,6 +146,8 @@ namespace spvgentwo
 
 		Type& SampledImage(const Type* _imageType = nullptr);
 
+		Type& SampledImage(const dyn_image_t* _imageType);
+
 		Type& Event();
 
 		Type& DeviceEvent();
@@ -182,11 +186,11 @@ namespace spvgentwo
 		Type& fundamental(const T* _typeInfo = nullptr) { static_assert(false, "incompatible type"); return *this; }
 
 		template <class T, class ... Props>
-		Type& make(Props ... _props);
+		Type& make(const Props& ... _props);
 
-		// set Properties by type: unsigned int -> Dimension etc
+		// set Properties by type: spv::Dim -> image Dimension etc
 		template <class Prop, class ...Props>
-		const Prop* setProperties(const Prop _first, Props ... _props);
+		const Prop* setProperties(const Prop& _first, const Props& ... _props);
 
 		bool isVoid() const { return m_Type == spv::Op::OpTypeVoid; }
 		bool isBool() const { return m_Type == spv::Op::OpTypeBool;	}
@@ -265,25 +269,10 @@ namespace spvgentwo
 		spv::ImageFormat m_ImgFormat = spv::ImageFormat::Unknown;
 
 		// image and pipe
-		spv::AccessQualifier m_AccessQualier = spv::AccessQualifier::Max;
+		spv::AccessQualifier m_AccessQualifier = spv::AccessQualifier::Max;
 
 		List<Type> m_subTypes;
 	};
-
-	template<class ...Indices>
-	inline List<Type>::Iterator Type::getSubType(const unsigned int _i, Indices ..._indices) const
-	{
-		auto it = m_subTypes.begin() + _i;
-		
-		if constexpr (sizeof...(_indices) > 0)
-		{
-			if (it != nullptr && it->m_subTypes.empty() == false) 
-			{
-				return it->getSubType(_indices...);
-			}
-		}
-		return it;
-	}
 
 	// opaque types
 	struct event_t {};
@@ -294,19 +283,20 @@ namespace spvgentwo
 	struct named_barrier_t {};
 
 	struct sampler_t {};
-	struct dyn_sampled_image_t { Type imageType; };
 
 	struct dyn_image_t
 	{
 		Type sampledType;
-		spv::Dim dimension = spv::Dim::Max;
+		spv::Dim dimension = spv::Dim::Dim2D;
 		unsigned int depth = 1u;
 		bool array = false;
 		bool multiSampled = false;
 		SamplerImageAccess samplerAccess = SamplerImageAccess::Unknown;
 		spv::ImageFormat format = spv::ImageFormat::Unknown;
-		spv::AccessQualifier accessQualier = spv::AccessQualifier::Max;
+		spv::AccessQualifier accessQualifier = spv::AccessQualifier::ReadOnly;
 	};
+
+	struct dyn_sampled_image_t { dyn_image_t imageType; };
 
 	struct dyn_vector_t { Type elementType; unsigned int elements; };
 	struct dyn_matrix_t { Type columnType; unsigned int columns; /*length of the row*/ };
@@ -467,8 +457,23 @@ namespace spvgentwo
 		}
 	};
 
+	template<class ...Indices>
+	inline List<Type>::Iterator Type::getSubType(const unsigned int _i, Indices ..._indices) const
+	{
+		auto it = m_subTypes.begin() + _i;
+
+		if constexpr (sizeof...(_indices) > 0)
+		{
+			if (it != nullptr && it->m_subTypes.empty() == false)
+			{
+				return it->getSubType(_indices...);
+			}
+		}
+		return it;
+	}
+
 	template<class Prop, class ...Props>
-	inline const Prop* Type::setProperties(const Prop _first, Props ..._props)
+	inline const Prop* Type::setProperties(const Prop& _first, const Props& ..._props)
 	{
 		// check for properties first
 		if constexpr (stdrep::is_same_v<Prop, spv::StorageClass>)
@@ -535,7 +540,7 @@ namespace spvgentwo
 	}
 
 	template<class T, class ...Props>
-	inline Type& Type::make(Props ..._props)
+	inline Type& Type::make(const Props& ..._props)
 	{
 		// first process types that need to be unwraped (non dynamic composite types)
 		if constexpr (stdrep::is_pointer_v<T>)
@@ -607,7 +612,7 @@ namespace spvgentwo
 		}
 		else
 		{
-			return Image(&_prop->sampledType, _prop->dimension, _prop->depth, _prop->array, _prop->multiSampled, _prop->samplerAccess, _prop->format, _prop->accessQualier);
+			return Image(&_prop->sampledType, _prop->dimension, _prop->depth, _prop->array, _prop->multiSampled, _prop->samplerAccess, _prop->format, _prop->accessQualifier);
 		}
 	}
 

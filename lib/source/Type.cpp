@@ -32,7 +32,7 @@ spvgentwo::Type::Type(Type&& _other) noexcept:
 	m_ImgMultiSampled(_other.m_ImgMultiSampled),
 	m_ImgSamplerAccess(_other.m_ImgSamplerAccess),
 	m_ImgFormat(_other.m_ImgFormat),
-	m_AccessQualier(_other.m_AccessQualier),
+	m_AccessQualifier(_other.m_AccessQualifier),
 	m_subTypes(stdrep::move(_other.m_subTypes))
 {
 	for (Type& t : m_subTypes)
@@ -51,7 +51,7 @@ spvgentwo::Type::Type(const Type& _other) :
 	m_ImgMultiSampled(_other.m_ImgMultiSampled),
 	m_ImgSamplerAccess(_other.m_ImgSamplerAccess),
 	m_ImgFormat(_other.m_ImgFormat),
-	m_AccessQualier(_other.m_AccessQualier),
+	m_AccessQualifier(_other.m_AccessQualifier),
 	m_subTypes(_other.m_subTypes)
 {
 	for (Type& t : m_subTypes)
@@ -79,7 +79,7 @@ spvgentwo::Type& spvgentwo::Type::operator=(Type&& _other) noexcept
 	m_ImgSamplerAccess = _other.m_ImgSamplerAccess;
 	m_ImgFormat = _other.m_ImgFormat;
 	m_StorageClass = _other.m_StorageClass;
-	m_AccessQualier = _other.m_AccessQualier;
+	m_AccessQualifier = _other.m_AccessQualifier;
 
 	for (Type& t : m_subTypes)
 	{
@@ -102,7 +102,7 @@ spvgentwo::Type& spvgentwo::Type::operator=(const Type& _other)
 	m_ImgSamplerAccess = _other.m_ImgSamplerAccess;
 	m_ImgFormat = _other.m_ImgFormat;
 	m_StorageClass = _other.m_StorageClass;
-	m_AccessQualier = _other.m_AccessQualier;
+	m_AccessQualifier = _other.m_AccessQualifier;
 
 	for (Type& t : m_subTypes)
 	{
@@ -124,7 +124,7 @@ bool spvgentwo::Type::operator==(const Type& _other) const
 		m_ImgSamplerAccess ==_other.m_ImgSamplerAccess &&
 		m_ImgFormat == _other.m_ImgFormat &&
 		m_StorageClass == _other.m_StorageClass &&
-		m_AccessQualier == _other.m_AccessQualier &&
+		m_AccessQualifier == _other.m_AccessQualifier &&
 		m_subTypes == _other.m_subTypes;
 }
 
@@ -279,7 +279,7 @@ spvgentwo::Type& spvgentwo::Type::Image(const Type* _pSampledType, const spv::Di
 	m_ImgMultiSampled = _multiSampled;
 	m_ImgSamplerAccess = _sampled;
 	m_ImgFormat = _format;
-	m_AccessQualier = _access;
+	m_AccessQualifier = _access;
 
 	return *this;
 }
@@ -291,6 +291,18 @@ spvgentwo::Type& spvgentwo::Type::SampledImage(const Type* _imageType)
 	if (_imageType != nullptr)
 	{
 		m_subTypes.emplace_back(*_imageType);
+	}
+
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::SampledImage(const dyn_image_t* _imageType)
+{
+	m_Type = spv::Op::OpTypeSampledImage;
+
+	if (_imageType != nullptr)
+	{
+		Member().fundamental<dyn_image_t>(_imageType);
 	}
 
 	return *this;
