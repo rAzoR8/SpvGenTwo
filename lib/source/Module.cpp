@@ -284,7 +284,7 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	_pWriter->put(spv::MagicNumber);
 	_pWriter->put(m_spvVersion);
 	_pWriter->put(GeneratorId);
-	const long boundsPos = _pWriter->put(1024u); // bounds dummy
+	const long boundsPos = _pWriter->put(1024u)  - 4u; // bounds dummy
 	_pWriter->put(0u); // schema
 
 	// write preamble
