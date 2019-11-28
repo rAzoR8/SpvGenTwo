@@ -207,6 +207,15 @@ spvgentwo::Type& spvgentwo::Type::Float(const unsigned int _bits)
 	return *this;
 }
 
+spvgentwo::Type& spvgentwo::Type::Scalar(const spv::Op _base, const unsigned int _bits, const bool _sign)
+{
+	m_Type = _base;
+	m_FloatWidth = _bits;
+	m_IntSign = _sign;
+
+	return *this;
+}
+
 spvgentwo::Type& spvgentwo::Type::Struct()
 {
 	m_Type = spv::Op::OpTypeStruct;

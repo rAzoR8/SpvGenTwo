@@ -115,6 +115,8 @@ namespace spvgentwo
 		Type& Double() { return Float(64u); };
 		Type& DoubleM() { Member().Float(44u); return *this; }
 
+		Type& Scalar(const spv::Op _base, const unsigned int _bits, const bool _sign);
+
 		// makes this a struct
 		Type& Struct();
 
@@ -283,6 +285,13 @@ namespace spvgentwo
 	struct named_barrier_t {};
 
 	struct sampler_t {};
+
+	struct dyn_scalar_t 
+	{
+		spv::Op baseType = spv::Op::OpTypeVoid; // OpTypeInt or OpTypeFloat
+		unsigned int bits = 32u; // bit width of int / float
+		bool sign = false; // integer sign
+	};
 
 	struct dyn_image_t
 	{
@@ -633,6 +642,12 @@ namespace spvgentwo
 
 	template <>
 	inline Type& Type::fundamental<named_barrier_t>(const named_barrier_t*) { return NamedBarrier(); }
+
+	template <>
+	inline Type& Type::fundamental<dyn_scalar_t>(const dyn_scalar_t* _prop)
+	{
+		return _prop == nullptr ? Void() : Scalar(_prop->baseType, _prop->bits, _prop->sign);
+	}
 
 	template <>
 	inline Type& Type::fundamental<dyn_array_t>(const dyn_array_t* _prop)
