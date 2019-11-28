@@ -9,7 +9,61 @@ namespace spvgentwo
 	// forward decls
 	class IAllocator;
 
-	struct dyn_image_t;
+#pragma region decls
+	// opaque types
+	struct event_t {};
+	struct device_event_t {};
+	struct reserve_id_t {};
+	struct queue_t {};
+	struct pipe_storage_t {};
+	struct named_barrier_t {};
+
+	struct sampler_t {};
+
+	struct dyn_scalar_t
+	{
+		spv::Op baseType = spv::Op::OpTypeVoid; // OpTypeInt or OpTypeFloat
+		unsigned int bits = 32u; // bit width of int / float
+		bool sign = false; // integer sign
+	};
+
+	struct dyn_image_t
+	{
+		dyn_scalar_t sampledType{ spv::Op::OpTypeFloat };
+		spv::Dim dimension = spv::Dim::Dim2D;
+		unsigned int depth = 1u;
+		bool array = false;
+		bool multiSampled = false;
+		SamplerImageAccess samplerAccess = SamplerImageAccess::Unknown;
+		spv::ImageFormat format = spv::ImageFormat::Unknown;
+		spv::AccessQualifier accessQualifier = spv::AccessQualifier::ReadOnly;
+	};
+
+	struct dyn_sampled_image_t { dyn_image_t imageType; };
+
+	struct dyn_vector_t { dyn_scalar_t elementType; unsigned int elements; };
+	struct dyn_matrix_t { dyn_vector_t columnType; unsigned int columns; /*length of the row*/ };
+
+	template<class T, unsigned int N>
+	struct array_t {
+		using array_element_type = T;
+		static constexpr unsigned int Elements = N;
+	};
+
+	template<class T, unsigned int N>
+	struct vector_t {
+		using vec_element_type = T;
+		static constexpr unsigned int Elements = N;
+	};
+
+	template<class T, unsigned int _Columns, unsigned int _Rows>
+	struct matrix_t {
+		using mat_column_type = vector_t<T, _Rows>;
+		using mat_row_type = vector_t<T, _Columns>;
+		static constexpr unsigned int Columns = _Columns;
+		static constexpr unsigned int Rows = _Rows;
+	};
+#pragma endregion
 
 	class Type
 	{
@@ -116,6 +170,7 @@ namespace spvgentwo
 		Type& DoubleM() { Member().Float(44u); return *this; }
 
 		Type& Scalar(const spv::Op _base, const unsigned int _bits, const bool _sign);
+		Type& Scalar(const dyn_scalar_t& _scalarType);
 
 		// makes this a struct
 		Type& Struct();
@@ -137,7 +192,7 @@ namespace spvgentwo
 		Type& Sampler();
 
 		Type& Image(
-			const Type* _pSampledType = nullptr,
+			const dyn_scalar_t _sampledType = {spv::Op::OpTypeFloat},
 			const spv::Dim _dim = spv::Dim::Dim2D,
 			const unsigned int _depth = 1u,
 			const bool _array = false,
@@ -146,9 +201,11 @@ namespace spvgentwo
 			const spv::ImageFormat _format = spv::ImageFormat::Unknown,
 			const spv::AccessQualifier _access = spv::AccessQualifier::Max);
 
-		Type& SampledImage(const Type* _imageType = nullptr);
+		Type& Image(const dyn_image_t& _imageType);
 
-		Type& SampledImage(const dyn_image_t* _imageType);
+		Type& SampledImage(const Type* _imageType = nullptr);
+		Type& SampledImage(const dyn_image_t& _imageType);
+		Type& SampledImage(const dyn_sampled_image_t& _sampledImageType) { return SampledImage(_sampledImageType.imageType); }
 
 		Type& Event();
 
@@ -163,11 +220,13 @@ namespace spvgentwo
 		Type& NamedBarrier();
 
 		Type& Vector(unsigned int _elements, const Type* _elementType = nullptr);
+		Type& Vector(const dyn_vector_t& _vectorType);
 
 		// makes this a vector type, returns element type
 		Type& VectorElement(unsigned int _elements) { Vector(_elements); return Member(); }
 
 		Type& Matrix(unsigned int _columns, const Type* _columnType = nullptr);
+		Type& Matrix(const dyn_matrix_t& _matrixType);
 
 		// makes this a matrix type, returns column type
 		Type& MatrixColumn(unsigned int _columns) { Matrix(_columns); return Member(); }
@@ -276,62 +335,9 @@ namespace spvgentwo
 		List<Type> m_subTypes;
 	};
 
-	// opaque types
-	struct event_t {};
-	struct device_event_t {};
-	struct reserve_id_t {};
-	struct queue_t {};
-	struct pipe_storage_t {};
-	struct named_barrier_t {};
-
-	struct sampler_t {};
-
-	struct dyn_scalar_t 
-	{
-		spv::Op baseType = spv::Op::OpTypeVoid; // OpTypeInt or OpTypeFloat
-		unsigned int bits = 32u; // bit width of int / float
-		bool sign = false; // integer sign
-	};
-
-	struct dyn_image_t
-	{
-		Type sampledType;
-		spv::Dim dimension = spv::Dim::Dim2D;
-		unsigned int depth = 1u;
-		bool array = false;
-		bool multiSampled = false;
-		SamplerImageAccess samplerAccess = SamplerImageAccess::Unknown;
-		spv::ImageFormat format = spv::ImageFormat::Unknown;
-		spv::AccessQualifier accessQualifier = spv::AccessQualifier::ReadOnly;
-	};
-
-	struct dyn_sampled_image_t { dyn_image_t imageType; };
-
-	struct dyn_vector_t { Type elementType; unsigned int elements; };
-	struct dyn_matrix_t { Type columnType; unsigned int columns; /*length of the row*/ };
-	
+	// more decls
 	struct dyn_array_t { Type elementType; unsigned int length; };
 	struct dyn_runtime_array_t { Type elementType; };
-
-	template<class T, unsigned int N>
-	struct array_t {
-		using array_element_type = T;
-		static constexpr unsigned int Elements = N;
-	};
-
-	template<class T, unsigned int N>
-	struct vector_t {
-		using vec_element_type = T;
-		static constexpr unsigned int Elements = N;
-	};
-
-	template<class T, unsigned int _Columns, unsigned int _Rows>
-	struct matrix_t {
-		using mat_column_type = vector_t<T, _Rows>;
-		using mat_row_type = vector_t<T, _Columns>;
-		static constexpr unsigned int Columns = _Columns;
-		static constexpr unsigned int Rows = _Rows;
-	};
 
 	template<class, class = stdrep::void_t<>>
 	struct is_array : stdrep::false_type {};
@@ -609,20 +615,13 @@ namespace spvgentwo
 	template <>
 	inline Type& Type::fundamental<dyn_sampled_image_t>(const dyn_sampled_image_t* _prop)
 	{
-		return SampledImage(_prop == nullptr ? nullptr : &_prop->imageType);
+		return  _prop == nullptr ? SampledImage(nullptr) :  SampledImage(*_prop);
 	}
 
 	template <>
 	inline Type& Type::fundamental<dyn_image_t>(const dyn_image_t* _prop)
 	{
-		if (_prop == nullptr)
-		{
-			return Image();
-		}
-		else
-		{
-			return Image(&_prop->sampledType, _prop->dimension, _prop->depth, _prop->array, _prop->multiSampled, _prop->samplerAccess, _prop->format, _prop->accessQualifier);
-		}
+		return _prop == nullptr ? Image() : Image(*_prop);
 	}
 
 	template <>
@@ -664,13 +663,13 @@ namespace spvgentwo
 	template <>
 	inline Type& Type::fundamental<dyn_vector_t>(const dyn_vector_t* _prop)
 	{
-		return _prop == nullptr ? Vector(0) : Vector(_prop->elements, &_prop->elementType);
+		return _prop == nullptr ? Vector(0) : Vector(*_prop);
 	}
 
 	template <>
 	inline Type& Type::fundamental<dyn_matrix_t>(const dyn_matrix_t* _prop)
 	{
-		return _prop == nullptr ? Matrix(0) : Matrix(_prop->columns, &_prop->columnType);
+		return _prop == nullptr ? Matrix(0) : Matrix(*_prop);
 	}
 
 	template <>

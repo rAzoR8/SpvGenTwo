@@ -216,6 +216,15 @@ spvgentwo::Type& spvgentwo::Type::Scalar(const spv::Op _base, const unsigned int
 	return *this;
 }
 
+spvgentwo::Type& spvgentwo::Type::Scalar(const dyn_scalar_t& _scalarType)
+{
+	m_Type = _scalarType.baseType;
+	m_FloatWidth = _scalarType.bits;
+	m_IntSign = _scalarType.sign;
+
+	return *this;
+}
+
 spvgentwo::Type& spvgentwo::Type::Struct()
 {
 	m_Type = spv::Op::OpTypeStruct;
@@ -273,14 +282,11 @@ spvgentwo::Type& spvgentwo::Type::Sampler()
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Image(const Type* _pSampledType, const spv::Dim _dim, const unsigned int _depth, const bool _array, const bool _multiSampled, const SamplerImageAccess _sampled, const spv::ImageFormat _format, const spv::AccessQualifier _access)
+spvgentwo::Type& spvgentwo::Type::Image(const dyn_scalar_t _sampledType, const spv::Dim _dim, const unsigned int _depth, const bool _array, const bool _multiSampled, const SamplerImageAccess _sampled, const spv::ImageFormat _format, const spv::AccessQualifier _access)
 {
 	m_Type = spv::Op::OpTypeImage;
 
-	if (_pSampledType != nullptr)
-	{
-		m_subTypes.emplace_back(*_pSampledType);
-	}
+	Member().Scalar(_sampledType.baseType, _sampledType.bits, _sampledType.sign);
 
 	m_ImgDimension = _dim;
 	m_ImgDepth = _depth;
@@ -291,6 +297,19 @@ spvgentwo::Type& spvgentwo::Type::Image(const Type* _pSampledType, const spv::Di
 	m_AccessQualifier = _access;
 
 	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::Image(const dyn_image_t& _imageType)
+{
+	return Image(
+		_imageType.sampledType,
+		_imageType.dimension,
+		_imageType.depth,
+		_imageType.array,
+		_imageType.multiSampled,
+		_imageType.samplerAccess,
+		_imageType.format,
+		_imageType.accessQualifier);
 }
 
 spvgentwo::Type& spvgentwo::Type::SampledImage(const Type* _imageType)
@@ -305,14 +324,11 @@ spvgentwo::Type& spvgentwo::Type::SampledImage(const Type* _imageType)
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::SampledImage(const dyn_image_t* _imageType)
+spvgentwo::Type& spvgentwo::Type::SampledImage(const dyn_image_t& _imageType)
 {
 	m_Type = spv::Op::OpTypeSampledImage;
 
-	if (_imageType != nullptr)
-	{
-		Member().fundamental<dyn_image_t>(_imageType);
-	}
+	Member().Image(_imageType);
 
 	return *this;
 }
@@ -366,6 +382,16 @@ spvgentwo::Type& spvgentwo::Type::Vector(unsigned int _elements, const Type* _el
 	return *this;
 }
 
+spvgentwo::Type& spvgentwo::Type::Vector(const dyn_vector_t& _vectorType)
+{
+	m_Type = spv::Op::OpTypeVector;
+	m_VecComponentCount = _vectorType.elements;
+
+	Member().Scalar(_vectorType.elementType);
+
+	return *this;
+}
+
 spvgentwo::Type& spvgentwo::Type::Matrix(unsigned int _columns, const Type* _columnType)
 {
 	m_Type = spv::Op::OpTypeMatrix;
@@ -375,6 +401,16 @@ spvgentwo::Type& spvgentwo::Type::Matrix(unsigned int _columns, const Type* _col
 	{
 		m_subTypes.emplace_back(*_columnType);
 	}
+
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::Matrix(const dyn_matrix_t& _matrixType)
+{
+	m_Type = spv::Op::OpTypeMatrix;
+	m_MatColumnCount = _matrixType.columns; // length of the row
+
+	Member().Vector(_matrixType.columnType);
 
 	return *this;
 }

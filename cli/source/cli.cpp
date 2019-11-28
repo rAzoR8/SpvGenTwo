@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
 
 	Instruction* uniformVar = module.uniform<vector_t<float, 3>>("u_Position");
 
-	dyn_sampled_image_t img{ module.newType<float>() };
+	dyn_sampled_image_t img{ spv::Op::OpTypeFloat };
 
 	Instruction* samplerType = module.type<dyn_sampled_image_t>(img);
 
