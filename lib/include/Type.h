@@ -254,7 +254,7 @@ namespace spvgentwo
 
 		// set Properties by type: spv::Dim -> image Dimension etc
 		template <class Prop, class ...Props>
-		const Prop* setProperties(const Prop& _first, const Props& ... _props);
+		const void /*Prop**/ setProperties(const Prop& _first, const Props& ... _props);
 
 		bool isVoid() const { return m_Type == spv::Op::OpTypeVoid; }
 		bool isBool() const { return m_Type == spv::Op::OpTypeBool;	}
@@ -347,10 +347,10 @@ namespace spvgentwo
 	struct is_dyntype_desc : stdrep::false_type { };
 
 	template<class T>
-	struct is_dyntype_desc<T, stdrep::void_t<typename T::dyntype_desc_tag>> : std::true_type { };
+	struct is_dyntype_desc<T, stdrep::void_t<typename T::dyntype_desc_tag>> : stdrep::true_type { };
 
 	template <class T>
-	constexpr bool is_dyntype_desc_v = is_dyntype_desc<stdrep::remove_cvref_ptr_t<T>>::value;
+	constexpr bool is_dyntype_desc_v = is_dyntype_desc<traits::remove_cvref_ptr_t<T>>::value;
 
 	template<class, class = stdrep::void_t<>>
 	struct is_array : stdrep::false_type {};
@@ -501,7 +501,7 @@ namespace spvgentwo
 	}
 
 	template<class Prop, class ...Props>
-	inline const Prop* Type::setProperties(const Prop& _first, const Props& ..._props)
+	inline const void /*Prop**/ Type::setProperties(const Prop& _first, const Props& ..._props)
 	{
 		// check for properties first
 		if constexpr (stdrep::is_same_v<Prop, spv::StorageClass>)
@@ -539,45 +539,53 @@ namespace spvgentwo
 		}
 
 		// check for dynamic types
-		if constexpr (stdrep::is_same_v<Prop, dyn_image_t>)
-		{
-			return &_first;
-		}
-		else if constexpr (stdrep::is_same_v<Prop, dyn_sampled_image_t>)
-		{
-			return &_first;
-		}
-		else if constexpr (stdrep::is_same_v<Prop, dyn_array_t>)
-		{
-			return &_first;
-		}
-		else if constexpr (stdrep::is_same_v<Prop, dyn_runtime_array_t>)
-		{
-			return &_first;
-		}
-		else if constexpr (stdrep::is_same_v<Prop, dyn_vector_t>)
-		{
-			return &_first;
-		}
-		else if constexpr (stdrep::is_same_v<Prop, dyn_matrix_t>)
-		{
-			return &_first;
-		}
+		//if constexpr (stdrep::is_same_v<Prop, dyn_image_t>)
+		//{
+		//	return &_first;
+		//}
+		//else if constexpr (stdrep::is_same_v<Prop, dyn_sampled_image_t>)
+		//{
+		//	return &_first;
+		//}
+		//else if constexpr (stdrep::is_same_v<Prop, dyn_array_t>)
+		//{
+		//	return &_first;
+		//}
+		//else if constexpr (stdrep::is_same_v<Prop, dyn_runtime_array_t>)
+		//{
+		//	return &_first;
+		//}
+		//else if constexpr (stdrep::is_same_v<Prop, dyn_vector_t>)
+		//{
+		//	return &_first;
+		//}
+		//else if constexpr (stdrep::is_same_v<Prop, dyn_matrix_t>)
+		//{
+		//	return &_first;
+		//}
 
-		return nullptr;
+		//return nullptr;
 	}
 
 	template<class T, class ...Props>
 	inline Type& Type::make(const Props& ..._props)
 	{
+		if constexpr (sizeof...(_props) > 0)
+		{
+			setProperties(_props...);
+		}
+
 		// first process types that need to be unwraped (non dynamic composite types)
 		if constexpr (stdrep::is_pointer_v<T>)
 		{
-			Pointer().Member().make<stdrep::remove_pointer_t<T>>();
-
-			if constexpr (sizeof...(_props) > 0)
+			using S = stdrep::remove_pointer_t<T>;
+			if (const S* dyn = traits::selectTypeFromArgs<S>(_props...); dyn != nullptr)
 			{
-				 setProperties(_props...);
+				Pointer().Member().make<S>(*dyn);
+			}
+			else
+			{
+				Pointer().Member().make<S>();
 			}
 		}
 		else if constexpr (is_array_v<T>)
@@ -610,13 +618,7 @@ namespace spvgentwo
 		}
 		else
 		{
-			const void* pProp = nullptr;
-			if constexpr (sizeof...(_props) > 0)
-			{
-				pProp = setProperties(_props...);
-			}
-
-			fundamental<T>(reinterpret_cast<const T*>(pProp));
+			fundamental<T>(traits::selectTypeFromArgs<T>(_props...));
 		}
 
 		return *this;

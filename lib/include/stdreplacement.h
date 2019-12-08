@@ -181,7 +181,7 @@ namespace spvgentwo::traits
 	struct remove_cvref_ptr { using type = remove_cvref_ptr_t<T>; };
 
 	template <class T, class BASE>
-	inline constexpr bool is_same_base_type_v = stdrep::is_same_v<remove_cvref_t<T>, BASE>;
+	inline constexpr bool is_same_base_type_v = stdrep::is_same_v<remove_cvref_ptr_t<T>, BASE>;
 
 	template <class F, class... Args>
 	struct is_invocable
@@ -197,6 +197,45 @@ namespace spvgentwo::traits
 	template <class F, class... Args>
 	inline constexpr bool is_invocable_v = is_invocable<F, Args...>::value;
 
+	template <class T>
+	const T* selectTypeFromArgs() { return nullptr; }
+
+	template <class T, class First, class... Args>
+	const T* selectTypeFromArgs(First& _first, Args&... _tail)
+	{
+		if constexpr (is_same_base_type_v<First, T>)
+		{
+			return &_first; // todo: implement addressof
+		}
+		else if constexpr (sizeof...(_tail) > 0)
+		{
+			return selectTypeFromArgs<T>(_tail...);
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
+
+	// constexpr bool Pred<First>
+	//template <template <class> class Pred, class First, class... Args>
+	//const void* selectTypelessFromArgs(const First& _first, const Args&... _tail) 
+	//{
+	//	if constexpr (Pred<First>)
+	//	{
+	//		return &_first;
+	//	}
+	//	else if constexpr (sizeof...(_tail) > 0)
+	//	{
+	//		return selectTypelessFromArgs<Pred>(_tail...);
+	//	}
+	//	else
+	//	{
+	//		return nullptr;
+	//	}
+	//}
+
+
 	//template <class F, class R, class... Args>
 	//struct is_invocable_r
 	//{
@@ -210,4 +249,4 @@ namespace spvgentwo::traits
 
 	//template <class F, class R, class... Args>
 	//inline constexpr bool is_invocable_r_v = is_invocable_r<F, R, Args...>::value;
-} // !spvgentwo
+} // !spvgentw

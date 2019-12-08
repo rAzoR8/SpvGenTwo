@@ -103,9 +103,9 @@ int main(int argc, char* argv[])
 
 	dyn_sampled_image_t img{ spv::Op::OpTypeFloat };
 
-	Instruction* samplerType = module.type<dyn_sampled_image_t>(img);
+	//Instruction* samplerType = module.type<dyn_sampled_image_t>(img);
 
-	//module.uniformConstant<dyn_sampled_image_t>("u_normalMap",)
+	//Instruction* normal = module.uniformConstant<dyn_sampled_image_t>("u_normalMap", img);
 
 	// float add(float x, float y)
 	Function& funcAdd = module.addFunction<float, float, float>(spv::FunctionControlMask::Const);
