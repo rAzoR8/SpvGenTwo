@@ -22,6 +22,7 @@ namespace spvgentwo
 
 	struct dyn_scalar_t
 	{
+		struct dyntype_desc_tag {};
 		spv::Op baseType = spv::Op::OpTypeVoid; // OpTypeInt or OpTypeFloat
 		unsigned int bits = 32u; // bit width of int / float
 		bool sign = false; // integer sign
@@ -29,6 +30,8 @@ namespace spvgentwo
 
 	struct dyn_image_t
 	{
+		struct dyntype_desc_tag {};
+
 		dyn_scalar_t sampledType{ spv::Op::OpTypeFloat };
 		spv::Dim dimension = spv::Dim::Dim2D;
 		unsigned int depth = 1u;
@@ -39,10 +42,10 @@ namespace spvgentwo
 		spv::AccessQualifier accessQualifier = spv::AccessQualifier::ReadOnly;
 	};
 
-	struct dyn_sampled_image_t { dyn_image_t imageType; };
+	struct dyn_sampled_image_t { dyn_image_t imageType; struct dyntype_desc_tag {};};
 
-	struct dyn_vector_t { dyn_scalar_t elementType; unsigned int elements; };
-	struct dyn_matrix_t { dyn_vector_t columnType; unsigned int columns; /*length of the row*/ };
+	struct dyn_vector_t { dyn_scalar_t elementType; unsigned int elements;  struct dyntype_desc_tag {};};
+	struct dyn_matrix_t { dyn_vector_t columnType; unsigned int columns; /*length of the row*/ struct dyntype_desc_tag {};};
 
 	template<class T, unsigned int N>
 	struct array_t {
@@ -336,8 +339,18 @@ namespace spvgentwo
 	};
 
 	// more decls
-	struct dyn_array_t { Type elementType; unsigned int length; };
-	struct dyn_runtime_array_t { Type elementType; };
+	struct dyn_array_t { Type elementType; unsigned int length; struct dyntype_desc_tag {};};
+	struct dyn_runtime_array_t { Type elementType; struct dyntype_desc_tag {};};
+
+	//template <class S, class T = stdrep::remove_cv_t<stdrep::remove_reference_t<S>>>
+	template<class, class = stdrep::void_t<> >
+	struct is_dyntype_desc : stdrep::false_type { };
+
+	template<class T>
+	struct is_dyntype_desc<T, stdrep::void_t<typename T::dyntype_desc_tag>> : std::true_type { };
+
+	template <class T>
+	constexpr bool is_dyntype_desc_v = is_dyntype_desc<stdrep::remove_cvref_ptr_t<T>>::value;
 
 	template<class, class = stdrep::void_t<>>
 	struct is_array : stdrep::false_type {};

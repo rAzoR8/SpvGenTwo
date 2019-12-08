@@ -229,6 +229,13 @@ namespace spvgentwo
 	template<class T>
 	inline Instruction* Module::variable(const spv::StorageClass _storageClass, const T& _initialValue, const char* _pName)
 	{
-		return variable<T>(_storageClass, _pName, constant(_initialValue));
+		if constexpr (is_dyntype_desc_v<T>)
+		{
+			return variable(type<T*>(_initialValue, _storageClass), _storageClass, _pName);
+		}
+		else
+		{
+			return variable<T>(_storageClass, _pName, constant(_initialValue));		
+		}
 	}
 } // !spvgentwo

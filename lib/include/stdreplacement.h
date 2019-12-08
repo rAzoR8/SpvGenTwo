@@ -174,6 +174,12 @@ namespace spvgentwo::traits
 	template <class T>
 	struct remove_cvref { using type = remove_cvref_t<T>; };
 
+	//custom
+	template <class T>
+	using remove_cvref_ptr_t = stdrep::remove_cv_t<stdrep::remove_reference_t<stdrep::remove_pointer_t<T>>>;
+	template <class T>
+	struct remove_cvref_ptr { using type = remove_cvref_ptr_t<T>; };
+
 	template <class T, class BASE>
 	inline constexpr bool is_same_base_type_v = stdrep::is_same_v<remove_cvref_t<T>, BASE>;
 
