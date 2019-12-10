@@ -25,7 +25,7 @@ spvgentwo::Instruction* spvgentwo::Function::getParameter(unsigned int _index)
 	return it == nullptr ? nullptr : it.operator->();
 }
 
-spvgentwo::Instruction* spvgentwo::Function::variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, Instruction* _pInitialzer)
+spvgentwo::Instruction* spvgentwo::Function::variable(Instruction* _pPtrType, Instruction* _pInitialzer, const char* _pName)
 {
 	if (empty())
 	{
@@ -38,5 +38,12 @@ spvgentwo::Instruction* spvgentwo::Function::variable(Instruction* _pPtrType, co
 	// insert var instruction after first lable
 	Instruction* pVar = funcEntry.insert_after(funcEntry.begin(), &funcEntry)->operator->();
 
-	return pVar->opVariable(_pPtrType, _storageClass, _pInitialzer);
+	pVar->opVariable(_pPtrType, spv::StorageClass::Function, _pInitialzer);
+
+	if (_pName != nullptr)
+	{
+		getModule()->addNameInstr()->opName(pVar, _pName);
+	}
+
+	return pVar;
 }

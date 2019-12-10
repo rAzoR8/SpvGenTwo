@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
 
 		Instruction* uniY = bb->opCompositeExtract(uniVec, 1u);
 		
-		Instruction* index = funcAdd.variable<int>(2);
+		Instruction* index = funcAdd.variable<int>(2, "index");
 		index = bb->opLoad(index);
 
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);

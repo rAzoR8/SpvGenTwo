@@ -38,13 +38,13 @@ namespace spvgentwo
 		const List<Instruction>& getParameters() const { return m_Parameters; }
 
 		// storage class is Function
-		Instruction* variable(Instruction* _pPtrType, const spv::StorageClass _storageClass = spv::StorageClass::Function, Instruction* _pInitialzer = nullptr);
+		Instruction* variable(Instruction* _pPtrType, Instruction* _pInitialzer = nullptr, const char* _pName = nullptr);
 
 		template <class T> // adds Pointer to type T
-		Instruction* variable(const spv::StorageClass _storageClass = spv::StorageClass::Function, Instruction* _pInitialzer = nullptr);
+		Instruction* variable(Instruction* _pInitialzer = nullptr, const char* _pName = nullptr);
 
 		template <class T>
-		Instruction* variable(const T& _initialValue, const spv::StorageClass _storageClass = spv::StorageClass::Function);
+		Instruction* variable(const T& _initialValue, const char* _pName = nullptr);
 
 	private:
 		template <class ... TypeInstr>
@@ -92,14 +92,14 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	inline Instruction* Function::variable(const spv::StorageClass _storageClass, Instruction* _pInitialzer)
+	inline Instruction* Function::variable(Instruction* _pInitialzer, const char* _pName)
 	{
-		return variable(getModule()->type<T*>(_storageClass), _storageClass, _pInitialzer);
+		return variable(getModule()->type<T*>(spv::StorageClass::Function), _pInitialzer, _pName);
 	}
 
 	template<class T>
-	inline Instruction* Function::variable(const T& _initialValue, const spv::StorageClass _storageClass)
+	inline Instruction* Function::variable(const T& _initialValue, const char* _pName)
 	{
-		return variable<T>(_storageClass, getModule()->constant(_initialValue));
+		return variable(getModule()->type<T*>(spv::StorageClass::Function, _initialValue), getModule()->constant(_initialValue), _pName);
 	}
 } // !spvgentwo
