@@ -581,11 +581,11 @@ namespace spvgentwo
 			using S = stdrep::remove_pointer_t<T>;
 			if (const S* dyn = traits::selectTypeFromArgs<S>(_props...); dyn != nullptr)
 			{
-				Pointer().Member().make<S>(*dyn);
+				Pointer(m_StorageClass).Member().make<S>(*dyn);
 			}
 			else
 			{
-				Pointer().Member().make<S>();
+				Pointer(m_StorageClass).Member().make<S>();
 			}
 		}
 		else if constexpr (is_array_v<T>)
