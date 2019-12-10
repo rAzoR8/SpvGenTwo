@@ -181,7 +181,7 @@ namespace spvgentwo::traits
 	struct remove_cvref_ptr { using type = remove_cvref_ptr_t<T>; };
 
 	template <class T, class BASE>
-	inline constexpr bool is_same_base_type_v = stdrep::is_same_v<remove_cvref_ptr_t<T>, BASE>;
+	inline constexpr bool is_same_base_type_v = stdrep::is_same_v<remove_cvref_t<T>, BASE>;
 
 	template <class F, class... Args>
 	struct is_invocable
