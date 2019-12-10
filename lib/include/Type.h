@@ -254,7 +254,7 @@ namespace spvgentwo
 
 		// set Properties by type: spv::Dim -> image Dimension etc
 		template <class Prop, class ...Props>
-		const void /*Prop**/ setProperties(const Prop& _first, const Props& ... _props);
+		const void setProperties(const Prop& _first, const Props& ... _props);
 
 		bool isVoid() const { return m_Type == spv::Op::OpTypeVoid; }
 		bool isBool() const { return m_Type == spv::Op::OpTypeBool;	}
@@ -501,7 +501,7 @@ namespace spvgentwo
 	}
 
 	template<class Prop, class ...Props>
-	inline const void /*Prop**/ Type::setProperties(const Prop& _first, const Props& ..._props)
+	inline const void Type::setProperties(const Prop& _first, const Props& ..._props)
 	{
 		// check for properties first
 		if constexpr (stdrep::is_same_v<Prop, spv::StorageClass>)
@@ -537,34 +537,6 @@ namespace spvgentwo
 		{
 			setProperties(_props...);
 		}
-
-		// check for dynamic types
-		//if constexpr (stdrep::is_same_v<Prop, dyn_image_t>)
-		//{
-		//	return &_first;
-		//}
-		//else if constexpr (stdrep::is_same_v<Prop, dyn_sampled_image_t>)
-		//{
-		//	return &_first;
-		//}
-		//else if constexpr (stdrep::is_same_v<Prop, dyn_array_t>)
-		//{
-		//	return &_first;
-		//}
-		//else if constexpr (stdrep::is_same_v<Prop, dyn_runtime_array_t>)
-		//{
-		//	return &_first;
-		//}
-		//else if constexpr (stdrep::is_same_v<Prop, dyn_vector_t>)
-		//{
-		//	return &_first;
-		//}
-		//else if constexpr (stdrep::is_same_v<Prop, dyn_matrix_t>)
-		//{
-		//	return &_first;
-		//}
-
-		//return nullptr;
 	}
 
 	template<class T, class ...Props>
