@@ -225,9 +225,15 @@ spvgentwo::Type& spvgentwo::Type::Scalar(const dyn_scalar_t& _scalarType)
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Struct()
+spvgentwo::Type& spvgentwo::Type::Struct(const Type* _pSubType)
 {
 	m_Type = spv::Op::OpTypeStruct;
+
+	if (_pSubType != nullptr)
+	{
+		m_subTypes.emplace_back(*_pSubType);
+	}
+
 	return *this;
 }
 
@@ -435,6 +441,12 @@ spvgentwo::Type& spvgentwo::Type::Top()
 	}
 }
 
+spvgentwo::Type spvgentwo::Type::New() const
+{
+	return Type(m_subTypes.getAllocator());
+}
+
+
 spvgentwo::Type spvgentwo::Type::wrap(const spv::Op _baseType) const
 {
 	 return Type(m_subTypes.getAllocator(), *this, _baseType);
@@ -443,4 +455,32 @@ spvgentwo::Type spvgentwo::Type::wrap(const spv::Op _baseType) const
 spvgentwo::Type spvgentwo::Type::moveWrap(const spv::Op _baseType)
 {
 	return Type(m_subTypes.getAllocator(), stdrep::move(*this), _baseType);
+}
+
+spvgentwo::Type spvgentwo::Type::wrapVector(const unsigned int _elements) const
+{
+	Type vec(m_subTypes.getAllocator());
+	vec.Vector(_elements, this);
+	return vec;
+};
+
+spvgentwo::Type spvgentwo::Type::wrapMatrix(const unsigned int _columns)
+{
+	Type mat(m_subTypes.getAllocator());
+	mat.Matrix(_columns, this);
+	return mat;
+}
+
+spvgentwo::Type spvgentwo::Type::wrapArray(const unsigned int _elements) const
+{
+	Type array(m_subTypes.getAllocator());
+	array.Array(_elements, this);
+	return array;
+}
+
+spvgentwo::Type spvgentwo::Type::wrapStruct() const
+{
+	Type st(m_subTypes.getAllocator());
+	st.Struct(this);
+	return st;
 }

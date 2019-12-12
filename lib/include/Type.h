@@ -74,8 +74,8 @@ namespace spvgentwo
 		using Iterator = List<Type>::Iterator;
 
 		Type(IAllocator* _pAllocator, Type* _pParent = nullptr);
-		Type(IAllocator* _pAllocator, const Type& _subType, const spv::Op _baseType);
-		Type(IAllocator* _pAllocator, Type&& _subType, const spv::Op _baseType);
+		Type(IAllocator* _pAllocator, const Type& _subType, const spv::Op _baseType = spv::Op::OpTypeVoid);
+		Type(IAllocator* _pAllocator, Type&& _subType, const spv::Op _baseType = spv::Op::OpTypeVoid);
 
 		Type(Type&& _other) noexcept;
 		Type(const Type& _other);
@@ -176,7 +176,7 @@ namespace spvgentwo
 		Type& Scalar(const dyn_scalar_t& _scalarType);
 
 		// makes this a struct
-		Type& Struct();
+		Type& Struct(const Type* _pSubType = nullptr);
 
 		// makes this an array
 		Type& Array(const unsigned int _elements, const Type* _elementType = nullptr);
@@ -300,11 +300,26 @@ namespace spvgentwo
 		template<class... Indices>
 		List<Type>::Iterator getSubType(const unsigned int _i, Indices... _indices) const;
 
+		// creates a new empty type from this types allocator
+		Type New() const;
+
 		// wraps a copy of this type in a new type of _baseType
 		Type wrap(const spv::Op _baseType) const;
 
 		// moves this into wrap type of _baseType
 		Type moveWrap(const spv::Op _baseType);
+
+		// wraps a copy of this into a new vector of _elements
+		Type wrapVector(const unsigned int _elements) const;
+
+		// wraps a copy of this row type into a matrix of columns
+		Type wrapMatrix(const unsigned int _columns);
+
+		// wraps a copy of this into a new array of _elements
+		Type wrapArray(const unsigned int _elements) const;
+
+		// wraps this type into a new struct
+		Type wrapStruct() const;
 
 	private:
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type
