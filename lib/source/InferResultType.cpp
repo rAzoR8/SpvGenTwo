@@ -74,9 +74,7 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 		// => return matrix row type:
 		if (_pType1->getType() == spv::Op::OpTypeMatrix)
 		{
-			Type rowType(stdrep::move(_module.newType()));
-			rowType.Vector(_pType1->getMatrixColumnCount()).Member().setType(_pType1->front().getType());
-			return _module.addType(rowType);
+			return _module.addType(_pType1->front().wrapVector(_pType1->getMatrixColumnCount()));
 		}
 		break;
 	}
@@ -191,6 +189,37 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 		return _pType2Inst;
 	case spv::Op::OpSampledImage:
 		return _module.addType(_pType1->wrap(spv::Op::OpTypeSampledImage));
+
+	case spv::Op::OpImageSampleImplicitLod:
+	case spv::Op::OpImageSampleExplicitLod:
+	case spv::Op::OpImageSampleDrefImplicitLod:
+	case spv::Op::OpImageSampleDrefExplicitLod:
+	case spv::Op::OpImageSampleProjImplicitLod:
+	case spv::Op::OpImageSampleProjExplicitLod:
+	case spv::Op::OpImageSampleProjDrefImplicitLod:
+	case spv::Op::OpImageSampleProjDrefExplicitLod:
+	case spv::Op::OpImageFetch:
+	case spv::Op::OpImageGather:
+	case spv::Op::OpImageDrefGather:
+	case spv::Op::OpImageRead:
+		if (_pType1->isSampledImage())
+		{
+			//Result Type must be a vector of four components of ﬂoating-point type or integer type.
+			//Its components must be the same as Sampled Type of the underlying OpTypeImage (unless that underlying Sampled Type isOpTypeVoid).
+			const Type& image = _pType1->front(); // _pType1 is SampleImage
+			const Type& sampledType = image.front();
+
+			if(sampledType.isVoid())
+			{
+				// not sure what todo, return void? or return float4?
+				return _module.type<vector_t<float, 4>>();
+			}
+			else
+			{
+				return _module.addType(sampledType.wrapVector(4));
+			}
+		}		
+		break;
 	default:
 		break;
 	}
