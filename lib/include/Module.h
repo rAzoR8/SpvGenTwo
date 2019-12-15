@@ -33,6 +33,11 @@ namespace spvgentwo
 		EntryPoint& addEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
 
 		void addCapability(const spv::Capability _capability);
+		bool checkCapability(const spv::Capability _capability) const;
+		
+		// adds capability if not present
+		void checkAddCapability(const spv::Capability _capability);
+		
 		void addExtension(const char* _pExtName);
 		Instruction* getExtensionInstructionImport(const char* _pExtName);
 

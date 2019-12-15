@@ -52,8 +52,30 @@ spvgentwo::Constant spvgentwo::Module::newConstant()
 
 void spvgentwo::Module::addCapability(const spv::Capability _capability)
 {
-	// emplace free instruction (without parent BB)
 	m_Capabilities.emplace_back(this).opCapability(_capability);
+}
+
+bool spvgentwo::Module::checkCapability(const spv::Capability _capability) const
+{
+	for (const Instruction& cap : m_Capabilities)
+	{
+		if (cap.front() == literal_t{ _capability })
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void spvgentwo::Module::checkAddCapability(const spv::Capability _capability)
+{
+	if (checkCapability(_capability) == false)
+	{
+		addCapability(_capability);
+
+		logInfo("Implictly adding capablity");
+	}
 }
 
 void spvgentwo::Module::addExtension(const char* _pExtName)
