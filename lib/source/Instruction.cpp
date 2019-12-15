@@ -458,3 +458,126 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 	
 	return nullptr;
 }
+
+spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent, const Flag<spv::ImageOperandsMask> _imageOperands)
+{
+	Module& module = *getModule();
+	const Type* type = _pSampledImage->getType();
+	const Type* imageType = type->isSampledImage() ? &type->front() : type;
+	const Type* coordType = _pCoordinate->getType();
+
+	bool isExplicit = false;
+	bool isDref = false;
+	bool coordCanBeInt = false;
+	bool checkCoords = false;
+
+	auto checkExplicit = [&]() -> bool
+	{
+		if (isExplicit && (_imageOperands.mask & unsigned int(spv::ImageOperandsMask::Lod | spv::ImageOperandsMask::Grad)) == 0u)
+		{
+			module.logError("Explicit lod sampling requires image operands Lod or Grad");
+			return false;
+		}
+		return true;
+	};
+
+	auto checkCoordinateType = [&]() -> bool
+	{
+		if (checkCoords == false)
+			return true;
+
+		unsigned int dim = 0u;
+
+		switch (imageType->getImageDimension())
+		{
+		case spv::Dim::Dim1D:
+		case spv::Dim::Dim2D:
+		case spv::Dim::Dim3D:
+			dim += unsigned(imageType->getImageDimension()) + 1u;
+			break;
+		case spv::Dim::Cube:
+			dim += 2u; //+ 3u;
+			break;
+		default:
+			module.logError("Image dimension not supported/implemented");
+			return false;
+		}
+
+		if (imageType->getImageArray())
+		{
+			dim += 1u;
+		}
+
+		if (dim > 1u && coordType->getVectorComponentCount() < dim)
+		{
+			module.logError("Dimension of coordinates does not match image type");
+			return false;
+		}
+
+		if (coordType->isScalarOrVectorOf(spv::Op::OpTypeInt))
+		{
+			if (coordCanBeInt == false || module.checkCapability(spv::Capability::Kernel) == false)
+			{
+				module.logError("Missing kernel capability for integer coordinates");
+				return false;
+			}
+		}
+		else if (coordType->isScalarOrVectorOf(spv::Op::OpTypeFloat) == false)
+		{
+			module.logError("Coordinate type must be scalar or vector of float");
+			return false;
+		}
+
+		return true;
+	};
+
+	auto checkDref = [&]() -> bool
+	{
+		return isDref ?
+			_pDrefOrCompnent != nullptr && _pDrefOrCompnent->getType()->isFloat() :
+			_pDrefOrCompnent == nullptr; // Dref argument must be null otherwise
+	};
+
+	switch (_imageSampleOp)
+	{
+	case spv::Op::OpImageFetch:
+		if (imageType->isImage() == false || (imageType->getImageSamplerAccess() != SamplerImageAccess::Sampled))
+		{
+			module.logError("OpImageFetch requires _pSampledImage of type opImage");
+			return nullptr;
+		}
+		if (coordType->isInt() == false && coordType->isVectorOfInt() == false)
+		{
+			module.logError("OpImageFetch requires _pCoordinate to of type int (or vector of int)");
+			return nullptr;
+		}
+		break;
+	case spv::Op::OpImageSampleImplicitLod: checkCoords = true; isExplicit = false; isDref = false; coordCanBeInt = false; break;
+	case spv::Op::OpImageSampleExplicitLod: checkCoords = true; isExplicit = true; isDref = false; coordCanBeInt = true; break;
+	case spv::Op::OpImageSampleProjImplicitLod: checkCoords = true; isExplicit = false; isDref = false; coordCanBeInt = true; break;
+	case spv::Op::OpImageSampleProjExplicitLod: checkCoords = true; isExplicit = true; isDref = false; coordCanBeInt = false; break;
+	case spv::Op::OpImageSampleDrefImplicitLod: checkCoords = true; isExplicit = false; isDref = true; coordCanBeInt = false; break; 
+	case spv::Op::OpImageSampleDrefExplicitLod: checkCoords = true; isExplicit = true; isDref = true; coordCanBeInt = false; break;
+	case spv::Op::OpImageSampleProjDrefImplicitLod: checkCoords = true; isExplicit = false; isDref = true; coordCanBeInt = false; break;
+	case spv::Op::OpImageSampleProjDrefExplicitLod: checkCoords = true; isExplicit = true; isDref = true; coordCanBeInt = false; break;
+
+		break;
+	default:
+		module.logError("_imageSampleOp is not supported / implemented");
+		return nullptr;
+	}
+
+	if (!checkExplicit() || !checkDref() && !checkCoordinateType())
+	{
+		return nullptr;
+	}
+
+	Instruction* pInstruction = makeOp(_imageSampleOp, _pSampledImage, _pCoordinate, _pDrefOrCompnent);
+
+	if (_imageOperands != spv::ImageOperandsMask::MaskNone)
+	{
+		pInstruction->addOperand(literal_t{ _imageOperands.mask });
+	}
+
+	return pInstruction;
+}

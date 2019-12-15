@@ -202,6 +202,9 @@ namespace spvgentwo
 
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
+		// generic base case
+		Instruction* opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent = nullptr, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone);
+
 	private:
 		void resolveId(spv::Id& _resultId);
 
