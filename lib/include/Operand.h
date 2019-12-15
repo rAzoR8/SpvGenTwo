@@ -13,6 +13,9 @@ namespace spvgentwo
 
 	struct literal_t
 	{
+		template <class ...Args>
+		literal_t(Args&& ... _args) : value{ unsigned int(_args...) } {}
+
 		unsigned int value = 0u;
 		operator unsigned int() const { return value; }
 	};
