@@ -25,4 +25,10 @@ namespace spvgentwo
 	template<class Enum>
 	Flag<Enum> operator^(const Flag<Enum>& l, const Flag<Enum>& r) { return Flag<Enum>(l.mask ^ r.mask); }
 
+	template<class Enum>
+	Flag<Enum> operator|(const Flag<Enum>& l, const unsigned int& r) { return Flag<Enum>(l.mask | r); }
+	template<class Enum>
+	Flag<Enum> operator&(const Flag<Enum>& l, const unsigned int& r) { return Flag<Enum>(l.mask & r); }
+	template<class Enum>
+	Flag<Enum> operator^(const Flag<Enum>& l, const unsigned int& r) { return Flag<Enum>(l.mask ^ r); }
 } // !spvgentwo
