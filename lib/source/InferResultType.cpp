@@ -203,23 +203,25 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 	case spv::Op::OpImageGather:
 	case spv::Op::OpImageDrefGather:
 	case spv::Op::OpImageRead:
-		if (_pType1->isSampledImage())
-		{
-			//Result Type must be a vector of four components of ﬂoating-point type or integer type.
-			//Its components must be the same as Sampled Type of the underlying OpTypeImage (unless that underlying Sampled Type isOpTypeVoid).
-			const Type& image = _pType1->front(); // _pType1 is SampleImage
-			const Type& sampledType = image.front();
+	{
+		const Type* image = _pType1->isSampledImage() ? &_pType1->front() : (_pType1->isImage() ? _pType1 : nullptr); // _pType1 is SampleImage or Image
+		if (image == nullptr) break;
+		
+		const Type& sampledType = image->front();
 
-			if(sampledType.isVoid())
-			{
-				// not sure what todo, return void? or return float4?
-				return _module.type<vector_t<float, 4>>();
-			}
-			else
-			{
-				return _module.addType(sampledType.wrapVector(4));
-			}
-		}		
+		//Result Type must be a vector of four components of ﬂoating-point type or integer type.
+		//Its components must be the same as Sampled Type of the underlying OpTypeImage (unless that underlying Sampled Type isOpTypeVoid).
+		
+		if (sampledType.isVoid())
+		{
+			// not sure what todo, return void? or return float4?
+			return _module.type<vector_t<float, 4>>();
+		}
+		else
+		{
+			return _module.addType(sampledType.wrapVector(4));
+		}
+	}		
 		break;
 	default:
 		break;
