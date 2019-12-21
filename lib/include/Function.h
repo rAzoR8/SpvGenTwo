@@ -12,7 +12,7 @@ namespace spvgentwo
 	{
 	public:
 		template <class ... TypeInstr>
-		Function(Module* _pModule, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ... _paramTypeInstructions);
+		Function(Module* _pModule, const char* _pName, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ... _paramTypeInstructions);
 
 		virtual ~Function();
 
@@ -61,7 +61,7 @@ namespace spvgentwo
 	};
 
 	template<class ...TypeInstr>
-	inline Function::Function(Module* _pModule, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ..._paramTypeInstructions) :
+	inline Function::Function(Module* _pModule, const char* _pName, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ..._paramTypeInstructions) :
 		List(_pModule->getAllocator()), 
 		m_pModule(_pModule),
 		m_pReturnType(_pReturnType),
@@ -76,7 +76,8 @@ namespace spvgentwo
 			addParameters(_paramTypeInstructions...);		
 		}
 
-		m_Function.opFunction(_control, _pReturnType, m_pFunctionType);
+		Instruction* pFunc = m_Function.opFunction(_control, _pReturnType, m_pFunctionType);
+		m_pModule->addName(pFunc, _pName);
 	}
 
 	template<class ... TypeInstr>

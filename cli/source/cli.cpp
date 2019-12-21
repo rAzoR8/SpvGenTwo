@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 	Instruction* uniNormal = module.uniform<dyn_sampled_image_t>("u_normalMap", img);
 
 	// float add(float x, float y)
-	Function& funcAdd = module.addFunction<float, float, float>(spv::FunctionControlMask::Const);
+	Function& funcAdd = module.addFunction<float, float, float>("add", spv::FunctionControlMask::Const);
 	{
 		BasicBlock& bb = *funcAdd;
 
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
 		merge.returnValue(merge->opPhi(res1, res2));
 	}
 
-	Function& loopFunc = module.addFunction<void>(spv::FunctionControlMask::Const);
+	Function& loopFunc = module.addFunction<void>("loop", spv::FunctionControlMask::Const);
 	{
 		Instruction* one = module.constant(1);
 		Instruction* loopCount = module.constant(10);

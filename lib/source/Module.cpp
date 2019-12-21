@@ -104,6 +104,16 @@ spvgentwo::Instruction* spvgentwo::Module::addNameInstr()
 	return &m_Names.emplace_back(this);
 }
 
+void spvgentwo::Module::addName(Instruction* _pTarget, const char* _pName)
+{
+	addNameInstr()->opName(_pTarget, _pName);
+}
+
+void spvgentwo::Module::addMemberName(Instruction* _pMember, const char* _pMemberName, unsigned int _memberIndex)
+{
+	addNameInstr()->opMemberName(_pMember, _memberIndex, _pMemberName);
+}
+
 spvgentwo::Instruction* spvgentwo::Module::addModuleProccessedInstr()
 {
 	return &m_ModuleProccessed.emplace_back(this);
@@ -389,7 +399,7 @@ spvgentwo::Instruction* spvgentwo::Module::variable(Instruction* _pPtrType, cons
 
 	if (_pName != nullptr)
 	{
-		addNameInstr()->opName(pVar, _pName);
+		addName(pVar, _pName);
 	}
 
 	return pVar;

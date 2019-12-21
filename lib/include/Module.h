@@ -27,7 +27,7 @@ namespace spvgentwo
 		IAllocator* getAllocator() const { return m_pAllocator; }
 
 		template <class ReturnType = void, class ... ParameterTypes>
-		Function& addFunction(const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
+		Function& addFunction(const char* _pFunctionName = nullptr, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
 
 		template <class ReturnType = void, class ... ParameterTypes>
 		EntryPoint& addEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
@@ -68,6 +68,8 @@ namespace spvgentwo
 
 		// for use with opName and opMemberName
 		Instruction* addNameInstr();
+		void addName(Instruction* _pTarget, const char* _pName);
+		void addMemberName(Instruction* _pMember, const char* _pMemberName, unsigned int _memberIndex);
 
 		// for use with opModuleProccessed
 		Instruction* addModuleProccessedInstr();
@@ -163,9 +165,9 @@ namespace spvgentwo
 	};
 
 	template<class ReturnType, class ...ParameterTypes>
-	inline Function& Module::addFunction(const Flag<spv::FunctionControlMask> _control, const bool _addEntryBasicBlock)
+	inline Function& Module::addFunction(const char* _pFunctionName, const Flag<spv::FunctionControlMask> _control, const bool _addEntryBasicBlock)
 	{
-		Function& func = m_Functions.emplace_back(this, _control, type<ReturnType>(), type<ParameterTypes>()...);
+		Function& func = m_Functions.emplace_back(this, _pFunctionName, _control, type<ReturnType>(), type<ParameterTypes>()...);
 
 		if (_addEntryBasicBlock)
 		{

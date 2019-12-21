@@ -42,7 +42,7 @@ spvgentwo::Instruction* spvgentwo::Function::variable(Instruction* _pPtrType, In
 
 	if (_pName != nullptr)
 	{
-		getModule()->addNameInstr()->opName(pVar, _pName);
+		getModule()->addName(pVar, _pName);
 	}
 
 	return pVar;
