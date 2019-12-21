@@ -567,7 +567,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 		return nullptr;
 	}
 
-	if (!checkExplicit() || !checkDref() && !checkCoordinateType())
+	if (!checkExplicit() || !checkDref() || !checkCoordinateType())
 	{
 		return nullptr;
 	}
