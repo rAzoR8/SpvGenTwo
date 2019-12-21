@@ -50,7 +50,7 @@ namespace spvgentwo
 		template <class ... TypeInstr>
 		void addParameters(Instruction* _pParamType, TypeInstr* ... _paramTypeInstructions);
 
-	private:
+	protected:
 		Module* m_pModule = nullptr; // parent
 		Instruction* m_pReturnType = nullptr;
 

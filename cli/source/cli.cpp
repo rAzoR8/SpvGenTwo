@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
 
 	dyn_sampled_image_t img{ spv::Op::OpTypeFloat };
 
-	Instruction* normal = module.uniform<dyn_sampled_image_t>("u_normalMap", img);
+	Instruction* uniNormal = module.uniform<dyn_sampled_image_t>("u_normalMap", img);
 
 	// float add(float x, float y)
 	Function& funcAdd = module.addFunction<float, float, float>(spv::FunctionControlMask::Const);
@@ -145,9 +145,13 @@ int main(int argc, char* argv[])
 		Instruction* mat = bb->opOuterProduct(insert, module.constant(const_vector_t<float, 4>{1.f, 2.f, 3.f, 4.f}));
 		mat = bb->opTranspose(mat);
 
-		Instruction* vecType = module.type <vector_t<float, 3>>();
+		Instruction* vecType = module.type<vector_t<float, 3>>();
 		Instruction* newVec = bb->opCompositeConstruct(vecType, x, y, z);
 		newVec = bb->opVectorInsertDynamic(newVec, extracted, index);
+
+		Instruction* v2const = module.constant(make_vector(0.5f, 0.5f));
+		Instruction* normal = bb->opLoad(uniNormal);
+		Instruction* normSample = bb->opImageSampleImplictLod(normal, v2const);
 
 		Instruction* uniformComp = bb->opAccessChain(uniformVar, 0u);
 		Instruction* uniX = bb->opLoad(uniformComp);
@@ -203,7 +207,8 @@ int main(int argc, char* argv[])
 
 	// void entryPoint();
 	{
-		EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Vertex, "main");
+		EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, "main");
+		entry.addExecutionMode(spv::ExecutionMode::OriginUpperLeft);
 		entry->call(&loopFunc);
 		entry->opReturn();
 	}

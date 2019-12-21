@@ -534,7 +534,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 	auto checkDref = [&]() -> bool
 	{
 		return isDref ?
-			_pDrefOrCompnent != nullptr && _pDrefOrCompnent->getType()->isFloat() :
+			_pDrefOrCompnent != nullptr && _pDrefOrCompnent->getType()->isF32() :
 			_pDrefOrCompnent == nullptr; // Dref argument must be null otherwise
 	};
 

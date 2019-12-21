@@ -202,8 +202,14 @@ namespace spvgentwo
 
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
-		// generic base case
+		// base case
 		Instruction* opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent = nullptr, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone);
+
+		// generic base case with image operands
+		template <class ...ImageOperands>
+		Instruction* opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent, const Flag<spv::ImageOperandsMask> _imageOperands, ImageOperands... _operands);
+				
+		Instruction* opImageSampleImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate) { return opImageSample(spv::Op::OpImageSampleImplicitLod, _pSampledImage, _pCoordinate);	}
 
 	private:
 		void resolveId(spv::Id& _resultId);
@@ -497,5 +503,21 @@ namespace spvgentwo
 		pModule->logError("Invalid index sequence specified for composite insertion");
 
 		return nullptr;
+	}
+
+	template<class ...ImageOperands>
+	inline Instruction* Instruction::opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent, const Flag<spv::ImageOperandsMask> _imageOperands, ImageOperands ..._operands)
+	{
+		Instruction* pInstruction = opImageSample(_imageSampleOp, _pSampledImage, _pCoordinate, _pDrefOrCompnent, _imageOperands);
+
+		if (pInstruction != nullptr)
+		{
+			if (_imageOperands != spv::ImageOperandsMask::MaskNone)
+			{
+				(pInstruction->addOperand(_operands), ...);
+			}
+		}
+
+		return pInstr;
 	}
 } // !spvgentwo
