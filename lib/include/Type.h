@@ -533,7 +533,7 @@ namespace spvgentwo
 		}
 		else if constexpr (stdrep::is_same_v<Prop, spv::AccessQualifier>)
 		{
-			m_AccessQualier = _first;
+			m_AccessQualifier = _first;
 		}
 		else if constexpr (stdrep::is_same_v<Prop, SamplerImageAccess>)
 		{

@@ -335,7 +335,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLe
 	Instruction* _pRightTypeInstr = _pRight->getTypeInst();
 
 	const Type* pLeftType = _pLeftTypeInstr->getType();
-	const Type* pRightType = _pLeftTypeInstr->getType();
+	const Type* pRightType = _pRightTypeInstr->getType();
 
 	if (pLeftType->isVectorOfFloat() && pRightType->isVectorOfFloat() && pLeftType->hasSameBase(*pRightType))
 	{
@@ -473,7 +473,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 
 	auto checkExplicit = [&]() -> bool
 	{
-		if (isExplicit && (_imageOperands.mask & unsigned int(spv::ImageOperandsMask::Lod | spv::ImageOperandsMask::Grad)) == 0u)
+		if (isExplicit && (_imageOperands.mask & static_cast<unsigned int>(spv::ImageOperandsMask::Lod | spv::ImageOperandsMask::Grad)) == 0u)
 		{
 			module.logError("Explicit lod sampling requires image operands Lod or Grad");
 			return false;
