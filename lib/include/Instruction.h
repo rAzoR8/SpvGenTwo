@@ -53,6 +53,9 @@ namespace spvgentwo
 	
 		bool isType() const;
 		bool isTerminator() const;
+		bool isConstant() const;
+		bool isSpecConstant() const;
+		bool isSpecOrConstant() const;
 
 		bool hasResult() const { return hasResultId(m_Operation); }
 		bool hasResultType() const { return hasResultTypeId(m_Operation); }
@@ -220,6 +223,8 @@ namespace spvgentwo
 
 		template <class ... VarInst>
 		Instruction* opPhiInternal(Instruction* _pVar, VarInst* ... _variables);
+
+		static bool validateImageOperandType(spv::Op _op, Instruction* _pSampledImage, Instruction* _pCoordinate, spv::ImageOperandsMask _mask, Instruction* _pOperand1, Instruction* _pOperand2 = nullptr);
 
 	private:
 		spv::Op m_Operation = spv::Op::OpNop;
