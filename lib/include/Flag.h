@@ -31,4 +31,11 @@ namespace spvgentwo
 	Flag<Enum> operator&(const Flag<Enum>& l, const unsigned int& r) { return Flag<Enum>(l.mask & r); }
 	template<class Enum>
 	Flag<Enum> operator^(const Flag<Enum>& l, const unsigned int& r) { return Flag<Enum>(l.mask ^ r); }
+
+	template<class Enum>
+	Flag<Enum> operator|(const Flag<Enum>& l, const Enum& r) { return Flag<Enum>(l.mask | static_cast<unsigned int>(r)); }
+	template<class Enum>
+	Flag<Enum> operator&(const Flag<Enum>& l, const Enum& r) { return Flag<Enum>(l.mask & static_cast<unsigned int>(r)); }
+	template<class Enum>
+	Flag<Enum> operator^(const Flag<Enum>& l, const Enum& r) { return Flag<Enum>(l.mask ^ static_cast<unsigned int>(r)); }
 } // !spvgentwo
