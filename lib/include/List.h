@@ -20,6 +20,11 @@ namespace spvgentwo
 		List(IAllocator* _pAllocator);
 		List(const List& _other);
 		List(List&& _other) noexcept;
+
+		// construct from variadic argument list of T: List l(instr1, instr2, instr3)
+		template <class ...Args> // args must be of type T
+		List(IAllocator* _pAllocator, T&& _first, Args&& ... _args);
+
 		virtual ~List();
 
 		List& operator=(const List& _other);
@@ -60,6 +65,9 @@ namespace spvgentwo
 
 		// removes element at pos from list, returns next element
 		Entry<T>* erase(Iterator _pos, const bool _destruct = true);
+
+		T pop_back();
+		T pop_front();
 
 		Iterator begin() const { return Iterator(m_pBegin); }
 		Iterator end() const { return Iterator(nullptr); }
@@ -122,6 +130,18 @@ namespace spvgentwo
 		_other.m_pBegin = nullptr;
 		_other.m_pLast = nullptr;
 		_other.m_Elements = 0u;
+	}
+
+	template<class T>
+	template<class ...Args>
+	inline List<T>::List(IAllocator* _pAllocator, T&& _first, Args&& ..._args) : m_pAllocator(_pAllocator)
+	{
+		emplace_back(stdrep::forward<T>(_first));
+
+		if constexpr (sizeof...(_args) > 0)
+		{
+			(emplace_back(stdrep::forward<Args>(_args)), ...);
+		}
 	}
 
 	template<class T>
@@ -280,6 +300,28 @@ namespace spvgentwo
 	{
 		++m_Elements;
 		return _pos.entry()->insertAfter(m_pAllocator, stdrep::forward<Args>(_args)...);
+	}
+
+	template<class T>
+	inline T List<T>::pop_back()
+	{
+		T ret(back());
+		--m_Elements;
+		auto prev = m_pLast->prev();
+		m_pLast->remove(m_pAllocator);
+		m_pLast = prev;
+		return ret;
+	}
+
+	template<class T>
+	inline T List<T>::pop_front()
+	{
+		T ret(front());
+		--m_Elements;
+		auto next = m_pBegin->next();
+		m_pBegin->remove(m_pAllocator);
+		m_pBegin = next;
+		return ret;
 	}
 
 	template<class T>
