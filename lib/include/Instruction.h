@@ -206,7 +206,7 @@ namespace spvgentwo
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
 		// base case
-		Instruction* opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent = nullptr, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone);
+		Instruction* opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent = nullptr);
 
 		// generic base case with image operands
 		template <class ...ImageOperands>
@@ -224,7 +224,7 @@ namespace spvgentwo
 		template <class ... VarInst>
 		Instruction* opPhiInternal(Instruction* _pVar, VarInst* ... _variables);
 
-		static bool validateImageOperandType(spv::Op _op, Instruction* _pSampledImage, Instruction* _pCoordinate, spv::ImageOperandsMask _mask, Instruction* _pOperand1, Instruction* _pOperand2 = nullptr);
+		static bool validateImageOperandType(spv::Op _op, Instruction* _pSampledImage, Instruction* _pCoordinate, spv::ImageOperandsMask _mask, List<Instruction*>& _inOutOperands);
 
 	private:
 		spv::Op m_Operation = spv::Op::OpNop;
@@ -513,16 +513,34 @@ namespace spvgentwo
 	template<class ...ImageOperands>
 	inline Instruction* Instruction::opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent, const Flag<spv::ImageOperandsMask> _imageOperands, ImageOperands ..._operands)
 	{
-		Instruction* pInstruction = opImageSample(_imageSampleOp, _pSampledImage, _pCoordinate, _pDrefOrCompnent, _imageOperands);
+		Instruction* pInstruction = opImageSample(_imageSampleOp, _pSampledImage, _pCoordinate, _pDrefOrCompnent);
 
 		if (pInstruction != nullptr)
 		{
 			if (_imageOperands != spv::ImageOperandsMask::MaskNone)
 			{
+				pInstruction->addOperand(literal_t{ _imageOperands.mask });
+
+				// convert to dynamic list of operands
+				List<Instruction*> ops(m_pAllocator, stdrep::forward<ImageOperands>(_operands)...);
+
+				for (unsigned int i = 0u; i < (unsigned int)spv::ImageOperandsShift::ZeroExtend; ++i)
+				{
+					spv::ImageOperandsMask mask = static_cast<spv::ImageOperandsMask>(1u << i);
+					if ((_imageOperands & mask) == mask)
+					{
+						if (validateImageOperandType(_imageSampleOp, _pSampledImage, _pCoordinate, mask, ops) == false)
+						{
+							return nullptr;
+						}
+					}
+				}
+
+				// add validated operands to this image sample instruction
 				(pInstruction->addOperand(_operands), ...);
 			}
 		}
 
-		return pInstr;
+		return pInstruction;
 	}
 } // !spvgentwo

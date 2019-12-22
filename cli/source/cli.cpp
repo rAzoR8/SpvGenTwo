@@ -151,7 +151,8 @@ int main(int argc, char* argv[])
 
 		Instruction* v2const = module.constant(make_vector(0.5f, 0.5f));
 		Instruction* normal = bb->opLoad(uniNormal);
-		Instruction* normSample = bb->opImageSampleImplictLod(normal, v2const);
+		Instruction* lod = module.constant(0.5f);
+		Instruction* normSample = bb->opImageSample(spv::Op::OpImageSampleExplicitLod,normal, v2const, nullptr, spv::ImageOperandsMask::Lod, lod);
 
 		Instruction* uniformComp = bb->opAccessChain(uniformVar, 0u);
 		Instruction* uniX = bb->opLoad(uniformComp);
