@@ -297,6 +297,9 @@ namespace spvgentwo
 		bool isSqareMatrix() const { return isMatrix() && m_MatColumnCount == front().getVectorComponentCount(); }
 		bool isSqareMatrixOf(const spv::Op _baseType) const { return isMatrixOf(_baseType) && m_MatColumnCount == front().getVectorComponentCount(); }
 
+		// return 1 if type is a scalar, return component count if type is vector, 0 otherwise
+		unsigned int getScalarOrVectorLength() const { return isScalar() ? 1u : isVector() ? getVectorComponentCount() : 0u; }
+
 		template<class... Indices>
 		List<Type>::Iterator getSubType(const unsigned int _i, Indices... _indices) const;
 
