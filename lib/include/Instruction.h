@@ -221,9 +221,6 @@ namespace spvgentwo
 		template <class T, class ...Args>
 		void makeOpInternal(T first, Args ... _args);
 
-		template <class ... VarInst>
-		Instruction* opPhiInternal(Instruction* _pVar, VarInst* ... _variables);
-
 		static bool validateImageOperandType(spv::Op _op, Instruction* _pSampledImage, Instruction* _pCoordinate, spv::ImageOperandsMask _mask, List<Instruction*>& _inOutOperands);
 
 	private:
@@ -368,20 +365,16 @@ namespace spvgentwo
 	inline Instruction* Instruction::opPhi(Instruction* _pVar, VarInst* ..._variables)
 	{
 		makeOpEx(spv::Op::OpPhi, _pVar->getTypeInst(), InvalidId);
-		return opPhiInternal(_pVar, _variables...);
-	}
 
-	template<class ...VarInst>
-	inline Instruction* Instruction::opPhiInternal(Instruction* _pVar, VarInst* ..._variables)
-	{
-		addOperand(_pVar);
-		addOperand(_pVar->getBasicBlock());
-
-		if constexpr(sizeof...(_variables) > 0)
+		auto addVar = [&](Instruction* var)
 		{
-			opPhiInternal(_variables...);
-		}
+			addOperand(var);
+			addOperand(var->getBasicBlock());
+		};
 
+		addVar(_pVar);
+
+		(addVar(_variables), ...);
 		return this;
 	}
 
