@@ -114,6 +114,46 @@ namespace spvgentwo
 		}
 	}
 
+	// starts with "OpConstant" 
+	constexpr bool isConstantOp(const spv::Op _instr)
+	{
+		switch (_instr)
+		{
+		case spv::Op::OpConstantTrue:
+		case spv::Op::OpConstantFalse:
+		case spv::Op::OpConstant:
+		case spv::Op::OpConstantComposite:
+		case spv::Op::OpConstantSampler:
+		case spv::Op::OpConstantNull:
+		case spv::Op::OpConstantPipeStorage:
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	// starts with "OpSpec" 
+	constexpr bool isSpecOp(const spv::Op _instr)
+	{
+		switch (_instr)
+		{
+		case spv::Op::OpSpecConstant:
+		case spv::Op::OpSpecConstantTrue:
+		case spv::Op::OpSpecConstantFalse:
+		case spv::Op::OpSpecConstantComposite:
+		case spv::Op::OpSpecConstantOp:
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	// Instructions that start "OpConstant" or "OpSpec"
+	constexpr bool isSpecOrConstantOp(const spv::Op _instr)
+	{
+		return isConstantOp(_instr) || isSpecOp(_instr);
+	}
+
 	// spir-v specific traits
 	namespace traits
 	{
