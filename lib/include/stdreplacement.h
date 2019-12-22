@@ -217,6 +217,19 @@ namespace spvgentwo::traits
 		}
 	}
 
+	template <int N, int I, class Element, class... Args>
+	auto selectNthElement(Element&& elem, Args&& ... args) 
+	{
+		if constexpr (I == N)
+		{
+			return elem;
+		}
+		else if constexpr (sizeof...(args) > 0)
+		{
+			return selectNthElement<N, I + 1>(stdrep::forward<Args>(args)...);
+		}
+	}
+
 	// constexpr bool Pred<First>
 	//template <template <class> class Pred, class First, class... Args>
 	//const void* selectTypelessFromArgs(const First& _first, const Args&... _tail) 
