@@ -49,7 +49,7 @@ long BinaryFileWriter::put(unsigned int _word)
 	{
 		fwrite(&_word, sizeof(unsigned int), 1u, m_pFile);
 		auto pos = ftell(m_pFile);
-		printf("%llu:\t0x%X\t\t%u\n", pos - sizeof(unsigned int), _word, _word);
+		//printf("%llu:\t0x%X\t\t%u\n", pos - sizeof(unsigned int), _word, _word);
 		return pos;
 	}
 
@@ -105,6 +105,10 @@ int main(int argc, char* argv[])
 
 	Instruction* uniNormal = module.uniform<dyn_sampled_image_t>("u_normalMap", img);
 
+	img.imageType.samplerAccess = SamplerImageAccess::Sampled;
+
+	Instruction* uniImage = module.uniform<dyn_image_t>("u_someImage", img.imageType);
+
 	// float add(float x, float y)
 	Function& funcAdd = module.addFunction<float, float, float>("add", spv::FunctionControlMask::Const);
 	{
@@ -154,6 +158,10 @@ int main(int argc, char* argv[])
 		Instruction* lod = module.constant(0.5f);
 		Instruction* normSample = bb->opImageSampleExplicitLodLevel(normal, coord, lod);
 		normSample = bb->opImageSampleImplictLod(normal, coord);
+
+		Instruction* intCoord = module.constant(make_vector(512, 512));
+		Instruction* image = bb->opLoad(uniImage);
+		Instruction* fetch = bb->opImageFetch(image, intCoord);
 
 		Instruction* uniformComp = bb->opAccessChain(uniformVar, 0u);
 		Instruction* uniX = bb->opLoad(uniformComp);

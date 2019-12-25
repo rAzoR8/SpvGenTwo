@@ -255,6 +255,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 		pInstr->appendLiterals(_type.getImageDepth());
 		pInstr->appendLiterals(_type.getImageArray());
 		pInstr->appendLiterals(_type.getImageMultiSampled());
+		pInstr->appendLiterals(_type.getImageSamplerAccess());
 		pInstr->appendLiterals(_type.getImageFormat());
 		if(_type.getAccessQualifier() != spv::AccessQualifier::Max)
 		{

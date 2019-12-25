@@ -13,6 +13,23 @@ namespace spvgentwo
 
 	class Instruction : public List<Operand>
 	{
+	private:
+		spv::Op m_Operation = spv::Op::OpNop;
+
+		enum class ParentType
+		{
+			BasicBlock,
+			Function,
+			Module
+		} m_parentType = ParentType::BasicBlock;
+
+		union
+		{
+			BasicBlock* pBasicBlock; // parent
+			Function* pFunction;
+			Module* pModule;
+		} m_parent = {};
+
 	public:
 		using Iterator = EntryIterator<Operand>;
 
@@ -70,8 +87,15 @@ namespace spvgentwo
 		// get opcode encoded with instruction word count [16 bit op code, 16 bit number of operand words] 
 		unsigned int getOpCode() const;
 
-		// serialize instructions of this basic block to the IWriter
-		void write(IWriter* _pWriter, spv::Id& _resultId);
+#ifdef DEBUG_PRINT
+		void debugPrint() const;
+#endif
+
+		// get ID that was assigned during write(...)
+		spv::Id getAssignedID() const;
+
+		// serialize instructions of this basic block to the IWriter, returns ID that was assigned to this instruction
+		spv::Id write(IWriter* _pWriter, spv::Id& _resultId);
 
 		// make operation from up to 3 intermediate results, resulting instruction has result and result type
 		Instruction* makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2 = nullptr, Instruction* _pOp3 = nullptr, Instruction* _pResultType = nullptr);
@@ -83,6 +107,10 @@ namespace spvgentwo
 		// convert and add the raw data passed via _args as literal_t operands
 		template <class ...Args>
 		void appendLiterals(Args ... _args);
+
+		//
+		// OPERATIONS
+		//
 
 		void opNop();
 
@@ -211,7 +239,6 @@ namespace spvgentwo
 		// generic base case with image operands
 		template <class ...ImageOperands>
 		Instruction* opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent, const Flag<spv::ImageOperandsMask> _imageOperands, ImageOperands... _operands);
-			
 
 #pragma region SampleMethods
 		// Implicit
@@ -296,34 +323,22 @@ namespace spvgentwo
 			return opImageSample(spv::Op::OpImageSampleProjDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, _additionalOperands | spv::ImageOperandsMask::Grad, _pLodLevel, _operands...);
 		}
 
+		template <class ...ImageOperands>
+		Instruction* opImageFetch(Instruction* _pImage, Instruction* _pCoordinate, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		{
+			return opImageSample(spv::Op::OpImageFetch, _pImage, _pCoordinate, nullptr, _imageOperands, _operands...);
+		}
 #pragma endregion
 
 	private:
-		void resolveId(spv::Id& _resultId);
+		// returns the ID assigned to this instrucions
+		spv::Id resolveId(spv::Id& _resultId);
 
 		// creates literals
 		template <class T, class ...Args>
 		void makeOpInternal(T first, Args ... _args);
 
 		static bool validateImageOperandType(spv::Op _op, Instruction* _pSampledImage, Instruction* _pCoordinate, spv::ImageOperandsMask _mask, List<Instruction*>& _inOutOperands);
-
-	private:
-		spv::Op m_Operation = spv::Op::OpNop;
-
-		enum class ParentType 
-		{
-			BasicBlock,
-			Function,
-			Module
-		} m_parentType = ParentType::BasicBlock;
-
-		union
-		{
-			BasicBlock* pBasicBlock = nullptr; // parent
-			Function* pFunction;
-			Module* pModule;
-		} m_parent;
-
 	};
 
 	// free helper function

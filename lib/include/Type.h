@@ -39,7 +39,7 @@ namespace spvgentwo
 		bool multiSampled = false;
 		SamplerImageAccess samplerAccess = SamplerImageAccess::Unknown;
 		spv::ImageFormat format = spv::ImageFormat::Unknown;
-		spv::AccessQualifier accessQualifier = spv::AccessQualifier::ReadOnly;
+		spv::AccessQualifier accessQualifier = spv::AccessQualifier::Max;
 	};
 
 	struct dyn_sampled_image_t { dyn_image_t imageType; struct dyntype_desc_tag {};};

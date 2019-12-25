@@ -107,7 +107,7 @@ spv::Id spvgentwo::Instruction::getResultId() const
 	return it->getResultId();
 }
 
-void spvgentwo::Instruction::resolveId(spv::Id& _resultId)
+spv::Id spvgentwo::Instruction::resolveId(spv::Id& _resultId)
 {
 	for (Operand& op : *this)
 	{
@@ -128,7 +128,7 @@ void spvgentwo::Instruction::resolveId(spv::Id& _resultId)
 	spv::HasResultAndType(m_Operation, &resultId, &resultType);
 
 	if (resultId == false)
-		return;
+		return InvalidId;
 
 	auto it = begin();
 	if (resultType) // skip resultType operand 
@@ -140,6 +140,8 @@ void spvgentwo::Instruction::resolveId(spv::Id& _resultId)
 	{
 		it->resultId = ++_resultId;
 	}
+
+	return it->resultId;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::getTypeInst() const
@@ -200,9 +202,9 @@ bool spvgentwo::Instruction::isSpecOrConstant() const
 	return isSpecOrConstantOp(m_Operation);
 }
 
-void spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id& _resultId)
+spv::Id spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id& _resultId)
 {
-	resolveId(_resultId);
+	const spv::Id ID = resolveId(_resultId);
 
 	_pWriter->put(getOpCode());
 	
@@ -210,6 +212,8 @@ void spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id& _resultId)
 	{
 		operand.write(_pWriter);
 	}
+	
+	return ID;
 }
 
 void spvgentwo::writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions, spv::Id& _resultId)
@@ -545,9 +549,9 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 	switch (_imageSampleOp)
 	{
 	case spv::Op::OpImageFetch:
-		if (imageType->isImage() == false || (imageType->getImageSamplerAccess() != SamplerImageAccess::Sampled))
+		if (imageType->isImage() == false || (imageType->getImageSamplerAccess() != SamplerImageAccess::Sampled) || (imageType->getImageDimension() == spv::Dim::Cube))
 		{
-			module.logError("OpImageFetch requires _pSampledImage of type opImage");
+			module.logError("OpImageFetch requires _pSampledImage of type opImage. Its Dim operand cannot be Cube, and its Sampled operand must be 1.");
 			return nullptr;
 		}
 		if (coordType->isInt() == false && coordType->isVectorOfInt() == false)
@@ -665,4 +669,56 @@ bool spvgentwo::Instruction::validateImageOperandType(spv::Op _op, Instruction* 
 
 	module->logWarning("Image operand mask type check not implemented");
 	return true;
+}
+
+#ifdef DEBUG_PRINT
+
+#include <stdio.h>
+
+void spvgentwo::Instruction::debugPrint() const
+{
+	printf("%u = %u ", getAssignedID(), m_Operation);
+
+	//_pWriter->put(getOpCode());
+
+	for (const Operand& operand : *this)
+	{
+		switch (operand.type)
+		{
+		case Operand::Type::Instruction:
+			printf("i%u ", operand.instruction->getAssignedID());
+			break;
+		case Operand::Type::ResultId:
+			printf("r%u ", operand.resultId);
+			break;
+		case Operand::Type::BranchTarget:
+			printf("b%u ", operand.branchTarget->front().getResultId());
+			break;
+		case Operand::Type::Literal:
+			printf("l%u ", operand.value.value);
+			break;
+		default:
+			break;
+		}
+	}
+
+	putchar('\n');
+}
+#endif // !DEBUG_PRINT
+
+spv::Id spvgentwo::Instruction::getAssignedID() const
+{
+	bool resultId = false, resultType = false;
+	spv::HasResultAndType(m_Operation, &resultId, &resultType);
+
+	if (resultId == false)
+		return InvalidId;
+
+	auto it = begin();
+	if (resultType) // skip resultType operand 
+	{
+		++it;
+	}
+
+	return it->resultId;
 }
