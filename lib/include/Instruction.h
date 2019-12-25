@@ -452,7 +452,7 @@ namespace spvgentwo
 		const Type* pBaseType = _pComposite->getType();
 		Module* pModule = _pComposite->getModule();
 
-		if (pBaseType->getSubTypes().empty())
+		if (pBaseType->isComposite() == false)
 		{
 			pModule->logError("Argument of opCompositeExtract is not a composite type");
 			return nullptr;
@@ -477,7 +477,7 @@ namespace spvgentwo
 		const Type* pBaseType = _pComposite->getType();
 		Module* pModule = _pComposite->getModule();
 
-		if (pBaseType->getSubTypes().empty())
+		if (pBaseType->isComposite() == false)
 		{
 			pModule->logError("Argument of opCompositeInsert is not a composite type");
 			return nullptr;
