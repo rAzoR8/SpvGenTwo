@@ -7,10 +7,13 @@
 
 namespace spvgentwo
 {
+	// forward delcs:
+	class IInferResultType;
+
 	class Module
 	{
 	public:
-		Module(const unsigned int _spvVersion, IAllocator* _pAllocator, ILogger* _pLogger = nullptr);
+		Module(const unsigned int _spvVersion, IAllocator* _pAllocator, ILogger* _pLogger = nullptr, IInferResultType* _pInferResultType = nullptr);
 		~Module();
 
 		static constexpr unsigned int GeneratorId = makeGeneratorId(0xfa, 0);
@@ -25,6 +28,8 @@ namespace spvgentwo
 		void logFatal(const char* _pMsg) { log(LogLevel::Fatal, _pMsg); }
 
 		IAllocator* getAllocator() const { return m_pAllocator; }
+		ILogger* getLogger() const { return m_pLogger; }
+		IInferResultType* getInferResultType() const { return m_pInferResultType; }
 
 		template <class ReturnType = void, class ... ParameterTypes>
 		Function& addFunction(const char* _pFunctionName = nullptr, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
@@ -141,6 +146,7 @@ namespace spvgentwo
 	private:
 		IAllocator* m_pAllocator = nullptr;
 		ILogger* m_pLogger = nullptr;
+		IInferResultType* m_pInferResultType = nullptr;
 		unsigned int m_spvVersion = spv::Version;
 		List<Function> m_Functions;
 		List<EntryPoint> m_EntryPoints;

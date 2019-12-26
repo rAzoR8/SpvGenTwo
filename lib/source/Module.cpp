@@ -3,10 +3,12 @@
 #include "Type.h"
 #include "Writer.h"
 #include "Logger.h"
+#include "InferResultType.h"
 
-spvgentwo::Module::Module(const unsigned int _spvVersion, IAllocator* _pAllocator, ILogger* _pLogger) :
+spvgentwo::Module::Module(const unsigned int _spvVersion, IAllocator* _pAllocator, ILogger* _pLogger, IInferResultType* _pInferResultType) :
 	m_pAllocator(_pAllocator),
 	m_pLogger(_pLogger),
+	m_pInferResultType(_pInferResultType),
 	m_spvVersion(_spvVersion),
 	m_Functions(_pAllocator),
 	m_EntryPoints(_pAllocator),

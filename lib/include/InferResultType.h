@@ -22,4 +22,10 @@ namespace spvgentwo
 	// check if type OpCode matches _type, returns _typeInstr or nullptr
 	Instruction* checkType(const spv::Op _type, Instruction* _typeInstr);
 
+	class IInferResultType
+	{
+	public:
+		virtual Instruction* inferType(const spv::Op _operation, Instruction* _op1, Instruction* _op2 = nullptr, Instruction* _op3 = nullptr) = 0;
+	};
+
 } //!spvgentwo

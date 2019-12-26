@@ -226,7 +226,20 @@ void spvgentwo::writeInstructions(IWriter* _pWriter, const List<Instruction>& _i
 
 spvgentwo::Instruction* spvgentwo::Instruction::makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Instruction* _pResultType)
 {
-	Instruction* pResultType = _pResultType != nullptr ? _pResultType : inferType(_instOp, _pOp1, _pOp2, _pOp3);
+	Instruction* pResultType = _pResultType;
+	
+	if (pResultType == nullptr)
+	{
+		if (getModule()->getInferResultType() != nullptr)
+		{
+			pResultType = getModule()->getInferResultType()->inferType(_instOp, _pOp1, _pOp2, _pOp3);
+		}
+		else
+		{
+			pResultType = inferType(_instOp, _pOp1, _pOp2, _pOp3);
+		}
+	}
+
 	Instruction* pInst = makeOpEx(_instOp, pResultType, InvalidId, _pOp1);
 
 	if (_pOp2 != nullptr)
