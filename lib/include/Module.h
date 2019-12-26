@@ -28,8 +28,11 @@ namespace spvgentwo
 		void logFatal(const char* _pMsg) { log(LogLevel::Fatal, _pMsg); }
 
 		IAllocator* getAllocator() const { return m_pAllocator; }
+
 		ILogger* getLogger() const { return m_pLogger; }
+		void setLogger(ILogger* _pLogger) { m_pLogger = _pLogger; }
 		IInferResultType* getInferResultType() const { return m_pInferResultType; }
+		void setInferResultType(IInferResultType* _pInferResultType) { m_pInferResultType = _pInferResultType; }
 
 		template <class ReturnType = void, class ... ParameterTypes>
 		Function& addFunction(const char* _pFunctionName = nullptr, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
