@@ -15,8 +15,8 @@ void spvgentwo::Function::write(IWriter* _pWriter, spv::Id& _resultId)
 		bb.write(_pWriter, _resultId);
 	}
 
-	Instruction end(m_pModule, spv::Op::OpFunctionEnd);
-	end.write(_pWriter, _resultId);
+	//Instruction end(m_pModule, spv::Op::OpFunctionEnd);
+	m_FunctionEnd.write(_pWriter, _resultId);
 }
 
 spvgentwo::Instruction* spvgentwo::Function::getParameter(unsigned int _index)

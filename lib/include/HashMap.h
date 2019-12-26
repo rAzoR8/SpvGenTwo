@@ -62,8 +62,8 @@ namespace spvgentwo
 		const Bucket& getBucket(const unsigned int _index) const { return m_pBuckets[_index]; }
 		unsigned int getBucketCount() const { return m_Buckets; }
 
-		Iterator begin();
-		Iterator end() { return Iterator(m_pBuckets + m_Buckets, m_pBuckets + m_Buckets, nullptr); }
+		Iterator begin() const;
+		Iterator end() const { return Iterator(m_pBuckets + m_Buckets, m_pBuckets + m_Buckets, nullptr); }
 
 	private:
 		Bucket* m_pBuckets = nullptr;
@@ -269,7 +269,7 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline typename HashMap<Key, Value>::Iterator HashMap<Key, Value>::begin()
+	inline typename HashMap<Key, Value>::Iterator HashMap<Key, Value>::begin() const
 	{
 		for (unsigned int i = 0u; i < m_Buckets; ++i)
 		{

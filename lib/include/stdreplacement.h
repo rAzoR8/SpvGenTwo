@@ -217,6 +217,12 @@ namespace spvgentwo::traits
 		}
 	}
 
+	template <class T>
+	T& to_ref(T& _ref) { return _ref; }
+
+	template <class T>
+	T& to_ref(T* _ptr) { return *_ptr; }
+
 	template <int N, int I, class Element, class... Args>
 	auto selectNthElement(Element&& elem, Args&& ... args) 
 	{

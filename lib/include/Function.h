@@ -18,8 +18,10 @@ namespace spvgentwo
 
 		// OpFunction 
 		Instruction* getFunction() { return &m_Function; }
-		Instruction* getReturnType() { return m_pReturnType; }
-		Instruction* getFunctionType() { return m_pFunctionType; }
+		const Instruction* getFunction() const { return &m_Function; }
+		Instruction* getReturnType() const { return m_pReturnType; }
+		Instruction* getFunctionType() const { return m_pFunctionType; }
+		const Instruction* getFunctionEnd() const { return &m_FunctionEnd; }
 
 		Module* getModule() { return m_pModule; }
 		const Module* getModule() const { return m_pModule; }
@@ -55,6 +57,8 @@ namespace spvgentwo
 		Instruction* m_pReturnType = nullptr;
 
 		Instruction m_Function; // OpFunction
+		Instruction m_FunctionEnd;
+
 		Instruction* m_pFunctionType = nullptr;
 
 		List<Instruction> m_Parameters; // OpFunctionParameters
@@ -66,6 +70,7 @@ namespace spvgentwo
 		m_pModule(_pModule),
 		m_pReturnType(_pReturnType),
 		m_Function(this),
+		m_FunctionEnd(this, spv::Op::OpFunctionEnd),
 		m_Parameters(_pModule->getAllocator())
 	{
 		// function signature type

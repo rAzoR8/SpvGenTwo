@@ -87,10 +87,6 @@ namespace spvgentwo
 		// get opcode encoded with instruction word count [16 bit op code, 16 bit number of operand words] 
 		unsigned int getOpCode() const;
 
-#ifdef DEBUG_PRINT
-		void debugPrint() const;
-#endif
-
 		// get ID that was assigned during write(...)
 		spv::Id getAssignedID() const;
 

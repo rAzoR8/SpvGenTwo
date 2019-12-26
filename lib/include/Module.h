@@ -130,6 +130,10 @@ namespace spvgentwo
 		template <class T> // image variable
 		Instruction* storageBuffer(const char* _pName, const T& _dynTypeDesc) { return variable<T>(spv::StorageClass::StorageBuffer, _dynTypeDesc, _pName); }
 
+		// iterates over all instructions in this module in serialization order, should be called AFTER write() which does some finalization
+		template <class Func> // func takes const Instruction& -> func(instr)
+		void iterateInstructions(const Func& _func) const;
+
 	private:
 		template <class ... TypeInstr>
 		void compositeType(Type& _compositeTye, Instruction* _pSubType, TypeInstr ... _types);
@@ -257,6 +261,83 @@ namespace spvgentwo
 		else
 		{
 			return variable<T>(_storageClass, _pName, constant(_initialValue));		
+		}
+	}
+
+	template<class Func, class Container>
+	inline void iterateInstructionContainer(const Func& _func, const Container& _container)
+	{
+		static_assert(traits::is_invocable_v<Func, const Instruction&>, "Func _func is not invocable: _func(const Instruction& _instr)");
+
+		for (const auto& instr : _container)
+		{
+			_func(traits::to_ref(instr));
+		}
+	}
+
+	template<class Func>
+	inline void Module::iterateInstructions(const Func& _func) const
+	{
+		static_assert(traits::is_invocable_v<Func, const Instruction&>, "Func _func is not invocable: _func(const Instruction& _instr)");
+		iterateInstructionContainer(_func, m_Capabilities);
+		iterateInstructionContainer(_func, m_Extensions);
+
+		for (const auto& [key, value] : m_ExtInstrImport)
+		{
+			_func(value);
+		}
+
+		_func(m_MemoryModel);
+
+		for (const EntryPoint& ep : m_EntryPoints)
+		{
+			_func(*ep.getEntryPoint());
+		}
+		for (const EntryPoint& ep : m_EntryPoints)
+		{
+			iterateInstructionContainer(_func, ep.getExecutionModes());
+		}
+
+		iterateInstructionContainer(_func, m_SourceStrings);
+		iterateInstructionContainer(_func, m_Names);
+		iterateInstructionContainer(_func, m_ModuleProccessed);
+		iterateInstructionContainer(_func, m_Decorations);
+		iterateInstructionContainer(_func, m_TypesAndConstants);
+		iterateInstructionContainer(_func, m_GlobalVariables);
+
+		auto iterateFuncion = [&_func](const Function& f)
+		{
+			_func(*f.getFunction());
+			iterateInstructionContainer(_func, f.getParameters());
+			for (const BasicBlock& bb : f)
+			{
+				iterateInstructionContainer(_func, bb);
+			}
+			_func(*f.getFunctionEnd());
+		};
+
+		for (Function& fun : m_Functions)
+		{
+			if (fun.empty())
+			{
+				iterateFuncion(fun);
+			}
+		}
+
+		// write functions with bodies
+		for (Function& fun : m_Functions)
+		{
+			if (fun.empty() == false)
+			{
+				iterateFuncion(fun);
+			}
+		}
+		for (EntryPoint& ep : m_EntryPoints)
+		{
+			if (ep.empty() == false) // can entry points be empty forward decls?
+			{
+				iterateFuncion(ep);
+			}
 		}
 	}
 } // !spvgentwo

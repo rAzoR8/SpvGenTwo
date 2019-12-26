@@ -26,6 +26,7 @@ namespace spvgentwo
 
 		// OpEntryPoint
 		Instruction* getEntryPoint() { return &m_EntryPoint; }
+		const Instruction* getEntryPoint() const { return &m_EntryPoint; }
 
 		template <class ... Args>
 		Instruction* addExecutionMode(const spv::ExecutionMode _mode, Args ... _args);

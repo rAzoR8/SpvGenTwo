@@ -671,41 +671,6 @@ bool spvgentwo::Instruction::validateImageOperandType(spv::Op _op, Instruction* 
 	return true;
 }
 
-#ifdef DEBUG_PRINT
-
-#include <stdio.h>
-
-void spvgentwo::Instruction::debugPrint() const
-{
-	printf("%u = %u ", getAssignedID(), m_Operation);
-
-	//_pWriter->put(getOpCode());
-
-	for (const Operand& operand : *this)
-	{
-		switch (operand.type)
-		{
-		case Operand::Type::Instruction:
-			printf("i%u ", operand.instruction->getAssignedID());
-			break;
-		case Operand::Type::ResultId:
-			printf("r%u ", operand.resultId);
-			break;
-		case Operand::Type::BranchTarget:
-			printf("b%u ", operand.branchTarget->front().getResultId());
-			break;
-		case Operand::Type::Literal:
-			printf("l%u ", operand.value.value);
-			break;
-		default:
-			break;
-		}
-	}
-
-	putchar('\n');
-}
-#endif // !DEBUG_PRINT
-
 spv::Id spvgentwo::Instruction::getAssignedID() const
 {
 	bool resultId = false, resultType = false;

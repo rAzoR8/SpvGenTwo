@@ -241,6 +241,40 @@ int main(int argc, char* argv[])
 		module.write(&writer);
 	}
 
+	{
+		auto instrPrint = [](const Instruction& instr)
+		{
+			printf("%u = %u ", instr.getAssignedID(), instr.getOperation());
+
+			//_pWriter->put(getOpCode());
+
+			for (const Operand& operand : instr)
+			{
+				switch (operand.type)
+				{
+				case Operand::Type::Instruction:
+					printf("i%u ", operand.instruction->getAssignedID());
+					break;
+				case Operand::Type::ResultId:
+					printf("r%u ", operand.resultId);
+					break;
+				case Operand::Type::BranchTarget:
+					printf("b%u ", operand.branchTarget->front().getResultId());
+					break;
+				case Operand::Type::Literal:
+					printf("l%u ", operand.value.value);
+					break;
+				default:
+					break;
+				}
+			}
+
+			putchar('\n');
+		};
+
+		module.iterateInstructions(instrPrint);
+	}
+
 	system("spirv-dis test.spv");
 	system("spirv-val test.spv");
 
