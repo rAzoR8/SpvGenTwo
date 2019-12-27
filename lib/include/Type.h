@@ -267,9 +267,18 @@ namespace spvgentwo
 		bool isSampledImage() const { return m_Type == spv::Op::OpTypeSampledImage; }
 		bool isVector() const { return m_Type == spv::Op::OpTypeVector; }
 		bool isMatrix() const { return m_Type == spv::Op::OpTypeMatrix; }
-		bool isInt() const { return m_Type == spv::Op::OpTypeInt; }
-		bool isUInt() const { return m_Type == spv::Op::OpTypeInt && m_IntSign == false; }
-		bool isSInt() const { return m_Type == spv::Op::OpTypeInt && m_IntSign; }
+		bool isInt(unsigned int _bitWidth = 0u) const { return m_Type == spv::Op::OpTypeInt && (_bitWidth == 0u || _bitWidth == m_IntWidth); }
+		bool isUInt(unsigned int _bitWidth = 0u) const { return isInt(_bitWidth) && m_IntSign == false; }
+		bool isSInt(unsigned int _bitWidth = 0u) const { return isInt(_bitWidth) && m_IntSign; }
+		bool isI16() const { return isInt(16u); }
+		bool isU16() const { return isUInt(16u); }
+		bool isS16() const { return isSInt(16u); }
+		bool isI32() const { return isInt(32u); }
+		bool isU32() const { return isUInt(32u); }
+		bool isS32() const { return isSInt(32u); }
+		bool isI64() const { return isInt(64u); }
+		bool isU64() const { return isUInt(64u); }
+		bool isS64() const { return isSInt(64u); }
 		bool isFloat() const { return m_Type == spv::Op::OpTypeFloat; }
 		bool isF16() const { return m_Type == spv::Op::OpTypeFloat && m_FloatWidth == 16u; }
 		bool isF32() const { return m_Type == spv::Op::OpTypeFloat && m_FloatWidth == 32u; }

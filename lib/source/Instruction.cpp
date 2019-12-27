@@ -500,6 +500,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 
 	bool isDref = false;
 	bool isProj = false;
+	bool isComponent = false;
 	bool coordCanBeInt = false;
 	bool checkCoords = false;
 
@@ -570,6 +571,13 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 			_pDrefOrCompnent == nullptr; // Dref argument must be null otherwise
 	};
 
+	auto checkComponent = [&]() -> bool
+	{
+		return isComponent ?
+			_pDrefOrCompnent != nullptr && _pDrefOrCompnent->getType()->isI32() :
+			_pDrefOrCompnent == nullptr; // Dref argument must be null otherwise
+	};
+
 	switch (_imageSampleOp)
 	{
 	case spv::Op::OpImageFetch:
@@ -584,14 +592,17 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 			return nullptr;
 		}
 		break;
-	case spv::Op::OpImageSampleImplicitLod: isProj = false; checkCoords = true; isDref = false; coordCanBeInt = false; break;
-	case spv::Op::OpImageSampleExplicitLod: isProj = false; checkCoords = true;  isDref = false; coordCanBeInt = true; break;
-	case spv::Op::OpImageSampleProjImplicitLod: isProj = true; checkCoords = true; isDref = false; coordCanBeInt = true; break;
-	case spv::Op::OpImageSampleProjExplicitLod: isProj = true; checkCoords = true; isDref = false; coordCanBeInt = false; break;
-	case spv::Op::OpImageSampleDrefImplicitLod: isProj = false; checkCoords = true; isDref = true; coordCanBeInt = false; break;
-	case spv::Op::OpImageSampleDrefExplicitLod: isProj = false; checkCoords = true;  isDref = true; coordCanBeInt = false; break;
-	case spv::Op::OpImageSampleProjDrefImplicitLod: isProj = true; checkCoords = true; isDref = true; coordCanBeInt = false; break;
-	case spv::Op::OpImageSampleProjDrefExplicitLod: isProj = true; checkCoords = true; isDref = true; coordCanBeInt = false; break;
+	case spv::Op::OpImageGather: checkCoords = true; isComponent = true; break;
+	case spv::Op::OpImageDrefGather: isDref = true;  checkCoords = true; isComponent = true; break;
+
+	case spv::Op::OpImageSampleImplicitLod: checkCoords = true; break;
+	case spv::Op::OpImageSampleExplicitLod: checkCoords = true; coordCanBeInt = true; break;
+	case spv::Op::OpImageSampleProjImplicitLod: isProj = true; checkCoords = true; coordCanBeInt = true; break;
+	case spv::Op::OpImageSampleProjExplicitLod: isProj = true; checkCoords = true; break;
+	case spv::Op::OpImageSampleDrefImplicitLod: checkCoords = true; isDref = true; break;
+	case spv::Op::OpImageSampleDrefExplicitLod: checkCoords = true;  isDref = true; break;
+	case spv::Op::OpImageSampleProjDrefImplicitLod: isProj = true; checkCoords = true; isDref = true; break;
+	case spv::Op::OpImageSampleProjDrefExplicitLod: isProj = true; checkCoords = true; isDref = true; break;
 
 		break;
 	default:
@@ -599,7 +610,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 		return nullptr;
 	}
 
-	if (!checkDref() || !checkCoordinateType())
+	if (!checkDref() || !checkCoordinateType() || !checkComponent())
 	{
 		return nullptr;
 	}
