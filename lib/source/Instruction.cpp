@@ -512,12 +512,17 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 		switch (imageType->getImageDimension())
 		{
 		case spv::Dim::Dim1D:
-		case spv::Dim::Dim2D:
-		case spv::Dim::Dim3D:
-			dim += unsigned(imageType->getImageDimension()) + 1u;
+		case spv::Dim::Buffer:
+			dim = 1u;
 			break;
+		case spv::Dim::Dim2D:
+		case spv::Dim::Rect:
+		case spv::Dim::SubpassData:
+			dim = 2u;
+			break;
+		case spv::Dim::Dim3D:
 		case spv::Dim::Cube:
-			dim += 2u; //+ 3u;
+			dim = 3u;
 			break;
 		default:
 			module.logError("Image dimension not supported/implemented");
