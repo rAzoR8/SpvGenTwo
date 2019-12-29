@@ -34,8 +34,14 @@ namespace spvgentwo
 		IInferResultType* getInferResultType() const { return m_pInferResultType; }
 		void setInferResultType(IInferResultType* _pInferResultType) { m_pInferResultType = _pInferResultType; }
 
+		// add empty function
+		Function& addFunction();
+
 		template <class ReturnType = void, class ... ParameterTypes>
 		Function& addFunction(const char* _pFunctionName = nullptr, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
+
+		// add empty entry point
+		EntryPoint& addEntryPoint();
 
 		template <class ReturnType = void, class ... ParameterTypes>
 		EntryPoint& addEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);

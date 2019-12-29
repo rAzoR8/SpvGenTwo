@@ -42,6 +42,16 @@ void spvgentwo::Module::log(const LogLevel _level, const char* _pMsg)
 #endif
 }
 
+spvgentwo::Function& spvgentwo::Module::addFunction()
+{
+	return m_Functions.emplace_back(this);
+}
+
+spvgentwo::EntryPoint& spvgentwo::Module::addEntryPoint()
+{
+	return m_EntryPoints.emplace_back(this);
+}
+
 spvgentwo::Type spvgentwo::Module::newType()
 {
 	return Type(m_pAllocator);
