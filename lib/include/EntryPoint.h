@@ -14,8 +14,13 @@ namespace spvgentwo
 	{
 		friend class Module;
 	public:
+		// empty function, call setReturnType() first, then use addParameters() and then finalize() to create the function
+		EntryPoint(Module* _pModule);
+
+		// creates the whole function signature, finalize() does NOT need to be called
 		template <class ... TypeInstr>
 		EntryPoint(Module* _pModule, const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ... _paramTypeInstructions);
+		
 		~EntryPoint() override;
 
 		// get all the global OpVariables with StorageClass != Function used in this function
@@ -32,9 +37,12 @@ namespace spvgentwo
 		Instruction* addExecutionMode(const spv::ExecutionMode _mode, Args ... _args);
 		const List<Instruction>& getExecutionModes() const { return m_ExecutionModes; }
 
+		// overrides Functions finalize (used internally), _pEntryPointName is mandatory parameter, returns opFunction
+		Instruction* finalize(const spv::ExecutionModel _model, const Flag<spv::FunctionControlMask> _control, const char* _pEntryPointName);
+
 	private:
 		// only to be called by the Module before serialization
-		void finalize(const GlobalInterfaceVersion _version);
+		void finalizeGlobalInterface(const GlobalInterfaceVersion _version);
 
 	private:
 		Instruction m_EntryPoint; // OpEntryPoint
@@ -52,7 +60,7 @@ namespace spvgentwo
 		m_ExecutionModel(_model),
 		m_pEntryPointName(_pEntryPointName)
 	{
-		m_EntryPoint.opEntryPoint(_model, getFunction(), m_pEntryPointName);
+		m_EntryPoint.opEntryPoint(_model, &m_Function, m_pEntryPointName);
 	}
 
 	template<class ...Args>

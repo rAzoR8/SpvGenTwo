@@ -338,11 +338,11 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	{
 		if(m_spvVersion < makeVersion(1u, 4u))
 		{
-			ep.finalize(GlobalInterfaceVersion::SpirV1_3);
+			ep.finalizeGlobalInterface(GlobalInterfaceVersion::SpirV1_3);
 		}
 		else
 		{
-			ep.finalize(GlobalInterfaceVersion::SpirV14_x);
+			ep.finalizeGlobalInterface(GlobalInterfaceVersion::SpirV14_x);
 		}
 
 		ep.getEntryPoint()->write(_pWriter, m_maxId);
