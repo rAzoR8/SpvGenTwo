@@ -158,6 +158,7 @@ int main(int argc, char* argv[])
 		Instruction* lod = module.constant(0.5f);
 		Instruction* normSample = bb->opImageSampleExplicitLodLevel(normal, coord, lod);
 		normSample = bb->opImageSampleImplictLod(normal, coord);
+		normSample = bb->opImageDrefGather(normal, coord, lod); // use lod as dref
 
 		Instruction* intCoord = module.constant(make_vector(512, 512));
 		Instruction* image = bb->opLoad(uniImage);

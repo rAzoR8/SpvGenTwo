@@ -324,6 +324,20 @@ namespace spvgentwo
 		{
 			return opImageSample(spv::Op::OpImageFetch, _pImage, _pCoordinate, nullptr, _imageOperands, _operands...);
 		}
+
+		// Gather
+		template <class ...ImageOperands>
+		Instruction* opImageGather(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pComponent, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		{
+			return opImageSample(spv::Op::OpImageGather, _pSampledImage, _pCoordinate, _pComponent, _imageOperands, _operands...);
+		}
+
+		template <class ...ImageOperands>
+		Instruction* opImageDrefGather(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		{
+			return opImageSample(spv::Op::OpImageDrefGather, _pSampledImage, _pCoordinate, _pDepthReference, _imageOperands, _operands...);
+		}
+
 #pragma endregion
 
 	private:

@@ -602,8 +602,17 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 		}	
 		checkCoords = true; coordCanBeInt = true;
 		break;
-	case spv::Op::OpImageGather: checkCoords = true; isComponent = true; break;
-	case spv::Op::OpImageDrefGather: isDref = true;  checkCoords = true; isComponent = true; break;
+	case spv::Op::OpImageDrefGather:
+	case spv::Op::OpImageGather: 
+		isComponent = _imageSampleOp == spv::Op::OpImageGather;
+		isDref = _imageSampleOp == spv::Op::OpImageDrefGather;
+		checkCoords = true;  coordCanBeInt = true;
+		if (imageType->getImageDimension() != spv::Dim::Dim2D && imageType->getImageDimension() != spv::Dim::Cube && imageType->getImageDimension() != spv::Dim::Rect)
+		{
+			module.logError("OpImageGather requres Dim of sampled image to be 2D, Cube or Rect");
+			return nullptr;
+		}
+		break;
 	case spv::Op::OpImageSampleImplicitLod: checkCoords = true; break;
 	case spv::Op::OpImageSampleExplicitLod: checkCoords = true; coordCanBeInt = true; break;
 	case spv::Op::OpImageSampleProjImplicitLod: isProj = true; checkCoords = true; coordCanBeInt = true; break;
