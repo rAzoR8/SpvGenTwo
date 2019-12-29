@@ -6,7 +6,7 @@ namespace spvgentwo
 {
 	namespace extinstr
 	{
-		#include  <vulkan/GLSL.std.450.h>
+		#include  <GLSL.std.450.h>
 	} // !extinstr
 
 	class GLSL450Intruction : protected Instruction

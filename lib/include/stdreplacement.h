@@ -4,15 +4,14 @@
 
 #include <cstddef>
 
-#ifndef DONT_REPLACE_PLACEMENTNEW
+#ifndef SPVGENTWO_DONT_REPLACE_PLACEMENTNEW
 inline void* operator new(size_t size, void* ptr) noexcept { (void)size; return ptr; }
 #else
 #include <new>
 #endif
 
-//#include <type_traits>
 
-#ifdef DONT_REPLACE_TRAITS
+#ifdef SPVGENTWO_DONT_REPLACE_TRAITS
 #include <type_traits>
 #include <utility>
 namespace spvgentwo::stdrep

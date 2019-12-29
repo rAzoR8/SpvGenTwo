@@ -9,6 +9,16 @@ macro(add_include_folder include_folder includes)
 	set(${includes} "${${includes}};${CMAKE_CURRENT_LIST_DIR}/${include_folder}")
 endmacro()
 
+function(cmake_option option description default)
+	option(${option} description ${default})
+	if(${option})
+		message(STATUS "'${option}' is TRUE")
+		add_definitions(-D"${option}"=1)
+	else()
+		message(STATUS "'${option}' is FALSE")
+	endif()
+endfunction()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -26,14 +36,18 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 project(spvGenTwo)
 
 #dependencies
-find_package(Vulkan REQUIRED)
+find_package(Vulkan)
+
+set(SPIRV_INCLUDE_DIR "${Vulkan_INCLUDE_DIR}/vulkan/" CACHE STRING "Path containing spirv.hpp11 and GLSL.std.450.h")
+
+cmake_option(SPVGENTWO_NO_LOGGING "Disable Logging" FALSE)
+cmake_option(SPVGENTWO_DONT_REPLACE_PLACEMENTNEW "Use replacement new from <new> if TRUE" FALSE)
+cmake_option(SPVGENTWO_DONT_REPLACE_TRAITS "Use traits from <type_traits> if TRUE" FALSE)
 
 #lib sources
 add_sources("lib/source/*.cpp" "lib_sources")
 add_include_folder("lib/include" "lib_includes")
 
-#set(STB_INCLUDE_PATH "${CMAKE_CURRENT_LIST_DIR}/thirdparty/stb/" CACHE STRING "")
-#set(lib_includes "${lib_includes};${STB_INCLUDE_PATH}")
 set(lib_includes "${lib_includes}")
 
 #cli sources
@@ -44,15 +58,11 @@ add_include_folder("cli/include" "cli_includes")
 add_library(lib SHARED "${lib_sources}")
 target_include_directories(lib PUBLIC "${lib_includes}")
 
-target_include_directories(lib PRIVATE "${Vulkan_INCLUDE_DIR}")
-#target_link_libraries(lib PRIVATE "${Vulkan_LIBRARIES}")
-
-#find_package(Glslang REQUIRED)
-#target_link_libraries(lib PRIVATE glslang SPIRV)
+target_include_directories(lib PRIVATE "${SPIRV_INCLUDE_DIR}")
 
 #cli project
 add_executable(cli "${cli_sources}")
-target_include_directories(cli PUBLIC "${cli_includes};${lib_includes};${Vulkan_INCLUDE_DIR}")
+target_include_directories(cli PUBLIC "${cli_includes};${lib_includes};${SPIRV_INCLUDE_DIR}")
 target_link_libraries(cli PUBLIC lib)
 
 message(STATUS "")

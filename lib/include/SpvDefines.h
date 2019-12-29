@@ -1,7 +1,7 @@
 #pragma once
 
 #define SPV_ENABLE_UTILITY_CODE
-#include <vulkan/spirv.hpp11>
+#include <spirv.hpp11>
 
 namespace spvgentwo
 {
