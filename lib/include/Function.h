@@ -11,6 +11,10 @@ namespace spvgentwo
 	class Function : public List<BasicBlock>
 	{
 	public:
+		// empty function, call setReturnType() first, then use addParameters() and then finalize() to create the function
+		Function(Module* _pModule);
+
+		// creates the whole function signature, finalize() does NOT need to be called
 		template <class ... TypeInstr>
 		Function(Module* _pModule, const char* _pName, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ... _paramTypeInstructions);
 
@@ -48,9 +52,15 @@ namespace spvgentwo
 		template <class T>
 		Instruction* variable(const T& _initialValue, const char* _pName = nullptr);
 
-	private:
+		// creates m_pFunctionType with OpTypeFunction and _pReturnType (opperands are added by addParameters), returns m_pFunctionType
+		Instruction* setReturnType(Instruction* _pReturnType);
+
+		// adds opFunctionParameter(_pParamType) to m_parameters and _pParamType to m_pFunctionType, returns last opFunctionParameter generated
 		template <class ... TypeInstr>
-		void addParameters(Instruction* _pParamType, TypeInstr* ... _paramTypeInstructions);
+		Instruction* addParameters(Instruction* _pParamType, TypeInstr* ... _paramTypeInstructions);
+
+		// creates opFunction, m_pFunctionType must have been completed (all parameters added via addParameters), returns opFunction
+		Instruction* finalize(const Flag<spv::FunctionControlMask> _control, const char* _pName = nullptr);
 
 	protected:
 		Module* m_pModule = nullptr; // parent
@@ -74,27 +84,28 @@ namespace spvgentwo
 		m_Parameters(_pModule->getAllocator())
 	{
 		// function signature type
-		m_pFunctionType = m_pModule->compositeType(spv::Op::OpTypeFunction, _pReturnType);
+		setReturnType(_pReturnType);
 
 		if constexpr (sizeof...(_paramTypeInstructions) > 0)
 		{
 			addParameters(_paramTypeInstructions...);		
 		}
 
-		Instruction* pFunc = m_Function.opFunction(_control, _pReturnType, m_pFunctionType);
-		m_pModule->addName(pFunc, _pName);
+		finalize(_control, _pName);
 	}
 
 	template<class ... TypeInstr>
-	inline void Function::addParameters(Instruction* _pParamType, TypeInstr* ..._paramTypeInstructions)
+	inline Instruction* Function::addParameters(Instruction* _pParamType, TypeInstr* ..._paramTypeInstructions)
 	{
-		m_Parameters.emplace_back(this).opFunctionParameter(_pParamType);
+		Instruction* param = m_Parameters.emplace_back(this).opFunctionParameter(_pParamType);
 		m_pFunctionType->addOperand(_pParamType);
 
 		if constexpr (sizeof...(_paramTypeInstructions) > 0)
 		{
-			addParameters(_paramTypeInstructions...);
+			return addParameters(_paramTypeInstructions...);
 		}
+
+		return param;
 	}
 
 	template<class T>
