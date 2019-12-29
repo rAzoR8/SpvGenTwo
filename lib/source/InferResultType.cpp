@@ -30,7 +30,7 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 		return _module.type<unsigned int>();
 	case spv::Op::OpSNegate:
 	{
-		Type t(stdrep::move(_module.newType()));
+		Type t(_module.getAllocator());
 
 		if (_pType1->isVector())
 		{
@@ -105,13 +105,13 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 		// Result Type must be an OpTypeMatrix whose Column Type is a vector of ﬂoating - point type.
 		// Vector 1 must have the same type as the Column Type in Result Type.
 		// Vector 2 must be a vector with the same Component Type as the Component Type in Result Type.Its number of components must equal the number of columns in Result Type.
-		Type matType(stdrep::move(_module.newType()));
+		Type matType(_module.getAllocator());
 		matType.MatrixColumn(_pType2->getVectorComponentCount()).VectorElement(_pType1->getVectorComponentCount()).Float(_pType1->front().getFloatWidth());
 		return _module.addType(matType);
 	}
 	case spv::Op::OpDot:
 	{
-		Type floatType(stdrep::move(_module.newType()));
+		Type floatType(_module.getAllocator());
 		floatType.Float(_pType1->front().getFloatWidth());
 		return _module.addType(floatType);
 	}
@@ -120,7 +120,7 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 		// Matrix must be an object of type OpTypeMatrix.
 		// The number of columnsand the column size of Matrix must be the reverse of those in Result Type.
 		// The types of the scalar components in Matrixand Result Type must be the same.
-		Type matType(stdrep::move(_module.newType()));
+		Type matType(_module.getAllocator());
 		matType.MatrixColumn(_pType1->front().getVectorComponentCount()).VectorElement(_pType1->getMatrixColumnCount()) = _pType1->getBaseType();
 		return _module.addType(matType);
 	}
@@ -169,7 +169,7 @@ spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Module& _
 	case spv::Op::OpOrdered:
 	case spv::Op::OpUnordered:
 	{
-		Type t(stdrep::move(_module.newType()));
+		Type t(_module.getAllocator());
 
 		if (_pType1->isVector())
 		{
