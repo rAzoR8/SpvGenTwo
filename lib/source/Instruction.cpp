@@ -549,9 +549,9 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 
 		if (coordType->isScalarOrVectorOf(spv::Op::OpTypeInt))
 		{
-			if (coordCanBeInt == false || module.checkCapability(spv::Capability::Kernel) == false)
+			if (coordCanBeInt == false)
 			{
-				module.logError("Missing kernel capability for integer coordinates");
+				module.logError("Image operation does not support integer coordinates");
 				return false;
 			}
 		}
@@ -564,37 +564,46 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 		return true;
 	};
 
-	auto checkDref = [&]() -> bool
+	auto checkDrefComponent = [&]() -> bool
 	{
-		return isDref ?
-			_pDrefOrCompnent != nullptr && _pDrefOrCompnent->getType()->isF32() :
-			_pDrefOrCompnent == nullptr; // Dref argument must be null otherwise
-	};
-
-	auto checkComponent = [&]() -> bool
-	{
-		return isComponent ?
-			_pDrefOrCompnent != nullptr && _pDrefOrCompnent->getType()->isI32() :
-			_pDrefOrCompnent == nullptr; // Dref argument must be null otherwise
+		if (isDref || isComponent)
+		{
+			if (_pDrefOrCompnent == nullptr)
+			{
+				module.logError("Depth reference parameter is null");
+				return false;
+			}
+			if (isDref && _pDrefOrCompnent->getType()->isF32() == false)
+			{
+				module.logError("Depth reference value must be of type float (32bit)");
+				return false;
+			}
+			if (isComponent && _pDrefOrCompnent->getType()->isI32() == false)
+			{
+				module.logError("Component index must be of type integer (32bit)");
+				return false;
+			}
+		}
+		else if (_pDrefOrCompnent != nullptr)
+		{
+			module.logError("Image operation does not consume Component or Depth reference value, but operand was supplied");
+			return false;
+		}
+		return true;
 	};
 
 	switch (_imageSampleOp)
 	{
 	case spv::Op::OpImageFetch:
-		if (imageType->isImage() == false || (imageType->getImageSamplerAccess() != SamplerImageAccess::Sampled) || (imageType->getImageDimension() == spv::Dim::Cube))
+		if (type->isImage() == false || (imageType->getImageSamplerAccess() != SamplerImageAccess::Sampled) || (imageType->getImageDimension() == spv::Dim::Cube))
 		{
 			module.logError("OpImageFetch requires _pSampledImage of type opImage. Its Dim operand cannot be Cube, and its Sampled operand must be 1.");
 			return nullptr;
-		}
-		if (coordType->isInt() == false && coordType->isVectorOfInt() == false)
-		{
-			module.logError("OpImageFetch requires _pCoordinate to of type int (or vector of int)");
-			return nullptr;
-		}
+		}	
+		checkCoords = true; coordCanBeInt = true;
 		break;
 	case spv::Op::OpImageGather: checkCoords = true; isComponent = true; break;
 	case spv::Op::OpImageDrefGather: isDref = true;  checkCoords = true; isComponent = true; break;
-
 	case spv::Op::OpImageSampleImplicitLod: checkCoords = true; break;
 	case spv::Op::OpImageSampleExplicitLod: checkCoords = true; coordCanBeInt = true; break;
 	case spv::Op::OpImageSampleProjImplicitLod: isProj = true; checkCoords = true; coordCanBeInt = true; break;
@@ -610,7 +619,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 		return nullptr;
 	}
 
-	if (!checkDref() || !checkCoordinateType() || !checkComponent())
+	if (!checkDrefComponent() || !checkCoordinateType())
 	{
 		return nullptr;
 	}
