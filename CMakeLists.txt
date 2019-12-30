@@ -60,11 +60,11 @@ add_sources("common/source/*.cpp" "common_sources")
 add_include_folder("common/include" "common_includes")
 
 #cli project
-add_sources("cli/source/*.cpp" "cli_sources")
-add_include_folder("cli/include" "cli_includes")
+add_sources("example/source/*.cpp" "example_sources")
+add_include_folder("example/include" "example_includes")
 
-add_executable(cli "${cli_sources};${common_sources}")
-target_include_directories(cli PUBLIC "${common_includes};${cli_includes};${lib_includes};${SPIRV_INCLUDE_DIR}")
-target_link_libraries(cli PUBLIC lib)
+add_executable(example "${example_sources};${common_sources}")
+target_include_directories(example PUBLIC "${example_includes};${common_includes};${lib_includes};${SPIRV_INCLUDE_DIR}")
+target_link_libraries(example PUBLIC lib)
 
 message(STATUS "")
