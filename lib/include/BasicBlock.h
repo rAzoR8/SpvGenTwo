@@ -11,12 +11,18 @@ namespace spvgentwo
 
 	class BasicBlock : public List<Instruction>
 	{
+	private:
+
+		Function* m_pFunction = nullptr; // parent
 	public:
 
 		BasicBlock(Function* _pFunction);
-		~BasicBlock();
-
+		BasicBlock(BasicBlock&& _other) noexcept;
 		BasicBlock(const BasicBlock&) = delete;
+
+		virtual ~BasicBlock();
+
+		BasicBlock& operator=(BasicBlock&& _other) noexcept;
 
 		Function* getFunction() { return m_pFunction; }
 		const Function* getFunction() const { return m_pFunction; }
@@ -109,10 +115,6 @@ namespace spvgentwo
 	private:
 		BasicBlock& IntFltOp(Instruction* _pLeft, Instruction* _pRight, const spv::Op _int, const spv::Op _float);
 		BasicBlock& SUIntFltOp(Instruction* _pLeft, Instruction* _pRight, const spv::Op _unsigned, const spv::Op _signed, const spv::Op _float);
-
-	private:
-
-		Function* m_pFunction = nullptr; // parent
 	};
 
 	template<class TrueFunc, class FalseFunc>

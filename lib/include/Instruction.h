@@ -40,7 +40,11 @@ namespace spvgentwo
 		template <class ...Args>
 		Instruction(BasicBlock* _pBasicBlock, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
 
+		Instruction(Instruction&& _other) noexcept;
+
 		virtual ~Instruction();
+
+		Instruction& operator=(Instruction&& _other) noexcept;
 
 		Module* getModule();
 		const Module* getModule() const;

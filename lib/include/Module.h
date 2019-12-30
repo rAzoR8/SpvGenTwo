@@ -14,7 +14,11 @@ namespace spvgentwo
 	{
 	public:
 		Module(const unsigned int _spvVersion, IAllocator* _pAllocator, ILogger* _pLogger = nullptr, IInferResultType* _pInferResultType = nullptr);
+		Module(Module&& _other) noexcept;
+
 		~Module();
+
+		Module& operator=(Module&& _other) noexcept;
 
 		static constexpr unsigned int GeneratorId = makeGeneratorId(0xfa, 0);
 
@@ -180,7 +184,7 @@ namespace spvgentwo
 
 		List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function
 
-		unsigned int m_maxId = 0u;
+		//unsigned int m_maxId = 0u;
 	};
 
 	template<class ReturnType, class ...ParameterTypes>

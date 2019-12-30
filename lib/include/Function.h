@@ -18,7 +18,11 @@ namespace spvgentwo
 		template <class ... TypeInstr>
 		Function(Module* _pModule, const char* _pName, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ... _paramTypeInstructions);
 
+		Function(Function&& _other) noexcept;
+
 		virtual ~Function();
+
+		Function& operator=(Function&& _other) noexcept;
 
 		// OpFunction 
 		Instruction* getFunction() { return &m_Function; }

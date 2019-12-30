@@ -5,8 +5,28 @@
 #include "InferResultType.h"
 #include "Module.h"
 
+spvgentwo::Instruction::Instruction(Instruction&& _other) noexcept :
+	List(stdrep::move(_other)),
+	m_Operation(_other.m_Operation),
+	m_parentType(_other.m_parentType),
+	m_parent(_other.m_parent)
+{
+}
+
 spvgentwo::Instruction::~Instruction()
 {
+}
+
+spvgentwo::Instruction& spvgentwo::Instruction::operator=(Instruction&& _other) noexcept
+{
+	if (this == &_other) return *this;
+
+	List::operator=(stdrep::move(_other));
+	m_Operation = _other.m_Operation;
+	m_parentType = _other.m_parentType;
+	m_parent = _other.m_parent;
+
+	return *this;
 }
 
 spvgentwo::BasicBlock* spvgentwo::Instruction::getBasicBlock()

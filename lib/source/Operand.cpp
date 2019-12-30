@@ -66,6 +66,58 @@ spvgentwo::Operand::Operand(Operand&& _other) noexcept : type(_other.type)
 	}
 }
 
+spvgentwo::Operand& spvgentwo::Operand::operator=(const Operand& _other)
+{
+	if (this == &_other) return *this;
+
+	type = _other.type;
+	switch (type)
+	{
+	case Type::Instruction:
+		instruction = _other.instruction;
+		break;
+	case Type::BranchTarget:
+		branchTarget = _other.branchTarget;
+		break;
+	case Type::Literal:
+		value = _other.value;
+		break;
+	case Type::ResultId:
+		resultId = _other.resultId;
+		break;
+	default:
+		break;
+	}
+
+	return *this;
+}
+
+spvgentwo::Operand& spvgentwo::Operand::operator=(Operand&& _other) noexcept
+{
+	if (this == &_other) return *this;
+
+	type = _other.type;
+	switch (type)
+	{
+	case Type::Instruction:
+		instruction = _other.instruction;
+		break;
+	case Type::BranchTarget:
+		branchTarget = _other.branchTarget;
+		break;
+	case Type::Literal:
+		value = _other.value;
+		break;
+	case Type::ResultId:
+		resultId = _other.resultId;
+		break;
+	default:
+		break;
+	}
+
+	return *this;
+}
+
 bool spvgentwo::Operand::operator==(const Operand& _other) const 
 {
 	return type == _other.type && 

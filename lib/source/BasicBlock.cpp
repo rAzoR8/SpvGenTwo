@@ -8,8 +8,32 @@ spvgentwo::BasicBlock::BasicBlock(Function* _pFunction) : List(_pFunction->getAl
 	addInstruction()->opLabel();
 }
 
+spvgentwo::BasicBlock::BasicBlock(BasicBlock&& _other) noexcept : 
+	List(stdrep::move(_other)),
+	m_pFunction(_other.m_pFunction)
+{
+	if (empty())
+	{
+		addInstruction()->opLabel();
+	}
+}
+
 spvgentwo::BasicBlock::~BasicBlock()
 {
+}
+
+spvgentwo::BasicBlock& spvgentwo::BasicBlock::operator=(BasicBlock&& _other) noexcept
+{
+	if (this == &_other) return *this;
+
+	List::operator=(stdrep::move(_other));
+	m_pFunction = _other.m_pFunction;
+	if (empty())
+	{
+		addInstruction()->opLabel();
+	}
+
+	return *this;
 }
 
 spvgentwo::Module* spvgentwo::BasicBlock::getModule()

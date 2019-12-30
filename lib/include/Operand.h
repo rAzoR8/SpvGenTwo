@@ -58,6 +58,9 @@ namespace spvgentwo
 
 		void write(IWriter* _pWriter) const;
 
+		Operand& operator=(const Operand& _other);
+		Operand& operator=(Operand&& _other) noexcept;
+
 		bool operator==(const Operand& _other) const;
 
 		bool operator==(const BasicBlock* _target) const;

@@ -28,6 +28,56 @@ spvgentwo::Module::Module(const unsigned int _spvVersion, IAllocator* _pAllocato
 {
 }
 
+spvgentwo::Module::Module(Module&& _other) noexcept:
+	m_pAllocator(_other.m_pAllocator),
+	m_pLogger(_other.m_pLogger),
+	m_pInferResultType(_other.m_pInferResultType),
+	m_spvVersion(_other.m_spvVersion),
+	m_Functions(stdrep::move(_other.m_Functions)),
+	m_EntryPoints(stdrep::move(_other.m_EntryPoints)),
+	m_Capabilities(stdrep::move(_other.m_Capabilities)),
+	m_Extensions(stdrep::move(_other.m_Extensions)),
+	m_ExtInstrImport(stdrep::move(_other.m_ExtInstrImport)),
+	m_MemoryModel(stdrep::move(m_MemoryModel)),
+	m_SourceStrings(stdrep::move(_other.m_SourceStrings)),
+	m_Names(stdrep::move(_other.m_Names)),
+	m_ModuleProccessed(stdrep::move(_other.m_ModuleProccessed)),
+	m_Decorations(stdrep::move(_other.m_Decorations)),
+	m_TypesAndConstants(stdrep::move(_other.m_TypesAndConstants)),
+	m_TypeToInstr(stdrep::move(_other.m_TypeToInstr)),
+	m_InstrToType(stdrep::move(_other.m_InstrToType)),
+	m_ConstantBuilder(stdrep::move(_other.m_ConstantBuilder)),
+	m_GlobalVariables(stdrep::move(_other.m_GlobalVariables))
+{
+}
+
+spvgentwo::Module& spvgentwo::Module::operator=(Module&& _other) noexcept
+{
+	if (this == &_other) return *this;
+
+	m_pAllocator = _other.m_pAllocator;
+	m_pLogger = _other.m_pLogger;
+	m_pInferResultType = _other.m_pInferResultType;
+	m_spvVersion = _other.m_spvVersion;
+	m_Functions = stdrep::move(_other.m_Functions);
+	m_EntryPoints = stdrep::move(_other.m_EntryPoints);
+	m_Capabilities = stdrep::move(_other.m_Capabilities);
+	m_Extensions = stdrep::move(_other.m_Extensions);
+	m_ExtInstrImport = stdrep::move(_other.m_ExtInstrImport);
+	m_MemoryModel = stdrep::move(m_MemoryModel);
+	m_SourceStrings = stdrep::move(_other.m_SourceStrings);
+	m_Names = stdrep::move(_other.m_Names);
+	m_ModuleProccessed = stdrep::move(_other.m_ModuleProccessed);
+	m_Decorations = stdrep::move(_other.m_Decorations);
+	m_TypesAndConstants = stdrep::move(_other.m_TypesAndConstants);
+	m_TypeToInstr = stdrep::move(_other.m_TypeToInstr);
+	m_InstrToType = stdrep::move(_other.m_InstrToType);
+	m_ConstantBuilder = stdrep::move(_other.m_ConstantBuilder);
+	m_GlobalVariables = stdrep::move(_other.m_GlobalVariables);
+
+	return *this;
+}
+
 spvgentwo::Module::~Module()
 {
 }
@@ -336,7 +386,7 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 		}
 	}
 
-	m_maxId = 0u;
+	spv::Id maxId = 0u;
 
 	// write header
 	_pWriter->put(spv::MagicNumber);
@@ -345,14 +395,14 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	const long boundsPos = _pWriter->put(1024u)  - 4u; // bounds dummy
 	_pWriter->put(0u); // schema
 
-	auto writeInstr = [this, _pWriter](Instruction& instr)
+	auto writeInstr = [&maxId, _pWriter](Instruction& instr)
 	{
-		instr.write(_pWriter, m_maxId);
+		instr.write(_pWriter, maxId);
 	};
 
 	iterateInstructions(writeInstr);
 
-	_pWriter->putAt(m_maxId + 1u, boundsPos);
+	_pWriter->putAt(maxId + 1u, boundsPos);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, const char* _pName, Instruction* _pInitialzer)

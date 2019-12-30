@@ -11,8 +11,33 @@ spvgentwo::Function::Function(Module* _pModule) :
 {
 }
 
+spvgentwo::Function::Function(Function&& _other) noexcept :
+	List(stdrep::move(_other)),
+	m_pModule(_other.m_pModule),
+	m_pReturnType(_other.m_pReturnType),
+	m_Function(stdrep::move(_other.m_Function)),
+	m_FunctionEnd(this, spv::Op::OpFunctionEnd), // no need to move
+	m_Parameters(stdrep::move(_other.m_Parameters))
+{
+}
+
 spvgentwo::Function::~Function()
 {
+}
+
+spvgentwo::Function& spvgentwo::Function::operator=(Function&& _other) noexcept
+{
+	if (this == &_other) return *this;
+
+	List::operator=(stdrep::move(_other));
+
+	m_pModule = _other.m_pModule;
+	m_pReturnType = _other.m_pReturnType;
+	m_Function = stdrep::move(_other.m_Function);
+	//m_FunctionEnd(this, spv::Op::OpFunctionEnd), // no need to move
+	m_Parameters = stdrep::move(_other.m_Parameters);
+
+	return *this;
 }
 
 void spvgentwo::Function::write(IWriter* _pWriter, spv::Id& _resultId)
