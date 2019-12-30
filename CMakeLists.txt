@@ -50,19 +50,21 @@ add_include_folder("lib/include" "lib_includes")
 
 set(lib_includes "${lib_includes}")
 
-#cli sources
-add_sources("cli/source/*.cpp" "cli_sources")
-add_include_folder("cli/include" "cli_includes")
-
 #lib project
 add_library(lib SHARED "${lib_sources}")
 target_include_directories(lib PUBLIC "${lib_includes}")
-
 target_include_directories(lib PRIVATE "${SPIRV_INCLUDE_DIR}")
 
+#common sources - shared between examples and tests
+add_sources("common/source/*.cpp" "common_sources")
+add_include_folder("common/include" "common_includes")
+
 #cli project
-add_executable(cli "${cli_sources}")
-target_include_directories(cli PUBLIC "${cli_includes};${lib_includes};${SPIRV_INCLUDE_DIR}")
+add_sources("cli/source/*.cpp" "cli_sources")
+add_include_folder("cli/include" "cli_includes")
+
+add_executable(cli "${cli_sources};${common_sources}")
+target_include_directories(cli PUBLIC "${common_includes};${cli_includes};${lib_includes};${SPIRV_INCLUDE_DIR}")
 target_link_libraries(cli PUBLIC lib)
 
 message(STATUS "")

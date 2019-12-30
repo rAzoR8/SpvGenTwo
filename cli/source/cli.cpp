@@ -1,90 +1,16 @@
-#include "..\include\cli.h"
-#include "cli.h"
-#include <assert.h>
-#include <stdio.h>
-#include <cstdlib>
+#include <cstdlib> // system
+
+#include "HeapAllocator.h"
+#include "BinaryFileWriter.h"
+#include "ConsoleLogger.h"
 #include "Operators.h"
 #include "GLSL450Instruction.h"
+#include "Module.h"
 
 using namespace spvgentwo;
 using namespace ops;
 using namespace ext;
 
-void* HeapAllocator::allocate(const size_t _bytes, const unsigned int _aligment) 
-{
-	(void)_aligment;
-	m_Allocated += _bytes;
-	return malloc(_bytes);
-}
-void HeapAllocator::deallocate(void* _ptr, const size_t _bytes)
-{
-	m_Deallocated += _bytes;
-	free(_ptr);
-}
-
-spvgentwo::HeapAllocator::~HeapAllocator()
-{
-	assert(m_Allocated == m_Deallocated);
-	printf("Allocated %zu bytes\n", m_Allocated);
-}
-
-BinaryFileWriter::BinaryFileWriter(const char* _path)
-{
-	m_pFile = fopen(_path, "wb");
-}
-
-BinaryFileWriter::~BinaryFileWriter()
-{
-	if (m_pFile != nullptr)
-	{
-		fflush(m_pFile);
-		fclose(m_pFile);
-		m_pFile = nullptr;
-	}
-}
-
-long BinaryFileWriter::put(unsigned int _word)
-{
-	if (m_pFile != nullptr)
-	{
-		fwrite(&_word, sizeof(unsigned int), 1u, m_pFile);
-		auto pos = ftell(m_pFile);
-		//printf("%llu:\t0x%X\t\t%u\n", pos - sizeof(unsigned int), _word, _word);
-		return pos;
-	}
-
-	return 0;
-}
-
-void BinaryFileWriter::putAt(unsigned int _word, const long _offset)
-{
-	if (m_pFile != nullptr && fseek(m_pFile, _offset, SEEK_SET) == 0)
-	{
-		put(_word);
-	}
-}
-
-void spvgentwo::ConsoleLogger::log(const LogLevel _level, const char* _pMsg)
-{
-	switch (_level)
-	{
-	case LogLevel::Debug:
-		printf("Debug: "); break;
-	case LogLevel::Info:
-		printf("Info: "); break;
-	case LogLevel::Warning:
-		printf("Warning: "); break;
-	case LogLevel::Error:
-		printf("Error: "); break;
-	case LogLevel::Fatal:
-		printf("Fatal: "); break;
-	default:
-		break;
-	}
-
-	printf("%s", _pMsg);
-	printf("\n");
-}
 
 int main(int argc, char* argv[])
 {
