@@ -45,8 +45,8 @@ Function& funcAdd = module.addFunction<float, float, float>("add", spv::Function
     BasicBlock& bb = *entry; // get entry block to this function
 
     Instruction* uniVec = bb->opLoad(uniformVar);
-	Instruction* cross = bb.ext<GLSL>()->opCross(uniVec, uniVec); // use GLSL.std.450 extension
-	Instruction* s = bb->opDot(cross, uniVec);
+    Instruction* cross = bb.ext<GLSL>()->opCross(uniVec, uniVec); // use GLSL.std.450 extension
+    Instruction* s = bb->opDot(cross, uniVec);
     entry->call(&funcAdd, s, s); // call add(s, s)
     entry->opReturn();
 }
