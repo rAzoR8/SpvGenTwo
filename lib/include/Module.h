@@ -145,8 +145,8 @@ namespace spvgentwo
 		Instruction* storageBuffer(const char* _pName, const T& _dynTypeDesc) { return variable<T>(spv::StorageClass::StorageBuffer, _dynTypeDesc, _pName); }
 
 		// iterates over all instructions in this module in serialization order, should be called AFTER write() which does some finalization
-		template <class Func> // func takes const Instruction& -> func(instr)
-		void iterateInstructions(const Func& _func) const;
+		template <class Func> // func takes Instruction& -> func(instr)
+		void iterateInstructions(Func& _func);
 
 	private:
 		template <class ... TypeInstr>
@@ -280,35 +280,35 @@ namespace spvgentwo
 	}
 
 	template<class Func, class Container>
-	inline void iterateInstructionContainer(const Func& _func, const Container& _container)
+	inline void iterateInstructionContainer(Func& _func, Container& _container)
 	{
-		static_assert(traits::is_invocable_v<Func, const Instruction&>, "Func _func is not invocable: _func(const Instruction& _instr)");
+		static_assert(traits::is_invocable_v<Func, Instruction&>, "Func _func is not invocable: _func(const Instruction& _instr)");
 
-		for (const auto& instr : _container)
+		for (auto& instr : _container)
 		{
 			_func(traits::to_ref(instr));
 		}
 	}
 
 	template<class Func>
-	inline void Module::iterateInstructions(const Func& _func) const
+	inline void Module::iterateInstructions(Func& _func)
 	{
-		static_assert(traits::is_invocable_v<Func, const Instruction&>, "Func _func is not invocable: _func(const Instruction& _instr)");
+		static_assert(traits::is_invocable_v<Func, Instruction&>, "Func _func is not invocable: _func(const Instruction& _instr)");
 		iterateInstructionContainer(_func, m_Capabilities);
 		iterateInstructionContainer(_func, m_Extensions);
 
-		for (const auto& [key, value] : m_ExtInstrImport)
+		for (auto& [key, value] : m_ExtInstrImport)
 		{
 			_func(value);
 		}
 
 		_func(m_MemoryModel);
 
-		for (const EntryPoint& ep : m_EntryPoints)
+		for (EntryPoint& ep : m_EntryPoints)
 		{
 			_func(*ep.getEntryPoint());
 		}
-		for (const EntryPoint& ep : m_EntryPoints)
+		for (EntryPoint& ep : m_EntryPoints)
 		{
 			iterateInstructionContainer(_func, ep.getExecutionModes());
 		}
@@ -320,11 +320,11 @@ namespace spvgentwo
 		iterateInstructionContainer(_func, m_TypesAndConstants);
 		iterateInstructionContainer(_func, m_GlobalVariables);
 
-		auto iterateFuncion = [&_func](const Function& f)
+		auto iterateFuncion = [&_func](Function& f)
 		{
 			_func(*f.getFunction());
 			iterateInstructionContainer(_func, f.getParameters());
-			for (const BasicBlock& bb : f)
+			for (BasicBlock& bb : f)
 			{
 				iterateInstructionContainer(_func, bb);
 			}

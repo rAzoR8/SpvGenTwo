@@ -25,6 +25,8 @@ namespace spvgentwo
 		const Instruction* getFunction() const { return &m_Function; }
 		Instruction* getReturnType() const { return m_pReturnType; }
 		Instruction* getFunctionType() const { return m_pFunctionType; }
+
+		Instruction* getFunctionEnd() { return &m_FunctionEnd; }
 		const Instruction* getFunctionEnd() const { return &m_FunctionEnd; }
 
 		Module* getModule() { return m_pModule; }

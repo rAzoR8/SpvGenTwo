@@ -323,6 +323,19 @@ void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel,
 
 void spvgentwo::Module::write(IWriter* _pWriter)
 {
+	// finalize entry points interfaces
+	for (EntryPoint& ep : m_EntryPoints)
+	{
+		if (m_spvVersion < makeVersion(1u, 4u))
+		{
+			ep.finalizeGlobalInterface(GlobalInterfaceVersion::SpirV1_3);
+		}
+		else
+		{
+			ep.finalizeGlobalInterface(GlobalInterfaceVersion::SpirV14_x);
+		}
+	}
+
 	m_maxId = 0u;
 
 	// write header
@@ -332,76 +345,12 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	const long boundsPos = _pWriter->put(1024u)  - 4u; // bounds dummy
 	_pWriter->put(0u); // schema
 
-	// write preamble
-	writeInstructions(_pWriter, m_Capabilities, m_maxId);
-	writeInstructions(_pWriter, m_Extensions, m_maxId);
-
-	for (auto& [key, value] : m_ExtInstrImport)
+	auto writeInstr = [this, _pWriter](Instruction& instr)
 	{
-		value.write(_pWriter, m_maxId);
-	}
+		instr.write(_pWriter, m_maxId);
+	};
 
-	m_MemoryModel.write(_pWriter, m_maxId);
-
-	// write entry points declarations
-	for (EntryPoint& ep : m_EntryPoints)
-	{
-		if(m_spvVersion < makeVersion(1u, 4u))
-		{
-			ep.finalizeGlobalInterface(GlobalInterfaceVersion::SpirV1_3);
-		}
-		else
-		{
-			ep.finalizeGlobalInterface(GlobalInterfaceVersion::SpirV14_x);
-		}
-
-		ep.getEntryPoint()->write(_pWriter, m_maxId);
-	}
-
-	// write entrypoint executions modes
-	for (EntryPoint& ep : m_EntryPoints)
-	{
-		for (Instruction& mode : ep.getExecutionModes())
-		{
-			mode.write(_pWriter, m_maxId);
-		}
-	}
-
-	writeInstructions(_pWriter, m_SourceStrings, m_maxId);
-	writeInstructions(_pWriter, m_Names, m_maxId);
-	writeInstructions(_pWriter, m_ModuleProccessed, m_maxId);
-	writeInstructions(_pWriter, m_Decorations, m_maxId);
-	
-	// write types and constants
-	writeInstructions(_pWriter, m_TypesAndConstants, m_maxId);
-	
-	// all global variable declarations(all OpVariable instructions whose Storage Class is notFunction)
-	writeInstructions(_pWriter, m_GlobalVariables, m_maxId); // TODO: check StorageClass
-
-	//  All function declarations (function without body)
-	for (Function& fun : m_Functions)
-	{
-		if (fun.empty())
-		{
-			fun.write(_pWriter, m_maxId);		
-		}
-	}
-
-	// write functions with bodies
-	for (Function& fun : m_Functions)
-	{
-		if (fun.empty() == false) 
-		{
-			fun.write(_pWriter, m_maxId);		
-		}
-	}
-	for (EntryPoint& ep : m_EntryPoints)
-	{
-		if (ep.empty() == false) // can entry points be empty forward decls?
-		{
-			ep.write(_pWriter, m_maxId);
-		}
-	}
+	iterateInstructions(writeInstr);
 
 	_pWriter->putAt(m_maxId + 1u, boundsPos);
 }
