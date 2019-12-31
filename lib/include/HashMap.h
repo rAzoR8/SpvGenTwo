@@ -31,7 +31,11 @@ namespace spvgentwo
 	public:
 
 		HashMap(IAllocator* _pAllocator, const unsigned int _buckets = DefaultBucktCount);
+		HashMap(HashMap&& _other) noexcept;
+
 		~HashMap();
+
+		HashMap& operator=(HashMap&& _other) noexcept;
 
 		template <class ... Args>
 		Node& emplace(Args&& ... _args);
@@ -66,6 +70,9 @@ namespace spvgentwo
 		Iterator end() const { return Iterator(m_pBuckets + m_Buckets, m_pBuckets + m_Buckets, nullptr); }
 
 	private:
+		void clear();
+
+	private:
 		Bucket* m_pBuckets = nullptr;
 		IAllocator* m_pAllocator = nullptr;
 		unsigned int m_Buckets = 0u;
@@ -83,7 +90,18 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline HashMap<Key, Value>::~HashMap()
+	inline HashMap<Key, Value>::HashMap(HashMap&& _other) noexcept :
+		m_pAllocator(_other.m_pAllocator),
+		m_pBuckets(_other.m_pBuckets),
+		m_Buckets(_other.m_Buckets)
+	{
+		_other.m_pAllocator = nullptr;
+		_other.m_pBuckets = 0u;
+		_other.m_Buckets = 0u;
+	}
+
+	template<class Key, class Value>
+	inline void HashMap<Key, Value>::clear()
 	{
 		if (m_pBuckets != nullptr && m_pAllocator != nullptr)
 		{
@@ -95,6 +113,31 @@ namespace spvgentwo
 			m_pBuckets = nullptr;
 			m_pAllocator = nullptr;
 		}
+	}
+
+	template<class Key, class Value>
+	inline HashMap<Key, Value>::~HashMap()
+	{
+		clear();
+	}
+
+	template<class Key, class Value>
+	inline HashMap<Key, Value>& HashMap<Key, Value>::operator=(HashMap&& _other) noexcept
+	{
+		if (this != &_other) return *this;
+
+		// free left side
+		clear();
+
+		m_Buckets = _other.m_Buckets;
+		m_pAllocator = _other.m_pAllocator;
+		m_pBuckets = _other.m_pBuckets;
+
+		_other.m_Buckets = 0u;
+		_other.m_pAllocator = nullptr;
+		_other.m_pBuckets = nullptr;
+
+		return *this;
 	}
 
 	template<class Key, class Value>

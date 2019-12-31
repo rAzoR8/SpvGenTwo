@@ -9,7 +9,12 @@ namespace spvgentwo
 	public:
 		template <class ...Args>
 		Entry(Args&& ..._args);
+
+		Entry(Entry&& _other) noexcept;
+
 		~Entry();
+
+		Entry& operator=(Entry&& _other) noexcept;
 
 		template<class ...Args>
 		static Entry* create(IAllocator* _pAlloc, Args&& ..._args);
@@ -77,8 +82,27 @@ namespace spvgentwo
 	}
 
 	template<class T>
+	inline Entry<T>::Entry(Entry&& _other) noexcept :
+		m_data{ std::move(_other.m_data) },
+		m_pNext(_other.m_pNext),
+		m_pPrev(_other.m_pPrev),
+	{
+		_other.m_pPrev = nullptr;
+		_other.m_pNext = nullptr;
+	}
+
+	template<class T>
 	inline Entry<T>::~Entry()
 	{		
+	}
+
+	// only move data, prev an next links stay the same so the original list stays intact
+	template<class T>
+	inline Entry<T>& Entry<T>::operator=(Entry&& _other) noexcept
+	{
+		if (this == &_other) return *this;
+		m_data = stdrep::move(_other.m_data);
+		return *this;
 	}
 
 	template<class T>
