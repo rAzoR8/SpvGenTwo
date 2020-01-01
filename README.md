@@ -1,4 +1,4 @@
-# SpvGenTWo
+# SpvGenTwo
 
 SpvGenTwo is a [SPIR-V](https://www.khronos.org/registry/spir-v/) building library written in C++17 with only `stddef.h` and `spirv.hpp11` as dependencies, no STL or other 3rd-Party library needed.
 I built this library as a slim backend for runtime material/shader-editors to avoid introducing enormous libraries like DXC (with the whole LLVM) to the codebase.
