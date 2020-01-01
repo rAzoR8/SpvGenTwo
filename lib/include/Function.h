@@ -10,6 +10,8 @@ namespace spvgentwo
 
 	class Function : public List<BasicBlock>
 	{
+		friend class Module;
+
 	public:
 		// empty function, call setReturnType() first, then use addParameters() and then finalize() to create the function
 		Function(Module* _pModule);
@@ -18,11 +20,13 @@ namespace spvgentwo
 		template <class ... TypeInstr>
 		Function(Module* _pModule, const char* _pName, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ... _paramTypeInstructions);
 
-		Function(Function&& _other) noexcept;
+		Function(Module* _pModule, Function&& _other) noexcept;
+		Function(const Function& _other) = delete;
 
 		virtual ~Function();
 
 		Function& operator=(Function&& _other) noexcept;
+		Function& operator=(const Function& _other) = delete;
 
 		// OpFunction 
 		Instruction* getFunction() { return &m_Function; }

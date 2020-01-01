@@ -13,15 +13,21 @@ namespace spvgentwo
 
 	class Instruction : public List<Operand>
 	{
-	private:
-		spv::Op m_Operation = spv::Op::OpNop;
+		friend class Module;
+		friend class BasicBlock;
 
+	public:
 		enum class ParentType
 		{
 			BasicBlock,
 			Function,
 			Module
-		} m_parentType = ParentType::BasicBlock;
+		};
+
+	private:
+		spv::Op m_Operation = spv::Op::OpNop;
+
+		ParentType m_parentType = ParentType::BasicBlock;
 
 		union
 		{
@@ -40,11 +46,16 @@ namespace spvgentwo
 		template <class ...Args>
 		Instruction(BasicBlock* _pBasicBlock, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
 
-		Instruction(Instruction&& _other) noexcept;
+		Instruction(Module* _pModule, Instruction&& _other) noexcept;
+		Instruction(Function* _pFunction, Instruction&& _other) noexcept;
+		Instruction(BasicBlock* _pBasicBlock, Instruction&& _other) noexcept;
+
+		Instruction(const Instruction&) = delete;
 
 		virtual ~Instruction();
 
 		Instruction& operator=(Instruction&& _other) noexcept;
+		Instruction& operator=(const Instruction& _other) = delete;
 
 		Module* getModule();
 		const Module* getModule() const;

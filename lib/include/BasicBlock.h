@@ -11,18 +11,21 @@ namespace spvgentwo
 
 	class BasicBlock : public List<Instruction>
 	{
+		friend class Module;
+		friend class Function;
 	private:
 
 		Function* m_pFunction = nullptr; // parent
 	public:
 
 		BasicBlock(Function* _pFunction);
-		BasicBlock(BasicBlock&& _other) noexcept;
+		BasicBlock(Function* _pFunction, BasicBlock&& _other) noexcept;
 		BasicBlock(const BasicBlock&) = delete;
 
 		virtual ~BasicBlock();
 
 		BasicBlock& operator=(BasicBlock&& _other) noexcept;
+		BasicBlock& operator=(const BasicBlock& _other) = delete;
 
 		Function* getFunction() { return m_pFunction; }
 		const Function* getFunction() const { return m_pFunction; }

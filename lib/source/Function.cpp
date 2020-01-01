@@ -11,14 +11,18 @@ spvgentwo::Function::Function(Module* _pModule) :
 {
 }
 
-spvgentwo::Function::Function(Function&& _other) noexcept :
+spvgentwo::Function::Function(Module* _pModule, Function&& _other) noexcept :
 	List(stdrep::move(_other)),
-	m_pModule(_other.m_pModule),
+	m_pModule(_pModule),
 	m_pReturnType(_other.m_pReturnType),
-	m_Function(stdrep::move(_other.m_Function)),
+	m_Function(this, stdrep::move(_other.m_Function)),
 	m_FunctionEnd(this, spv::Op::OpFunctionEnd), // no need to move
 	m_Parameters(stdrep::move(_other.m_Parameters))
 {
+	for (BasicBlock& bb : *this)
+	{
+		bb.m_pFunction = this;
+	}
 }
 
 spvgentwo::Function::~Function()
@@ -31,7 +35,12 @@ spvgentwo::Function& spvgentwo::Function::operator=(Function&& _other) noexcept
 
 	List::operator=(stdrep::move(_other));
 
-	m_pModule = _other.m_pModule;
+	for (BasicBlock& bb : *this)
+	{
+		bb.m_pFunction = this;
+	}
+
+	//m_pModule = _other.m_pModule;
 	m_pReturnType = _other.m_pReturnType;
 	m_Function = stdrep::move(_other.m_Function);
 	//m_FunctionEnd(this, spv::Op::OpFunctionEnd), // no need to move

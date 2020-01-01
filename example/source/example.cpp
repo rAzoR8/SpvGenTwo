@@ -25,13 +25,13 @@ int main(int argc, char* argv[])
 	}
 
 	// function call example
-	//{
-	//	BinaryFileWriter writer("test.spv");
-	//	examples::functionCall(&alloc, &log).write(&writer);
+	{
+		BinaryFileWriter writer("test.spv");
+		examples::functionCall(&alloc, &log).write(&writer);
 
-	//	system("spirv-dis test.spv");
-	//	system("spirv-val test.spv");
-	//}
+		system("spirv-dis test.spv");
+		system("spirv-val test.spv");
+	}
 
 	return 0;
 }

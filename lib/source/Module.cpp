@@ -38,7 +38,7 @@ spvgentwo::Module::Module(Module&& _other) noexcept:
 	m_Capabilities(stdrep::move(_other.m_Capabilities)),
 	m_Extensions(stdrep::move(_other.m_Extensions)),
 	m_ExtInstrImport(stdrep::move(_other.m_ExtInstrImport)),
-	m_MemoryModel(stdrep::move(m_MemoryModel)),
+	m_MemoryModel(this, stdrep::move(_other.m_MemoryModel)),
 	m_SourceStrings(stdrep::move(_other.m_SourceStrings)),
 	m_Names(stdrep::move(_other.m_Names)),
 	m_ModuleProccessed(stdrep::move(_other.m_ModuleProccessed)),
@@ -49,6 +49,7 @@ spvgentwo::Module::Module(Module&& _other) noexcept:
 	m_ConstantBuilder(stdrep::move(_other.m_ConstantBuilder)),
 	m_GlobalVariables(stdrep::move(_other.m_GlobalVariables))
 {
+	updateParentPointers();
 }
 
 spvgentwo::Module& spvgentwo::Module::operator=(Module&& _other) noexcept
@@ -75,7 +76,45 @@ spvgentwo::Module& spvgentwo::Module::operator=(Module&& _other) noexcept
 	m_ConstantBuilder = stdrep::move(_other.m_ConstantBuilder);
 	m_GlobalVariables = stdrep::move(_other.m_GlobalVariables);
 
+	updateParentPointers();
+
 	return *this;
+}
+
+void spvgentwo::Module::updateParentPointers()
+{
+	for (Function& func : m_Functions)
+	{
+		func.m_pModule = this;
+	}
+
+	for (Function& func : m_EntryPoints)
+	{
+		func.m_pModule = this;
+	}
+
+	auto fixList = [&](List<Instruction>& list)
+	{
+		for (Instruction& instr : list)
+		{
+			instr.m_parent.pModule = this;
+		}
+	};
+
+	fixList(m_Capabilities);
+	fixList(m_Extensions);
+
+	for (auto& [ext, instr] : m_ExtInstrImport)
+	{
+		instr.m_parent.pModule = this;
+	}
+
+	fixList(m_SourceStrings);
+	fixList(m_Names);
+	fixList(m_ModuleProccessed);
+	fixList(m_Decorations);
+	fixList(m_TypesAndConstants);
+	fixList(m_GlobalVariables);
 }
 
 spvgentwo::Module::~Module()

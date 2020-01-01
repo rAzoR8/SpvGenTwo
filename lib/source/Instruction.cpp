@@ -5,12 +5,28 @@
 #include "InferResultType.h"
 #include "Module.h"
 
-spvgentwo::Instruction::Instruction(Instruction&& _other) noexcept :
+spvgentwo::Instruction::Instruction(Module* _pModule, Instruction&& _other) noexcept :
 	List(stdrep::move(_other)),
 	m_Operation(_other.m_Operation),
-	m_parentType(_other.m_parentType),
-	m_parent(_other.m_parent)
+	m_parentType(ParentType::Module)
 {
+	m_parent.pModule = _pModule;
+}
+
+spvgentwo::Instruction::Instruction(Function* _pFunction, Instruction&& _other) noexcept :
+	List(stdrep::move(_other)),
+	m_Operation(_other.m_Operation),
+	m_parentType(ParentType::Function)
+{
+	m_parent.pFunction = _pFunction;
+}
+
+spvgentwo::Instruction::Instruction(BasicBlock* _pBasicBlock, Instruction&& _other) noexcept :
+	List(stdrep::move(_other)),
+	m_Operation(_other.m_Operation),
+	m_parentType(ParentType::BasicBlock)
+{
+	m_parent.pBasicBlock = _pBasicBlock;
 }
 
 spvgentwo::Instruction::~Instruction()
@@ -23,8 +39,8 @@ spvgentwo::Instruction& spvgentwo::Instruction::operator=(Instruction&& _other) 
 
 	List::operator=(stdrep::move(_other));
 	m_Operation = _other.m_Operation;
-	m_parentType = _other.m_parentType;
-	m_parent = _other.m_parent;
+	//m_parentType = _other.m_parentType;
+	//m_parent = _other.m_parent;
 
 	return *this;
 }

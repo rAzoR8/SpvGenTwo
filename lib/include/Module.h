@@ -156,6 +156,8 @@ namespace spvgentwo
 		template <class ... TypeInstr>
 		void compositeType(Type& _compositeTye, Instruction* _pSubType, TypeInstr ... _types);
 
+		void updateParentPointers();
+
 	private:
 		IAllocator* m_pAllocator = nullptr;
 		ILogger* m_pLogger = nullptr;
