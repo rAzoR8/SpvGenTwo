@@ -10,7 +10,7 @@ namespace spvgentwo
 		virtual void deallocate(void* _ptr, const size_t _bytes = 0u) = 0;
 
 		template <class T, class ... Args>
-		T* construct(Args&& ..._args) 
+		T* construct(Args&& ..._args) noexcept
 		{
 			T* pData = reinterpret_cast<T*>(allocate(sizeof(T), 1u)); // TODO: aligment
 			if (pData != nullptr)

@@ -7,7 +7,9 @@
 #ifdef SPVGENTWO_DONT_REPLACE_PLACEMENTNEW
 #include <new>
 #else
-inline void* operator new(size_t size, void* ptr) noexcept { (void)size; return ptr; }
+#pragma warning(disable: 4291)
+template <class T>
+inline void* operator new(size_t size, T* ptr) noexcept { (void)size; return ptr; }
 #endif
 
 #ifdef SPVGENTWO_DONT_REPLACE_TRAITS
