@@ -4,12 +4,11 @@
 
 #include <cstddef>
 
-#ifndef SPVGENTWO_DONT_REPLACE_PLACEMENTNEW
-inline void* operator new(size_t size, void* ptr) noexcept { (void)size; return ptr; }
-#else
+#ifdef SPVGENTWO_DONT_REPLACE_PLACEMENTNEW
 #include <new>
+#else
+inline void* operator new(size_t size, void* ptr) noexcept { (void)size; return ptr; }
 #endif
-
 
 #ifdef SPVGENTWO_DONT_REPLACE_TRAITS
 #include <type_traits>
