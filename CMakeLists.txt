@@ -46,6 +46,7 @@ cmake_option(SPVGENTWO_DONT_REPLACE_TRAITS "Use traits from <type_traits> if TRU
 
 #lib sources
 add_sources("lib/source/*.cpp" "lib_sources")
+add_sources("lib/include/spvgentwo/*.h" "lib_sources")
 add_include_folder("lib/include" "lib_includes")
 
 set(lib_includes "${lib_includes}")
@@ -57,10 +58,12 @@ target_include_directories(lib PUBLIC "${SPIRV_INCLUDE_DIR}")
 
 #common sources - shared between examples and tests
 add_sources("common/source/*.cpp" "common_sources")
+add_sources("common/include/*.h" "common_sources")
 add_include_folder("common/include" "common_includes")
 
-#cli project
+#example project
 add_sources("example/source/*.cpp" "example_sources")
+add_sources("example/include/*.h" "example_sources")
 add_include_folder("example/include" "example_includes")
 
 add_executable(example "${example_sources};${common_sources}")
