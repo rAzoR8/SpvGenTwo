@@ -1,7 +1,7 @@
-#include "Operand.h"
-#include "Writer.h"
-#include "Instruction.h"
-#include "BasicBlock.h"
+#include "spvgentwo/Operand.h"
+#include "spvgentwo/Writer.h"
+#include "spvgentwo/Instruction.h"
+#include "spvgentwo/BasicBlock.h"
 
 void spvgentwo::Operand::write(IWriter* _pWriter) const
 {
