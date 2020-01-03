@@ -73,8 +73,8 @@ namespace spvgentwo
 		void clear();
 
 	private:
-		Bucket* m_pBuckets = nullptr;
 		IAllocator* m_pAllocator = nullptr;
+		Bucket* m_pBuckets = nullptr;
 		unsigned int m_Buckets = 0u;
 	};
 

@@ -1,6 +1,5 @@
 #include "spvgentwo/Operators.h"
-#include "spvgentwo/Instruction.h"
-#include "spvgentwo/Module.h"
+#include "spvgentwo/BasicBlock.h"
 
 spvgentwo::BasicBlock& spvgentwo::ops::operator!(BasicBlock& _left)
 {

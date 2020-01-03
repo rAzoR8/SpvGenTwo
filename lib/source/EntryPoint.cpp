@@ -1,10 +1,9 @@
 #include "spvgentwo/EntryPoint.h"
-#include "spvgentwo/Module.h"
 
 spvgentwo::EntryPoint::EntryPoint(Module* _pModule) :
 	Function(_pModule),
 	m_EntryPoint(this),
-	m_ExecutionModes(_pModule->getAllocator())
+	m_ExecutionModes(m_pAllocator) // use allocator initialized by parent class
 {
 }
 
