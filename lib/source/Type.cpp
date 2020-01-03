@@ -1,4 +1,4 @@
-#include "Type.h"
+#include "spvgentwo/Type.h"
 
 spvgentwo::Type::Type(IAllocator* _pAllocator, Type* _pParent) :
 	m_pParent(_pParent),

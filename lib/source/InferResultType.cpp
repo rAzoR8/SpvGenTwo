@@ -1,6 +1,6 @@
-#include "InferResultType.h"
-#include "Instruction.h"
-#include "Module.h"
+#include "spvgentwo/InferResultType.h"
+#include "spvgentwo/Instruction.h"
+#include "spvgentwo/Module.h"
 
 spvgentwo::Instruction* spvgentwo::inferType(const spv::Op _operation, Instruction* _op1, Instruction* _op2, Instruction* _op3)
 {

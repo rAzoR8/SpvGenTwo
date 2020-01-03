@@ -1,5 +1,5 @@
-#include "GLSL450Instruction.h"
-#include "Module.h"
+#include "spvgentwo/GLSL450Instruction.h"
+#include "spvgentwo/Module.h"
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const extinstr::GLSLstd450 _op, Instruction* _pFloat, const bool _no64Bit)
 {

@@ -1,9 +1,9 @@
-#include "Module.h"
-#include "Function.h"
-#include "Type.h"
-#include "Writer.h"
-#include "Logger.h"
-#include "InferResultType.h"
+#include "spvgentwo/Module.h"
+#include "spvgentwo/Function.h"
+#include "spvgentwo/Type.h"
+#include "spvgentwo/Writer.h"
+#include "spvgentwo/Logger.h"
+#include "spvgentwo/InferResultType.h"
 
 spvgentwo::Module::Module(const unsigned int _spvVersion, IAllocator* _pAllocator, ILogger* _pLogger, IInferResultType* _pInferResultType) :
 	m_pAllocator(_pAllocator),

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Writer.h"
+#include "spvgentwo/Writer.h"
 #include <cstdio>
 
 namespace spvgentwo

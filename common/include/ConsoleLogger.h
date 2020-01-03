@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Logger.h"
+#include "spvgentwo/Logger.h"
+
 namespace spvgentwo
 {
 	class ConsoleLogger : public ILogger

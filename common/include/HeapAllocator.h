@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Allocator.h"
+#include "spvgentwo/Allocator.h"
 
 namespace spvgentwo
 {

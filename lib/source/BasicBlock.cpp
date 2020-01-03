@@ -1,6 +1,6 @@
-#include "BasicBlock.h"
-#include "Function.h"
-#include "Module.h"
+#include "spvgentwo/BasicBlock.h"
+#include "spvgentwo/Function.h"
+#include "spvgentwo/Module.h"
 
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction) : List(_pFunction->getAllocator()),
 	m_pFunction(_pFunction)

@@ -1,5 +1,5 @@
-#include "Constant.h"
-#include "Operand.h"
+#include "spvgentwo/Constant.h"
+#include "spvgentwo/Operand.h"
 
 spvgentwo::Constant::Constant(IAllocator* _pAllocator, Constant* _pParent) : 
 	m_pParent(_pParent),

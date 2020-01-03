@@ -46,7 +46,7 @@ cmake_option(SPVGENTWO_DONT_REPLACE_TRAITS "Use traits from <type_traits> if TRU
 
 #lib sources
 add_sources("lib/source/*.cpp" "lib_sources")
-add_include_folder("lib/include/spvgentwo" "lib_includes")
+add_include_folder("lib/include" "lib_includes")
 
 set(lib_includes "${lib_includes}")
 

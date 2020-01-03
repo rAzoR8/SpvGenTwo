@@ -1,5 +1,5 @@
 #include "FunctionCall.h"
-#include "GLSL450Instruction.h"
+#include "spvgentwo/GLSL450Instruction.h"
 
 using namespace spvgentwo;
 using namespace ext;

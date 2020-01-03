@@ -1,9 +1,9 @@
-#include "Instruction.h"
-#include "BasicBlock.h"
-#include "Type.h"
-#include "Writer.h"
-#include "InferResultType.h"
-#include "Module.h"
+#include "spvgentwo/Instruction.h"
+#include "spvgentwo/BasicBlock.h"
+#include "spvgentwo/Type.h"
+#include "spvgentwo/Writer.h"
+#include "spvgentwo/InferResultType.h"
+#include "spvgentwo/Module.h"
 
 spvgentwo::Instruction::Instruction(Module* _pModule, Instruction&& _other) noexcept :
 	List(stdrep::move(_other)),

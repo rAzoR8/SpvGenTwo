@@ -1,5 +1,5 @@
-#include "Function.h"
-#include "Module.h"
+#include "spvgentwo/Function.h"
+#include "spvgentwo/Module.h"
 
 spvgentwo::Function::Function(Module* _pModule) : 
 	List(_pModule->getAllocator()),

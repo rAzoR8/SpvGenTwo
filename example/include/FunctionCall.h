@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Module.h"
+#include "spvgentwo/Module.h"
 
 namespace examples
 {

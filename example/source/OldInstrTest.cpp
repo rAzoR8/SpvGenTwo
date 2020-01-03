@@ -4,8 +4,8 @@
 
 #include "HeapAllocator.h"
 #include "ConsoleLogger.h"
-#include "Operators.h"
-#include "GLSL450Instruction.h"
+#include "spvgentwo/Operators.h"
+#include "spvgentwo/GLSL450Instruction.h"
 
 using namespace spvgentwo;
 using namespace ops;
