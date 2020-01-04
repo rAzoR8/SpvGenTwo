@@ -43,13 +43,14 @@ set(SPIRV_INCLUDE_DIR "${Vulkan_INCLUDE_DIR}/vulkan/" CACHE STRING "Path contain
 cmake_option(SPVGENTWO_NO_LOGGING "Disable Logging" FALSE)
 cmake_option(SPVGENTWO_DONT_REPLACE_PLACEMENTNEW "Use replacement new from <new> if TRUE" FALSE)
 cmake_option(SPVGENTWO_DONT_REPLACE_TRAITS "Use traits from <type_traits> if TRUE" FALSE)
+cmake_option(SPVGENTWO_BUILD_EXAMPLES "Build examples" FALSE)
 
 #lib sources
 add_sources("lib/source/*.cpp" "lib_sources")
 add_sources("lib/include/spvgentwo/*.h" "lib_sources")
 add_include_folder("lib/include" "lib_includes")
 
-set(lib_includes "${lib_includes}")
+#set(lib_includes "${lib_includes}")
 
 #lib project
 add_library(lib SHARED "${lib_sources}")
@@ -62,12 +63,14 @@ add_sources("common/include/*.h" "common_sources")
 add_include_folder("common/include" "common_includes")
 
 #example project
-add_sources("example/source/*.cpp" "example_sources")
-add_sources("example/include/*.h" "example_sources")
-add_include_folder("example/include" "example_includes")
+if(${SPVGENTWO_BUILD_EXAMPLES})
+	add_sources("example/source/*.cpp" "example_sources")
+	add_sources("example/include/*.h" "example_sources")
+	add_include_folder("example/include" "example_includes")
 
-add_executable(example "${example_sources};${common_sources}")
-target_include_directories(example PUBLIC "${example_includes};${common_includes}")
-target_link_libraries(example PUBLIC lib)
+	add_executable(example "${example_sources};${common_sources}")
+	target_include_directories(example PUBLIC "${example_includes};${common_includes}")
+	target_link_libraries(example PUBLIC lib)
+endif()
 
 message(STATUS "")
