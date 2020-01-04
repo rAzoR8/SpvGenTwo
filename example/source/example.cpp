@@ -16,13 +16,13 @@ int main(int argc, char* argv[])
 	HeapAllocator alloc; // custom user allocator
 
 	// old cli test
-	//{
-	//	BinaryFileWriter writer("test.spv");
-	//	examples::oldInstrTest(&alloc, &log).write(&writer);
+	{
+		BinaryFileWriter writer("test.spv");
+		examples::oldInstrTest(&alloc, &log).write(&writer);
 
-	//	system("spirv-dis test.spv");
-	//	system("spirv-val test.spv");
-	//}
+		system("spirv-dis test.spv");
+		system("spirv-val test.spv");
+	}
 
 	// function call example
 	{

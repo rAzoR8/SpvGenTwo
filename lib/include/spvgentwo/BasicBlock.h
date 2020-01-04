@@ -62,21 +62,6 @@ namespace spvgentwo
 		BasicBlock& If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::SelectionControlMask> _mask = spv::SelectionControlMask::MaskNone);
 		
 		// MergeBlock for selection merge is returned. If _pMergeBlock is nullptr, a new block will be added to the function
-		// Example usage:
-		
-		/*Instruction* res1 = nullptr;
-		Instruction* res2 = nullptr;
-
-		BasicBlock& merge = bb.If(cond, [&](BasicBlock& trueBB)
-		{
-			res1 = trueBB.Add(z, x) * uniX;
-		}, [&](BasicBlock& falseBB)
-		{
-			res2 = falseBB.Sub(z, x) * uniX;
-		});
-
-		merge.returnValue(merge->opPhi(res1, res2));*/
-
 		template <class TrueFunc, class FalseFunc>
 		BasicBlock& If(Instruction* _pCondition, TrueFunc _true, FalseFunc _false, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::SelectionControlMask> _mask = spv::SelectionControlMask::MaskNone);
 

@@ -31,13 +31,15 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 	Instruction* uniImage = module.uniform<dyn_image_t>("u_someImage", img.imageType);
 
-	// float add(float x, float y)
-	Function& funcAdd = module.addFunction<float, float, float>("add", spv::FunctionControlMask::Const);
+	// void entryPoint();
 	{
-		BasicBlock& bb = *funcAdd;
+		EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, "main");
+		entry.addExecutionMode(spv::ExecutionMode::OriginUpperLeft);
 
-		Instruction* x = funcAdd.getParameter(0);
-		Instruction* y = funcAdd.getParameter(1);
+		BasicBlock& bb = *entry;
+
+		Instruction* x = module.constant(1.f);
+		Instruction* y = module.constant(3.14f);
 
 		Instruction* atan2 = bb.ext<GLSL>()->opAtan2(y, x);
 		Instruction* pow = bb.ext<GLSL>()->opPow(atan2, y);
@@ -60,7 +62,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 		Instruction* uniY = bb->opCompositeExtract(uniVec, 1u);
 
-		Instruction* index = funcAdd.variable<int>(2, "index");
+		Instruction* index = entry.variable<int>(2, "index");
 		index = bb->opLoad(index);
 
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
@@ -102,45 +104,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 			res2 = falseBB.Sub(z, x) * uniX;
 		});
 
-		merge.returnValue(merge->opPhi(res1, res2));
-	}
-
-	Function& loopFunc = module.addFunction<void>("loop", spv::FunctionControlMask::Const);
-	{
-		Instruction* one = module.constant(1);
-		Instruction* loopCount = module.constant(10);
-		Instruction* varI = loopFunc.variable<int>(0);
-		Instruction* varSum = loopFunc.variable<float>(1.1f);
-
-		BasicBlock& merge = (*loopFunc).Loop([&](BasicBlock& cond) -> Instruction*
-		{
-			auto i = cond->opLoad(varI);
-			return cond < loopCount;
-		}, [&](BasicBlock& inc)
-		{
-			auto i = inc->opLoad(varI);
-			i = inc.Add(i, one);
-			inc->opStore(varI, i); // i++
-		}, [&](BasicBlock& body)
-		{
-			auto s = body->opLoad(varSum);
-			s = body.Mul(s, s);
-			body->opStore(varSum, s); // sum += sum
-		});
-
-		auto s = merge->opLoad(varSum);
-
-		merge->call(&funcAdd, s, s);
-		merge.returnValue();
-		//merge.returnValue(funcAdd.getFunction());
-	}
-
-	// void entryPoint();
-	{
-		EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, "main");
-		entry.addExecutionMode(spv::ExecutionMode::OriginUpperLeft);
-		entry->call(&loopFunc);
-		entry->opReturn();
+		merge.returnValue(/*merge->opPhi(res1, res2)*/);
 	}
 
 	// test types and constants
