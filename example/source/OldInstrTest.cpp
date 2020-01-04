@@ -121,9 +121,11 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 #endif
 
 	{
+		module.assignIDs();
+
 		auto instrPrint = [](const Instruction& instr)
 		{
-			printf("%u = %u ", instr.getAssignedID(), instr.getOperation());
+			printf("%u = %u ", instr.getResultId(), instr.getOperation());
 
 			//_pWriter->put(getOpCode());
 
@@ -132,7 +134,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 				switch (operand.type)
 				{
 				case Operand::Type::Instruction:
-					printf("i%u ", operand.instruction->getAssignedID());
+					printf("i%u ", operand.instruction->getResultId());
 					break;
 				case Operand::Type::ResultId:
 					printf("r%u ", operand.resultId);

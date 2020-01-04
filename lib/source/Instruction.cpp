@@ -132,28 +132,28 @@ spv::Id spvgentwo::Instruction::getResultId() const
 	bool resultId = false, resultType = false;
 	spv::HasResultAndType(m_Operation, &resultId, &resultType);
 
-	if (resultId == false/* || empty()*/)
+	if (resultId == false)
 		return InvalidId;
 
 	auto it = begin();
-	if (resultType /*&& size() > 1u*/) // skip resultType operand 
+	if (resultType) // skip resultType operand 
 	{
 		++it;
 	}
 	return it->getResultId();
 }
 
-spv::Id spvgentwo::Instruction::resolveId(spv::Id& _resultId)
+spv::Id spvgentwo::Instruction::resolveId(spv::Id& _previousId)
 {
 	for (Operand& op : *this)
 	{
 		switch (op.type)
 		{
 		case Operand::Type::Instruction:
-			op.instruction->resolveId(_resultId);
+			op.instruction->resolveId(_previousId);
 			break;
 		case Operand::Type::BranchTarget:
-			op.branchTarget->front().resolveId(_resultId);
+			op.branchTarget->front().resolveId(_previousId);
 			break;
 		default:
 			break;
@@ -174,7 +174,7 @@ spv::Id spvgentwo::Instruction::resolveId(spv::Id& _resultId)
 
 	if (it->resultId == InvalidId)
 	{
-		it->resultId = ++_resultId;
+		it->resultId = ++_previousId;
 	}
 
 	return it->resultId;
@@ -758,21 +758,4 @@ bool spvgentwo::Instruction::validateImageOperandType(spv::Op _op, Instruction* 
 
 	module->logWarning("Image operand mask type check not implemented");
 	return true;
-}
-
-spv::Id spvgentwo::Instruction::getAssignedID() const
-{
-	bool resultId = false, resultType = false;
-	spv::HasResultAndType(m_Operation, &resultId, &resultType);
-
-	if (resultId == false)
-		return InvalidId;
-
-	auto it = begin();
-	if (resultType) // skip resultType operand 
-	{
-		++it;
-	}
-
-	return it->resultId;
 }

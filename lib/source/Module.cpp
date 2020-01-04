@@ -407,6 +407,18 @@ void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel,
 	m_MemoryModel.opMemoryModel(_addressModel, _memoryModel);
 }
 
+spv::Id spvgentwo::Module::assignIDs()
+{
+	spv::Id maxId = 0;
+
+	iterateInstructions([&maxId](Instruction& instr)
+	{
+		instr.resolveId(maxId);
+	});
+
+	return maxId;
+}
+
 void spvgentwo::Module::write(IWriter* _pWriter)
 {
 	// finalize entry points interfaces

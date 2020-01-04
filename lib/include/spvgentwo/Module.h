@@ -79,6 +79,10 @@ namespace spvgentwo
 
 		const List<Instruction>& getCapabilities() const { return m_Capabilities; }
 
+		// manually assign IDs to all unresolved instructions, returns bounds/max id
+		spv::Id assignIDs();
+
+		// automaticall assigns IDs and serializes module to IWriter
 		void write(IWriter* _pWriter);
 
 		// for use with opString, opSource, opSourceContinued, opSourceExtension

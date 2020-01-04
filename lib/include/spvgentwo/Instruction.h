@@ -102,8 +102,8 @@ namespace spvgentwo
 		// get opcode encoded with instruction word count [16 bit op code, 16 bit number of operand words] 
 		unsigned int getOpCode() const;
 
-		// get ID that was assigned during write(...)
-		spv::Id getAssignedID() const;
+		// returns the ID assigned to this instrucions
+		spv::Id resolveId(spv::Id& _previousId);
 
 		// serialize instructions of this basic block to the IWriter, returns ID that was assigned to this instruction
 		spv::Id write(IWriter* _pWriter, spv::Id& _resultId);
@@ -356,8 +356,6 @@ namespace spvgentwo
 #pragma endregion
 
 	private:
-		// returns the ID assigned to this instrucions
-		spv::Id resolveId(spv::Id& _resultId);
 
 		// creates literals
 		template <class T, class ...Args>
