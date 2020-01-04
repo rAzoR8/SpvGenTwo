@@ -2,13 +2,13 @@
 
 #include "OldInstrTest.h"
 #include "FunctionCall.h"
+#include "ControlFlow.h"
 #include "ConsoleLogger.h"
 #include "HeapAllocator.h"
 
 #include "BinaryFileWriter.h"
 
 using namespace spvgentwo;
-
 
 int main(int argc, char* argv[])
 {
@@ -28,6 +28,15 @@ int main(int argc, char* argv[])
 	{
 		BinaryFileWriter writer("test.spv");
 		examples::functionCall(&alloc, &log).write(&writer);
+
+		system("spirv-dis test.spv");
+		system("spirv-val test.spv");
+	}
+
+	// function call example
+	{
+		BinaryFileWriter writer("test.spv");
+		examples::controlFlow(&alloc, &log).write(&writer);
 
 		system("spirv-dis test.spv");
 		system("spirv-val test.spv");
