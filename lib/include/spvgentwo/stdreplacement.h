@@ -4,15 +4,15 @@
 
 #include <cstddef>
 
-#ifdef SPVGENTWO_DONT_REPLACE_PLACEMENTNEW
-#include <new>
-#else
+#ifdef SPVGENTWO_REPLACE_PLACEMENTNEW
 #pragma warning(disable: 4291)
 template <class T>
 inline void* operator new(size_t size, T* ptr) noexcept { (void)size; return ptr; }
+#else
+#include <new>
 #endif
 
-#ifdef SPVGENTWO_DONT_REPLACE_TRAITS
+#ifndef SPVGENTWO_REPLACE_TRAITS
 #include <type_traits>
 #include <utility>
 namespace spvgentwo::stdrep

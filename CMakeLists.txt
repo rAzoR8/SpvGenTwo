@@ -40,17 +40,15 @@ find_package(Vulkan)
 
 set(SPIRV_INCLUDE_DIR "${Vulkan_INCLUDE_DIR}/vulkan/" CACHE STRING "Path containing spirv.hpp11 and GLSL.std.450.h")
 
-cmake_option(SPVGENTWO_NO_LOGGING "Disable Logging" FALSE)
-cmake_option(SPVGENTWO_DONT_REPLACE_PLACEMENTNEW "Use replacement new from <new> if TRUE" FALSE)
-cmake_option(SPVGENTWO_DONT_REPLACE_TRAITS "Use traits from <type_traits> if TRUE" FALSE)
+cmake_option(SPVGENTWO_LOGGING "Enable Logging" TRUE)
+cmake_option(SPVGENTWO_REPLACE_PLACEMENTNEW "Don't use replacement new from <new>" TRUE)
+cmake_option(SPVGENTWO_REPLACE_TRAITS "Use custom traits instead of <type_traits>" TRUE)
 cmake_option(SPVGENTWO_BUILD_EXAMPLES "Build examples" FALSE)
 
 #lib sources
 add_sources("lib/source/*.cpp" "lib_sources")
 add_sources("lib/include/spvgentwo/*.h" "lib_sources")
 add_include_folder("lib/include" "lib_includes")
-
-#set(lib_includes "${lib_includes}")
 
 #lib project
 add_library(lib SHARED "${lib_sources}")
