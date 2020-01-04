@@ -179,13 +179,11 @@ namespace spvgentwo
 		loop->opLoopMerge(&mergeBB, &continueBB, _mask);
 		loop->opBranch(&condBB);
 
-		_condition(condBB);
-		if (condBB.getTerminator() == nullptr)
-		{
-			Instruction* pCond = condBB;
-			// take last instruction of condBB as conditional
-			condBB->opBranchConditional(pCond, &bodyBB, &mergeBB);
-		}
+		static_assert(stdrep::is_same_v<Instruction*, decltype(_condition(condBB))>, "ConditionFunc _condition needs to return a Instruction*");
+
+		Instruction* pCond = _condition(condBB);
+		// take last instruction of condBB as conditional
+		condBB->opBranchConditional(pCond, &bodyBB, &mergeBB);
 
 		_body(bodyBB);
 		bodyBB->opBranch(&continueBB); // branch to "increment" / continue block

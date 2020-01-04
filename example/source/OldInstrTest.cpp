@@ -112,13 +112,10 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* varI = loopFunc.variable<int>(0);
 		Instruction* varSum = loopFunc.variable<float>(1.1f);
 
-		BasicBlock& loop = loopFunc.addBasicBlock();
-		loopFunc->opBranch(&loop);
-
-		BasicBlock& merge = loop.Loop([&](BasicBlock& cond)
+		BasicBlock& merge = (*loopFunc).Loop([&](BasicBlock& cond) -> Instruction*
 		{
 			auto i = cond->opLoad(varI);
-			cond < loopCount;
+			return cond < loopCount;
 		}, [&](BasicBlock& inc)
 		{
 			auto i = inc->opLoad(varI);

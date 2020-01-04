@@ -23,10 +23,10 @@ spvgentwo::Module examples::controlFlow(spvgentwo::IAllocator* _pAllocator, spvg
         Instruction* varI = loopFunc.variable<int>(0);
         Instruction* varSum = loopFunc.variable<float>(1.1f);
 
-        BasicBlock& merge = (*loopFunc).Loop([&](BasicBlock& cond)
+        BasicBlock& merge = (*loopFunc).Loop([&](BasicBlock& cond) -> Instruction*
         {
             auto i = cond->opLoad(varI);
-            cond < loopCount; // cond is translated to the last used instruction -> i < loopCount
+            return cond < loopCount; // cond is translated to the last used instruction -> i < loopCount
         }, [&](BasicBlock& inc)
         {
             auto i = inc->opLoad(varI);
