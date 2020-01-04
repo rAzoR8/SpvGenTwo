@@ -40,7 +40,7 @@ namespace spvgentwo
 		Module* getModule() { return m_pModule; }
 		const Module* getModule() const { return m_pModule; }
 
-		BasicBlock& addBasicBlock() { return emplace_back(this); }
+		BasicBlock& addBasicBlock(const char* _pName = nullptr) { return emplace_back(this, _pName); }
 
 		// return entry bb (avoid confusion when adding a BB to this function and instructions are "magically" added to the last BB if using m_pLast
 		BasicBlock& operator->() { return m_pBegin->inner(); }

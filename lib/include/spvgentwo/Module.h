@@ -196,7 +196,7 @@ namespace spvgentwo
 
 		if (_addEntryBasicBlock)
 		{
-			func.addBasicBlock();		
+			func.addBasicBlock("FunctionEntry");		
 		}
 
 		return func;
@@ -209,7 +209,7 @@ namespace spvgentwo
 
 		if (_addEntryBasicBlock)
 		{
-			entry.addBasicBlock();
+			entry.addBasicBlock("FunctionEntry");
 		}
 
 		return entry;

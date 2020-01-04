@@ -2,10 +2,15 @@
 #include "spvgentwo/Function.h"
 #include "spvgentwo/Module.h"
 
-spvgentwo::BasicBlock::BasicBlock(Function* _pFunction) : List(_pFunction->getAllocator()),
+spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, const char* _pName) : List(_pFunction->getAllocator()),
 	m_pFunction(_pFunction)
 {
-	addInstruction()->opLabel();
+	Instruction* label = addInstruction()->opLabel();
+
+	if (_pName != nullptr)
+	{
+		getModule()->addName(label, _pName);
+	}
 }
 
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, BasicBlock&& _other) noexcept :
@@ -99,7 +104,7 @@ void spvgentwo::BasicBlock::write(IWriter* _pWriter, spv::Id& _resultId)
 spvgentwo::BasicBlock& spvgentwo::BasicBlock::If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock* _pMergeBlock, const Flag<spv::SelectionControlMask> _mask)
 {
 	// this block has not been terminated yet
-	BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock();
+	BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock("IfMerge");
 
 	addInstruction()->opSelectionMerge(&mergeBB, _mask);
 	addInstruction()->opBranchConditional(_pCondition, &_trueBlock, &_falseBlock);
@@ -112,7 +117,7 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::If(Instruction* _pCondition, Basic
 spvgentwo::BasicBlock& spvgentwo::BasicBlock::If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock* _pMergeBlock, const Flag<spv::SelectionControlMask> _mask)
 {
 	// this block has not been terminated yet
-	BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock();
+	BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock("IfMerge");
 
 	addInstruction()->opSelectionMerge(&mergeBB, _mask);
 	addInstruction()->opBranchConditional(_pCondition, &_trueBlock, &mergeBB);
@@ -123,7 +128,7 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::If(Instruction* _pCondition, Basic
 
 spvgentwo::BasicBlock& spvgentwo::BasicBlock::Loop(Instruction* _pCondition, BasicBlock& _continue, BasicBlock& _body, BasicBlock* _pMergeBlock, const Flag<spv::LoopControlMask> _mask)
 {
-	BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock();
+	BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock("LoopMerge");
 	BasicBlock& condBB = *_pCondition->getBasicBlock();
 
 	addInstruction()->opLoopMerge(&mergeBB, &_continue, _mask);

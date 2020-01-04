@@ -18,7 +18,7 @@ namespace spvgentwo
 		Function* m_pFunction = nullptr; // parent
 	public:
 
-		BasicBlock(Function* _pFunction);
+		BasicBlock(Function* _pFunction, const char* _pName = nullptr);
 		BasicBlock(Function* _pFunction, BasicBlock&& _other) noexcept;
 		BasicBlock(const BasicBlock&) = delete;
 
@@ -126,9 +126,9 @@ namespace spvgentwo
 		static_assert(traits::is_invocable_v<TrueFunc, BasicBlock&>, "TrueFunc _true is not invocable: _true(BasicBlock& trueBranchBB)");
 		static_assert(traits::is_invocable_v<FalseFunc, BasicBlock&>, "FalseFunc _false is not invocable: _true(BasicBlock& falseBranchBB)");
 
-		BasicBlock& trueBB = m_pFunction->addBasicBlock();
-		BasicBlock& falseBB = m_pFunction->addBasicBlock();
-		BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock();
+		BasicBlock& trueBB = m_pFunction->addBasicBlock("IfTrue");
+		BasicBlock& falseBB = m_pFunction->addBasicBlock("IfFalse");
+		BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock("IfMerge");
 
 		addInstruction()->opSelectionMerge(&mergeBB, _mask);
 		addInstruction()->opBranchConditional(_pCondition, &trueBB, &falseBB);
@@ -147,8 +147,8 @@ namespace spvgentwo
 	{
 		static_assert(traits::is_invocable_v<TrueFunc, BasicBlock&>, "TrueFunc _true is not invocable: _true(BasicBlock& trueBranchBB)");
 
-		BasicBlock& trueBB = m_pFunction->addBasicBlock();
-		BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock();
+		BasicBlock& trueBB = m_pFunction->addBasicBlock("IfTrue");
+		BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock("IfMerge");
 
 		addInstruction()->opSelectionMerge(&mergeBB, _mask);
 		addInstruction()->opBranchConditional(_pCondition, &trueBB, &mergeBB);
@@ -168,13 +168,16 @@ namespace spvgentwo
 		static_assert(traits::is_invocable_v<ContinueFunc, BasicBlock&>, "ContinueFunc _continue is not invocable: _continue(BasicBlock& continueBB)");
 		static_assert(traits::is_invocable_v<LoopBodyFunc, BasicBlock&>, "LoopBodyFunc _body is not invocable: _body(BasicBlock& bodyBB)");
 
-		BasicBlock& condBB = m_pFunction->addBasicBlock();
-		BasicBlock& bodyBB = m_pFunction->addBasicBlock();
-		BasicBlock& continueBB = m_pFunction->addBasicBlock();
-		BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock();
+		BasicBlock& loop = m_pFunction->addBasicBlock("LoopEntry");
+		addInstruction()->opBranch(&loop);
 
-		addInstruction()->opLoopMerge(&mergeBB, &continueBB, _mask);
-		addInstruction()->opBranch(&condBB);
+		BasicBlock& condBB = m_pFunction->addBasicBlock("LoopCondition");
+		BasicBlock& bodyBB = m_pFunction->addBasicBlock("LoopBody");
+		BasicBlock& continueBB = m_pFunction->addBasicBlock("LoopContinue");
+		BasicBlock& mergeBB = _pMergeBlock != nullptr ? *_pMergeBlock : m_pFunction->addBasicBlock("LoopMerge");
+
+		loop->opLoopMerge(&mergeBB, &continueBB, _mask);
+		loop->opBranch(&condBB);
 
 		_condition(condBB);
 		if (condBB.getTerminator() == nullptr)
@@ -188,7 +191,7 @@ namespace spvgentwo
 		bodyBB->opBranch(&continueBB); // branch to "increment" / continue block
 
 		_continue(continueBB);
-		continueBB->opBranch(this); // back edge to loop merge
+		continueBB->opBranch(&loop); // back edge to loop merge
 
 		return mergeBB;
 	}

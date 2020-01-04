@@ -74,7 +74,7 @@ spvgentwo::Instruction* spvgentwo::Function::variable(Instruction* _pPtrType, In
 	if (empty())
 	{
 		getModule()->logInfo("Implicitly added function entry basic block");
-		addBasicBlock();
+		addBasicBlock("FunctionEntry");
 	}
 
 	BasicBlock& funcEntry = **m_pBegin;
