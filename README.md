@@ -7,6 +7,8 @@ __SpvGenTwo__ is still under development, many parts are still missing, but all 
 
 While developing, I mainly focused on Shader capabilities, so the Kernel and OpenCL side is a bit under-developed. Any community contributions in that regard are very welcome!
 
+## Examples
+
 Okay, lets see a first example:
 
 ```cpp
@@ -14,7 +16,7 @@ ConsoleLogger log;
 HeapAllocator alloc; // custom user allocator
 
 // create a new spir-v module
-Module module(spv::Version, &alloc, &log);
+Module module(&alloc, spv::Version, &log);
 
 // configure capabilities and extensions
 module.addCapability(spv::Capability::Shader);
@@ -97,11 +99,20 @@ The resulting SPIR-V binary when disassembled using `spirv-dis`:
                OpFunctionEnd
 ```
 
+### Example Project
+
+Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
+
+* [FunctionCall Example](example/source/FunctionCall.cpp)
+* [ControlFlow Example](example/source/ControlFlow.cpp)
+* [Extensions Example](example/source/Extensions.cpp)
+
 # Building
 
 Use the supplied CMakeLists.txt to generate project files for your build system. SpvGenTwo allows the user to use STL headers (<type_traits>, <new> etc) instead of my hand-made replacements (see `stdreplament.h`).
 
-* SPIRV_INCLUDE_DIR need to point to a folder that contains the spirv.hpp11 header. If the vulkan SDK is present, VULKAN_INCLUDE_DIR/vulkan will be used as a default.
-* SPVGENTWO_DONT_REPLACE_PLACEMENTNEW is set to FALSE by default. If TRUE, placement-new will be included from <new> header.
-* SPVGENTWO_DONT_REPLACE_TRAITS is set to FALSE by default. If TRUE, <type_traits> and <utility> header will be included under spvgentwo::stdrep namespace.
-* SPVGENTWO_NO_LOGGING is set to FALSE by default, calls to module.log() will have not effect if TRUE.
+* SPIRV_INCLUDE_DIR need to point to a folder that contains the spirv.hpp11 header. If the Vulkan SDK is present, VULKAN_INCLUDE_DIR/vulkan will be used as a default.
+* SPVGENTWO_BUILD_EXAMPLES is set to FALSE by default. If TRUE, an executable with sources from the 'example' will be built.
+* SPVGENTWO_REPLACE_PLACEMENTNEW is set to TRUE by default. If FALSE, placement-new will be included from <new> header.
+* SPVGENTWO_REPLACE_TRAITS is set to TRUE by default. If FALSE, <type_traits> and <utility> header will be included under spvgentwo::stdrep namespace.
+* SPVGENTWO_LOGGING is set to TRUE by default, calls to module.log() will have not effect if FALSE.
