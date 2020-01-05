@@ -1,10 +1,12 @@
 #include <cstdlib> // system
+#include "ConsoleLogger.h"
+#include "HeapAllocator.h"
 
+// examples
 #include "OldInstrTest.h"
 #include "FunctionCall.h"
 #include "ControlFlow.h"
-#include "ConsoleLogger.h"
-#include "HeapAllocator.h"
+#include "Extensions.h"
 
 #include "BinaryFileWriter.h"
 
@@ -37,6 +39,15 @@ int main(int argc, char* argv[])
 	{
 		BinaryFileWriter writer("test.spv");
 		examples::controlFlow(&alloc, &log).write(&writer);
+
+		system("spirv-dis test.spv");
+		system("spirv-val test.spv");
+	}
+
+	// extension example
+	{
+		BinaryFileWriter writer("test.spv");
+		examples::extensions(&alloc, &log).write(&writer);
 
 		system("spirv-dis test.spv");
 		system("spirv-val test.spv");

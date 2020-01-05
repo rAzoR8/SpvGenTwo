@@ -7,7 +7,7 @@ using namespace ops;
 spvgentwo::Module examples::controlFlow(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
     // create a new spir-v module
-    Module module(spv::Version, _pAllocator, _pLogger);
+    Module module(_pAllocator, spv::Version, _pLogger);
 
     // configure capabilities and extensions
     module.addCapability(spv::Capability::Shader);
