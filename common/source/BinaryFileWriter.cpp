@@ -1,4 +1,4 @@
-#include "BinaryFileWriter.h"
+#include "common/BinaryFileWriter.h"
 
 spvgentwo::BinaryFileWriter::BinaryFileWriter(const char* _path)
 {

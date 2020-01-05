@@ -2,8 +2,8 @@
 
 #include <cstdio>
 
-#include "HeapAllocator.h"
-#include "ConsoleLogger.h"
+#include "common/HeapAllocator.h"
+#include "common/ConsoleLogger.h"
 #include "spvgentwo/Operators.h"
 #include "spvgentwo/GLSL450Instruction.h"
 

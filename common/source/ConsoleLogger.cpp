@@ -1,4 +1,4 @@
-#include "ConsoleLogger.h"
+#include "common/ConsoleLogger.h"
 #include <cstdio>
 
 void spvgentwo::ConsoleLogger::log(const LogLevel _level, const char* _pMsg)

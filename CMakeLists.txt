@@ -57,7 +57,7 @@ target_include_directories(lib PUBLIC "${SPIRV_INCLUDE_DIR}")
 
 #common sources - shared between examples and tests
 add_sources("common/source/*.cpp" "common_sources")
-add_sources("common/include/*.h" "common_sources")
+add_sources("common/include/common/*.h" "common_sources")
 add_include_folder("common/include" "common_includes")
 
 #example project

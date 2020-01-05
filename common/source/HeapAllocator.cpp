@@ -1,8 +1,7 @@
-#include "HeapAllocator.h"
+#include "common/HeapAllocator.h"
 
 #include <malloc.h>
 #include <cassert>
-#include <cstdio>
 
 void* spvgentwo::HeapAllocator::allocate(const size_t _bytes, const unsigned int _aligment)
 {
@@ -20,5 +19,4 @@ void spvgentwo::HeapAllocator::deallocate(void* _ptr, const size_t _bytes)
 spvgentwo::HeapAllocator::~HeapAllocator()
 {
 	assert(m_Allocated == m_Deallocated);
-	//printf("Allocated %zu bytes\n", m_Allocated);
 }

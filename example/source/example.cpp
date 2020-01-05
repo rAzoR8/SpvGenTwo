@@ -1,6 +1,8 @@
 #include <cstdlib> // system
-#include "ConsoleLogger.h"
-#include "HeapAllocator.h"
+
+#include "common/ConsoleLogger.h"
+#include "common/HeapAllocator.h"
+#include "common/BinaryFileWriter.h"
 
 // examples
 #include "OldInstrTest.h"
@@ -8,7 +10,6 @@
 #include "ControlFlow.h"
 #include "Extensions.h"
 
-#include "BinaryFileWriter.h"
 
 using namespace spvgentwo;
 
@@ -35,7 +36,7 @@ int main(int argc, char* argv[])
 		system("spirv-val test.spv");
 	}
 
-	// function call example
+	// control flow example
 	{
 		BinaryFileWriter writer("test.spv");
 		examples::controlFlow(&alloc, &log).write(&writer);
