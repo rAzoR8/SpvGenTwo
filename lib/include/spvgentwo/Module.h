@@ -13,7 +13,9 @@ namespace spvgentwo
 	class Module
 	{
 	public:
-		Module(const unsigned int _spvVersion, IAllocator* _pAllocator, ILogger* _pLogger = nullptr, IInferResultType* _pInferResultType = nullptr);
+		Module(IAllocator* _pAllocator, const unsigned int _spvVersion = spv::Version,  ILogger* _pLogger = nullptr, IInferResultType* _pInferResultType = nullptr);
+		Module(IAllocator* _pAllocator, const unsigned int _spvVersion, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel,  ILogger* _pLogger = nullptr, IInferResultType* _pInferResultType = nullptr);
+
 		Module(Module&& _other) noexcept;
 
 		~Module();
@@ -189,8 +191,6 @@ namespace spvgentwo
 		HashMap<Constant, Instruction*> m_ConstantBuilder;
 
 		List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function
-
-		//unsigned int m_maxId = 0u;
 	};
 
 	template<class ReturnType, class ...ParameterTypes>

@@ -2,7 +2,12 @@
 #include "spvgentwo/Writer.h"
 #include "spvgentwo/Logger.h"
 
-spvgentwo::Module::Module(const unsigned int _spvVersion, IAllocator* _pAllocator, ILogger* _pLogger, IInferResultType* _pInferResultType) :
+spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersion, ILogger* _pLogger, IInferResultType* _pInferResultType) : 
+	Module(_pAllocator, _spvVersion, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger, _pInferResultType) // use delegate constructor
+{
+}
+
+spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersion, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel, ILogger* _pLogger, IInferResultType* _pInferResultType) :
 	m_pAllocator(_pAllocator),
 	m_pLogger(_pLogger),
 	m_pInferResultType(_pInferResultType),
@@ -23,6 +28,7 @@ spvgentwo::Module::Module(const unsigned int _spvVersion, IAllocator* _pAllocato
 	m_ConstantBuilder(_pAllocator),
 	m_GlobalVariables(_pAllocator)
 {
+	setMemoryModel(_addressModel, _memoryModel);
 }
 
 spvgentwo::Module::Module(Module&& _other) noexcept:
