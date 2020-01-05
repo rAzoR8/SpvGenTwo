@@ -7,7 +7,7 @@ __SpvGenTwo__ is still under development, many parts are still missing, but all 
 
 I mainly focused on Shader capabilities, so the Kernel and OpenCL side is a bit under-developed. Any community contributions in that regard are very welcome!
 
-## Examples
+# Examples
 
 ```cpp
 ConsoleLogger log;
@@ -97,7 +97,7 @@ The resulting SPIR-V binary when disassembled using `spirv-dis`:
                OpFunctionEnd
 ```
 
-### Example Project
+## Example Project
 
 Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
 
@@ -114,6 +114,10 @@ Use the supplied CMakeLists.txt to generate project files for your build system.
 * `SPVGENTWO_REPLACE_PLACEMENTNEW` is set to TRUE by default. If FALSE, placement-new will be included from `<new>` header.
 * `SPVGENTWO_REPLACE_TRAITS` is set to TRUE by default. If FALSE, `<type_traits>` and `<utility>` header will be included under `spvgentwo::stdrep` namespace.
 * `SPVGENTWO_LOGGING` is set to TRUE by default, calls to module.log() will have not effect if FALSE.
+
+# Documentation
+
+Please read the [documentation](DOCUMENTATION) for more detailed information on how to use SpvGenTwo and some reasoning about my design choices.
 
 # Contributing
 
