@@ -88,17 +88,17 @@ namespace spvgentwo
 		BasicBlock& Gte(Instruction* _pLeft, Instruction* _pRight) { return SUIntFltOp(_pLeft, _pRight, spv::Op::OpSGreaterThanEqual, spv::Op::OpUGreaterThanEqual, spv::Op::OpFOrdGreaterThanEqual); }
 
 		// add _pRight to last instruction in this basic block and push the result (stack like) to this basic block
-		BasicBlock& Add(Instruction* _pRight) { Add(m_pLast->operator->(), _pRight); return *this; }
-		BasicBlock& Sub(Instruction* _pRight) { Sub(m_pLast->operator->(), _pRight); return *this; }
-		BasicBlock& Mul(Instruction* _pRight) { Mul(m_pLast->operator->(), _pRight); return *this; }
-		BasicBlock& Div(Instruction* _pRight) { Div(m_pLast->operator->(), _pRight); return *this; }
-		BasicBlock& Not() { Not(m_pLast->operator->()); return *this; }
-		BasicBlock& Eq(Instruction* _pRight) { Eq(m_pLast->operator->(), _pRight); return *this; }
-		BasicBlock& Neq(Instruction* _pRight) { Neq(m_pLast->operator->(), _pRight); return *this; }
-		BasicBlock& Lt(Instruction* _pRight) { Lt(m_pLast->operator->(), _pRight); return *this; }
-		BasicBlock& Lte(Instruction* _pRight) { Lte(m_pLast->operator->(), _pRight); return *this; }
-		BasicBlock& Gt(Instruction* _pRight) { Gt(m_pLast->operator->(), _pRight); return *this; }
-		BasicBlock& Gte(Instruction* _pRight) { Gte(m_pLast->operator->(), _pRight); return *this; }
+		BasicBlock& Add(Instruction* _pRight) { return Add(&back(), _pRight); }
+		BasicBlock& Sub(Instruction* _pRight) { return Sub(&back(), _pRight); }
+		BasicBlock& Mul(Instruction* _pRight) { return Mul(&back(), _pRight); }
+		BasicBlock& Div(Instruction* _pRight) { return Div(&back(), _pRight); }
+		BasicBlock& Not() { return Not(&back()); }
+		BasicBlock& Eq(Instruction* _pRight) { return Eq(&back(), _pRight); }
+		BasicBlock& Neq(Instruction* _pRight) { return Neq(&back(), _pRight); }
+		BasicBlock& Lt(Instruction* _pRight) { return Lt(&back(), _pRight); }
+		BasicBlock& Lte(Instruction* _pRight) { return Lte(&back(), _pRight); }
+		BasicBlock& Gt(Instruction* _pRight) { return Gt(&back(), _pRight); }
+		BasicBlock& Gte(Instruction* _pRight) { return Gte(&back(), _pRight); }
 
 	private:
 		BasicBlock& IntFltOp(Instruction* _pLeft, Instruction* _pRight, const spv::Op _int, const spv::Op _float);

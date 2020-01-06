@@ -87,9 +87,45 @@ template <class ...Args>
 Instruction* makeOpEx(const spv::Op _op, Args ... _args);
 ```
 
-`makeOpEx()` checks the types of arguments passed to either add them as an Operand (`Instruction*, BasicBlock*, spv::Id, literal_t`) or decompose the argument into 32bit literals (if it is bigger than a `literal_t`).
+`makeOpEx()` checks the C++ types of arguments passed to either add them as an Operand (`Instruction*, BasicBlock*, spv::Id, literal_t`) or decompose the argument into 32bit literals (if it is bigger than a `literal_t`).
+`
+
+```cpp
+Instruction* makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2 = nullptr, Instruction* _pOp3 = nullptr, Instruction* _pResultType = nullptr);
+```
+`makeOp()` tries to infer the result type of the operation based on the passed operands either by calling the free function `inferType()` or the IInferResultType interface (assigned to the module).
+
+~~`makeOp()` checks if the [types](#Types) of the operands (passed as Instruction*) match the requirements of the `spv::Op` using the type inference interface IInferType.~~ See [Issue 2](https://github.com/rAzoR8/SpvGenTwo/issues/2)
+
+Any implementation of an `spv::Op` that has a resultId should also return a pointer to it self. Just as `Instruction* opDot()` returns the `this`-pointer. Operations that have no result (such as opNop, opBranch etc) should not return anything (`void`).
 
 ## BasicBlocks
+
+[BasicBlocks](lib/include/spvgentwo/BasicBlock.h) always start with an `opLabel` instruction and my only contain one branch instruction (terminator) which must be the last instruction within the block (see [CFG](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.html#_universal_validation_rules)).
+
+```cpp
+class BasicBlock : public List<Instruction>
+{
+public:
+    Instruction* operator->() { return &emplace_back(this); } // add new instruction
+
+    // serialize instructions of this block
+    void write(IWriter* _pWriter, spv::Id& _resultId);
+
+    // Control flow helpers
+    BasicBlock& If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock* _pMergeBlock, Flag<spv::SelectionControlMask> _mask);
+    ... // arithmetic helpers
+    BasicBlock& Add(Instruction* _pLeft, Instruction* _pRight);
+    BasicBlock& Add(Instruction* _pRight) { return Add(&back(), _pRight); }
+    BasicBlock& Sub(Instruction* _pLeft, Instruction* _pRight);
+    BasicBlock& Mul(Instruction* _pLeft, Instruction* _pRight);
+    BasicBlock& Div(Instruction* _pLeft, Instruction* _pRight);
+};
+```
+
+The BasicBlock class can be used as a stack of operations where the left-hand operand of a new operation is the last Instruction stored in the BasicBlock and the right-hand operand is the result of another operation (possibly from a different BasicBlock). The result of this new Operation is pushed onto the stack (there is no pop). This concept is used in the global [operators](lib/source/Operators.cpp) implementation.
+
+Programming control-flow in SPIR-V can be tedious. The BasicBlock class implements some helpers making easier to write _structured_ **if** statements and **loops**. Please see the Control-Flow [example](example/source/ControlFlow.cpp) for more detail.
 
 ## Functions
 
