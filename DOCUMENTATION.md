@@ -2,6 +2,16 @@
 
 SpvGenTwo is build around building-blocks that are somewhat similar to SPIR-V's structure. From afar the resemble a layer-model: `Operand >> Instruction >> BasicBlock >> Function >> Module`, meaning that each Instruction is a list of operands, each BasicBlock is a list of Instructions and so on.
 
+**Overview:**
+* [Operands](#Operands)
+* [Instructions](#Instructions)
+* [BasicBlocks](#BasicBlocks)
+* [Functions](#Functions)
+    * [EntryPoints](#EntryPoints)
+* [Modules](#Modules)
+* [Types](#Types)
+* [Constants](#Constants)
+
 ## Operands
 There are four kinds of [operands](lib/include/spvgentwo/Operand.h) in SpvGenTwo:
 
@@ -73,9 +83,20 @@ By default, the operation of an Instruction is set to `spv::Op::Nop` (No Operati
 
 Internally all Instructions are initialized using makeOpEx():
 ```cpp
-    template <class ...Args>
-    Instruction* makeOpEx(const spv::Op _op, Args ... _args);
+template <class ...Args>
+Instruction* makeOpEx(const spv::Op _op, Args ... _args);
 ```
 
 `makeOpEx()` checks the types of arguments passed to either add them as an Operand (`Instruction*, BasicBlock*, spv::Id, literal_t`) or decompose the argument into 32bit literals (if it is bigger than a `literal_t`).
 
+## BasicBlocks
+
+## Functions
+
+### EntryPoints
+
+## Modules
+
+## Types
+
+## Constants

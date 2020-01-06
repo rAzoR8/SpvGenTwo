@@ -7,6 +7,14 @@ __SpvGenTwo__ is still under development, many parts are still missing, but all 
 
 I mainly focused on Shader capabilities, so the Kernel and OpenCL side is a bit under-developed. Any community contributions in that regard are very welcome!
 
+**Overview:**
+* [Examples](#Examples)
+    * [Example Project](#Example-Project)
+* [Building](#Building)
+* [Documentation](#Documentation)
+* [Contributing](#Contributing)
+* [Copyright and Licensing](#Copyright-and-Licensing)
+
 # Examples
 
 ```cpp
