@@ -191,6 +191,50 @@ An [entry point](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.ht
 
 ## Modules
 
+[Modules](lib/include/spvgentwo/Modules.h) contain all Functions (and EntryPoints), the complete set [preamble](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.html#_a_id_logicallayout_a_logical_layout_of_a_module) instructions and type/constant lookup hash-maps.
+
+The Module class does not actually derive from a List of Functions because it hosts EntryPoints as well.
+
+```cpp
+class Module
+{
+private:
+    List<Function> m_Functions;
+    List<EntryPoint> m_EntryPoints;
+    List<Instruction> m_Capabilities; // Preamble start
+    ...
+    List<Instruction> m_TypesAndConstants;
+    HashMap<Type, Instruction*> m_TypeToInstr; // type hierarchy 
+    HashMap<Instruction*, Type*> m_InstrToType; // reverse type lookup
+    HashMap<Constant, Instruction*> m_ConstantBuilder;
+	List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function
+public:
+	// automatically assigns IDs and serializes module to IWriter
+	void write(IWriter* _pWriter);
+   
+    Type newType(); // creates new empty type using this modules allocator
+    Constant newConstant();  // creates new empty constant using this modules allocator
+
+    Instruction* addType(const Type& _type); // construct a type from Type info
+    template <class T, class ... Props>
+	Instruction* type(const Props& ... _props); // construct a type from C++ type T
+
+    Instruction* addConstant(const Constant& _const); // construct a constant from Constant Info
+	template <class T>
+	Instruction* constant(const T& _value, const bool _spec = false); // construct a constant from C++ value T
+  
+    Function& addFunction(); // add empty function   
+    EntryPoint& addEntryPoint(); // add empty entry point
+};
+```
+
+Use `addFunction` or `addEntryPoint` to retrieve a reference to a newly added Function.
+
+```cpp
+// float add(float x, float y)
+Function& funcAdd = module.addFunction<float, float, float>("add", spv::FunctionControlMask::Const);
+```
+
 ## Types
 
 ## Constants

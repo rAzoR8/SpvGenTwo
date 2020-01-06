@@ -84,7 +84,7 @@ namespace spvgentwo
 		// manually assign IDs to all unresolved instructions, returns bounds/max id
 		spv::Id assignIDs();
 
-		// automaticall assigns IDs and serializes module to IWriter
+		// automatically assigns IDs and serializes module to IWriter
 		void write(IWriter* _pWriter);
 
 		// for use with opString, opSource, opSourceContinued, opSourceExtension
@@ -108,6 +108,7 @@ namespace spvgentwo
 		template <class T, class ... Props>
 		Type newType(const Props& ... _props);
 
+		// creates new empty constant using this modules allocator
 		Constant newConstant();
 
 		// _pPtrType needs to be in the same StorageClass as _storageClass
