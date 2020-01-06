@@ -14,6 +14,7 @@ I mainly focused on Shader capabilities, so the Kernel and OpenCL side is a bit 
 * [Documentation](#Documentation)
 * [Contributing](#Contributing)
 * [Copyright and Licensing](#Copyright-and-Licensing)
+* [Roadmap](#Roadmap)
 
 # Examples
 
@@ -143,3 +144,13 @@ Make sure to merge the latest from "upstream" before making a pull request.
 
 The SpvGenTwo open source project is licensed under [MIT license](LICENSE).
 Any contribution you make to this original repository shall be licensed under same license. You are still free to distribute your contributions (in your own fork) under the license you desire.
+
+# Roadmap
+
+A list of short and long term goals for this libraryÖ
+
+* Improve use/generic type inference support [Issue 1](https://github.com/rAzoR8/SpvGenTwo/issues/2)
+* Implement more Instructions, at least 90% of Shader capabilities
+* Improve validation / logging / error reporting
+* Write unit tests
+* Implement some front-end or DSL like [SPEAR](https://github.com/rAzoR8/SPEAR)
