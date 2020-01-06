@@ -171,6 +171,24 @@ Function& funcAdd = module.addFunction<float, float, float>("add", spv::Function
 
 ### EntryPoints
 
+[EntryPoints](lib/include/spvgentwo/EntryPoint.h) derive from Functions and add an `opEntryPoint` instruction required by the Shader [capability](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.html#Capability) set. 
+```cpp
+class EntryPoint : public Function
+{
+private:
+    Instruction m_EntryPoint; // OpEntryPoint
+    List<Instruction> m_ExecutionModes; // OpExecutionMode
+public:
+    template <class ... Args>
+    Instruction* addExecutionMode(const spv::ExecutionMode _mode, Args ... _args);
+
+    // overrides Functions finalize (used internally), _pEntryPointName is mandatory parameter, returns opFunction
+    Instruction* finalize(const spv::ExecutionModel _model, const Flag<spv::FunctionControlMask> _control, const char* _pEntryPointName);
+};
+```
+
+An [entry point](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.html#OpEntryPoint) must list all global variables it consumes. This is done by the module before serialization in `Module::write()`. `getGlobalVariableInterface()` traverses the CFG and for any usage of variables originating from outside the function.
+
 ## Modules
 
 ## Types
