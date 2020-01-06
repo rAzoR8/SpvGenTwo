@@ -125,7 +125,7 @@ Use the supplied CMakeLists.txt to generate project files for your build system.
 
 # Documentation
 
-Please read the [documentation](DOCUMENTATION) for more detailed information on how to use SpvGenTwo and some reasoning about my design choices.
+Please read the [documentation](DOCUMENTATION.md) for more detailed information on how to use SpvGenTwo and some reasoning about my design choices.
 
 # Contributing
 
