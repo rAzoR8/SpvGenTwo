@@ -1,4 +1,4 @@
-# SpvGenTwo Documentation
+# Documentation
 
 SpvGenTwo is build around building-blocks that are somewhat similar to SPIR-V's structure. From afar the resemble a layer-model: `Operand >> Instruction >> BasicBlock >> Function >> Module`, meaning that each Instruction is a list of operands, each BasicBlock is a list of Instructions and so on.
 
@@ -11,6 +11,12 @@ There are four kinds of [operands](lib/include/spvgentwo/Operand.h) in SpvGenTwo
 * **BranchTarget** - BasicBlock resolved by its first instruction `branchTarget->front().getResultId()` - this is just a helpful indirection
 
 Note: SPIR-V only differentiates between `<id>` and `literal` operands.
+
+```cpp
+struct literal_t{ unsigned int value = 0u;};
+```
+
+`literal_t` is a type indirection / tag to be able differentiate between `spv::Id` and `unsigned int` literal values.
 
 ```cpp
 union {
@@ -43,7 +49,7 @@ private:
     spv::Op m_Operation = spv::Op::OpNop;
 public:
     spv::Id getResultId() const;
-	const Type* getType() const; // ResultType
+    const Type* getType() const; // ResultType
 
     // make operation from up to 3 intermediate results, resulting instruction has result and result type
     Instruction* makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2 = nullptr, Instruction* _pOp3 = nullptr, Instruction* _pResultType = nullptr);
