@@ -9,7 +9,7 @@
 #include "FunctionCall.h"
 #include "ControlFlow.h"
 #include "Extensions.h"
-
+#include "Types.h"
 
 using namespace spvgentwo;
 
@@ -49,6 +49,15 @@ int main(int argc, char* argv[])
 	{
 		BinaryFileWriter writer("test.spv");
 		examples::extensions(&alloc, &log).write(&writer);
+
+		system("spirv-dis test.spv");
+		system("spirv-val test.spv");
+	}
+
+	// types example
+	{
+		BinaryFileWriter writer("test.spv");
+		examples::types(&alloc, &log).write(&writer);
 
 		system("spirv-dis test.spv");
 		system("spirv-val test.spv");
