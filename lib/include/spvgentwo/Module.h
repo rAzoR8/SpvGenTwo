@@ -61,7 +61,7 @@ namespace spvgentwo
 		void addExtension(const char* _pExtName);
 		Instruction* getExtensionInstructionImport(const char* _pExtName);
 
-		Instruction* addType(const Type& _type);
+		Instruction* addType(const Type& _type, const char* _pName = nullptr);
 		const Type* getTypeInfo(const Instruction* _pTypeInstr) const;
 
 		template <class T, class ... Props>

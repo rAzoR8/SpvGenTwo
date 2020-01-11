@@ -284,7 +284,7 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 	return pInstr;
 }
 
-spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
+spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char* _pName)
 {
 	auto& node = m_TypeToInstr.emplaceUnique(_type, nullptr);
 	if (node.kv.value != nullptr)
@@ -372,6 +372,11 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type)
 	}
 
 	m_TypesAndConstants.append_entry(entry);
+
+	if (_pName != nullptr) 
+	{
+		addName(pInstr, _pName);
+	}
 
 	return pInstr;
 }
