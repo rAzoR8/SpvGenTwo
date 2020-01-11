@@ -24,11 +24,16 @@ Module examples::types(IAllocator* _pAllocator, ILogger* _pLogger)
 	 myStruct.Member().VectorElement(3).Float(); // add empty member to struct, make it a vector of 3 elements of type float
 
 	 // add via addType, make a pointer for storage class 'function
-	 Instruction* type = module.addType(myStruct.wrapPointer(spv::StorageClass::Function));
-	 //Instruction* var = bb->opVariable(type, spv::StorageClass::Function);
+	 Instruction* type = module.addType(myStruct.wrapPointer(spv::StorageClass::Function), "myStruct");
+	 Instruction* var = bb->opVariable(type, spv::StorageClass::Function);
 
 	 // add C++ type via type<T>
-	 //type = module.type<sampler_t>();
+	 type = module.type<unsigned int*>(spv::StorageClass::Function);
+
+	 dyn_sampled_image_t img{ spv::Op::OpTypeFloat };
+
+	 // add complex dynamic C++ type
+	 type = module.type<dyn_sampled_image_t>(img);
 
 	 bb.returnValue();
 
