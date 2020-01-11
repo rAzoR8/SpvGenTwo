@@ -237,4 +237,52 @@ Function& funcAdd = module.addFunction<float, float, float>("add", spv::Function
 
 ## Types
 
+SpvGenTwo offers a simple [type](lib/include/spvgentwo/Type.h) composition system. The `Type` class is a super set of all OpTypeXXX instructions and its parameters.
+To construct a new empty type, use `Type Module::newType()`. Once done with creating the type, use `Instruction* Module::addType(const Type& _type)` to create an Instruction* holding the `OpTypeXXX`. Types in SpvGenTwo are unique meaning that calling `module.addType(myType)` with the same Type results in the same Instruction*.
+Type Instruction* can also be directly obtained form a C++ type using `module.type<T>()`. This however only works for simple / fundamental types. Custom structs and functions are not supported.
+
+Here's a short example how to create a struct type:
+
+```cpp
+Type myStruct = module.newType();
+
+//struct myStruct
+//{
+// float x;
+// int y;
+// vec3 v;
+//};
+
+myStruct.Struct();
+myStruct.FloatM(); // add 32 bit float as member
+myStruct.IntM(); // add signed int as member
+myStruct.Member().VectorElement(3).Float(); // add empty member to struct, make it a vector of 3 elements of type float
+
+// add via addType, make a pointer for storage class 'function
+Instruction* type = module.addType(myStruct.wrapPointer(spv::StorageClass::Function));
+```
+
+The resulting SPIR-V looks something like this:
+
+```
+               OpCapability Shader
+               OpMemoryModel Logical Simple
+               OpEntryPoint Vertex %main "main"
+               OpName %main "main"
+               OpName %FunctionEntry "FunctionEntry"
+       %void = OpTypeVoid
+          %2 = OpTypeFunction %void
+      %float = OpTypeFloat 32
+        %int = OpTypeInt 32 1
+    %v3float = OpTypeVector %float 3
+  %_struct_8 = OpTypeStruct %float %int %v3float
+%_ptr_Function__struct_8 = OpTypePointer Function %_struct_8
+       %main = OpFunction %void None %2
+%FunctionEntry = OpLabel
+               OpReturn
+               OpFunctionEnd
+```
+
+For more examples, checkout the Types [example](example/source/Types.cpp).
+
 ## Constants
