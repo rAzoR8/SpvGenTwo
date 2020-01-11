@@ -73,7 +73,7 @@ namespace spvgentwo
 	public:
 		using Iterator = List<Type>::Iterator;
 
-		Type(IAllocator* _pAllocator, Type* _pParent = nullptr);
+		Type(IAllocator* _pAllocator);
 		Type(IAllocator* _pAllocator, const Type& _subType, const spv::Op _baseType = spv::Op::OpTypeVoid);
 		Type(IAllocator* _pAllocator, Type&& _subType, const spv::Op _baseType = spv::Op::OpTypeVoid);
 
@@ -147,8 +147,8 @@ namespace spvgentwo
 		const List<Type>& getSubTypes() const { return m_subTypes; }
 		List<Type>& getSubTypes() { return m_subTypes; }
 
-		// return new subtype
-		Type& Member(); // element ? rename to subtype?
+		// return new subtype, if _pSubType is not nullptr, returned member type is a copy of _pSubType
+		Type& Member(const Type* _pSubType = nullptr);
 		Type& Parent();
 
 		// makes this a void type
@@ -189,8 +189,8 @@ namespace spvgentwo
 		Type& Function();
 
 		// make this a pointer
-		Type& Pointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic);
-		Type& ForwardPointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic);
+		Type& Pointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic, const Type* _innerType = nullptr);
+		Type& ForwardPointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic, const Type* _innerType = nullptr);
 
 		Type& Sampler();
 
@@ -321,6 +321,9 @@ namespace spvgentwo
 		// moves this into wrap type of _baseType
 		Type moveWrap(const spv::Op _baseType);
 
+		// wraps a copy of this into a new pointer of this type
+		Type wrapPointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic) const;
+
 		// wraps a copy of this into a new vector of _elements
 		Type wrapVector(const unsigned int _elements) const;
 
@@ -335,7 +338,6 @@ namespace spvgentwo
 
 	private:
 		spv::Op m_Type = spv::Op::OpTypeVoid; // base type
-		Type* m_pParent = nullptr;
 
 		union 
 		{

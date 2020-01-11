@@ -1,14 +1,12 @@
 #include "spvgentwo/Type.h"
 
-spvgentwo::Type::Type(IAllocator* _pAllocator, Type* _pParent) :
-	m_pParent(_pParent),
+spvgentwo::Type::Type(IAllocator* _pAllocator) :
 	m_subTypes(_pAllocator)
 {
 }
 
 spvgentwo::Type::Type(IAllocator* _pAllocator, const Type& _subType, const spv::Op _baseType) :
 	m_Type(_baseType),
-	m_pParent(nullptr),
 	m_subTypes(_pAllocator)
 {
 	m_subTypes.emplace_back(_subType);
@@ -16,7 +14,6 @@ spvgentwo::Type::Type(IAllocator* _pAllocator, const Type& _subType, const spv::
 
 spvgentwo::Type::Type(IAllocator* _pAllocator, Type&& _subType, const spv::Op _baseType) :
 	m_Type(_baseType),
-	m_pParent(nullptr),
 	m_subTypes(_pAllocator)
 {
 	m_subTypes.emplace_back(stdrep::move(_subType));
@@ -35,10 +32,6 @@ spvgentwo::Type::Type(Type&& _other) noexcept:
 	m_AccessQualifier(_other.m_AccessQualifier),
 	m_subTypes(stdrep::move(_other.m_subTypes))
 {
-	for (Type& t : m_subTypes)
-	{
-		t.m_pParent = this;
-	}
 }
 
 spvgentwo::Type::Type(const Type& _other) : 
@@ -54,10 +47,6 @@ spvgentwo::Type::Type(const Type& _other) :
 	m_AccessQualifier(_other.m_AccessQualifier),
 	m_subTypes(_other.m_subTypes)
 {
-	for (Type& t : m_subTypes)
-	{
-		t.m_pParent = this;
-	}
 }
 
 spvgentwo::Type::~Type()
@@ -81,11 +70,6 @@ spvgentwo::Type& spvgentwo::Type::operator=(Type&& _other) noexcept
 	m_StorageClass = _other.m_StorageClass;
 	m_AccessQualifier = _other.m_AccessQualifier;
 
-	for (Type& t : m_subTypes)
-	{
-		t.m_pParent = this;
-	}
-
 	return *this;
 }
 spvgentwo::Type& spvgentwo::Type::operator=(const Type& _other)
@@ -103,11 +87,6 @@ spvgentwo::Type& spvgentwo::Type::operator=(const Type& _other)
 	m_ImgFormat = _other.m_ImgFormat;
 	m_StorageClass = _other.m_StorageClass;
 	m_AccessQualifier = _other.m_AccessQualifier;
-
-	for (Type& t : m_subTypes)
-	{
-		t.m_pParent = this;
-	}
 
 	return *this;
 }
@@ -268,17 +247,29 @@ spvgentwo::Type& spvgentwo::Type::Function()
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Pointer(const spv::StorageClass _storageClass)
+spvgentwo::Type& spvgentwo::Type::Pointer(const spv::StorageClass _storageClass, const Type* _pInnerType)
 {
 	m_Type = spv::Op::OpTypePointer;
 	m_StorageClass = _storageClass;
+
+	if (_pInnerType != nullptr)
+	{
+		m_subTypes.emplace_back(*_pInnerType);
+	}
+
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::ForwardPointer(const spv::StorageClass _storageClass)
+spvgentwo::Type& spvgentwo::Type::ForwardPointer(const spv::StorageClass _storageClass, const Type* _pInnerType)
 {
 	m_Type = spv::Op::OpTypeForwardPointer;
 	m_StorageClass = _storageClass;
+
+	if (_pInnerType != nullptr)
+	{
+		m_subTypes.emplace_back(*_pInnerType);
+	}
+
 	return *this;
 }
 
@@ -421,23 +412,15 @@ spvgentwo::Type& spvgentwo::Type::Matrix(const dyn_matrix_t& _matrixType)
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Member()
+spvgentwo::Type& spvgentwo::Type::Member(const Type* _pSubType)
 {
-	return m_subTypes.emplace_back(m_subTypes.getAllocator(), this);
-}
-
-spvgentwo::Type& spvgentwo::Type::Parent()
-{
-	if (m_pParent == nullptr) return *this;
-	return *m_pParent;
-}
-
-spvgentwo::Type& spvgentwo::Type::Top()
-{
-	Type* parent = this;
-	while (true) {
-		if (parent->m_pParent == nullptr) { return *parent; }
-		parent = parent->m_pParent;
+	if (_pSubType == nullptr)
+	{
+		return m_subTypes.emplace_back(m_subTypes.getAllocator());	
+	}
+	else
+	{
+		return m_subTypes.emplace_back(*_pSubType);
 	}
 }
 
@@ -445,7 +428,6 @@ spvgentwo::Type spvgentwo::Type::New() const
 {
 	return Type(m_subTypes.getAllocator());
 }
-
 
 spvgentwo::Type spvgentwo::Type::wrap(const spv::Op _baseType) const
 {
@@ -455,6 +437,13 @@ spvgentwo::Type spvgentwo::Type::wrap(const spv::Op _baseType) const
 spvgentwo::Type spvgentwo::Type::moveWrap(const spv::Op _baseType)
 {
 	return Type(m_subTypes.getAllocator(), stdrep::move(*this), _baseType);
+}
+
+spvgentwo::Type spvgentwo::Type::wrapPointer(const spv::StorageClass _storageClass) const
+{
+	Type vec(m_subTypes.getAllocator());
+	vec.Pointer(_storageClass, this);
+	return vec;
 }
 
 spvgentwo::Type spvgentwo::Type::wrapVector(const unsigned int _elements) const
