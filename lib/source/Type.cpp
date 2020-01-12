@@ -157,6 +157,19 @@ void spvgentwo::Type::reset()
 {
 	m_Type = spv::Op::OpTypeVoid;
 	m_subTypes.clear();
+
+	m_ImgDepth = 0u;
+	m_IntSign = false;
+
+	m_StorageClass = spv::StorageClass::Generic;
+
+	m_ImgDimension = spv::Dim::Max;
+	m_ImgArray = false;
+	m_ImgMultiSampled = false;
+	m_ImgSamplerAccess = SamplerImageAccess::Unknown;
+	m_ImgFormat = spv::ImageFormat::Unknown;
+
+	m_AccessQualifier = spv::AccessQualifier::Max;
 }
 
 spvgentwo::Type& spvgentwo::Type::Void()
