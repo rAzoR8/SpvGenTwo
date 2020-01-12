@@ -7,7 +7,7 @@ namespace spvgentwo
 	class Constant
 	{
 	public:
-		Constant(IAllocator* _pAllocator, Constant* _pParent = nullptr);
+		Constant(IAllocator* _pAllocator);
 		Constant(const Constant& _other);
 		Constant(Constant&& _other) noexcept;
 		~Constant();
@@ -16,11 +16,18 @@ namespace spvgentwo
 		Constant& operator=(Constant&& _other) noexcept;
 
 		spv::Op getOperation() const { return m_Operation; }
+		void setOperation(const spv::Op _op) { m_Operation = _op; }
 		const Type& getType() const { return m_Type; }
 		Type& getType() { return m_Type; }
 
+		template <class T>
+		Type& setType();
+
 		const List<unsigned int>& getData() const { return m_literalData; }
 		List<unsigned int>& getData() { return m_literalData; }
+
+		template <class T>
+		void addData(const T& _data);
 
 		const List<Constant>& getComponents() const { return m_Components; }
 		List<Constant>& getComponents() { return m_Components; }
@@ -38,6 +45,18 @@ namespace spvgentwo
 		List<Constant> m_Components;
 		List<unsigned int> m_literalData;
 	};
+
+	template<class T>
+	inline Type& Constant::setType()
+	{
+		return m_Type.make<T>();
+	}
+
+	template<class T>
+	inline void Constant::addData(const T& _data)
+	{
+		appendLiteralsToContainer(m_literalData, _data);
+	}
 
 	template <class T>
 	Constant& Constant::make(const T& _value, const bool _spec)
