@@ -56,3 +56,11 @@ spvgentwo::Constant& spvgentwo::Constant::Component()
 {
 	return m_Components.emplace_back(m_Components.getAllocator());
 }
+
+void spvgentwo::Constant::reset()
+{
+	m_Operation = spv::Op::OpConstantNull;
+	m_Components.clear();
+	m_literalData.clear();
+	m_Type.reset();
+}

@@ -37,8 +37,9 @@ namespace spvgentwo
 
 		Constant& Component();
 
+		void reset();
+
 	private:
-		Constant* m_pParent = nullptr;
 		spv::Op m_Operation = spv::Op::OpConstantNull;
 		Type m_Type;
 
