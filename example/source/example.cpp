@@ -10,6 +10,7 @@
 #include "ControlFlow.h"
 #include "Extensions.h"
 #include "Types.h"
+#include "Constants.h"
 
 using namespace spvgentwo;
 
@@ -58,6 +59,15 @@ int main(int argc, char* argv[])
 	{
 		BinaryFileWriter writer("test.spv");
 		examples::types(&alloc, &log).write(&writer);
+
+		system("spirv-dis test.spv");
+		system("spirv-val test.spv");
+	}
+
+	// constants example
+	{
+		BinaryFileWriter writer("test.spv");
+		examples::constants(&alloc, &log).write(&writer);
 
 		system("spirv-dis test.spv");
 		system("spirv-val test.spv");
