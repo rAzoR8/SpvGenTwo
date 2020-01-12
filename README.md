@@ -147,7 +147,7 @@ Any contribution you make to this original repository shall be licensed under sa
 
 # Roadmap
 
-A list of short and long term goals for this libraryÖ
+A list of short and long term goals for this library:
 
 * Improve use/generic type inference support [Issue 1](https://github.com/rAzoR8/SpvGenTwo/issues/2)
 * Implement more Instructions, at least 90% of Shader capabilities
