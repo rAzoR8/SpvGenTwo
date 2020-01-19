@@ -40,6 +40,22 @@ namespace spvgentwo
 		IInferResultType* getInferResultType() const { return m_pInferResultType; }
 		void setInferResultType(IInferResultType* _pInferResultType) { m_pInferResultType = _pInferResultType; }
 
+		const List<Function>& getFunctions() const { return m_Functions; }
+		const List<EntryPoint>& getEntryPoints() const { return m_EntryPoints; }
+
+		const List<Instruction>& getCapabilities() const { return m_Capabilities; }
+		const List<Instruction>& getExtensions() const { return m_Extensions; }
+		const HashMap<const char*, Instruction>& getExtInstrImports() const { return m_ExtInstrImport; }
+		const Instruction& getMemoryModel() const { return m_MemoryModel; }
+
+		const List<Instruction>& getSourceStrings() const { return m_SourceStrings; }
+		const List<Instruction>& getNames() const { return m_Names; }
+		const List<Instruction>& getModulesProcessed() const { return m_ModuleProccessed; }
+		const List<Instruction>& getDecorations() const { return m_Decorations; }
+		const List<Instruction>& getTypesAndConstants() const { return m_TypesAndConstants; }
+
+		const List<Instruction>& getGlobalVariables() const { return m_GlobalVariables; }
+
 		// add empty function
 		Function& addFunction();
 
@@ -78,8 +94,6 @@ namespace spvgentwo
 		Instruction* constant(const T& _value, const bool _spec = false);
 		
 		void setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
-
-		const List<Instruction>& getCapabilities() const { return m_Capabilities; }
 
 		// manually assign IDs to all unresolved instructions, returns bounds/max id
 		spv::Id assignIDs();
@@ -181,8 +195,7 @@ namespace spvgentwo
 
 		List<Instruction> m_SourceStrings; // opString, opSource, opSourceContinued, opSourceExtension
 		List<Instruction> m_Names; // opName, opMemberName
-		List<Instruction> m_ModuleProccessed; // opName, opMemberName
-
+		List<Instruction> m_ModuleProccessed; // OpModuleProcessed
 		List<Instruction> m_Decorations; // opDecorate, opMemberDecorate
 		
 		List<Instruction> m_TypesAndConstants;
