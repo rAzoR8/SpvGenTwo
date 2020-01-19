@@ -33,7 +33,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 #this project
-project(spvGenTwo)
+project(SpvGenTwo)
 
 #dependencies
 find_package(Vulkan)
@@ -51,14 +51,18 @@ add_sources("lib/include/spvgentwo/*.h" "lib_sources")
 add_include_folder("lib/include" "lib_includes")
 
 #lib project
-add_library(lib SHARED "${lib_sources}")
-target_include_directories(lib PUBLIC "${lib_includes}")
-target_include_directories(lib PUBLIC "${SPIRV_INCLUDE_DIR}")
+add_library(SpvGenTwoLib SHARED "${lib_sources}")
+target_include_directories(SpvGenTwoLib PUBLIC "${lib_includes}")
+target_include_directories(SpvGenTwoLib PUBLIC "${SPIRV_INCLUDE_DIR}")
 
 #common sources - shared between examples and tests
 add_sources("common/source/*.cpp" "common_sources")
 add_sources("common/include/common/*.h" "common_sources")
 add_include_folder("common/include" "common_includes")
+
+add_library(SpvGenTwoCommon SHARED "${common_sources}")
+target_include_directories(SpvGenTwoCommon PRIVATE "${lib_includes}")
+target_include_directories(SpvGenTwoCommon PUBLIC "${common_includes}")
 
 #example project
 if(${SPVGENTWO_BUILD_EXAMPLES})
@@ -66,9 +70,9 @@ if(${SPVGENTWO_BUILD_EXAMPLES})
 	add_sources("example/include/*.h" "example_sources")
 	add_include_folder("example/include" "example_includes")
 
-	add_executable(example "${example_sources};${common_sources}")
-	target_include_directories(example PUBLIC "${example_includes};${common_includes}")
-	target_link_libraries(example PUBLIC lib)
+	add_executable(SpvGenTwoExample "${example_sources}")
+	target_include_directories(SpvGenTwoExample PUBLIC "${example_includes};${common_includes}")
+	target_link_libraries(SpvGenTwoExample PUBLIC SpvGenTwoLib SpvGenTwoCommon)
 endif()
 
 message(STATUS "")
