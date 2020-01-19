@@ -76,6 +76,16 @@ spvgentwo::BasicBlock::Iterator spvgentwo::BasicBlock::getTerminator()
 	return Iterator(nullptr);
 }
 
+bool spvgentwo::BasicBlock::getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const
+{
+	if (m_pBegin != m_pLast) // there is more then just initial opLabel
+	{
+		return back().getBranchTargets(_outTargetBlocks);
+	}
+
+	return false;
+}
+
 spvgentwo::Instruction* spvgentwo::BasicBlock::returnValue(Instruction* _pValue)
 {
 	Instruction* pRet = addInstruction();

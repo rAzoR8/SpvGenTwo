@@ -38,6 +38,9 @@ namespace spvgentwo
 		// get last instruction
 		Iterator getTerminator();
 
+		// returns a list of BasicBlock branch targets of this blocks terminator
+		bool getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const;
+
 		// manual instruction add
 		Instruction* addInstruction() { return &emplace_back(this); }
 

@@ -93,6 +93,9 @@ namespace spvgentwo
 		bool hasResultType() const { return hasResultTypeId(m_Operation); }
 		bool hasResultAndType() const { return hasResultAndTypeId(m_Operation); }
 
+		// returns a list of BasicBlock branch targets if this instuction is a Terminator
+		bool getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const;
+
 		// reset Operation and clear Operands
 		void reset();
 

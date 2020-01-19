@@ -111,6 +111,32 @@ const spvgentwo::Module* spvgentwo::Instruction::getModule() const
 	}
 }
 
+bool spvgentwo::Instruction::getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const
+{
+	if (isTerminator())
+	{
+		for (const Operand& o : *this)
+		{
+			if (o.isBranchTarget()) // || instr.op = Label -> parent bb
+			{
+				_outTargetBlocks.emplace_back(o.getBranchTarget());
+			}
+			else if (o.isInstruction())
+			{
+				Instruction* instr = o.getInstruction();
+
+				if (instr->getOperation() == spv::Op::OpLabel)
+				{
+					_outTargetBlocks.emplace_back(instr->getBasicBlock());
+				}
+			}
+		}
+		return true;
+	}
+
+	return false;
+}
+
 void spvgentwo::Instruction::reset()
 {
 	m_Operation = spv::Op::OpNop;
