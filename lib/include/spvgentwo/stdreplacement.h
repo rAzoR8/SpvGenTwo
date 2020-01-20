@@ -162,6 +162,20 @@ namespace spvgentwo::stdrep
 	template<class T>
 	typename add_rvalue_reference<T>::type declval() noexcept;
 
+	namespace detail
+	{
+		template <class, class T, class... Args>
+		struct is_constructible_impl : false_type {};
+
+		template <class T, class... Args>
+		struct is_constructible_impl<void_t<decltype(T(declval<Args>()...))>, T, Args...> : true_type {};
+	}
+	
+	template <class T, class... Args>
+	using is_constructible = detail::is_constructible_impl<void_t<>, T, Args...>;
+
+	template <class T, class... Args>
+	inline constexpr bool is_constructible_v = is_constructible<T, Args...>::value;
 } // !spvgentwo::stdrep
 #endif
 
@@ -236,36 +250,16 @@ namespace spvgentwo::traits
 		}
 	}
 
-	// constexpr bool Pred<First>
-	//template <template <class> class Pred, class First, class... Args>
-	//const void* selectTypelessFromArgs(const First& _first, const Args&... _tail) 
-	//{
-	//	if constexpr (Pred<First>)
-	//	{
-	//		return &_first;
-	//	}
-	//	else if constexpr (sizeof...(_tail) > 0)
-	//	{
-	//		return selectTypelessFromArgs<Pred>(_tail...);
-	//	}
-	//	else
-	//	{
-	//		return nullptr;
-	//	}
-	//}
-
-
-	//template <class F, class R, class... Args>
-	//struct is_invocable_r
-	//{
-	//	template <class U>
-	//	static auto test(U* p) -> decltype((*p)(stdrep::declval<Args>()...), stdrep::true_type());
-	//	template <class U>
-	//	static auto test(...) -> decltype(stdrep::false_type());
-
-	//	static constexpr bool value = decltype(test<F>(0))::value;
-	//};
-
-	//template <class F, class R, class... Args>
-	//inline constexpr bool is_invocable_r_v = is_invocable_r<F, R, Args...>::value;
+	template<class T, class ...Args>
+	T* constructWithArgs(T* _ptr, Args&& ..._args)
+	{
+		if constexpr (stdrep::is_constructible_v<T, Args...>)
+		{
+			return new(_ptr) T(stdrep::forward<Args>(_args)...);
+		}
+		else
+		{
+			return new(_ptr) T{ stdrep::forward<Args>(_args)... };
+		}
+	}
 } // !spvgentw
