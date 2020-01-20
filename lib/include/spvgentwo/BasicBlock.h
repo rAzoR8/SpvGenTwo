@@ -33,6 +33,8 @@ namespace spvgentwo
 		Module* getModule();
 		const Module* getModule() const;
 
+		const char* getName() const;
+
 		IAllocator* getAllocator();
 
 		// get last instruction

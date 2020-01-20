@@ -110,12 +110,11 @@ void spvgentwo::EntryPoint::finalizeGlobalInterface(const GlobalInterfaceVersion
 
 spvgentwo::Instruction* spvgentwo::EntryPoint::finalize(const spv::ExecutionModel _model, const Flag<spv::FunctionControlMask> _control, const char* _pEntryPointName)
 {
-	m_pEntryPointName = _pEntryPointName;
 	Instruction* pFunc = Function::finalize(_control, _pEntryPointName);
 
 	if (pFunc != nullptr)
 	{
-		m_EntryPoint.opEntryPoint(_model, &m_Function, m_pEntryPointName);
+		m_EntryPoint.opEntryPoint(_model, &m_Function, _pEntryPointName);
 	}
 
 	return pFunc;

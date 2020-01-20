@@ -40,6 +40,8 @@ namespace spvgentwo
 		Module* getModule() { return m_pModule; }
 		const Module* getModule() const { return m_pModule; }
 
+		const char* getName() const;
+
 		BasicBlock& addBasicBlock(const char* _pName = nullptr) { return emplace_back(this, _pName); }
 
 		// return entry bb (avoid confusion when adding a BB to this function and instructions are "magically" added to the last BB if using m_pLast

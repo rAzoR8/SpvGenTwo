@@ -61,6 +61,11 @@ const spvgentwo::Module* spvgentwo::BasicBlock::getModule() const
 	return m_pFunction->getModule();
 }
 
+const char* spvgentwo::BasicBlock::getName() const
+{
+	return m_pBegin != nullptr ? getModule()->getName(m_pBegin->operator->()) : "";
+}
+
 spvgentwo::IAllocator* spvgentwo::BasicBlock::getAllocator()
 {
 	return getModule()->getAllocator();;

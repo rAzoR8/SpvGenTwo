@@ -25,6 +25,7 @@ spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersio
 	m_TypesAndConstants(_pAllocator),
 	m_TypeToInstr(_pAllocator),
 	m_InstrToType(_pAllocator),
+	m_NameLookup(_pAllocator),
 	m_ConstantBuilder(_pAllocator),
 	m_GlobalVariables(_pAllocator)
 {
@@ -49,6 +50,7 @@ spvgentwo::Module::Module(Module&& _other) noexcept:
 	m_TypesAndConstants(stdrep::move(_other.m_TypesAndConstants)),
 	m_TypeToInstr(stdrep::move(_other.m_TypeToInstr)),
 	m_InstrToType(stdrep::move(_other.m_InstrToType)),
+	m_NameLookup(stdrep::move(_other.m_NameLookup)),
 	m_ConstantBuilder(stdrep::move(_other.m_ConstantBuilder)),
 	m_GlobalVariables(stdrep::move(_other.m_GlobalVariables))
 {
@@ -211,11 +213,19 @@ spvgentwo::Instruction* spvgentwo::Module::addNameInstr()
 void spvgentwo::Module::addName(Instruction* _pTarget, const char* _pName)
 {
 	addNameInstr()->opName(_pTarget, _pName);
+	m_NameLookup.emplaceUnique(_pTarget, m_pAllocator).kv.value = _pName;
 }
 
 void spvgentwo::Module::addMemberName(Instruction* _pMember, const char* _pMemberName, unsigned int _memberIndex)
 {
 	addNameInstr()->opMemberName(_pMember, _memberIndex, _pMemberName);
+	m_NameLookup.emplaceUnique(_pMember, m_pAllocator).kv.value = _pMemberName;
+}
+
+const char* spvgentwo::Module::getName(const Instruction* _pTarget) const
+{
+	const String* pStr = m_NameLookup.get(_pTarget);
+	return pStr != nullptr ? pStr->c_str() : "";
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addModuleProccessedInstr()

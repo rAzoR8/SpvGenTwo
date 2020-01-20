@@ -63,6 +63,11 @@ void spvgentwo::Function::write(IWriter* _pWriter, spv::Id& _resultId)
 	m_FunctionEnd.write(_pWriter, _resultId);
 }
 
+const char* spvgentwo::Function::getName() const
+{
+	return m_pModule->getName(&m_Function);
+}
+
 spvgentwo::Instruction* spvgentwo::Function::getParameter(unsigned int _index)
 {
 	auto it = m_Parameters.begin() + _index;

@@ -4,6 +4,7 @@
 #include "HashMap.h"
 #include "Constant.h"
 #include "Logger.h"
+#include "String.h"
 
 namespace spvgentwo
 {
@@ -109,6 +110,8 @@ namespace spvgentwo
 		void addName(Instruction* _pTarget, const char* _pName);
 		void addMemberName(Instruction* _pMember, const char* _pMemberName, unsigned int _memberIndex);
 
+		const char* getName(const Instruction* _pTarget) const;
+
 		// for use with opModuleProccessed
 		Instruction* addModuleProccessedInstr();
 
@@ -201,6 +204,9 @@ namespace spvgentwo
 		List<Instruction> m_TypesAndConstants;
 		HashMap<Type, Instruction*> m_TypeToInstr;
 		HashMap<Instruction*, Type*> m_InstrToType;
+
+		// instruction that was decorated with opName -> name
+		HashMap<const Instruction*, String> m_NameLookup;
 
 		HashMap<Constant, Instruction*> m_ConstantBuilder;
 

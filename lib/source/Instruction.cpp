@@ -111,6 +111,11 @@ const spvgentwo::Module* spvgentwo::Instruction::getModule() const
 	}
 }
 
+const char* spvgentwo::Instruction::getName() const
+{
+	return getModule()->getName(this);
+}
+
 bool spvgentwo::Instruction::getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const
 {
 	if (isTerminator())
