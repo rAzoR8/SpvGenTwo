@@ -14,3 +14,14 @@ spvgentwo::String& spvgentwo::String::operator=(const char* _pStr)
 
 	return *this;
 }
+
+bool spvgentwo::String::reserve(size_t _size)
+{
+	bool ret = true;
+	if (_size > m_capacity)
+	{
+		ret = Vector::reserve(_size + 1u);
+		m_pData[_size] = '\0';
+	}
+	return ret;
+}

@@ -23,6 +23,13 @@ namespace spvgentwo
 
 		String& operator=(const char* _pStr);
 
+		auto c_str() const { return data(); }
+
+		operator const char* () const { return data(); }
+
+		// size excluding zero
+		bool reserve(size_t _size);
+
 		//~String() {};
 	private:
 	};
