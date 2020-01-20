@@ -171,7 +171,7 @@ namespace spvgentwo
 
 		// iterates over all instructions in this module in serialization order, should be called AFTER write() which does some finalization
 		template <class Func> // func takes Instruction& -> func(instr)
-		void iterateInstructions(Func& _func);
+		void iterateInstructions(Func _func);
 
 	private:
 		template <class ... TypeInstr>
@@ -315,7 +315,7 @@ namespace spvgentwo
 	}
 
 	template<class Func>
-	inline void Module::iterateInstructions(Func& _func)
+	inline void Module::iterateInstructions(Func _func)
 	{
 		static_assert(traits::is_invocable_v<Func, Instruction&>, "Func _func is not invocable: _func(const Instruction& _instr)");
 		iterateInstructionContainer(_func, m_Capabilities);
