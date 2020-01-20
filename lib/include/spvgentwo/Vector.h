@@ -70,7 +70,8 @@ namespace spvgentwo
 	}
 
 	template<class U>
-	inline Vector<U>::Vector(IAllocator* _pAllocator, const T* _pData, size_t _size)
+	inline Vector<U>::Vector(IAllocator* _pAllocator, const T* _pData, size_t _size) :
+		m_pAllocator(_pAllocator)
 	{
 		if (reserve(_size))
 		{
@@ -196,7 +197,10 @@ namespace spvgentwo
 		}
 
 		// free old data
-		m_pAllocator->deallocate(m_pData, m_capacity * sizeof(T));
+		if (m_pData != nullptr)
+		{
+			m_pAllocator->deallocate(m_pData, m_capacity * sizeof(T));
+		}
 
 		m_pData = pNewData;
 		m_capacity = _size;  // number of elements does not change
