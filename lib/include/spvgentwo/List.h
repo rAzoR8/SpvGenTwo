@@ -292,7 +292,12 @@ namespace spvgentwo
 	inline Entry<T>* List<T>::insert_before(Iterator _pos, Args&& ..._args)
 	{
 		++m_Elements;
-		return _pos.entry()->insertBefore(m_pAllocator, stdrep::forward<Args>(_args)...);
+		Entry<T>* entry = _pos.entry()->insertBefore(m_pAllocator, stdrep::forward<Args>(_args)...);
+		if (_pos.entry() == m_pBegin)
+		{
+			m_pBegin = entry;
+		}
+		return entry;
 	}
 
 	template<class T>
@@ -300,7 +305,12 @@ namespace spvgentwo
 	inline Entry<T>* List<T>::insert_after(Iterator _pos, Args&& ..._args)
 	{
 		++m_Elements;
-		return _pos.entry()->insertAfter(m_pAllocator, stdrep::forward<Args>(_args)...);
+		Entry<T>* entry = _pos.entry()->insertAfter(m_pAllocator, stdrep::forward<Args>(_args)...);
+		if (_pos.entry() == m_pLast)
+		{
+			m_pLast = entry;
+		}
+		return entry;
 	}
 
 	template<class T>
@@ -329,6 +339,16 @@ namespace spvgentwo
 	inline Entry<T>* List<T>::erase(Iterator _pos, const bool _destruct)
 	{
 		--m_Elements;
+
+		if (_pos.entry() == m_pLast)
+		{
+			m_pLast = m_pLast->prev();
+		}
+		if (_pos.entry() == m_pBegin)
+		{
+			m_pBegin = m_pBegin->next();
+		}	
+
 		return _pos.entry()->remove(_destruct ? m_pAllocator : nullptr);
 	}
 
@@ -338,7 +358,6 @@ namespace spvgentwo
 	{
 		auto it = begin();
 		for (; it != nullptr && !(*it == _val); ++it) {}
-
 		return it;
 	}
 
