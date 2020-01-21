@@ -30,7 +30,11 @@ namespace spvgentwo
 		// size excluding zero
 		bool reserve(size_t _size);
 
-		//~String() {};
+		String substr(size_t _offset, size_t _length);
+
+		String operator+(const String& _other) const;
+
+		String& operator+=(const String & _other);
 	private:
 	};
 }

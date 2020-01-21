@@ -160,13 +160,13 @@ namespace spvgentwo
 	template<class U>
 	inline typename Vector<U>::T& Vector<U>::operator[](size_t _idx)
 	{
-		return m_pData[i];
+		return m_pData[_idx];
 	}
 
 	template<class U>
 	inline const typename Vector<U>::T& Vector<U>::operator[](size_t _idx) const
 	{
-		return m_pData[i];
+		return m_pData[_idx];
 	}
 
 	template<class U>
