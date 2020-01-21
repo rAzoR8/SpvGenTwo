@@ -33,8 +33,11 @@ namespace spvgentwo
 		String substr(size_t _offset, size_t _length);
 
 		String operator+(const String& _other) const;
+		String operator+(const char* _pStr) const;
 
-		String& operator+=(const String & _other);
+		String& operator+=(const String& _other);
+		String& operator+=(const char* _pStr);
+
 	private:
 	};
 }
