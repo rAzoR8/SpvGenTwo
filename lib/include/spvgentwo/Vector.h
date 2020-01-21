@@ -28,6 +28,8 @@ namespace spvgentwo
 
 		Vector<U>& operator=(const Vector<U>& _other);
 
+		IAllocator* getAllocator() const { return m_pAllocator; }
+
 		T& operator[](size_t _idx);
 		const T& operator[](size_t _idx) const;
 
@@ -35,14 +37,16 @@ namespace spvgentwo
 		bool reserve(size_t _size);
 
 		// resize calls {} constructor on new elements
-		bool resize(size_t _size);
+		bool resize(size_t _size, const T* _pInitValue = nullptr);
 
 		// only destructs, does not deallocate
 		void clear();
 
 		T* data() const noexcept{ return m_pData; }
 		size_t size() const noexcept { return m_elements; }
-
+		size_t capacity() const noexcept { return m_capacity; }
+		bool empty() const { return m_elements == 0; }
+		
 		T* begin() const noexcept { return m_pData; }
 		T* end() const noexcept { return m_pData + m_elements; }
 
@@ -55,8 +59,8 @@ namespace spvgentwo
 		template <class ...Args>
 		T* emplace_back(Args&& ..._args);
 
-		bool empty() const { return m_elements == 0; }
-
+		// assign _data to elements, _count == max means all
+		void assign(const T& _data, size_t _offset = 0u, size_t _count = ~0ull);
 	protected:
 		void deallocate();
 
@@ -219,7 +223,7 @@ namespace spvgentwo
 	}
 
 	template<class U>
-	inline bool Vector<U>::resize(size_t _size)
+	inline bool Vector<U>::resize(size_t _size, const T* _pInitValue)
 	{
 		if (_size > m_capacity)
 		{
@@ -228,9 +232,19 @@ namespace spvgentwo
 				return false;
 			}
 
-			for (size_t i = m_elements; i < m_capacity; ++i)
+			if (_pInitValue != nullptr)
 			{
-				new(m_pData[i]) T{};
+				for (size_t i = m_elements; i < m_capacity; ++i)
+				{
+					new(m_pData + i) T{};
+				}
+			}
+			else //if constexpr(stdrep::is_constructible_v<T, const T&>)
+			{
+				for (size_t i = m_elements; i < m_capacity; ++i)
+				{
+					new(m_pData + i) T{*_pInitValue };
+				}
 			}
 		}
 		else if (_size < m_elements) // shrink
@@ -257,6 +271,20 @@ namespace spvgentwo
 		}
 
 		m_elements = 0u;
+	}
+
+	template<class U>
+	inline void Vector<U>::assign(const T& _data, size_t _offset, size_t _count)
+	{
+		if (_offset + _count > m_elements)
+		{
+			_count = m_elements - _offset;
+		}
+
+		for (size_t i = _offset; i < _offset + _count; ++i)
+		{
+			m_pData[i] = _data;
+		}
 	}
 
 	template<class U>
