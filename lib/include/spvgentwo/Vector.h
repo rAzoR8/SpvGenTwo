@@ -72,7 +72,7 @@ namespace spvgentwo
 	inline Vector<U>::Vector(IAllocator* _pAllocator, size_t _size) :
 		m_pAllocator(_pAllocator)
 	{
-		reserve(_size)
+		reserve(_size);
 	}
 
 	template<class U>
