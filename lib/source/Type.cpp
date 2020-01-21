@@ -127,6 +127,32 @@ spvgentwo::Type& spvgentwo::Type::getBaseType()
 	return front().getBaseType();
 }
 
+const char* spvgentwo::Type::getString() const
+{
+	if (isVoid()) return "void";
+	if (isBool()) return "bool";
+	if (isS16()) return "int16_t";
+	if (isU16()) return "uint16_t";
+	if (isS32()) return "int32_t";
+	if (isU32()) return "uint32_t";
+	if (isS64()) return "int64_t";
+	if (isU64()) return "uint64_t";
+	if (isF16()) return "half";
+	if (isF32()) return "float";
+	if (isF64()) return "double";
+	if (isVector()) return "vec";
+	if (isMatrix()) return "mat";
+	if (isArray()) return "array";
+	if (isStruct()) return "struct";
+	if (isImage()) return "image";
+	if (isSampledImage()) return "sampledimage";
+	if (isSampler()) return "sampler";
+	if (isPointer()) return "pointer";
+	if (isForwardPointer()) return "forwardpointer";
+
+	return "";
+}
+
 spv::Op spvgentwo::Type::getBaseTypeOp() const
 {
 	return getBaseType().m_Type;

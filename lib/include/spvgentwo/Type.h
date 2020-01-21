@@ -96,6 +96,9 @@ namespace spvgentwo
 		const Type& getBaseType() const;
 		Type& getBaseType();
 
+		// fundamentals only
+		const char* getString() const;
+
 		spv::Op getBaseTypeOp() const;
 
 		bool isBaseTypeOf(const spv::Op _type) const;
