@@ -307,7 +307,7 @@ namespace spvgentwo
 	inline T List<T>::pop_back()
 	{
 		T ret(back());
-		--m_Elements;
+		if (--m_Elements == 0u) m_pBegin = nullptr;
 		auto prev = m_pLast->prev();
 		m_pLast->remove(m_pAllocator);
 		m_pLast = prev;
@@ -318,7 +318,7 @@ namespace spvgentwo
 	inline T List<T>::pop_front()
 	{
 		T ret(front());
-		--m_Elements;
+		if (--m_Elements == 0u) m_pLast = nullptr;
 		auto next = m_pBegin->next();
 		m_pBegin->remove(m_pAllocator);
 		m_pBegin = next;
