@@ -46,6 +46,12 @@ namespace spvgentwo
 		T* begin() const noexcept { return m_pData; }
 		T* end() const noexcept { return m_pData + m_elements; }
 
+		T& front() { return *m_pData; }
+		const T& front() const{ return *m_pData; }
+		
+		T& back() { return m_pData[m_elements-1u]; }
+		const T& back() const { return m_pData[m_elements-1u]; }
+
 		template <class ...Args>
 		T* emplace_back(Args&& ..._args);
 
@@ -80,6 +86,8 @@ namespace spvgentwo
 			{
 				traits::constructWithArgs(m_pData + i, _pData[i]);
 			}
+
+			m_elements = _size;
 		}
 	}
 
@@ -142,6 +150,8 @@ namespace spvgentwo
 			{
 				m_pData[i] = _other.m_pData[i];
 			}
+
+			m_elements = _other.m_elements;
 		}
 
 		return *this;
