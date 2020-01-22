@@ -143,12 +143,24 @@ const char* spvgentwo::Type::getString() const
 	if (isVector()) return "vec";
 	if (isMatrix()) return "mat";
 	if (isArray()) return "array";
+	if (isRuntimeArray()) return "runtime array";
+
 	if (isStruct()) return "struct";
 	if (isImage()) return "image";
-	if (isSampledImage()) return "sampledimage";
+	if (isSampledImage()) return "sampled image";
 	if (isSampler()) return "sampler";
 	if (isPointer()) return "pointer";
-	if (isForwardPointer()) return "forwardpointer";
+	if (isForwardPointer()) return "forward pointer";
+
+	if (isOpaque()) return "opaque";
+
+	if (isFunction()) return "function";
+	if (isEvent()) return "event";
+	if (isReservedId()) return "reserved id";
+
+	if (isDeviceEvent()) return "device event";
+	if (isPipe()) return "pipe";
+	if (isQueue()) return "queue";
 
 	return "";
 }

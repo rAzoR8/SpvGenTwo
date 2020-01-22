@@ -237,9 +237,6 @@ namespace spvgentwo
 		// makes this a matrix type, returns column type
 		Type& MatrixColumn(unsigned int _columns) { Matrix(_columns); return Member(); }
 		
-		// return top most type
-		Type& Top();
-
 		Iterator begin() const { return m_subTypes.begin(); }
 		Iterator end() const { return m_subTypes.end(); }
 
@@ -265,6 +262,7 @@ namespace spvgentwo
 		bool isForwardPointer() const { return m_Type == spv::Op::OpTypeForwardPointer; }
 		bool isStruct() const { return m_Type == spv::Op::OpTypeStruct; }
 		bool isArray() const { return m_Type == spv::Op::OpTypeArray; }
+		bool isRuntimeArray() const { return m_Type == spv::Op::OpTypeRuntimeArray; }
 		bool isImage() const { return m_Type == spv::Op::OpTypeImage; }
 		bool isSampler() const { return m_Type == spv::Op::OpTypeSampler; }
 		bool isSampledImage() const { return m_Type == spv::Op::OpTypeSampledImage; }
@@ -288,9 +286,17 @@ namespace spvgentwo
 		bool isF64() const { return m_Type == spv::Op::OpTypeFloat && m_FloatWidth == 64u; }
 
 		bool isScalar() const { return isInt() || isFloat(); }
-
 		bool isAggregate() const { return isStruct() || isArray(); }
 		bool isComposite() const { return isAggregate() || isMatrix() || isVector(); }
+
+		bool isOpaque() const { return m_Type == spv::Op::OpTypeOpaque; }
+
+		bool isFunction() const { return m_Type == spv::Op::OpTypeFunction; }
+		bool isEvent() const { return m_Type == spv::Op::OpTypeEvent; }
+		bool isDeviceEvent() const { return m_Type == spv::Op::OpTypeDeviceEvent; }
+		bool isReservedId() const { return m_Type == spv::Op::OpTypeReserveId; }
+		bool isPipe() const { return m_Type == spv::Op::OpTypePipe; }
+		bool isQueue() const { return m_Type == spv::Op::OpTypeQueue; }
 
 		bool isVectorOf(const spv::Op _type, const unsigned int _length = 0u) const { return isVector() && front().getType() == _type && (_length == 0u || m_VecComponentCount == _length); }
 		bool isVectorOfLength(const unsigned int _length) const { return isVector() && (_length == 0u || m_VecComponentCount == _length); }
