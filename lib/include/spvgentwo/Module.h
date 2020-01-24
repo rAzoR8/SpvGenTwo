@@ -25,6 +25,9 @@ namespace spvgentwo
 
 		static constexpr unsigned int GeneratorId = makeGeneratorId(0xfa, 0);
 
+		// reset module to its initial / empty state - clear all functions and instructions etc (invalidate all pointers)
+		void reset();
+
 		unsigned int getSpvVersion() const { return m_spvVersion; }
 
 		void log(const LogLevel _level, const char* _pMsg);

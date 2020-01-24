@@ -136,6 +136,32 @@ void spvgentwo::Module::log(const LogLevel _level, const char* _pMsg)
 #endif
 }
 
+void spvgentwo::Module::reset()
+{
+	m_Functions.clear();
+	m_EntryPoints.clear();
+
+	m_Capabilities.clear();
+	m_Extensions.clear();
+	m_ExtInstrImport.clear();
+
+	setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::Simple);
+
+	m_SourceStrings.clear();
+	m_Names.clear();
+	m_ModuleProccessed.clear();
+	m_Decorations.clear();
+
+	m_TypesAndConstants.clear();
+
+	m_TypeToInstr.clear();
+	m_InstrToType.clear();
+	m_NameLookup.clear();
+
+	m_ConstantBuilder.clear();
+	m_GlobalVariables.clear();
+}
+
 spvgentwo::Function& spvgentwo::Module::addFunction()
 {
 	return m_Functions.emplace_back(this);
@@ -395,7 +421,6 @@ const spvgentwo::Type* spvgentwo::Module::getTypeInfo(const Instruction* _pTypeI
 {
 	if (_pTypeInstr->isType())
 	{
-		//const Type* const* t = m_InstrToType.get(_pTypeInstr);
 		const Type* const* t = m_InstrToType.get(hash(_pTypeInstr));
 
 		if (t != nullptr)
