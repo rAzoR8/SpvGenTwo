@@ -49,17 +49,13 @@ namespace spvgentwo
 
 		Node& newNodeUnique(const Hash64& _hash);
 
-		Value* get(const Hash64 _hash);
-		const Value* get(const Hash64 _hash) const;
+		Value* get(const Hash64 _hash) const;
+		Value* get(const Key& _key) const { return get(hash(_key)); }
 
 		Range getRange(const Hash64 _hash) const;
 		Range getRange(const Key& _key) const { return getRange(hash(_key)); }
 
-		//template <class U = Value, stdrep::enable_if_t<!stdrep::is_const_v<U>> = 0>
-		Value* get(const Key& _key) { return get(hash(_key)); }
-		const Value* get(const Key& _key) const { return get(hash(_key)); }
-
-		Key* findKey(const Value& _value);
+		Key* findKey(const Value& _value) const;
 
 		const unsigned int count(const Hash64 _hash) const;
 
@@ -69,8 +65,10 @@ namespace spvgentwo
 		Iterator begin() const;
 		Iterator end() const { return Iterator(m_pBuckets + m_Buckets, m_pBuckets + m_Buckets, nullptr); }
 
-	private:
 		void clear();
+
+	private:
+		void destroy();
 
 	private:
 		IAllocator* m_pAllocator = nullptr;
@@ -101,7 +99,7 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline void HashMap<Key, Value>::clear()
+	inline void HashMap<Key, Value>::destroy()
 	{
 		if (m_pBuckets != nullptr && m_pAllocator != nullptr)
 		{
@@ -116,9 +114,21 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
+	inline void HashMap<Key, Value>::clear()
+	{
+		if (m_pBuckets != nullptr)
+		{
+			for (auto i = 0u; i < m_Buckets; ++i)
+			{
+				m_pBuckets[i].clear();
+			}
+		}
+	}
+
+	template<class Key, class Value>
 	inline HashMap<Key, Value>::~HashMap()
 	{
-		clear();
+		destroy();
 	}
 
 	template<class Key, class Value>
@@ -127,7 +137,7 @@ namespace spvgentwo
 		if (this != &_other) return *this;
 
 		// free left side
-		clear();
+		destroy();
 
 		m_Buckets = _other.m_Buckets;
 		m_pAllocator = _other.m_pAllocator;
@@ -141,21 +151,7 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline const Value* HashMap<Key, Value>::get(const Hash64 _hash) const
-	{
-		const auto index = _hash % m_Buckets;
-
-		for (const Node& n : m_pBuckets[index])
-		{
-			if (n.hash == _hash)
-				return &n.kv.value;
-		}
-
-		return nullptr;
-	}
-
-	template<class Key, class Value>
-	inline Value* HashMap<Key, Value>::get(const Hash64 _hash)
+	inline Value* HashMap<Key, Value>::get(const Hash64 _hash) const
 	{
 		const auto index = _hash % m_Buckets;
 
@@ -212,7 +208,7 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline Key* HashMap<Key, Value>::findKey(const Value& _value)
+	inline Key* HashMap<Key, Value>::findKey(const Value& _value) const
 	{
 		for (auto i = 0u; i < m_Buckets; ++i)
 		{
