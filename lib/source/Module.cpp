@@ -2,15 +2,15 @@
 #include "spvgentwo/Writer.h"
 #include "spvgentwo/Logger.h"
 
-spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersion, ILogger* _pLogger, IInferResultType* _pInferResultType) : 
-	Module(_pAllocator, _spvVersion, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger, _pInferResultType) // use delegate constructor
+spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersion, ILogger* _pLogger, ITypeInferenceAndVailation* _pTypeInferenceAndVailation) :
+	Module(_pAllocator, _spvVersion, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger, _pTypeInferenceAndVailation) // use delegate constructor
 {
 }
 
-spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersion, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel, ILogger* _pLogger, IInferResultType* _pInferResultType) :
+spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersion, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel, ILogger* _pLogger, ITypeInferenceAndVailation* _pTypeInferenceAndVailation) :
 	m_pAllocator(_pAllocator),
 	m_pLogger(_pLogger),
-	m_pInferResultType(_pInferResultType),
+	m_pTypeInferenceAndVailation(_pTypeInferenceAndVailation),
 	m_spvVersion(_spvVersion),
 	m_Functions(_pAllocator),
 	m_EntryPoints(_pAllocator),
@@ -35,7 +35,7 @@ spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersio
 spvgentwo::Module::Module(Module&& _other) noexcept:
 	m_pAllocator(_other.m_pAllocator),
 	m_pLogger(_other.m_pLogger),
-	m_pInferResultType(_other.m_pInferResultType),
+	m_pTypeInferenceAndVailation(_other.m_pTypeInferenceAndVailation),
 	m_spvVersion(_other.m_spvVersion),
 	m_Functions(stdrep::move(_other.m_Functions)),
 	m_EntryPoints(stdrep::move(_other.m_EntryPoints)),
@@ -63,7 +63,7 @@ spvgentwo::Module& spvgentwo::Module::operator=(Module&& _other) noexcept
 
 	m_pAllocator = _other.m_pAllocator;
 	m_pLogger = _other.m_pLogger;
-	m_pInferResultType = _other.m_pInferResultType;
+	m_pTypeInferenceAndVailation = _other.m_pTypeInferenceAndVailation;
 	m_spvVersion = _other.m_spvVersion;
 	m_Functions = stdrep::move(_other.m_Functions);
 	m_EntryPoints = stdrep::move(_other.m_EntryPoints);
@@ -280,7 +280,7 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 
 	const spv::Op constantOp = _const.getOperation();
 
-	pInstr->makeOpEx(constantOp, pType, InvalidId);
+	pInstr->makeOp(constantOp, pType, InvalidId);
 
 	switch (constantOp)
 	{
@@ -336,7 +336,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char
 
 	const spv::Op base = _type.getType();
 
-	pInstr->makeOpEx(base);
+	pInstr->makeOp(base);
 
 	if (base != spv::Op::OpTypeForwardPointer)
 	{

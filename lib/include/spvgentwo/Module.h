@@ -9,13 +9,13 @@
 namespace spvgentwo
 {
 	// forward delcs:
-	class IInferResultType;
+	class ITypeInferenceAndVailation;
 
 	class Module
 	{
 	public:
-		Module(IAllocator* _pAllocator, const unsigned int _spvVersion = spv::Version,  ILogger* _pLogger = nullptr, IInferResultType* _pInferResultType = nullptr);
-		Module(IAllocator* _pAllocator, const unsigned int _spvVersion, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel,  ILogger* _pLogger = nullptr, IInferResultType* _pInferResultType = nullptr);
+		Module(IAllocator* _pAllocator, const unsigned int _spvVersion = spv::Version,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
+		Module(IAllocator* _pAllocator, const unsigned int _spvVersion, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
 
 		Module(Module&& _other) noexcept;
 
@@ -41,8 +41,8 @@ namespace spvgentwo
 
 		ILogger* getLogger() const { return m_pLogger; }
 		void setLogger(ILogger* _pLogger) { m_pLogger = _pLogger; }
-		IInferResultType* getInferResultType() const { return m_pInferResultType; }
-		void setInferResultType(IInferResultType* _pInferResultType) { m_pInferResultType = _pInferResultType; }
+		ITypeInferenceAndVailation* getTypeInferenceAndVailation() const { return m_pTypeInferenceAndVailation; }
+		void setITypeInferenceAndVailation(ITypeInferenceAndVailation* _pTypeInferenceAndVailation) { m_pTypeInferenceAndVailation = _pTypeInferenceAndVailation; }
 
 		const List<Function>& getFunctions() const { return m_Functions; }
 		const List<EntryPoint>& getEntryPoints() const { return m_EntryPoints; }
@@ -188,7 +188,7 @@ namespace spvgentwo
 	private:
 		IAllocator* m_pAllocator = nullptr;
 		ILogger* m_pLogger = nullptr;
-		IInferResultType* m_pInferResultType = nullptr;
+		ITypeInferenceAndVailation* m_pTypeInferenceAndVailation = nullptr;
 		unsigned int m_spvVersion = spv::Version;
 		List<Function> m_Functions;
 		List<EntryPoint> m_EntryPoints;

@@ -2,8 +2,8 @@
 #include "spvgentwo/BasicBlock.h"
 #include "spvgentwo/Type.h"
 #include "spvgentwo/Writer.h"
-#include "spvgentwo/InferResultType.h"
 #include "spvgentwo/Module.h"
+#include "spvgentwo/TypeInferenceAndValiation.h"
 
 spvgentwo::Instruction::Instruction(Module* _pModule, Instruction&& _other) noexcept :
 	List(stdrep::move(_other)),
@@ -231,6 +231,42 @@ const spvgentwo::Type* spvgentwo::Instruction::getType() const
 	return pModule->getTypeInfo(getTypeInst());
 }
 
+spvgentwo::Instruction::Iterator spvgentwo::Instruction::getResultTypeOperand() const
+{
+	if (hasResultType()) // result type is the first optional operand
+		return begin();
+
+	return nullptr;
+}
+
+spvgentwo::Instruction::Iterator spvgentwo::Instruction::getResultIdOperand() const
+{
+	bool res = false, type = false;
+	spv::HasResultAndType(m_Operation, &res, &type);
+
+	if (res)
+	{
+		auto it = begin();
+		if (type) ++it; // skip <id> ResultType
+		return it;
+	}
+
+	return nullptr;
+}
+
+spvgentwo::Instruction::Iterator spvgentwo::Instruction::getFirstActualOperand() const
+{
+	bool res = false, type = false;
+	spv::HasResultAndType(m_Operation, &res, &type);
+
+	auto it = begin();
+
+	if (res) ++it;
+	if (type) ++it;
+
+	return it;
+}
+
 spv::StorageClass spvgentwo::Instruction::getStorageClass() const
 {
 	switch (m_Operation)
@@ -291,44 +327,14 @@ void spvgentwo::writeInstructions(IWriter* _pWriter, const List<Instruction>& _i
 	}
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Instruction* _pResultType)
-{
-	Instruction* pResultType = _pResultType;
-	
-	if (pResultType == nullptr)
-	{
-		if (getModule()->getInferResultType() != nullptr)
-		{
-			pResultType = getModule()->getInferResultType()->inferType(_instOp, _pOp1, _pOp2, _pOp3);
-		}
-		else
-		{
-			pResultType = inferType(_instOp, _pOp1, _pOp2, _pOp3);
-		}
-	}
-
-	Instruction* pInst = makeOpEx(_instOp, pResultType, InvalidId, _pOp1);
-
-	if (_pOp2 != nullptr)
-	{
-		pInst->addOperand(_pOp2);
-	}
-	if (_pOp3 != nullptr)
-	{
-		pInst->addOperand(_pOp3);
-	}
-
-	return pInst;
-}
-
 void spvgentwo::Instruction::opNop()
 {
-	makeOpEx(spv::Op::OpNop);
+	makeOp(spv::Op::OpNop);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opUndef(Instruction* _pResultType)
 {
-	return makeOpEx(spv::Op::OpUndef, _pResultType, InvalidId);
+	return makeOp(spv::Op::OpUndef, _pResultType, InvalidId);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opSizeOf(Instruction* _pPointerToVar)
@@ -338,93 +344,93 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSizeOf(Instruction* _pPointerT
 
 void spvgentwo::Instruction::opCapability(const spv::Capability _capability)
 {
-	makeOpEx(spv::Op::OpCapability, _capability);
+	makeOp(spv::Op::OpCapability, _capability);
 }
 
 void spvgentwo::Instruction::opMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel)
 {
-	makeOpEx(spv::Op::OpMemoryModel, _addressModel, _memoryModel);
+	makeOp(spv::Op::OpMemoryModel, _addressModel, _memoryModel);
 }
 
 void spvgentwo::Instruction::opExtension(const char* _pExtName)
 {
-	makeOpEx(spv::Op::OpExtension, _pExtName);
+	makeOp(spv::Op::OpExtension, _pExtName);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opExtInstImport(const char* _pExtName)
 {
-	return makeOpEx(spv::Op::OpExtInstImport, InvalidId, _pExtName);
+	return makeOp(spv::Op::OpExtInstImport, InvalidId, _pExtName);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opLabel()
 {
-	return makeOpEx(spv::Op::OpLabel, InvalidId);
+	return makeOp(spv::Op::OpLabel, InvalidId);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opFunction(const Flag<spv::FunctionControlMask> _functionControl, Instruction* _pResultType, Instruction* _pFuncType)
 {
-	return makeOpEx(spv::Op::OpFunction, _pResultType, InvalidId, literal_t{ _functionControl.mask }, _pFuncType);
+	return makeOp(spv::Op::OpFunction, _pResultType, InvalidId, literal_t{ _functionControl.mask }, _pFuncType);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opFunctionParameter(Instruction* _pType)
 {
-	return makeOpEx(spv::Op::OpFunctionParameter, _pType, InvalidId);
+	return makeOp(spv::Op::OpFunctionParameter, _pType, InvalidId);
 }
 
 void spvgentwo::Instruction::opReturn()
 {
-	makeOpEx(spv::Op::OpReturn);
+	makeOp(spv::Op::OpReturn);
 }
 
 void spvgentwo::Instruction::opReturnValue(Instruction* _pValue)
 {
-	makeOpEx(spv::Op::OpReturnValue, _pValue);
+	makeOp(spv::Op::OpReturnValue, _pValue);
 }
 
 void spvgentwo::Instruction::opFunctionEnd()
 {
-	makeOpEx(spv::Op::OpFunctionEnd);
+	makeOp(spv::Op::OpFunctionEnd);
 }
 
 void spvgentwo::Instruction::opName(Instruction* _pTarget, const char* _pName)
 {
-	makeOpEx(spv::Op::OpName, _pTarget, _pName);
+	makeOp(spv::Op::OpName, _pTarget, _pName);
 }
 
 void spvgentwo::Instruction::opMemberName(Instruction* _pTargetStructType, unsigned int _memberIndex, const char* _pName)
 {
-	makeOpEx(spv::Op::OpMemberName, _pTargetStructType, _memberIndex, _pName);
+	makeOp(spv::Op::OpMemberName, _pTargetStructType, _memberIndex, _pName);
 }
 
 void spvgentwo::Instruction::opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control)
 {
-	makeOpEx(spv::Op::OpSelectionMerge, _pMergeBlock, _control);
+	makeOp(spv::Op::OpSelectionMerge, _pMergeBlock, _control);
 }
 
 void spvgentwo::Instruction::opBranch(BasicBlock* _pTargetBlock)
 {
-	makeOpEx(spv::Op::OpBranch, _pTargetBlock);
+	makeOp(spv::Op::OpBranch, _pTargetBlock);
 }
 
 void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock)
 {
-	makeOpEx(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock);
+	makeOp(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock);
 }
 
 void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight)
 {
-	makeOpEx(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock, _trueWeight, _falseWeight);
+	makeOp(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock, _trueWeight, _falseWeight);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instruction* _pInitializer)
 {
 	if (_pInitializer == nullptr)
 	{
-		return makeOpEx(spv::Op::OpVariable, _pResultType, InvalidId, _storageClass);
+		return makeOp(spv::Op::OpVariable, _pResultType, InvalidId, _storageClass);
 	}
 	else
 	{
-		return makeOpEx(spv::Op::OpVariable, _pResultType, InvalidId, _storageClass, _pInitializer);
+		return makeOp(spv::Op::OpVariable, _pResultType, InvalidId, _storageClass, _pInitializer);
 	}
 }
 
@@ -488,7 +494,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAll(Instruction* _pBoolVec)
 
 spvgentwo::Instruction* spvgentwo::Instruction::opCopyObject(Instruction* _pObject)
 {
-	return makeOpEx(spv::Op::OpCopyObject, _pObject->getTypeInst(), InvalidId, _pObject);
+	return makeOp(spv::Op::OpCopyObject, _pObject->getTypeInst(), InvalidId, _pObject);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatrix)
@@ -530,7 +536,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 		if (trueType->isScalar() || trueType->isVector() || trueType->isPointer() ||
 			(getModule()->getSpvVersion() >= makeVersion(1u, 4u) && trueType->isComposite()))
 		{
-			return makeOpEx(spv::Op::OpSelect, _pTrueObj->getTypeInst(), InvalidId, _pCondBool, _pTrueObj, _pFalseObj);
+			return makeOp(spv::Op::OpSelect, _pTrueObj->getTypeInst(), InvalidId, _pCondBool, _pTrueObj, _pFalseObj);
 		}
 
 		getModule()->logError("Object arguments of opSelect are not of type Scalar|Vector|Pointer|Composite");
@@ -789,4 +795,25 @@ bool spvgentwo::Instruction::validateImageOperandType(spv::Op _op, Instruction* 
 
 	module->logWarning("Image operand mask type check not implemented");
 	return true;
+}
+
+bool spvgentwo::Instruction::validate()
+{
+	ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
+
+	// operatiion has a result type and user passed nullptr
+	if (hasResultType() && front().isInstruction() && front().instruction == nullptr)
+	{
+		if (validator != nullptr)
+		{
+			front() = validator->inferResultType(*this);
+		}
+		else
+		{
+			front() = inferResultType(*this);
+		}
+	}
+
+	const bool valid = validator != nullptr ? validator->validateOperands(*this) : validateOperands(*this);
+	return valid;
 }
