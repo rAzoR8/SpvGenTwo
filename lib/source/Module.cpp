@@ -427,7 +427,7 @@ const spvgentwo::Type* spvgentwo::Module::getTypeInfo(const Instruction* _pTypeI
 {
 	if (_pTypeInstr->isType())
 	{
-		const Type* const* t = m_InstrToType.get(hash(_pTypeInstr));
+		const Type* const* t = m_InstrToType.get(_pTypeInstr);
 
 		if (t != nullptr)
 		{

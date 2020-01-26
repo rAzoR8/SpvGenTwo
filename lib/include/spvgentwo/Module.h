@@ -206,7 +206,7 @@ namespace spvgentwo
 		
 		List<Instruction> m_TypesAndConstants;
 		HashMap<Type, Instruction*> m_TypeToInstr;
-		HashMap<Instruction*, Type*> m_InstrToType;
+		HashMap<const Instruction*, Type*> m_InstrToType;
 
 		// instruction that was decorated with opName -> name
 		HashMap<const Instruction*, String> m_NameLookup;
