@@ -61,12 +61,9 @@ public:
     spv::Id getResultId() const;
     const Type* getType() const; // ResultType
 
-    // make operation from up to 3 intermediate results, resulting instruction has result and result type
-    Instruction* makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2 = nullptr, Instruction* _pOp3 = nullptr, Instruction* _pResultType = nullptr);
-
-    // direclty translate arguments to spirv operands
+    // transforms _args to operands, calls inferResultTypeOperand and validateOperands()
     template <class ...Args>
-    Instruction* makeOpEx(const spv::Op _op, Args ... _args);
+    Instruction* makeOp(const spv::Op _op, Args ... _args);
 
     // assign <id>s to unresolved operands and serialize to physical layout
     spv::Id write(IWriter* _pWriter, spv::Id& _resultId);
@@ -79,25 +76,33 @@ public:
 
 Instruction derives from `List<Operand>` just as BasicBlock derives from `List<Instruction>` and Function derives from `List<BasicBlock>`. I chose a double-linked [list](lib/include/spvgentwo/List.h) as my primary container in SpvGenTwo as it allows us to rearrange its elements without invalidating the pointers to the data they carry.
 
-By default, the operation of an Instruction is set to `spv::Op::Nop` (No Operation). Calling makeOp() or makeOpEx() sets the operation and adds the operands in the order they were passed.
+By default, the operation of an Instruction is set to `spv::Op::Nop` (No Operation). Calling makeOp() the operation and adds the operands in the order they were passed.
 
-Internally all Instructions are initialized using makeOpEx():
 ```cpp
 template <class ...Args>
-Instruction* makeOpEx(const spv::Op _op, Args ... _args);
+Instruction* makeOp(const spv::Op _op, Args ... _args);
 ```
 
-`makeOpEx()` checks the C++ types of arguments passed to either add them as an Operand (`Instruction*, BasicBlock*, spv::Id, literal_t`) or decompose the argument into 32bit literals (if it is bigger than a `literal_t`).
-`
+`makeOp()` checks the C++ types of arguments passed to either add them as an Operand (`Instruction*, BasicBlock*, spv::Id, literal_t`) or decompose the argument into 32bit literals (if it is bigger than a `literal_t`).
 
-```cpp
-Instruction* makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2 = nullptr, Instruction* _pOp3 = nullptr, Instruction* _pResultType = nullptr);
-```
-`makeOp()` tries to infer the result type of the operation based on the passed operands either by calling the free function `inferType()` or the IInferResultType interface (assigned to the module).
+`makeOp()` tries to infer the result type of the operation based on the passed operands either by calling `detailimpl::inferResultType()` or the ITypeInferenceAndValiation interface (assigned to the module).
 
-~~`makeOp()` checks if the [types](#Types) of the operands (passed as Instruction*) match the requirements of the `spv::Op` using the type inference interface IInferType.~~ See [Issue 2](https://github.com/rAzoR8/SpvGenTwo/issues/2)
+`makeOp()` checks if the [types](#Types) of the operands (passed as Instruction*) match the requirements of the `spv::Op` using the type inference interface ITypeInferenceAndValiation (or detailimpl::validateOperands()). See [TypeInferenceAndValiation](lib/source/TypeInferenceAndValiation.cpp) for implementation details.
 
 Any implementation of an `spv::Op` that has a resultId should also return a pointer to it self. Just as `Instruction* opDot()` returns the `this`-pointer. Operations that have no result (such as opNop, opBranch etc) should not return anything (`void`).
+
+Instructions can be manually created without using `makeOp()`:
+
+```cpp
+Instruction* pInstr = bb.addInstruction();
+pInstr->setOperation(spv::Op::OpDot);
+pInstr->addOperand(InvalidInstr); // replaced by inferResultType
+pInstr->addOperand(InvalidId); // replaced by module.assignIDs() or .write()
+pInstr->addOperand(_pLeft); // some float vec operand,
+pInstr->addOperand(_pRight); // right hand side of dot product
+Instruction* pTypeInstr = pInstr->inferResultTypeOperand(); // infer Type based on _pLeft and _pRight
+bool success = pInstr->validateOperands(); // check if we setup the instruction correclty
+```
 
 ## BasicBlocks
 
