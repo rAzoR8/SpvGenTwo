@@ -11,8 +11,6 @@ namespace spvgentwo
 	class Function;
 	class Module;
 
-	class ITypeInferenceAndValiation;
-
 	class Instruction : public List<Operand>
 	{
 		friend class Module;
@@ -117,9 +115,6 @@ namespace spvgentwo
 		// serialize instructions of this basic block to the IWriter, returns ID that was assigned to this instruction
 		spv::Id write(IWriter* _pWriter, spv::Id& _resultId);
 
-		// make operation from up to 3 intermediate results, resulting instruction has result and result type
-		//Instruction* makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2 = nullptr, Instruction* _pOp3 = nullptr, Instruction* _pResultType = nullptr);
-		
 		// transforms _args to operands, calls inferResultTypeOperand and validateOperands()
 		template <class ...Args>
 		Instruction* makeOp(const spv::Op _op, Args ... _args);
@@ -382,9 +377,6 @@ namespace spvgentwo
 	
 	};
 
-	// free helper function
-	void writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions, spv::Id& _resultId);
-
 	template<class ...Args>
 	inline Instruction::Instruction(Module* _pModule, const spv::Op _op, Args&& ..._args) :List(_pModule->getAllocator()),
 		m_parentType(ParentType::Module)
@@ -580,10 +572,10 @@ namespace spvgentwo
 	template<class ...ConstituentInstr>
 	inline Instruction* Instruction::opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituent, ConstituentInstr* ..._constituents)
 	{
-		if (_pResultType->getType()->getSubTypes().empty())
+		if (_pResultType->getType()->isComposite() == false)
 		{
 			getModule()->logError("Result type of opCompositeConstruct is not a composite type");
-			return nullptr;
+			return this;
 		}
 
 		return makeOp(spv::Op::OpCompositeConstruct, _pResultType, InvalidId, _pFirstConstituent, _constituents...);
@@ -598,7 +590,7 @@ namespace spvgentwo
 		if (pBaseType->isComposite() == false)
 		{
 			pModule->logError("Argument of opCompositeExtract is not a composite type");
-			return nullptr;
+			return this;
 		}
 
 		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...);
@@ -611,7 +603,7 @@ namespace spvgentwo
 
 		pModule->logError("Invalid index sequence specified for composite type extraction");
 
-		return nullptr;
+		return this;
 	}
 
 	template<class ...IntIndices>
@@ -623,7 +615,7 @@ namespace spvgentwo
 		if (pBaseType->isComposite() == false)
 		{
 			pModule->logError("Argument of opCompositeInsert is not a composite type");
-			return nullptr;
+			return this;
 		}
 
 		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...);
@@ -638,12 +630,12 @@ namespace spvgentwo
 			}
 
 			pModule->logError("Value type does not match composite insertion type");
-			return nullptr;
+			return this;
 		}
 
 		pModule->logError("Invalid index sequence specified for composite insertion");
 
-		return nullptr;
+		return this;
 	}
 
 	template<class ...ImageOperands>
@@ -667,7 +659,7 @@ namespace spvgentwo
 					{
 						if (validateImageOperandType(_imageSampleOp, _pSampledImage, _pCoordinate, mask, ops) == false)
 						{
-							return nullptr;
+							return pInstruction;
 						}
 					}
 				}

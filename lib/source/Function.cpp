@@ -52,14 +52,17 @@ spvgentwo::Function& spvgentwo::Function::operator=(Function&& _other) noexcept
 void spvgentwo::Function::write(IWriter* _pWriter, spv::Id& _resultId)
 {
 	m_Function.write(_pWriter, _resultId);
-	writeInstructions(_pWriter, m_Parameters, _resultId);
+
+	for (Instruction& instr : m_Parameters)
+	{
+		instr.write(_pWriter, _resultId);
+	}
 
 	for (BasicBlock& bb : *this)
 	{
 		bb.write(_pWriter, _resultId);
 	}
 
-	//Instruction end(m_pModule, spv::Op::OpFunctionEnd);
 	m_FunctionEnd.write(_pWriter, _resultId);
 }
 
@@ -112,6 +115,7 @@ spvgentwo::Instruction* spvgentwo::Function::finalize(const Flag<spv::FunctionCo
 {
 	if (m_pReturnType == nullptr || m_pFunctionType == nullptr)
 	{
+		getModule()->logError("Invalid ReturnType or FunctionType");
 		return nullptr;
 	}
 

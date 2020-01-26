@@ -39,8 +39,6 @@ spvgentwo::Instruction& spvgentwo::Instruction::operator=(Instruction&& _other) 
 
 	List::operator=(stdrep::move(_other));
 	m_Operation = _other.m_Operation;
-	//m_parentType = _other.m_parentType;
-	//m_parent = _other.m_parent;
 
 	return *this;
 }
@@ -128,17 +126,8 @@ unsigned int spvgentwo::Instruction::getOpCode() const
 
 spv::Id spvgentwo::Instruction::getResultId() const
 {
-	bool resultId = false, resultType = false;
-	spv::HasResultAndType(m_Operation, &resultId, &resultType);
-
-	if (resultId == false)
-		return InvalidId;
-
-	auto it = begin();
-	if (resultType) // skip resultType operand 
-	{
-		++it;
-	}
+	auto it = getResultIdOperand();
+	if (it == nullptr) return InvalidId;
 	return it->getResultId();
 }
 
@@ -159,17 +148,8 @@ spv::Id spvgentwo::Instruction::resolveId(spv::Id& _previousId)
 		}
 	}
 
-	bool resultId = false, resultType = false;
-	spv::HasResultAndType(m_Operation, &resultId, &resultType);
-
-	if (resultId == false)
-		return InvalidId;
-
-	auto it = begin();
-	if (resultType) // skip resultType operand 
-	{
-		++it;
-	}
+	auto it = getResultIdOperand();
+	if (it == nullptr) return InvalidId;
 
 	if (it->resultId == InvalidId)
 	{
@@ -285,14 +265,6 @@ spv::Id spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id& _resultId)
 	}
 	
 	return ID;
-}
-
-void spvgentwo::writeInstructions(IWriter* _pWriter, const List<Instruction>& _instructions, spv::Id& _resultId)
-{
-	for (Instruction& instr : _instructions)
-	{
-		instr.write(_pWriter, _resultId);
-	}
 }
 
 void spvgentwo::Instruction::opNop()
@@ -417,7 +389,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLe
 
 	getModule()->logError("Operands of opOuterProduct are not scalar vector of length 3");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opDot(Instruction* _pLeft, Instruction* _pRight)
@@ -433,7 +405,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opDot(Instruction* _pLeft, Instr
 
 	getModule()->logError("Operands of opDot are not scalar vector of length 3");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opAny(Instruction* _pBoolVec)
@@ -445,7 +417,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAny(Instruction* _pBoolVec)
 
 	getModule()->logError("Operands of opAny is not a vector of bool");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opAll(Instruction* _pBoolVec)
@@ -457,7 +429,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAll(Instruction* _pBoolVec)
 
 	getModule()->logError("Operands of opAll is not a vector of bool");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opCopyObject(Instruction* _pObject)
@@ -486,7 +458,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorInsertDynamic(Instructio
 
 	getModule()->logError("opVectorInsertDyanmic: _pVector component type does not match type of _pComponent");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool, Instruction* _pTrueObj, Instruction* _pFalseObj)
@@ -509,12 +481,12 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 
 		getModule()->logError("Object arguments of opSelect are not of type Scalar|Vector|Pointer|Composite");
 
-		return nullptr;
+		return this;
 	}
 
 	getModule()->logError("Condition type does not match extent of object arguments");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pImage, Instruction* _pSampler)
@@ -529,7 +501,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 
 	getModule()->logError("Image or sampler type does not match (storage / subpass image not allowed");
 	
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent)
@@ -666,12 +638,12 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 		break;
 	default:
 		module.logError("_imageSampleOp is not supported / implemented");
-		return nullptr;
+		return this;
 	}
 
 	if (!checkDrefComponent() || !checkCoordinateType())
 	{
-		return nullptr;
+		return this;
 	}
 
 	if (_pDrefOrCompnent == nullptr)
