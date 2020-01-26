@@ -116,7 +116,7 @@ spvgentwo::Instruction* spvgentwo::Function::finalize(const Flag<spv::FunctionCo
 	if (m_pReturnType == nullptr || m_pFunctionType == nullptr)
 	{
 		getModule()->logError("Invalid ReturnType or FunctionType");
-		return nullptr;
+		return &m_Function;
 	}
 
 	Instruction* pFunc = m_Function.opFunction(_control, m_pReturnType, m_pFunctionType);

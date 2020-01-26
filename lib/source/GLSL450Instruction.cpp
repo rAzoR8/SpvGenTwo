@@ -13,7 +13,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const ex
 
 	getModule()->logError("Operands of scalarOrFloatVec1 opeartion are not vector or scalar of float");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const extinstr::GLSLstd450 _op, Instruction* _pOp1, Instruction* _pOp2)
@@ -30,7 +30,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const ex
 
 	getModule()->logError("Operands of scalarOrFloatVec2 opeartion are not vector or scalar of float");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(const extinstr::GLSLstd450 _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3)
@@ -48,7 +48,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(const ex
 
 	getModule()->logError("Operands of scalarOrFloatVec3 opeartion are not vector or scalar of float");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(const extinstr::GLSLstd450 _op, Instruction* _pInt, const bool _signed)
@@ -63,7 +63,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(const exti
 
 	getModule()->logError("Operands of scalarOrInt1 opeartion are not vector or scalar of int");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(const extinstr::GLSLstd450 _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed)
@@ -80,7 +80,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(const exti
 
 	getModule()->logError("Operands of scalarOrIntVec2 opeartion are not vector or scalar of int");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(const extinstr::GLSLstd450 _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed)
@@ -98,7 +98,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(const exti
 
 	getModule()->logError("Operands of scalarOrIntVec3 opeartion are not vector or scalar of int");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opCross(Instruction* _pLeft, Instruction* _pRight)
@@ -114,7 +114,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opCross(Instruction* _pLef
 	
 	getModule()->logError("Operands of opCross are not scalar vector of length 3");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opDeterminant(Instruction* _pMatrix)
@@ -129,7 +129,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opDeterminant(Instruction*
 
 	getModule()->logError("Operand of opDeterminant is not a square matirx");
 
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opMatrixInverse(Instruction* _pMatrix)
@@ -144,5 +144,5 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opMatrixInverse(Instructio
 
 	getModule()->logError("Operand of opMatrixInverse is not a square matirx");
 
-	return nullptr;
+	return this;
 }

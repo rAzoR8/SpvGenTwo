@@ -611,7 +611,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 		if (type->isImage() == false || (imageType->getImageSamplerAccess() != SamplerImageAccess::Sampled) || (imageType->getImageDimension() == spv::Dim::Cube))
 		{
 			module.logError("OpImageFetch requires _pSampledImage of type opImage. Its Dim operand cannot be Cube, and its Sampled operand must be 1.");
-			return nullptr;
+			return this;
 		}	
 		checkCoords = true; coordCanBeInt = true;
 		break;
@@ -623,7 +623,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 		if (imageType->getImageDimension() != spv::Dim::Dim2D && imageType->getImageDimension() != spv::Dim::Cube && imageType->getImageDimension() != spv::Dim::Rect)
 		{
 			module.logError("OpImageGather requres Dim of sampled image to be 2D, Cube or Rect");
-			return nullptr;
+			return this;
 		}
 		break;
 	case spv::Op::OpImageSampleImplicitLod: checkCoords = true; break;
@@ -754,7 +754,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 		if (empty() || front().isInstruction() == false)
 		{
 			getModule()->logError("result type operand not present or incorrect type");
-			return nullptr;
+			return pResultType;
 		}
 
 		Operand& retType = front();
