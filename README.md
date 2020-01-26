@@ -113,6 +113,7 @@ Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
 * [FunctionCall Example](example/source/FunctionCall.cpp)
 * [ControlFlow Example](example/source/ControlFlow.cpp)
 * [Extensions Example](example/source/Extensions.cpp)
+* [Constants Example](example/source/Constants.cpp)
 
 # Building
 
@@ -149,7 +150,6 @@ Any contribution you make to this original repository shall be licensed under sa
 
 A list of short and long term goals for this library:
 
-* Improve use/generic type inference support [Issue 1](https://github.com/rAzoR8/SpvGenTwo/issues/2)
 * Implement more Instructions, at least 90% of Shader capabilities
 * Improve validation / logging / error reporting
 * Write unit tests
