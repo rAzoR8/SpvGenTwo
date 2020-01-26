@@ -45,17 +45,12 @@ spvgentwo::Instruction& spvgentwo::Instruction::operator=(Instruction&& _other) 
 	return *this;
 }
 
-spvgentwo::BasicBlock* spvgentwo::Instruction::getBasicBlock()
+spvgentwo::BasicBlock* spvgentwo::Instruction::getBasicBlock() const
 {
 	return m_parentType == ParentType::BasicBlock ? m_parent.pBasicBlock : nullptr;
 }
 
-const spvgentwo::BasicBlock* spvgentwo::Instruction::getBasicBlock() const
-{
-	return m_parentType == ParentType::BasicBlock ? m_parent.pBasicBlock : nullptr;
-}
-
-spvgentwo::Function* spvgentwo::Instruction::getFunction()
+spvgentwo::Function* spvgentwo::Instruction::getFunction() const
 {
 	switch (m_parentType)
 	{
@@ -68,35 +63,8 @@ spvgentwo::Function* spvgentwo::Instruction::getFunction()
 	}
 }
 
-const spvgentwo::Function* spvgentwo::Instruction::getFunction() const
-{
-	switch (m_parentType)
-	{
-	case ParentType::BasicBlock:
-		return m_parent.pBasicBlock->getFunction();
-	case ParentType::Function:
-		return m_parent.pFunction;
-	default:
-		return nullptr;
-	}
-}
 
-spvgentwo::Module* spvgentwo::Instruction::getModule()
-{
-	switch (m_parentType)
-	{
-	case ParentType::BasicBlock:
-		return m_parent.pBasicBlock->getModule();
-	case ParentType::Function:
-		return m_parent.pFunction->getModule();
-	case ParentType::Module:
-		return m_parent.pModule;
-	default:
-		return nullptr;
-	}
-}
-
-const spvgentwo::Module* spvgentwo::Instruction::getModule() const
+spvgentwo::Module* spvgentwo::Instruction::getModule() const
 {
 	switch (m_parentType)
 	{

@@ -59,14 +59,9 @@ namespace spvgentwo
 		Instruction& operator=(Instruction&& _other) noexcept;
 		Instruction& operator=(const Instruction& _other) = delete;
 
-		Module* getModule();
-		const Module* getModule() const;
-
-		Function* getFunction();
-		const Function* getFunction() const;
-
-		BasicBlock* getBasicBlock();
-		const BasicBlock* getBasicBlock() const;
+		Module* getModule() const;
+		Function* getFunction() const;
+		BasicBlock* getBasicBlock() const;
 
 		// get name that was assigned via opName
 		const char* getName() const;

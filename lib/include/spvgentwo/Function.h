@@ -37,8 +37,7 @@ namespace spvgentwo
 		Instruction* getFunctionEnd() { return &m_FunctionEnd; }
 		const Instruction* getFunctionEnd() const { return &m_FunctionEnd; }
 
-		Module* getModule() { return m_pModule; }
-		const Module* getModule() const { return m_pModule; }
+		Module* getModule() const { return m_pModule; }
 
 		const char* getName() const;
 

@@ -27,11 +27,8 @@ namespace spvgentwo
 		BasicBlock& operator=(BasicBlock&& _other) noexcept;
 		BasicBlock& operator=(const BasicBlock& _other) = delete;
 
-		Function* getFunction() { return m_pFunction; }
-		const Function* getFunction() const { return m_pFunction; }
-
-		Module* getModule();
-		const Module* getModule() const;
+		Function* getFunction() const { return m_pFunction; }
+		Module* getModule() const;
 
 		const char* getName() const;
 

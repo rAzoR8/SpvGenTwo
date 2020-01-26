@@ -51,12 +51,7 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::operator=(BasicBlock&& _other) noe
 	return *this;
 }
 
-spvgentwo::Module* spvgentwo::BasicBlock::getModule()
-{
-	return m_pFunction->getModule();
-}
-
-const spvgentwo::Module* spvgentwo::BasicBlock::getModule() const
+spvgentwo::Module* spvgentwo::BasicBlock::getModule() const
 {
 	return m_pFunction->getModule();
 }
