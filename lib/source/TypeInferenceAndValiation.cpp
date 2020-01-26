@@ -4,16 +4,20 @@
 
 using namespace spvgentwo;
 
-spvgentwo::Instruction* spvgentwo::inferResultType(/*const*/ spvgentwo::Instruction& _instr)
+spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(/*const*/ spvgentwo::Instruction& _instr)
 {
 	Module* module = _instr.getModule();
 	auto op1 = _instr.getFirstActualOperand();
 	auto op2 = op1 + 1;
 	auto op3 = op2 + 1;
 
-	const Type* type1 = op1 != nullptr && op1->isInstruction() ? op1->instruction->getType() : nullptr;
-	const Type* type2 = op2 != nullptr && op2->isInstruction() ? op2->instruction->getType() : nullptr;
-	const Type* type3 = op2 != nullptr && op3->isInstruction() ? op3->instruction->getType() : nullptr;
+	Instruction* typeInstr1 = op1 != nullptr && op1->isInstruction() && op1->instruction != nullptr ? op1->instruction->getTypeInst() : nullptr;
+	Instruction* typeInstr2 = op2 != nullptr && op2->isInstruction() && op2->instruction != nullptr ? op2->instruction->getTypeInst() : nullptr;
+	Instruction* typeInstr3 = op3 != nullptr && op3->isInstruction() && op3->instruction != nullptr ? op3->instruction->getTypeInst() : nullptr;
+
+	const Type* type1 = typeInstr1 != nullptr ? typeInstr1->getType() : nullptr;
+	const Type* type2 = typeInstr2 != nullptr ? typeInstr2->getType() : nullptr;
+	const Type* type3 = typeInstr3 != nullptr ? typeInstr3->getType() : nullptr;
 
 	switch (_instr.getOperation())
 	{
@@ -50,14 +54,14 @@ spvgentwo::Instruction* spvgentwo::inferResultType(/*const*/ spvgentwo::Instruct
 	case spv::Op::OpSMod:
 	case spv::Op::OpFRem:
 	case spv::Op::OpFMod:
-		return op1->instruction;
+		return typeInstr1;
 	case spv::Op::OpIAddCarry:
 	case spv::Op::OpISubBorrow:
-		return module->compositeType(spv::Op::OpTypeStruct, op1->instruction, op2->instruction);
+		return module->compositeType(spv::Op::OpTypeStruct, typeInstr1, typeInstr2);
 	case spv::Op::OpVectorTimesScalar:
-		return checkType(spv::Op::OpTypeVector, op1->instruction);
+		return checkType(spv::Op::OpTypeVector, typeInstr1);
 	case spv::Op::OpMatrixTimesScalar:
-		return checkType(spv::Op::OpTypeMatrix, op1->instruction);
+		return checkType(spv::Op::OpTypeMatrix, typeInstr1);
 	case spv::Op::OpVectorTimesMatrix:
 	{
 		// Matrix must be a matrix with the same Component Type as the Component Type in Result Type.
@@ -74,7 +78,7 @@ spvgentwo::Instruction* spvgentwo::inferResultType(/*const*/ spvgentwo::Instruct
 		// Matrix must be an OpTypeMatrix whose Column Type is Result Type.
 		if (type1->getType() == spv::Op::OpTypeMatrix)
 		{
-			return (op1->instruction->begin() + 1)->getInstruction();
+			return (typeInstr1->begin() + 1)->getInstruction();
 		}
 		break;
 	}
@@ -128,7 +132,7 @@ spvgentwo::Instruction* spvgentwo::inferResultType(/*const*/ spvgentwo::Instruct
 		// Result Type must be a scalar or vector of Boolean type.
 		// The type of Operand 1 must be the same as Result Type.
 		// The type of Operand 2 must be the same as Result Type.
-		return op1->instruction;
+		return typeInstr1;
 	case spv::Op::OpIEqual:
 	case spv::Op::OpINotEqual:
 	case spv::Op::OpUGreaterThan:
@@ -176,9 +180,9 @@ spvgentwo::Instruction* spvgentwo::inferResultType(/*const*/ spvgentwo::Instruct
 	case spv::Op::OpPhi:
 	case spv::Op::OpCopyObject:
 	case spv::Op::OpVectorInsertDynamic:
-		return op1->instruction;
+		return typeInstr1;
 	case spv::Op::OpSelect:
-		return op2->instruction;
+		return typeInstr2;
 	case spv::Op::OpSampledImage:
 		return module->addType(type1->wrap(spv::Op::OpTypeSampledImage));
 
@@ -223,8 +227,77 @@ spvgentwo::Instruction* spvgentwo::inferResultType(/*const*/ spvgentwo::Instruct
 	return nullptr;
 }
 
-bool spvgentwo::validateOperands(/*const*/ spvgentwo::Instruction& _instr)
+bool spvgentwo::defaultimpl::validateOperands(/*const*/ spvgentwo::Instruction& _instr)
 {
+	bool resultId = false, resultType = false;
+	spv::HasResultAndType(_instr.getOperation(), &resultId, &resultType);
+
+	Module* module = _instr.getModule();
+
+	if (resultType)
+	{
+		auto it = _instr.getResultTypeOperand();
+		if (it == nullptr)
+		{
+			module->logError("ResultType operand missing");
+			return false;
+		}
+
+		if (it->isInstruction() == false || it->instruction == nullptr)
+		{
+			module->logError("ResultType operand is not a valid instruction");
+			return false;
+		}
+
+		if (it->instruction->isType() == false)
+		{
+			module->logError("ResultType operand is not a OpType instruction");
+			return false;
+		}
+	}
+
+	if (resultId)
+	{
+		auto it = _instr.getResultIdOperand();
+		if (it == nullptr)
+		{
+			module->logError("ResultId operand missing");
+			return false;
+		}
+
+		if (it->isResultId() == false)
+		{
+			module->logError("ResultId operand is not a spv::id");
+			return false;
+		}
+	}
+
+	for (auto it = _instr.getFirstActualOperand(), end = _instr.end(); it != end; ++it)
+	{
+		const Operand& op = *it;
+		switch (op.type)
+		{
+		case Operand::Type::Instruction:
+			if (op.instruction == nullptr)
+			{
+				module->logError("Unassigned instruction operand (nullptr)");
+				return false;
+			}
+			break;
+		case Operand::Type::BranchTarget:
+			if (op.branchTarget == nullptr)
+			{
+				module->logError("Unassigned branchtarget operand (nullptr)");
+				return false;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	// TODO: validate remaining operands (at least check number of operands matches instruction opcode)
+
 	return true;
 }
 

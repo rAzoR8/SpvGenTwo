@@ -125,13 +125,21 @@ namespace spvgentwo
 		// make operation from up to 3 intermediate results, resulting instruction has result and result type
 		//Instruction* makeOp(const spv::Op _instOp, Instruction* _pOp1, Instruction* _pOp2 = nullptr, Instruction* _pOp3 = nullptr, Instruction* _pResultType = nullptr);
 		
-		// direclty translate arguments to spirv operands
+		// transforms _args to operands, calls inferResultTypeOperand and validateOperands()
 		template <class ...Args>
 		Instruction* makeOp(const spv::Op _op, Args ... _args);
 
 		// convert and add the raw data passed via _args as literal_t operands
 		template <class ...Args>
 		void appendLiterals(Args ... _args);
+
+		// infer result type from operands, RestulType operand must be set to InvalidInstr
+		// this function assigns the infered OpType instruction to the first operand of this instruction
+		// uses ITypeInferenceAndValiation instance if present
+		Instruction* inferResultTypeOperand();
+
+		// validate m_Operations and operands with ITypeInferenceAndValiation instance if present, return true if okay
+		bool validateOperands();
 
 		//
 		// OPERATIONS
@@ -377,7 +385,6 @@ namespace spvgentwo
 
 		static bool validateImageOperandType(spv::Op _op, Instruction* _pSampledImage, Instruction* _pCoordinate, spv::ImageOperandsMask _mask, List<Instruction*>& _inOutOperands);
 	
-		bool validate();
 	};
 
 	// free helper function
@@ -419,7 +426,8 @@ namespace spvgentwo
 			makeOpInternal(_args...);
 		}
 
-		validate();
+		inferResultTypeOperand();
+		validateOperands();
 
 		return this;
 	}

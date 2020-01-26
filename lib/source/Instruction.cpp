@@ -339,7 +339,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opUndef(Instruction* _pResultTyp
 
 spvgentwo::Instruction* spvgentwo::Instruction::opSizeOf(Instruction* _pPointerToVar)
 {
-	return makeOp(spv::Op::OpSizeOf, _pPointerToVar);
+	return makeOp(spv::Op::OpSizeOf, InvalidInstr, InvalidId, _pPointerToVar);
 }
 
 void spvgentwo::Instruction::opCapability(const spv::Capability _capability)
@@ -444,7 +444,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLe
 
 	if (pLeftType->isVectorOfFloat() && pRightType->isVectorOfFloat() && pLeftType->hasSameBase(*pRightType))
 	{
-		return makeOp(spv::Op::OpOuterProduct, _pLeft, _pRight);
+		return makeOp(spv::Op::OpOuterProduct, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 
 	getModule()->logError("Operands of opOuterProduct are not scalar vector of length 3");
@@ -460,7 +460,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opDot(Instruction* _pLeft, Instr
 	const Type* pType = _pLeftTypeInstr->getType();
 	if (_pLeftTypeInstr == _pRightTypeInstr && pType->isVectorOfFloat())
 	{
-		return makeOp(spv::Op::OpDot, _pLeft, _pRight);
+		return makeOp(spv::Op::OpDot, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 
 	getModule()->logError("Operands of opDot are not scalar vector of length 3");
@@ -472,7 +472,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAny(Instruction* _pBoolVec)
 {
 	if (_pBoolVec->getType()->isVectorOfBool())
 	{
-		return makeOp(spv::Op::OpAny, _pBoolVec);
+		return makeOp(spv::Op::OpAny, InvalidInstr, InvalidId, _pBoolVec);
 	}
 
 	getModule()->logError("Operands of opAny is not a vector of bool");
@@ -484,7 +484,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAll(Instruction* _pBoolVec)
 {
 	if (_pBoolVec->getType()->isVectorOfBool())
 	{
-		return makeOp(spv::Op::OpAll, _pBoolVec);
+		return makeOp(spv::Op::OpAll, InvalidInstr, InvalidId, _pBoolVec);
 	}
 
 	getModule()->logError("Operands of opAll is not a vector of bool");
@@ -499,12 +499,12 @@ spvgentwo::Instruction* spvgentwo::Instruction::opCopyObject(Instruction* _pObje
 
 spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatrix)
 {
-	return makeOp(spv::Op::OpTranspose, _pMatrix);
+	return makeOp(spv::Op::OpTranspose, InvalidInstr, InvalidId, _pMatrix);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt)
 {
-	return makeOp(spv::Op::OpVectorExtractDynamic, _pVector, _pIndexInt);
+	return makeOp(spv::Op::OpVectorExtractDynamic, InvalidInstr, InvalidId, _pVector, _pIndexInt);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt)
@@ -513,7 +513,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorInsertDynamic(Instructio
 
 	if (pVecType->isVector() && pVecType->front() == *_pComponent->getType())
 	{
-		return makeOp(spv::Op::OpVectorInsertDynamic, _pVector, _pComponent, _pIndexInt);
+		return makeOp(spv::Op::OpVectorInsertDynamic, InvalidInstr, InvalidId, _pVector, _pComponent, _pIndexInt);
 	}
 
 	getModule()->logError("opVectorInsertDyanmic: _pVector component type does not match type of _pComponent");
@@ -556,7 +556,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 
 	if (imageType->isImage() && samplerType->isSampler() && imageType->getImageSamplerAccess() != SamplerImageAccess::Storage && imageType->getImageDimension() != spv::Dim::SubpassData)
 	{
-		return makeOp(spv::Op::OpSampledImage, _pImage, _pSampler);
+		return makeOp(spv::Op::OpSampledImage, InvalidInstr, InvalidId, _pImage, _pSampler);
 	}
 
 	getModule()->logError("Image or sampler type does not match (storage / subpass image not allowed");
@@ -706,9 +706,16 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageSample(const spv::Op _ima
 		return nullptr;
 	}
 
-	Instruction* pInstruction = makeOp(_imageSampleOp, _pSampledImage, _pCoordinate, _pDrefOrCompnent);
+	if (_pDrefOrCompnent == nullptr)
+	{
+		makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate);	
+	}
+	else
+	{
+		makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate, _pDrefOrCompnent);
+	}
 
-	return pInstruction;
+	return this;
 }
 
 bool spvgentwo::Instruction::validateImageOperandType(spv::Op _op, Instruction* _pImage, Instruction* _pCoordinate, spv::ImageOperandsMask _mask, List<Instruction*>& _inOutOperands)
@@ -797,23 +804,34 @@ bool spvgentwo::Instruction::validateImageOperandType(spv::Op _op, Instruction* 
 	return true;
 }
 
-bool spvgentwo::Instruction::validate()
+spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 {
-	ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
+	Instruction* pResultType = nullptr;
 
 	// operatiion has a result type and user passed nullptr
-	if (hasResultType() && front().isInstruction() && front().instruction == nullptr)
+	if (hasResultType())
 	{
-		if (validator != nullptr)
+		if (empty() || front().isInstruction() == false)
 		{
-			front() = validator->inferResultType(*this);
+			getModule()->logError("result type operand not present or incorrect type");
+			return nullptr;
 		}
-		else
+
+		Operand& retType = front();
+
+		if(retType.instruction == nullptr)
 		{
-			front() = inferResultType(*this);
+			ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
+			pResultType = validator != nullptr ? validator->inferResultType(*this) : defaultimpl::inferResultType(*this);
+			retType = pResultType;
 		}
 	}
 
-	const bool valid = validator != nullptr ? validator->validateOperands(*this) : validateOperands(*this);
-	return valid;
+	return pResultType;
+}
+
+bool spvgentwo::Instruction::validateOperands()
+{
+	ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
+	return validator != nullptr ? validator->validateOperands(*this) : defaultimpl::validateOperands(*this);
 }

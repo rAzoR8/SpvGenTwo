@@ -170,39 +170,39 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::Mul(Instruction* _pLeft, Instructi
 	// both are scalar or vector of int
 	if ((lType->isInt() && rType->isInt()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeInt))
 	{
-		addInstruction()->makeOp(spv::Op::OpIMul, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpIMul, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}// both are scalar or vector of float
 	else if ((lType->isFloat() && rType->isFloat()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeFloat))
 	{
-		addInstruction()->makeOp(spv::Op::OpFMul, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpFMul, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}// left scalar times right vector float
 	else if ((lType->isFloat() && rType->isVectorOfFloat()) || (lType->isInt() && rType->isVectorOfInt()))
 	{// OpVectorTimesScalar expects vector as first operand
-		addInstruction()->makeOp(spv::Op::OpVectorTimesScalar, _pRight, _pLeft);
+		addInstruction()->makeOp(spv::Op::OpVectorTimesScalar, InvalidInstr, InvalidId, _pRight, _pLeft);
 	}// left vector times right scalar
 	else if ((lType->isVectorOfFloat() && rType->isFloat()) || (lType->isVectorOfInt() && rType->isInt()))
 	{
-		addInstruction()->makeOp(spv::Op::OpVectorTimesScalar, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpVectorTimesScalar, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 	else if (lType->isScalar() && rType->isMatrix())
 	{// OpMatrixTimesScalar expects matrix as first operand
-		addInstruction()->makeOp(spv::Op::OpMatrixTimesScalar, _pRight, _pLeft);
+		addInstruction()->makeOp(spv::Op::OpMatrixTimesScalar, InvalidInstr, InvalidId, _pRight, _pLeft);
 	}
 	else if (lType->isMatrix() && rType->isScalar())
 	{
-		addInstruction()->makeOp(spv::Op::OpMatrixTimesScalar, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpMatrixTimesScalar, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 	else if (lType->isVector() && rType->isMatrix())
 	{// OpMatrixTimesVector expects matrix as first operand
-		addInstruction()->makeOp(spv::Op::OpMatrixTimesVector, _pRight, _pLeft);
+		addInstruction()->makeOp(spv::Op::OpMatrixTimesVector, InvalidInstr, InvalidId, _pRight, _pLeft);
 	}
 	else if (lType->isMatrix() && rType->isVector())
 	{
-		addInstruction()->makeOp(spv::Op::OpMatrixTimesVector, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpMatrixTimesVector, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 	else if (lType->isMatrix() && rType->isMatrix())
 	{
-		addInstruction()->makeOp(spv::Op::OpMatrixTimesMatrix, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpMatrixTimesMatrix, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 	else
 	{
@@ -225,15 +225,15 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::Div(Instruction* _pLeft, Instructi
 
 	if ((lType->isUInt() && rType->isUInt()) || (lType->hasSameVectorLength(*rType) && lType->isUInt()))
 	{
-		addInstruction()->makeOp(spv::Op::OpUDiv, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpUDiv, InvalidInstr, InvalidId, _pLeft, _pRight);
 	} 
 	else if ((lType->isInt() && rType->isInt()) || (lType->hasSameVectorLength(*rType) && lType->isSInt()))
 	{
-		addInstruction()->makeOp(spv::Op::OpSDiv, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpSDiv, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 	else if ((lType->isFloat() && rType->isFloat()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeFloat))
 	{
-		addInstruction()->makeOp(spv::Op::OpFDiv, _pLeft, _pRight);
+		addInstruction()->makeOp(spv::Op::OpFDiv, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 	else if (lType->isVectorOfScalar() && rType->isScalar())
 	{
@@ -274,7 +274,7 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::Not(Instruction* _pLeft)
 
 	if (lType->isScalarOrVectorOf(spv::Op::OpTypeBool))
 	{
-		addInstruction()->makeOp(spv::Op::OpLogicalNot, _pLeft);
+		addInstruction()->makeOp(spv::Op::OpLogicalNot, InvalidInstr, InvalidId, _pLeft);
 	}
 	else
 	{
@@ -297,11 +297,11 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::IntFltOp(Instruction* _pLeft, Inst
 
 	if ((lType->isInt() && rType->isInt()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeInt))
 	{
-		addInstruction()->makeOp(_int, _pLeft, _pRight);
+		addInstruction()->makeOp(_int, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 	else if ((lType->isFloat() && rType->isFloat()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeFloat))
 	{
-		addInstruction()->makeOp(_float, _pLeft, _pRight);
+		addInstruction()->makeOp(_float, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 	else
 	{
@@ -324,15 +324,15 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::SUIntFltOp(Instruction* _pLeft, In
 
 	if ((lType->isUInt() && rType->isUInt()) || (lType->isUInt() && lType->hasSameVectorLength(*rType, spv::Op::OpTypeInt)))
 	{
-		addInstruction()->makeOp(_unsigned, _pLeft, _pRight);
+		addInstruction()->makeOp(_unsigned, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 	else if ((lType->isSInt() && rType->isSInt()) || (lType->isSInt() && lType->hasSameVectorLength(*rType, spv::Op::OpTypeInt)))
 	{
-		addInstruction()->makeOp(_signed, _pLeft, _pRight);
+		addInstruction()->makeOp(_signed, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 	else if ((lType->isFloat() && rType->isFloat()) || lType->hasSameVectorLength(*rType, spv::Op::OpTypeFloat))
 	{
-		addInstruction()->makeOp(_float, _pLeft, _pRight);
+		addInstruction()->makeOp(_float, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 	else
 	{

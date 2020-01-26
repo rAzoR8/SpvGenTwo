@@ -279,8 +279,10 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 	Instruction* pInstr = node.kv.value = entry->operator->();
 
 	const spv::Op constantOp = _const.getOperation();
+	pInstr->setOperation(constantOp);
 
-	pInstr->makeOp(constantOp, pType, InvalidId);
+	pInstr->addOperand(pType);
+	pInstr->addOperand(InvalidId);
 
 	switch (constantOp)
 	{
@@ -315,6 +317,8 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 		break;
 	}
 
+	pInstr->validateOperands();
+
 	m_TypesAndConstants.append_entry(entry);
 
 	return pInstr;
@@ -336,7 +340,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char
 
 	const spv::Op base = _type.getType();
 
-	pInstr->makeOp(base);
+	pInstr->setOperation(base);
 
 	if (base != spv::Op::OpTypeForwardPointer)
 	{
@@ -406,6 +410,8 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char
 		logFatal("Type not implemented");
 		break; // unknown type
 	}
+
+	pInstr->validateOperands();
 
 	m_TypesAndConstants.append_entry(entry);
 
