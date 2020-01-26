@@ -107,54 +107,5 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		merge.returnValue(/*merge->opPhi(res1, res2)*/);
 	}
 
-	// test types and constants
-#if 0
-	Instruction* vectype = module.type<array_t<float, 3>>();
-	Instruction* mattype = module.type<matrix_t<float, 3, 3>>();
-	Instruction* consvec = module.constant(const_vector_t<float, 3>({ 1.f, 2.f, 3.f }));
-	const_matrix_t<float, 2, 2> mat{ 1.f, 2.f, 3.f, 4.f };
-	Instruction* consvmat = module.constant(mat);
-	auto v = make_vector(1.f, 2.f, 3.f);
-	auto m = make_matrix(v, v, v);
-	auto ar = make_array(m, m);
-	module.constant(ar);
-#endif
-
-	{
-		module.assignIDs();
-
-		auto instrPrint = [](const Instruction& instr)
-		{
-			printf("%u = %u ", instr.getResultId(), instr.getOperation());
-
-			//_pWriter->put(getOpCode());
-
-			for (const Operand& operand : instr)
-			{
-				switch (operand.type)
-				{
-				case Operand::Type::Instruction:
-					printf("i%u ", operand.instruction->getResultId());
-					break;
-				case Operand::Type::ResultId:
-					printf("r%u ", operand.resultId);
-					break;
-				case Operand::Type::BranchTarget:
-					printf("b%u ", operand.branchTarget->front().getResultId());
-					break;
-				case Operand::Type::Literal:
-					printf("l%u ", operand.value.value);
-					break;
-				default:
-					break;
-				}
-			}
-
-			putchar('\n');
-		};
-
-		module.iterateInstructions(instrPrint);
-	}
-
 	return module;
 }
