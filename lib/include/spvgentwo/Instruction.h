@@ -256,12 +256,9 @@ namespace spvgentwo
 
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
-		// base case
-		Instruction* opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent = nullptr);
-
 		// generic base case with image operands
 		template <class ...ImageOperands>
-		Instruction* opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent, const Flag<spv::ImageOperandsMask> _imageOperands, ImageOperands... _operands);
+		Instruction* opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent = nullptr, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands);
 
 #pragma region SampleMethods
 		// Implicit
@@ -373,8 +370,6 @@ namespace spvgentwo
 		template <class T, class ...Args>
 		void makeOpInternal(T first, Args ... _args);
 
-		static bool validateImageOperandType(spv::Op _op, Instruction* _pSampledImage, Instruction* _pCoordinate, spv::ImageOperandsMask _mask, List<Instruction*>& _inOutOperands);
-	
 	};
 
 	template<class ...Args>
@@ -641,34 +636,199 @@ namespace spvgentwo
 	template<class ...ImageOperands>
 	inline Instruction* Instruction::opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent, const Flag<spv::ImageOperandsMask> _imageOperands, ImageOperands ..._operands)
 	{
-		Instruction* pInstruction = opImageSample(_imageSampleOp, _pSampledImage, _pCoordinate, _pDrefOrCompnent);
+		Module& module = *getModule();
+		const Type* type = _pSampledImage->getType();
+		const Type* imageType = type->isSampledImage() ? &type->front() : type;
+		const Type* coordType = _pCoordinate->getType();
 
-		if (pInstruction != nullptr)
+		bool isDref = false;
+		bool isProj = false;
+		bool isComponent = false;
+		bool coordCanBeInt = false;
+		bool checkCoords = false;
+
+		auto checkCoordinateType = [&]() -> bool
 		{
-			if (_imageOperands != spv::ImageOperandsMask::MaskNone)
+			if (checkCoords == false)
+				return true;
+
+			unsigned int dim = 0u;
+
+			switch (imageType->getImageDimension())
 			{
-				pInstruction->addOperand(literal_t{ _imageOperands.mask });
+			case spv::Dim::Dim1D:
+			case spv::Dim::Buffer:
+				dim = 1u;
+				break;
+			case spv::Dim::Dim2D:
+			case spv::Dim::Rect:
+			case spv::Dim::SubpassData:
+				dim = 2u;
+				break;
+			case spv::Dim::Dim3D:
+			case spv::Dim::Cube:
+				dim = 3u;
+				break;
+			default:
+				module.logError("Image dimension not supported/implemented");
+				return false;
+			}
 
-				// convert to dynamic list of operands
-				List<Instruction*> ops(m_pAllocator, stdrep::forward<ImageOperands>(_operands)...);
+			if (imageType->getImageArray())
+			{
+				dim += 1u;
+			}
 
-				for (unsigned int i = 0u; i < (unsigned int)spv::ImageOperandsShift::ZeroExtend; ++i)
+			if (isProj)
+			{
+				dim += 1u;
+			}
+
+			if (dim > 1u && coordType->getVectorComponentCount() < dim)
+			{
+				module.logError("Dimension of coordinates does not match image type");
+				return false;
+			}
+
+			if (coordType->isScalarOrVectorOf(spv::Op::OpTypeInt))
+			{
+				if (coordCanBeInt == false)
 				{
-					spv::ImageOperandsMask mask = static_cast<spv::ImageOperandsMask>(1u << i);
-					if ((_imageOperands & mask) == mask)
-					{
-						if (validateImageOperandType(_imageSampleOp, _pSampledImage, _pCoordinate, mask, ops) == false)
-						{
-							return pInstruction;
-						}
-					}
+					module.logError("Image operation does not support integer coordinates");
+					return false;
 				}
+			}
+			else if (coordType->isScalarOrVectorOf(spv::Op::OpTypeFloat) == false)
+			{
+				module.logError("Coordinate type must be scalar or vector of float");
+				return false;
+			}
 
-				// add validated operands to this image sample instruction
-				(pInstruction->addOperand(_operands), ...);
+			return true;
+		};
+
+		auto checkDrefComponent = [&]() -> bool
+		{
+			if (isDref || isComponent)
+			{
+				if (_pDrefOrCompnent == nullptr)
+				{
+					module.logError("Depth reference parameter is null");
+					return false;
+				}
+				if (isDref && _pDrefOrCompnent->getType()->isF32() == false)
+				{
+					module.logError("Depth reference value must be of type float (32bit)");
+					return false;
+				}
+				if (isComponent && _pDrefOrCompnent->getType()->isI32() == false)
+				{
+					module.logError("Component index must be of type integer (32bit)");
+					return false;
+				}
+			}
+			else if (_pDrefOrCompnent != nullptr)
+			{
+				module.logError("Image operation does not consume Component or Depth reference value, but operand was supplied");
+				return false;
+			}
+			return true;
+		};
+
+		switch (_imageSampleOp)
+		{
+		case spv::Op::OpImageFetch:
+			if (type->isImage() == false || (imageType->getImageSamplerAccess() != SamplerImageAccess::Sampled) || (imageType->getImageDimension() == spv::Dim::Cube))
+			{
+				module.logError("OpImageFetch requires _pSampledImage of type opImage. Its Dim operand cannot be Cube, and its Sampled operand must be 1.");
+				return this;
+			}
+			checkCoords = true; coordCanBeInt = true;
+			break;
+		case spv::Op::OpImageDrefGather:
+		case spv::Op::OpImageGather:
+			isComponent = _imageSampleOp == spv::Op::OpImageGather;
+			isDref = _imageSampleOp == spv::Op::OpImageDrefGather;
+			checkCoords = true;  coordCanBeInt = true;
+			if (imageType->getImageDimension() != spv::Dim::Dim2D && imageType->getImageDimension() != spv::Dim::Cube && imageType->getImageDimension() != spv::Dim::Rect)
+			{
+				module.logError("OpImageGather requres Dim of sampled image to be 2D, Cube or Rect");
+				return this;
+			}
+			break;
+		case spv::Op::OpImageSampleImplicitLod: checkCoords = true; break;
+		case spv::Op::OpImageSampleExplicitLod: checkCoords = true; coordCanBeInt = true; break;
+		case spv::Op::OpImageSampleProjImplicitLod: isProj = true; checkCoords = true; coordCanBeInt = true; break;
+		case spv::Op::OpImageSampleProjExplicitLod: isProj = true; checkCoords = true; break;
+		case spv::Op::OpImageSampleDrefImplicitLod: checkCoords = true; isDref = true; break;
+		case spv::Op::OpImageSampleDrefExplicitLod: checkCoords = true;  isDref = true; break;
+		case spv::Op::OpImageSampleProjDrefImplicitLod: isProj = true; checkCoords = true; isDref = true; break;
+		case spv::Op::OpImageSampleProjDrefExplicitLod: isProj = true; checkCoords = true; isDref = true; break;
+
+			break;
+		default:
+			module.logError("_imageSampleOp is not supported / implemented");
+			return this;
+		}
+
+		if (!checkDrefComponent() || !checkCoordinateType())
+		{
+			return this;
+		}
+
+		if (_pDrefOrCompnent == nullptr)
+		{
+			if (_imageOperands == spv::ImageOperandsMask::MaskNone)
+			{
+				makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate);			
+			}
+			else
+			{
+				makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate, literal_t{ _imageOperands.mask }, _operands...);
+			}
+		}
+		else
+		{
+			if (_imageOperands == spv::ImageOperandsMask::MaskNone)
+			{
+				makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate, _pDrefOrCompnent);
+			}
+			else
+			{
+				makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate, _pDrefOrCompnent, literal_t{ _imageOperands.mask }, _operands...);
 			}
 		}
 
-		return pInstruction;
+		return this;
+
+		//Instruction* pInstruction = opImageSample(_imageSampleOp, _pSampledImage, _pCoordinate, _pDrefOrCompnent);
+
+		//if (pInstruction != nullptr)
+		//{
+		//	if (_imageOperands != spv::ImageOperandsMask::MaskNone)
+		//	{
+		//		pInstruction->addOperand(literal_t{ _imageOperands.mask });
+
+		//		// convert to dynamic list of operands
+		//		List<Instruction*> ops(m_pAllocator, stdrep::forward<ImageOperands>(_operands)...);
+
+		//		for (unsigned int i = 0u; i < (unsigned int)spv::ImageOperandsShift::ZeroExtend; ++i)
+		//		{
+		//			spv::ImageOperandsMask mask = static_cast<spv::ImageOperandsMask>(1u << i);
+		//			if ((_imageOperands & mask) == mask)
+		//			{
+		//				if (validateImageOperandType(_imageSampleOp, _pSampledImage, _pCoordinate, mask, ops) == false)
+		//				{
+		//					return pInstruction;
+		//				}
+		//			}
+		//		}
+
+		//		// add validated operands to this image sample instruction
+		//		(pInstruction->addOperand(_operands), ...);
+		//	}
+		//}
+
+		//return pInstruction;
 	}
 } // !spvgentwo
