@@ -16,6 +16,8 @@ namespace spvgentwo
 
 		// default implementation
 		bool validateOperands(/*const*/ Instruction& _instr);
+
+		bool validateImageOperandType(Instruction& _instr);
 	}
 
 	// returns the operand which matches _type base type or nullptr

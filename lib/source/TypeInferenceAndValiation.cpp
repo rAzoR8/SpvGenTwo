@@ -296,8 +296,110 @@ bool spvgentwo::defaultimpl::validateOperands(/*const*/ spvgentwo::Instruction& 
 		}
 	}
 
-	// TODO: validate remaining operands (at least check number of operands matches instruction opcode)
+	// TODO: validate remaining operands (at least check number and type of operands matches instruction opcode)
 
+	return true;
+}
+
+// spv::Op _op, Instruction* _pImage, Instruction* _pCoordinate, spv::ImageOperandsMask _mask, List<Instruction*>& _inOutOperands
+bool spvgentwo::defaultimpl::validateImageOperandType(Instruction& _instr)
+{
+	Module* module = _instr.getModule();
+	const spv::Op op = _instr.getOperation();
+	auto imgIt = _instr.getFirstActualOperand();
+	auto coordIt = imgIt.next();
+	auto drefCompoOrMask = coordIt.next();
+
+	const Type* imageType = imgIt->getInstruction()->getType();
+	const Type* coordType = coordIt->getInstruction()->getType();
+
+	Flag<spv::ImageOperandsMask> opMask = drefCompoOrMask->getLiteral();
+	Instruction* drefOrCompnent = drefCompoOrMask->getInstruction();
+
+	Instruction* __operand1 = nullptr;
+	Instruction* __operand2 = nullptr;
+	const Type* __type1 = nullptr;
+	const Type* __type2 = nullptr;
+
+	auto operand1 = [&]() -> Instruction* { return __operand1 != nullptr ? __operand1 : (__operand1 = _inOutOperands.pop_front()); };
+	auto operand2 = [&]() -> Instruction* { operand1(); return __operand2 != nullptr ? __operand2 : (__operand2 = _inOutOperands.pop_front()); };
+	auto type1 = [&]() -> const Type* { return __type1 != nullptr ? __type1 : (__type1 = operand1()->getType()); };
+	auto type2 = [&]() -> const Type* { return __type2 != nullptr ? __type2 : (__type2 = operand2()->getType()); };
+
+	auto checkCoordAndOperandDim = [&]() ->bool
+	{
+		unsigned int coordLength = coordType->getScalarOrVectorLength() - (imageType->getImageArray() ? 1u : 0u);
+		if (coordLength != type1()->getScalarOrVectorLength() || coordLength != type2()->getScalarOrVectorLength())
+		{
+			module->logError("Invalid derivative dimensions");
+			return false;
+		}
+		return true;
+	};
+
+	for (unsigned int i = 0u; i < (unsigned int)spv::ImageOperandsShift::ZeroExtend; ++i)
+	{
+		spv::ImageOperandsMask mask = static_cast<spv::ImageOperandsMask>(1u << i);
+		if ((opMask & mask) == mask)
+		{
+			switch (mask)
+			{
+			case spv::ImageOperandsMask::Bias:
+				return type1()->isFloat();
+			case spv::ImageOperandsMask::Lod:
+				return op == spv::Op::OpImageFetch ? type1()->isInt() : type1()->isFloat();
+			case spv::ImageOperandsMask::Grad:
+				if (checkCoordAndOperandDim() == false)
+				{
+					return false;
+				}
+				if (type1()->isBaseTypeOf(spv::Op::OpTypeFloat) == false || type2()->isBaseTypeOf(spv::Op::OpTypeFloat))
+				{
+					module->logError("Explicit lod grad operands must be scalar or vector of float");
+					return false;
+				}
+				return true;
+			case spv::ImageOperandsMask::ConstOffset:
+				if (operand1()->isSpecOrConstant() == false)
+				{
+					module->logError("Image operand is not a constant op");
+					return false;
+				}
+				[[fallthrough]];
+			case spv::ImageOperandsMask::Offset:
+				if (checkCoordAndOperandDim() == false)
+				{
+					return false;
+				}
+				if (type1()->isBaseTypeOf(spv::Op::OpTypeInt) == false || type2()->isBaseTypeOf(spv::Op::OpTypeInt))
+				{
+					module->logError("Explicit lod grad operands must be scalar or vector of integer");
+					return false;
+				}
+				return true;
+			case spv::ImageOperandsMask::ConstOffsets:
+				break; // not implemented yet
+			case spv::ImageOperandsMask::Sample:
+				return type1()->isInt();
+			case spv::ImageOperandsMask::MinLod:
+				return type1()->isFloat();
+			case spv::ImageOperandsMask::MakeTexelAvailableKHR:
+			case spv::ImageOperandsMask::MakeTexelVisibleKHR:
+			case spv::ImageOperandsMask::NonPrivateTexelKHR:
+			case spv::ImageOperandsMask::VolatileTexelKHR:
+				return true; // reserved, no type check
+			case spv::ImageOperandsMask::SignExtend:
+				break; // not implemented yet
+			case spv::ImageOperandsMask::ZeroExtend:
+				break; // not implemented yet
+			case spv::ImageOperandsMask::MaskNone:
+				module->logError("Invalid image operand mask");
+				return false;
+			}
+		}
+	}	
+
+	//module->logWarning("Image operand mask type check not implemented");
 	return true;
 }
 
