@@ -76,20 +76,20 @@ namespace spvgentwo
 	template<class T>
 	inline EntryIterator<T>& EntryIterator<T>::operator++()
 	{
-		m_pEntry = m_pEntry->next();
+		if(m_pEntry != nullptr) m_pEntry = m_pEntry->next();
 		return *this;
 	}
 	template<class T>
 	inline EntryIterator<T>& EntryIterator<T>::operator--()
 	{
-		m_pEntry = m_pEntry->prev();
+		if (m_pEntry != nullptr) m_pEntry = m_pEntry->prev();
 		return *this;
 	}
 	template<class T>
 	inline EntryIterator<T> EntryIterator<T>::operator++(int)
 	{
 		EntryIterator<T> ret(m_pEntry);
-		m_pEntry = m_pEntry->next();
+		if (m_pEntry != nullptr) m_pEntry = m_pEntry->next();
 		return ret;
 	}
 
@@ -97,7 +97,7 @@ namespace spvgentwo
 	inline EntryIterator<T> EntryIterator<T>::operator--(int)
 	{
 		EntryIterator<T> ret(m_pEntry);
-		m_pEntry = m_pEntry->prev();
+		if (m_pEntry != nullptr) m_pEntry = m_pEntry->prev();
 		return ret;
 	}
 
