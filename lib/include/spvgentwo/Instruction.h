@@ -258,6 +258,8 @@ namespace spvgentwo
 
 		Instruction* opFNegate(Instruction* _pFloat);
 
+		Instruction* opIAdd(Instruction* _pLeft, Instruction* _pRight);
+
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
 		// generic base case with image operands

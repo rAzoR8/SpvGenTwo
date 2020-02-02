@@ -515,6 +515,16 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFNegate(Instruction* _pFloat)
 	return this;
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(Instruction* _pLeft, Instruction* _pRight)
+{
+	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *_pRight->getType()))
+	{
+		return makeOp(spv::Op::OpIAdd, InvalidInstr, InvalidId, _pLeft, _pRight);
+	}
+	getModule()->logError("Operand of opIAdd is not a scalar or vector of float int");
+	return nullptr;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt)
 {
 	if (_pVector->getType()->isVector() && _pIndexInt->getType()->isInt())
@@ -588,7 +598,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 {
 	Instruction* pResultType = nullptr;
 
-	// operatiion has a result type and user passed nullptr
+	// operation has a result type and user passed nullptr
 	if (hasResultType())
 	{
 		if (empty() || front().isInstruction() == false)
