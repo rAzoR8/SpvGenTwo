@@ -12,11 +12,23 @@
 #include "Types.h"
 #include "Constants.h"
 
+#include <assert.h>
+
 using namespace spvgentwo;
+
+class TestLogger : public ConsoleLogger 
+{
+public:
+	void log(const LogLevel _level, const char* _pMsg) final
+	{
+		ConsoleLogger::log(_level, _pMsg);
+		assert(_level == LogLevel::Debug || _level == LogLevel::Info);
+	}
+};
 
 int main(int argc, char* argv[])
 {
-	ConsoleLogger log;
+	TestLogger log;
 	HeapAllocator alloc; // custom user allocator
 
 	// old cli test
@@ -25,7 +37,7 @@ int main(int argc, char* argv[])
 		examples::oldInstrTest(&alloc, &log).write(&writer);
 
 		system("spirv-dis test.spv");
-		system("spirv-val test.spv");
+		assert(system("spirv-val test.spv") == 0);
 	}
 
 	// function call example
@@ -34,7 +46,7 @@ int main(int argc, char* argv[])
 		examples::functionCall(&alloc, &log).write(&writer);
 
 		system("spirv-dis test.spv");
-		system("spirv-val test.spv");
+		assert(system("spirv-val test.spv") == 0);
 	}
 
 	// control flow example
@@ -43,7 +55,7 @@ int main(int argc, char* argv[])
 		examples::controlFlow(&alloc, &log).write(&writer);
 
 		system("spirv-dis test.spv");
-		system("spirv-val test.spv");
+		assert(system("spirv-val test.spv") == 0);
 	}
 
 	// extension example
@@ -52,7 +64,7 @@ int main(int argc, char* argv[])
 		examples::extensions(&alloc, &log).write(&writer);
 
 		system("spirv-dis test.spv");
-		system("spirv-val test.spv");
+		assert(system("spirv-val test.spv") == 0);
 	}
 
 	// types example
@@ -61,7 +73,7 @@ int main(int argc, char* argv[])
 		examples::types(&alloc, &log).write(&writer);
 
 		system("spirv-dis test.spv");
-		system("spirv-val test.spv");
+		assert(system("spirv-val test.spv") == 0);
 	}
 
 	// constants example
@@ -70,7 +82,7 @@ int main(int argc, char* argv[])
 		examples::constants(&alloc, &log).write(&writer);
 
 		system("spirv-dis test.spv");
-		system("spirv-val test.spv");
+		assert(system("spirv-val test.spv") == 0);
 	}
 
 	return 0;
