@@ -12,10 +12,10 @@ namespace spvgentwo
 	namespace defaultimpl
 	{
 		// default impelemntation
-		Instruction* inferResultType(/*const*/ Instruction& _instr);
+		Instruction* inferResultType(const Instruction& _instr);
 
 		// default implementation
-		bool validateOperands(/*const*/ Instruction& _instr);
+		bool validateOperands(const Instruction& _instr);
 
 		bool validateImageOperandType(const Instruction& _instr);
 	}

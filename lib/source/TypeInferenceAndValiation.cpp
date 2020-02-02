@@ -4,7 +4,7 @@
 
 using namespace spvgentwo;
 
-spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(/*const*/ spvgentwo::Instruction& _instr)
+spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo::Instruction& _instr)
 {
 	Module* module = _instr.getModule();
 	auto op1 = _instr.getFirstActualOperand();
@@ -227,7 +227,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(/*const*/ spvgen
 	return nullptr;
 }
 
-bool spvgentwo::defaultimpl::validateOperands(/*const*/ spvgentwo::Instruction& _instr)
+bool spvgentwo::defaultimpl::validateOperands(const spvgentwo::Instruction& _instr)
 {
 	bool resultId = false, resultType = false;
 	spv::HasResultAndType(_instr.getOperation(), &resultId, &resultType);
@@ -321,7 +321,6 @@ bool spvgentwo::defaultimpl::validateOperands(/*const*/ spvgentwo::Instruction& 
 	return true;
 }
 
-// spv::Op _op, Instruction* _pImage, Instruction* _pCoordinate, spv::ImageOperandsMask _mask, List<Instruction*>& _inOutOperands
 bool spvgentwo::defaultimpl::validateImageOperandType(const Instruction& _instr)
 {
 	Module* module = _instr.getModule();
@@ -426,7 +425,6 @@ bool spvgentwo::defaultimpl::validateImageOperandType(const Instruction& _instr)
 		}
 	}	
 
-	//module->logWarning("Image operand mask type check not implemented");
 	return true;
 }
 
