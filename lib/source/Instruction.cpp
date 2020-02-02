@@ -521,7 +521,17 @@ spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(Instruction* _pLeft, Inst
 	{
 		return makeOp(spv::Op::OpIAdd, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
-	getModule()->logError("Operand of opIAdd is not a scalar or vector of float int");
+	getModule()->logError("Operand of opIAdd is not a scalar or vector of int type");
+	return nullptr;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opFAdd(Instruction* _pLeft, Instruction* _pRight)
+{
+	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeFloat, *_pRight->getType()))
+	{
+		return makeOp(spv::Op::OpFAdd, InvalidInstr, InvalidId, _pLeft, _pRight);
+	}
+	getModule()->logError("Operand of opFAdd is not a scalar or vector of float type");
 	return nullptr;
 }
 
