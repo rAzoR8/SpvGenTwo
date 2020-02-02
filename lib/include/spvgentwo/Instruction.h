@@ -237,6 +237,10 @@ namespace spvgentwo
 
 		Instruction* opAll(Instruction* _pBoolVec);
 
+		Instruction* opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt);
+
+		Instruction* opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt);
+
 		template <class ... ConstituentInstr>
 		Instruction* opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituents, ConstituentInstr* ... _constituents);
 
@@ -250,9 +254,9 @@ namespace spvgentwo
 
 		Instruction* opTranspose(Instruction* _pMatrix);
 
-		Instruction* opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt);
+		Instruction* opSNegate(Instruction* _pSignedInt);
 
-		Instruction* opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt);
+		Instruction* opFNegate(Instruction* _pFloat);
 
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 

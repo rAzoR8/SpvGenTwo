@@ -442,6 +442,34 @@ spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatri
 	return makeOp(spv::Op::OpTranspose, InvalidInstr, InvalidId, _pMatrix);
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opSNegate(Instruction* _pSignedInt)
+{
+	if (_pSignedInt->getType()->isInt() || _pSignedInt->getType()->isVectorOfSInt())
+	{
+		makeOp(spv::Op::OpSNegate, InvalidInstr, InvalidId, _pSignedInt);
+	}
+	else
+	{
+		getModule()->logError("Operand of opSNegate is not a scalar or vector of integer type");
+	}
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opFNegate(Instruction* _pFloat)
+{
+	if (_pFloat->getType()->isFloat() || _pFloat->getType()->isVectorOfSInt())
+	{
+		makeOp(spv::Op::OpFNegate, InvalidInstr, InvalidId, _pFloat);
+	}
+	else
+	{
+		getModule()->logError("Operand of OpFNegate is not a scalar or vector of float type");
+	}
+
+	return this;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt)
 {
 	return makeOp(spv::Op::OpVectorExtractDynamic, InvalidInstr, InvalidId, _pVector, _pIndexInt);
