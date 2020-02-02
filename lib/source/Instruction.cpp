@@ -362,12 +362,26 @@ void spvgentwo::Instruction::opFunctionEnd()
 
 void spvgentwo::Instruction::opName(Instruction* _pTarget, const char* _pName)
 {
-	makeOp(spv::Op::OpName, _pTarget, _pName);
+	if (_pTarget->hasResult())
+	{
+		makeOp(spv::Op::OpName, _pTarget, _pName);	
+	}
+	else
+	{
+		getModule()->logError("opName target operand must have a result Id");
+	}
 }
 
 void spvgentwo::Instruction::opMemberName(Instruction* _pTargetStructType, unsigned int _memberIndex, const char* _pName)
 {
-	makeOp(spv::Op::OpMemberName, _pTargetStructType, _memberIndex, _pName);
+	if (_pTargetStructType->getOperation() == spv::Op::OpTypeStruct)
+	{
+		makeOp(spv::Op::OpMemberName, _pTargetStructType, _memberIndex, _pName);	
+	}
+	else
+	{
+		getModule()->logError("Operand of opMemberName target must be of type struct");
+	}
 }
 
 void spvgentwo::Instruction::opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control)
