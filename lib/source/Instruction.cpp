@@ -444,7 +444,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatri
 
 spvgentwo::Instruction* spvgentwo::Instruction::opSNegate(Instruction* _pSignedInt)
 {
-	if (_pSignedInt->getType()->isInt() || _pSignedInt->getType()->isVectorOfSInt())
+	if (_pSignedInt->getType()->isInt() || _pSignedInt->getType()->isVectorOfInt())
 	{
 		makeOp(spv::Op::OpSNegate, InvalidInstr, InvalidId, _pSignedInt);
 	}
