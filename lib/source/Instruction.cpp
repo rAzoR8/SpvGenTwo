@@ -319,12 +319,22 @@ spvgentwo::Instruction* spvgentwo::Instruction::opLabel()
 
 spvgentwo::Instruction* spvgentwo::Instruction::opFunction(const Flag<spv::FunctionControlMask> _functionControl, Instruction* _pResultType, Instruction* _pFuncType)
 {
-	return makeOp(spv::Op::OpFunction, _pResultType, InvalidId, literal_t{ _functionControl.mask }, _pFuncType);
+	if (_pResultType->isType() && _pFuncType->getOperation() == spv::Op::OpTypeFunction)
+	{
+		return makeOp(spv::Op::OpFunction, _pResultType, InvalidId, literal_t{ _functionControl.mask }, _pFuncType);
+	}
+	getModule()->logError("ResultType operand of opFunction must type instruction, function type instruction must be OpTypeFunction");
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opFunctionParameter(Instruction* _pType)
 {
-	return makeOp(spv::Op::OpFunctionParameter, _pType, InvalidId);
+	if (_pType->isType())
+	{
+		return makeOp(spv::Op::OpFunctionParameter, _pType, InvalidId);
+	}
+	getModule()->logError("Operand of opFunctionParameter must type instruction");
+	return this;
 }
 
 void spvgentwo::Instruction::opReturn()
@@ -334,7 +344,15 @@ void spvgentwo::Instruction::opReturn()
 
 void spvgentwo::Instruction::opReturnValue(Instruction* _pValue)
 {
-	makeOp(spv::Op::OpReturnValue, _pValue);
+	Function* func = getFunction();
+	if (func != nullptr && func->getReturnType()->getType() == _pValue->getType())
+	{
+		makeOp(spv::Op::OpReturnValue, _pValue);	
+	}
+	else
+	{
+		getModule()->logError("Operand of opReturnValue must match return type of the function");
+	}
 }
 
 void spvgentwo::Instruction::opFunctionEnd()
