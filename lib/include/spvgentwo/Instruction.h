@@ -800,35 +800,5 @@ namespace spvgentwo
 		}
 
 		return this;
-
-		//Instruction* pInstruction = opImageSample(_imageSampleOp, _pSampledImage, _pCoordinate, _pDrefOrCompnent);
-
-		//if (pInstruction != nullptr)
-		//{
-		//	if (_imageOperands != spv::ImageOperandsMask::MaskNone)
-		//	{
-		//		pInstruction->addOperand(literal_t{ _imageOperands.mask });
-
-		//		// convert to dynamic list of operands
-		//		List<Instruction*> ops(m_pAllocator, stdrep::forward<ImageOperands>(_operands)...);
-
-		//		for (unsigned int i = 0u; i < (unsigned int)spv::ImageOperandsShift::ZeroExtend; ++i)
-		//		{
-		//			spv::ImageOperandsMask mask = static_cast<spv::ImageOperandsMask>(1u << i);
-		//			if ((_imageOperands & mask) == mask)
-		//			{
-		//				if (validateImageOperandType(_imageSampleOp, _pSampledImage, _pCoordinate, mask, ops) == false)
-		//				{
-		//					return pInstruction;
-		//				}
-		//			}
-		//		}
-
-		//		// add validated operands to this image sample instruction
-		//		(pInstruction->addOperand(_operands), ...);
-		//	}
-		//}
-
-		//return pInstruction;
 	}
 } // !spvgentwo
