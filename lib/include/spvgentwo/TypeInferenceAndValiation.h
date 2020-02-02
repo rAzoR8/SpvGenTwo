@@ -9,6 +9,7 @@ namespace spvgentwo
 	class Instruction;
 	class Type;
 
+	// non-public interface - might change, dont use!
 	namespace defaultimpl
 	{
 		// default impelemntation
