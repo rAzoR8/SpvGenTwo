@@ -126,7 +126,7 @@ spvgentwo::Module::~Module()
 {
 }
 
-void spvgentwo::Module::log(const LogLevel _level, const char* _pMsg)
+void spvgentwo::Module::log(const LogLevel _level, const char* _pMsg) const
 {
 #ifdef SPVGENTWO_LOGGING
 	if (m_pLogger != nullptr)
