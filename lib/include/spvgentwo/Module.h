@@ -18,7 +18,6 @@ namespace spvgentwo
 		Module(IAllocator* _pAllocator, const unsigned int _spvVersion, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
 
 		Module(Module&& _other) noexcept;
-
 		~Module();
 
 		Module& operator=(Module&& _other) noexcept;
@@ -30,12 +29,19 @@ namespace spvgentwo
 
 		unsigned int getSpvVersion() const { return m_spvVersion; }
 
-		void log(const LogLevel _level, const char* _pMsg);
-		void logDebug(const char* _pMsg) { log(LogLevel::Debug, _pMsg); }
-		void logInfo(const char* _pMsg) { log(LogLevel::Info, _pMsg); }
-		void logWarning(const char* _pMsg) { log(LogLevel::Warning, _pMsg); }
-		void logError(const char* _pMsg) { log(LogLevel::Error, _pMsg); }
-		void logFatal(const char* _pMsg) { log(LogLevel::Fatal, _pMsg); }
+		void log(const LogLevel _level, const char* _pMsg) const;
+		void logDebug(const char* _pMsg) const { log(LogLevel::Debug, _pMsg); }
+		void logInfo(const char* _pMsg) const { log(LogLevel::Info, _pMsg); }
+		void logWarning(const char* _pMsg) const { log(LogLevel::Warning, _pMsg); }
+		void logError(const char* _pMsg) const { log(LogLevel::Error, _pMsg); }
+		void logFatal(const char* _pMsg) const { log(LogLevel::Fatal, _pMsg); }
+
+		// like assert, _pred == false -> log, returns _pred
+		bool log(bool _pred, const LogLevel _level, const char* _pMsg) const { if (!_pred) log(_level, _pMsg); return _pred; }
+		bool logDebug(bool _pred, const char* _pMsg) const { if (!_pred) log(LogLevel::Debug, _pMsg); return _pred; }
+		bool logWarning(bool _pred, const char* _pMsg) const { if (!_pred) log(LogLevel::Warning, _pMsg); return _pred; }
+		bool logError(bool _pred, const char* _pMsg) const { if (!_pred) log(LogLevel::Error, _pMsg); return _pred; }
+		bool logFatal(bool _pred, const char* _pMsg) const { if (!_pred) log(LogLevel::Fatal, _pMsg); return _pred; }
 
 		IAllocator* getAllocator() const { return m_pAllocator; }
 

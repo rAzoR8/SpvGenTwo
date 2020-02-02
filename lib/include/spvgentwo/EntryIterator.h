@@ -20,6 +20,9 @@ namespace spvgentwo
 		EntryIterator<T> operator+(const size_t n) const;
 		EntryIterator<T> operator-(const size_t n) const;
 
+		EntryIterator<T> prev() const;
+		EntryIterator<T> next() const;
+
 		// pre
 		EntryIterator<T>& operator++();
 		EntryIterator<T>& operator--();
@@ -73,20 +76,20 @@ namespace spvgentwo
 	template<class T>
 	inline EntryIterator<T>& EntryIterator<T>::operator++()
 	{
-		m_pEntry = m_pEntry->next();
+		if(m_pEntry != nullptr) m_pEntry = m_pEntry->next();
 		return *this;
 	}
 	template<class T>
 	inline EntryIterator<T>& EntryIterator<T>::operator--()
 	{
-		m_pEntry = m_pEntry->prev();
+		if (m_pEntry != nullptr) m_pEntry = m_pEntry->prev();
 		return *this;
 	}
 	template<class T>
 	inline EntryIterator<T> EntryIterator<T>::operator++(int)
 	{
 		EntryIterator<T> ret(m_pEntry);
-		m_pEntry = m_pEntry->next();
+		if (m_pEntry != nullptr) m_pEntry = m_pEntry->next();
 		return ret;
 	}
 
@@ -94,7 +97,7 @@ namespace spvgentwo
 	inline EntryIterator<T> EntryIterator<T>::operator--(int)
 	{
 		EntryIterator<T> ret(m_pEntry);
-		m_pEntry = m_pEntry->prev();
+		if (m_pEntry != nullptr) m_pEntry = m_pEntry->prev();
 		return ret;
 	}
 
@@ -111,6 +114,18 @@ namespace spvgentwo
 	{
 		EntryIterator<T> ret(m_pEntry);
 		for (size_t i = 0; i < n && ret != nullptr; i++, --ret) {}
+		return ret;
+	}
+	template<class T>
+	inline EntryIterator<T> EntryIterator<T>::prev() const
+	{
+		EntryIterator<T> ret(m_pEntry); --ret;
+		return ret;
+	}
+	template<class T>
+	inline EntryIterator<T> EntryIterator<T>::next() const
+	{
+		EntryIterator<T> ret(m_pEntry); ++ret;
 		return ret;
 	}
 } // !spvgentwo

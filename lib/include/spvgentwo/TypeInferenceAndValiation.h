@@ -9,13 +9,16 @@ namespace spvgentwo
 	class Instruction;
 	class Type;
 
+	// non-public interface - might change, dont use!
 	namespace defaultimpl
 	{
 		// default impelemntation
-		Instruction* inferResultType(/*const*/ Instruction& _instr);
+		Instruction* inferResultType(const Instruction& _instr);
 
 		// default implementation
-		bool validateOperands(/*const*/ Instruction& _instr);
+		bool validateOperands(const Instruction& _instr);
+
+		bool validateImageOperandType(const Instruction& _instr);
 	}
 
 	// returns the operand which matches _type base type or nullptr
