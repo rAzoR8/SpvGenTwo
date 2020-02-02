@@ -439,7 +439,16 @@ spvgentwo::Instruction* spvgentwo::Instruction::opCopyObject(Instruction* _pObje
 
 spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatrix)
 {
-	return makeOp(spv::Op::OpTranspose, InvalidInstr, InvalidId, _pMatrix);
+	if (_pMatrix->getType()->isMatrix())
+	{
+		makeOp(spv::Op::OpTranspose, InvalidInstr, InvalidId, _pMatrix);	
+	}
+	else
+	{
+		getModule()->logError("Operand of opTranspose is not a matrix type");
+	}
+
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opSNegate(Instruction* _pSignedInt)
