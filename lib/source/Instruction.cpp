@@ -274,12 +274,22 @@ void spvgentwo::Instruction::opNop()
 
 spvgentwo::Instruction* spvgentwo::Instruction::opUndef(Instruction* _pResultType)
 {
-	return makeOp(spv::Op::OpUndef, _pResultType, InvalidId);
+	if (_pResultType->isType())
+	{
+		return makeOp(spv::Op::OpUndef, _pResultType, InvalidId);
+	}
+	getModule()->logError("opUndef ResultType is not a type instruction");
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opSizeOf(Instruction* _pPointerToVar)
 {
-	return makeOp(spv::Op::OpSizeOf, InvalidInstr, InvalidId, _pPointerToVar);
+	if (_pPointerToVar->getType()->isPointer())
+	{
+		return makeOp(spv::Op::OpSizeOf, InvalidInstr, InvalidId, _pPointerToVar);	
+	}
+	getModule()->logError("Operand of opSizeOf must be a pointer to a concrete type");
+	return this;
 }
 
 void spvgentwo::Instruction::opCapability(const spv::Capability _capability)
@@ -441,12 +451,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatri
 {
 	if (_pMatrix->getType()->isMatrix())
 	{
-		makeOp(spv::Op::OpTranspose, InvalidInstr, InvalidId, _pMatrix);	
+		return makeOp(spv::Op::OpTranspose, InvalidInstr, InvalidId, _pMatrix);	
 	}
-	else
-	{
-		getModule()->logError("Operand of opTranspose is not a matrix type");
-	}
+
+	getModule()->logError("Operand of opTranspose is not a matrix type");
 
 	return this;
 }
@@ -455,12 +463,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSNegate(Instruction* _pSignedI
 {
 	if (_pSignedInt->getType()->isInt() || _pSignedInt->getType()->isVectorOfInt())
 	{
-		makeOp(spv::Op::OpSNegate, InvalidInstr, InvalidId, _pSignedInt);
+		return makeOp(spv::Op::OpSNegate, InvalidInstr, InvalidId, _pSignedInt);
 	}
-	else
-	{
-		getModule()->logError("Operand of opSNegate is not a scalar or vector of integer type");
-	}
+
+	getModule()->logError("Operand of opSNegate is not a scalar or vector of integer type");
 
 	return this;
 }
@@ -469,12 +475,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFNegate(Instruction* _pFloat)
 {
 	if (_pFloat->getType()->isFloat() || _pFloat->getType()->isVectorOfSInt())
 	{
-		makeOp(spv::Op::OpFNegate, InvalidInstr, InvalidId, _pFloat);
+		return makeOp(spv::Op::OpFNegate, InvalidInstr, InvalidId, _pFloat);
 	}
-	else
-	{
-		getModule()->logError("Operand of OpFNegate is not a scalar or vector of float type");
-	}
+
+	getModule()->logError("Operand of OpFNegate is not a scalar or vector of float type");
 
 	return this;
 }
