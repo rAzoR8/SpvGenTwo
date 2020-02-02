@@ -517,19 +517,26 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFNegate(Instruction* _pFloat)
 
 spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt)
 {
-	return makeOp(spv::Op::OpVectorExtractDynamic, InvalidInstr, InvalidId, _pVector, _pIndexInt);
+	if (_pVector->getType()->isVector() && _pIndexInt->getType()->isInt())
+	{
+		auto component = _pVector->getTypeInst()->getFirstActualOperand();
+		return makeOp(spv::Op::OpVectorExtractDynamic, component->getInstruction(), InvalidId, _pVector, _pIndexInt);	
+	}
+
+	getModule()->logError("opVectorExtractDynamic: _pVector must be of type vector, _pIndexInt must be of type integer");
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt)
 {
 	const Type* pVecType = _pVector->getType();
 
-	if (pVecType->isVector() && pVecType->front() == *_pComponent->getType())
+	if (pVecType->isVector() && pVecType->front() == *_pComponent->getType() && _pIndexInt->getType()->isInt())
 	{
 		return makeOp(spv::Op::OpVectorInsertDynamic, InvalidInstr, InvalidId, _pVector, _pComponent, _pIndexInt);
 	}
 
-	getModule()->logError("opVectorInsertDyanmic: _pVector component type does not match type of _pComponent");
+	getModule()->logError("opVectorInsertDyanmic: _pVector component type does not match type of _pComponent or _pIndexInt is not of type integer");
 
 	return this;
 }
@@ -597,6 +604,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 			ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
 			pResultType = validator != nullptr ? validator->inferResultType(*this) : defaultimpl::inferResultType(*this);
 			retType = pResultType;
+		}
+		else
+		{
+			pResultType = retType.instruction;
 		}
 	}
 
