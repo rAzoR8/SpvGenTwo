@@ -159,7 +159,7 @@ spv::Id spvgentwo::Instruction::resolveId(spv::Id& _previousId)
 	return it->resultId;
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::getTypeInst() const
+spvgentwo::Instruction* spvgentwo::Instruction::getTypeInstr() const
 {
 	if (hasResultType())
 	{
@@ -176,7 +176,7 @@ const spvgentwo::Type* spvgentwo::Instruction::getType() const
 		return pModule->getTypeInfo(this);
 	}
 
-	return pModule->getTypeInfo(getTypeInst());
+	return pModule->getTypeInfo(getTypeInstr());
 }
 
 spvgentwo::Instruction::Iterator spvgentwo::Instruction::getResultTypeOperand() const
@@ -418,8 +418,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResult
 
 spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLeft, Instruction* _pRight)
 {
-	Instruction* _pLeftTypeInstr = _pLeft->getTypeInst();
-	Instruction* _pRightTypeInstr = _pRight->getTypeInst();
+	Instruction* _pLeftTypeInstr = _pLeft->getTypeInstr();
+	Instruction* _pRightTypeInstr = _pRight->getTypeInstr();
 
 	const Type* pLeftType = _pLeftTypeInstr->getType();
 	const Type* pRightType = _pRightTypeInstr->getType();
@@ -436,8 +436,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLe
 
 spvgentwo::Instruction* spvgentwo::Instruction::opDot(Instruction* _pLeft, Instruction* _pRight)
 {
-	Instruction* _pLeftTypeInstr = _pLeft->getTypeInst();
-	Instruction* _pRightTypeInstr = _pRight->getTypeInst();
+	Instruction* _pLeftTypeInstr = _pLeft->getTypeInstr();
+	Instruction* _pRightTypeInstr = _pRight->getTypeInstr();
 
 	const Type* pType = _pLeftTypeInstr->getType();
 	if (_pLeftTypeInstr == _pRightTypeInstr && pType->isVectorOfFloat())
@@ -476,7 +476,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAll(Instruction* _pBoolVec)
 
 spvgentwo::Instruction* spvgentwo::Instruction::opCopyObject(Instruction* _pObject)
 {
-	return makeOp(spv::Op::OpCopyObject, _pObject->getTypeInst(), InvalidId, _pObject);
+	return makeOp(spv::Op::OpCopyObject, _pObject->getTypeInstr(), InvalidId, _pObject);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatrix)
@@ -517,32 +517,51 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFNegate(Instruction* _pFloat)
 
 spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(Instruction* _pLeft, Instruction* _pRight)
 {
-	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *_pRight->getType()))
+	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *_pRight->getType()) && _pLeft->getType()->getIntWidth() == _pRight->getType()->getIntWidth())
 	{
 		return makeOp(spv::Op::OpIAdd, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
 	getModule()->logError("Operand of opIAdd is not a scalar or vector of int type");
-	return nullptr;
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opFAdd(Instruction* _pLeft, Instruction* _pRight)
 {
 	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeFloat, *_pRight->getType()))
 	{
-		return makeOp(spv::Op::OpFAdd, InvalidInstr, InvalidId, _pLeft, _pRight);
+		return makeOp(spv::Op::OpFAdd, _pLeft->getTypeInstr(), InvalidId, _pLeft, _pRight);
 	}
 	getModule()->logError("Operand of opFAdd is not a scalar or vector of float type");
-	return nullptr;
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opISub(Instruction* _pLeft, Instruction* _pRight)
+{
+	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *_pRight->getType()))
+	{
+		return makeOp(spv::Op::OpISub, InvalidInstr, InvalidId, _pLeft, _pRight);
+	}
+	getModule()->logError("Operand of opISub is not a scalar or vector of int type");
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opFSub(Instruction* _pLeft, Instruction* _pRight)
+{
+	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeFloat, *_pRight->getType()))
+	{
+		return makeOp(spv::Op::OpFSub, _pLeft->getTypeInstr(), InvalidId, _pLeft, _pRight);
+	}
+	getModule()->logError("Operand of opFSub is not a scalar or vector of float type");
+	return this;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt)
 {
 	if (_pVector->getType()->isVector() && _pIndexInt->getType()->isInt())
 	{
-		auto component = _pVector->getTypeInst()->getFirstActualOperand();
+		auto component = _pVector->getTypeInstr()->getFirstActualOperand();
 		return makeOp(spv::Op::OpVectorExtractDynamic, component->getInstruction(), InvalidId, _pVector, _pIndexInt);	
 	}
-
 	getModule()->logError("opVectorExtractDynamic: _pVector must be of type vector, _pIndexInt must be of type integer");
 	return this;
 }
@@ -576,7 +595,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 		if (trueType->isScalar() || trueType->isVector() || trueType->isPointer() ||
 			(getModule()->getSpvVersion() >= makeVersion(1u, 4u) && trueType->isComposite()))
 		{
-			return makeOp(spv::Op::OpSelect, _pTrueObj->getTypeInst(), InvalidId, _pCondBool, _pTrueObj, _pFalseObj);
+			return makeOp(spv::Op::OpSelect, _pTrueObj->getTypeInstr(), InvalidId, _pCondBool, _pTrueObj, _pFalseObj);
 		}
 
 		getModule()->logError("Object arguments of opSelect are not of type Scalar|Vector|Pointer|Composite");
@@ -619,9 +638,11 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 
 		Operand& retType = front();
 
-		if(retType.instruction == nullptr)
+		ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
+		const bool allowOverride = validator != nullptr && validator->overridePredefinedResultType();
+
+		if(retType.instruction == nullptr || allowOverride)
 		{
-			ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
 			pResultType = validator != nullptr ? validator->inferResultType(*this) : defaultimpl::inferResultType(*this);
 			retType = pResultType;
 		}

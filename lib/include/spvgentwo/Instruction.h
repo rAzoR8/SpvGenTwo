@@ -76,7 +76,7 @@ namespace spvgentwo
 
 		// operand helper
 		spv::Id getResultId() const;
-		Instruction* getTypeInst() const;
+		Instruction* getTypeInstr() const;
 		const Type* getType() const;
 
 		// operand iterator helpers return null iterator of not compatible with operation 
@@ -262,6 +262,10 @@ namespace spvgentwo
 
 		Instruction* opFAdd(Instruction* _pLeft, Instruction* _pRight);
 
+		Instruction* opISub(Instruction* _pLeft, Instruction* _pRight);
+
+		Instruction* opFSub(Instruction* _pLeft, Instruction* _pRight);
+		
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
 		// generic base case with image operands
@@ -502,7 +506,7 @@ namespace spvgentwo
 	template<class ...VarInst>
 	inline Instruction* Instruction::opPhi(Instruction* _pVar, VarInst* ..._variables)
 	{
-		makeOp(spv::Op::OpPhi, _pVar->getTypeInst(), InvalidId);
+		makeOp(spv::Op::OpPhi, _pVar->getTypeInstr(), InvalidId);
 
 		auto addVar = [&](Instruction* var)
 		{
@@ -629,7 +633,7 @@ namespace spvgentwo
 
 			if (*it == *pValueType)
 			{
-				return makeOp(spv::Op::OpCompositeInsert, _pComposite->getTypeInst(), InvalidId, _pValue, _pComposite, literal_t{ _firstIndex }, literal_t{ _indices }...);
+				return makeOp(spv::Op::OpCompositeInsert, _pComposite->getTypeInstr(), InvalidId, _pValue, _pComposite, literal_t{ _firstIndex }, literal_t{ _indices }...);
 			}
 
 			pModule->logError("Value type does not match composite insertion type");

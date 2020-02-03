@@ -58,6 +58,8 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* cross = bb.ext<GLSL>()->opCross(uniVec, uniVec);
 		Instruction* dot = bb->opDot(cross, uniVec);
 		Instruction* fNeg = bb->opFNegate(dot);
+		fNeg = bb->opFAdd(fNeg, fNeg);
+		fNeg = bb->opFSub(dot, fNeg);
 
 		bb->opOuterProduct(uniVec, uniVec);
 
@@ -67,6 +69,8 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		index = bb->opLoad(index);
 
 		Instruction* sNeg = bb->opSNegate(index);
+		sNeg = bb->opIAdd(sNeg, sNeg);
+		sNeg = bb->opISub(index, sNeg);
 
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
 

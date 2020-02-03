@@ -11,9 +11,9 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	auto op2 = op1 + 1;
 	auto op3 = op2 + 1;
 
-	Instruction* typeInstr1 = op1 != nullptr && op1->isInstruction() && op1->instruction != nullptr ? op1->instruction->getTypeInst() : nullptr;
-	Instruction* typeInstr2 = op2 != nullptr && op2->isInstruction() && op2->instruction != nullptr ? op2->instruction->getTypeInst() : nullptr;
-	Instruction* typeInstr3 = op3 != nullptr && op3->isInstruction() && op3->instruction != nullptr ? op3->instruction->getTypeInst() : nullptr;
+	Instruction* typeInstr1 = op1 != nullptr && op1->isInstruction() && op1->instruction != nullptr ? op1->instruction->getTypeInstr() : nullptr;
+	Instruction* typeInstr2 = op2 != nullptr && op2->isInstruction() && op2->instruction != nullptr ? op2->instruction->getTypeInstr() : nullptr;
+	Instruction* typeInstr3 = op3 != nullptr && op3->isInstruction() && op3->instruction != nullptr ? op3->instruction->getTypeInstr() : nullptr;
 
 	const Type* type1 = typeInstr1 != nullptr ? typeInstr1->getType() : nullptr;
 	const Type* type2 = typeInstr2 != nullptr ? typeInstr2->getType() : nullptr;
