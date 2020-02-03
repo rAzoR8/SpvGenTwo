@@ -265,6 +265,10 @@ namespace spvgentwo
 		Instruction* opISub(Instruction* _pLeft, Instruction* _pRight);
 
 		Instruction* opFSub(Instruction* _pLeft, Instruction* _pRight);
+
+		Instruction* opIMul(Instruction* _pLeft, Instruction* _pRight);
+
+		Instruction* opFMul(Instruction* _pLeft, Instruction* _pRight);
 		
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 

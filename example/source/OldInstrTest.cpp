@@ -60,6 +60,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* fNeg = bb->opFNegate(dot);
 		fNeg = bb->opFAdd(fNeg, fNeg);
 		fNeg = bb->opFSub(dot, fNeg);
+		fNeg = bb->opFMul(dot, fNeg);
 
 		bb->opOuterProduct(uniVec, uniVec);
 
@@ -71,6 +72,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* sNeg = bb->opSNegate(index);
 		sNeg = bb->opIAdd(sNeg, sNeg);
 		sNeg = bb->opISub(index, sNeg);
+		sNeg = bb->opIMul(sNeg, index);
 
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
 

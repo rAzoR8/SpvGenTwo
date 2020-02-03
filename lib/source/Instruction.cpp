@@ -555,6 +555,26 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFSub(Instruction* _pLeft, Inst
 	return this;
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opIMul(Instruction* _pLeft, Instruction* _pRight)
+{
+	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *_pRight->getType()))
+	{
+		return makeOp(spv::Op::OpIMul, InvalidInstr, InvalidId, _pLeft, _pRight);
+	}
+	getModule()->logError("Operand of opIMul is not a scalar or vector of int type");
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opFMul(Instruction* _pLeft, Instruction* _pRight)
+{
+	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeFloat, *_pRight->getType()))
+	{
+		return makeOp(spv::Op::OpFMul, _pLeft->getTypeInstr(), InvalidId, _pLeft, _pRight);
+	}
+	getModule()->logError("Operand of opFMul is not a scalar or vector of float type");
+	return this;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt)
 {
 	if (_pVector->getType()->isVector() && _pIndexInt->getType()->isInt())
