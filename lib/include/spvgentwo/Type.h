@@ -309,7 +309,7 @@ namespace spvgentwo
 		bool isScalarOrVectorOf(const spv::Op _type) const { return m_Type == _type || isVectorOf(_type); }
 		bool hasSameVectorLength(const Type& _other) const { return isVector() && _other.isVector() && m_VecComponentCount == _other.m_VecComponentCount; }
 		bool hasSameVectorLength(const Type& _other, const spv::Op _componentType) const { return isVectorOf(_componentType) && _other.isVectorOf(_componentType) && m_VecComponentCount == _other.m_VecComponentCount; }
-		bool isScalarOrVectorOfSameLength(const spv::Op _type, const Type& _other, bool _sameComponentWidth = true) const { return (!_sameComponentWidth || getBaseType().getIntWidth() == _other.getBaseType().getIntWidth()) && (hasSameVectorLength(_other, _type) || (m_Type == _type && _other.m_Type == _type && isScalar())); }
+		bool isScalarOrVectorOfSameLength(const spv::Op _type, const Type& _other, bool _sameComponentWidth = true) const { return (!_sameComponentWidth || getBaseType().getIntWidth() == _other.getBaseType().getIntWidth()) && (hasSameVectorLength(_other, _type) || (m_Type == _type && _other.m_Type == _type && isScalar() && _other.isScalar())); }
 		bool hasSameComponentWidth(const Type& _other) const { const Type& a = getBaseType(), b = _other.getBaseType(); return a.getType() == b.getType() && a.getIntWidth() == b.getIntWidth(); }
 
 		bool isMatrixOf(const spv::Op _baseType) const { return isMatrix() && getBaseTypeOp() == _baseType; }
