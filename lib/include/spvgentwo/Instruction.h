@@ -258,17 +258,17 @@ namespace spvgentwo
 
 		Instruction* opFNegate(Instruction* _pFloat);
 
-		Instruction* opIAdd(Instruction* _pLeft, Instruction* _pRight);
+		Instruction* opIAdd(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpIAdd, _pLeft, _pRight, "Operand of opIAdd is not a scalar or vector of int type"); }
 
-		Instruction* opFAdd(Instruction* _pLeft, Instruction* _pRight);
+		Instruction* opFAdd(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFAdd, _pLeft, _pRight, "Operand of OpFAdd is not a scalar or vector of float type"); }
 
-		Instruction* opISub(Instruction* _pLeft, Instruction* _pRight);
+		Instruction* opISub(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpISub, _pLeft, _pRight, "Operand of OpISub is not a scalar or vector of int type"); }
 
-		Instruction* opFSub(Instruction* _pLeft, Instruction* _pRight);
+		Instruction* opFSub(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFSub, _pLeft, _pRight, "Operand of OpFSub is not a scalar or vector of float type"); }
 
-		Instruction* opIMul(Instruction* _pLeft, Instruction* _pRight);
+		Instruction* opIMul(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpIMul, _pLeft, _pRight, "Operand of OpIMul is not a scalar or vector of int type"); }
 
-		Instruction* opFMul(Instruction* _pLeft, Instruction* _pRight);
+		Instruction* opFMul(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFMul, _pLeft, _pRight, "Operand of OpFMul is not a scalar or vector of float type"); }
 		
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
@@ -385,6 +385,8 @@ namespace spvgentwo
 		// creates literals
 		template <class T, class ...Args>
 		void makeOpInternal(T first, Args ... _args);
+
+		Instruction* opScalarVec(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight = nullptr, const char* _pErrorMsg = nullptr);
 
 	};
 

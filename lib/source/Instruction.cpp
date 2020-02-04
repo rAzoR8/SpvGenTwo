@@ -515,66 +515,6 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFNegate(Instruction* _pFloat)
 	return this;
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opIAdd(Instruction* _pLeft, Instruction* _pRight)
-{
-	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *_pRight->getType()) && _pLeft->getType()->getIntWidth() == _pRight->getType()->getIntWidth())
-	{
-		return makeOp(spv::Op::OpIAdd, InvalidInstr, InvalidId, _pLeft, _pRight);
-	}
-	getModule()->logError("Operand of opIAdd is not a scalar or vector of int type");
-	return this;
-}
-
-spvgentwo::Instruction* spvgentwo::Instruction::opFAdd(Instruction* _pLeft, Instruction* _pRight)
-{
-	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeFloat, *_pRight->getType()))
-	{
-		return makeOp(spv::Op::OpFAdd, _pLeft->getTypeInstr(), InvalidId, _pLeft, _pRight);
-	}
-	getModule()->logError("Operand of opFAdd is not a scalar or vector of float type");
-	return this;
-}
-
-spvgentwo::Instruction* spvgentwo::Instruction::opISub(Instruction* _pLeft, Instruction* _pRight)
-{
-	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *_pRight->getType()))
-	{
-		return makeOp(spv::Op::OpISub, InvalidInstr, InvalidId, _pLeft, _pRight);
-	}
-	getModule()->logError("Operand of opISub is not a scalar or vector of int type");
-	return this;
-}
-
-spvgentwo::Instruction* spvgentwo::Instruction::opFSub(Instruction* _pLeft, Instruction* _pRight)
-{
-	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeFloat, *_pRight->getType()))
-	{
-		return makeOp(spv::Op::OpFSub, _pLeft->getTypeInstr(), InvalidId, _pLeft, _pRight);
-	}
-	getModule()->logError("Operand of opFSub is not a scalar or vector of float type");
-	return this;
-}
-
-spvgentwo::Instruction* spvgentwo::Instruction::opIMul(Instruction* _pLeft, Instruction* _pRight)
-{
-	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *_pRight->getType()))
-	{
-		return makeOp(spv::Op::OpIMul, InvalidInstr, InvalidId, _pLeft, _pRight);
-	}
-	getModule()->logError("Operand of opIMul is not a scalar or vector of int type");
-	return this;
-}
-
-spvgentwo::Instruction* spvgentwo::Instruction::opFMul(Instruction* _pLeft, Instruction* _pRight)
-{
-	if (_pLeft->getType()->isScalarOrVectorOfSameLength(spv::Op::OpTypeFloat, *_pRight->getType()))
-	{
-		return makeOp(spv::Op::OpFMul, _pLeft->getTypeInstr(), InvalidId, _pLeft, _pRight);
-	}
-	getModule()->logError("Operand of opFMul is not a scalar or vector of float type");
-	return this;
-}
-
 spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt)
 {
 	if (_pVector->getType()->isVector() && _pIndexInt->getType()->isInt())
@@ -640,6 +580,24 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 
 	getModule()->logError("Image or sampler type does not match (storage / subpass image not allowed");
 	
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opScalarVec(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg)
+{
+	const spv::Op type = getTypeFromOp(_op);
+	if (_pRight == nullptr && _pLeft->getType()->isScalarOrVectorOf(type))
+	{
+		return makeOp(_op, InvalidInstr, InvalidId, _pLeft);
+	}
+	else if (_pLeft->getType()->isScalarOrVectorOfSameLength(type, *_pRight->getType()))
+	{
+		return makeOp(_op, InvalidInstr, InvalidId, _pLeft, _pRight);
+	}
+	if (_pErrorMsg != nullptr)
+	{
+		getModule()->logError(_pErrorMsg);
+	}
 	return this;
 }
 
