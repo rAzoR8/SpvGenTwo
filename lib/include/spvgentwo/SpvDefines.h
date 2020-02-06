@@ -234,21 +234,4 @@ namespace spvgentwo
 	}
 
 	constexpr spv::Op getTypeFromOp(const spv::Op _op) { bool sign = false; return getTypeFromOp(_op, sign); }
-
-	// spir-v specific traits
-	namespace traits
-	{
-		template <class T> constexpr bool is_primitive_type_v = false;
-		template <>	constexpr bool is_primitive_type_v<bool> = true;
-		template <>	constexpr bool is_primitive_type_v<short> = true;
-		template <>	constexpr bool is_primitive_type_v<unsigned short> = true;
-		template <>	constexpr bool is_primitive_type_v<int> = true;
-		template <>	constexpr bool is_primitive_type_v<unsigned int> = true;
-		template <>	constexpr bool is_primitive_type_v<long> = true;
-		template <>	constexpr bool is_primitive_type_v<unsigned long> = true;
-		template <>	constexpr bool is_primitive_type_v<long long> = true;
-		template <>	constexpr bool is_primitive_type_v<unsigned long long> = true;
-		template <>	constexpr bool is_primitive_type_v<float> = true;
-		template <>	constexpr bool is_primitive_type_v<double> = true;
-	}
 } //!spvgentwo
