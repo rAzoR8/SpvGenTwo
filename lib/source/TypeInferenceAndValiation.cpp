@@ -24,18 +24,13 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpSizeOf:
 		return module->type<unsigned int>();
 	case spv::Op::OpSNegate:
+	case spv::Op::OpSDiv:
+	case spv::Op::OpSRem:
+	case spv::Op::OpSMod:
+	case spv::Op::OpSConvert:
 	{
-		Type t(module->getAllocator());
-
-		if (type1->isVector())
-		{
-			t.VectorElement(type1->getVectorComponentCount()).Int(type1->front().getIntWidth(), true);
-		}
-		else
-		{
-			t.Int(type1->getIntWidth(), true);
-		}
-
+		Type t(*type1);
+		t.setSign(true);
 		return module->addType(t);
 	}
 	// types where operands must match result type, no further validation at this point
@@ -47,11 +42,8 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpIMul:
 	case spv::Op::OpFMul:
 	case spv::Op::OpUDiv:
-	case spv::Op::OpSDiv:
 	case spv::Op::OpFDiv:
 	case spv::Op::OpUMod:
-	case spv::Op::OpSRem:
-	case spv::Op::OpSMod:
 	case spv::Op::OpFRem:
 	case spv::Op::OpFMod:
 		return typeInstr1;
@@ -67,7 +59,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		// Matrix must be a matrix with the same Component Type as the Component Type in Result Type.
 		// Its number of columns must equal the number of components in Result Type.
 		// => return matrix row type:
-		if (type1->getType() == spv::Op::OpTypeMatrix)
+		if (type1->isMatrix())
 		{
 			return module->addType(type1->front().wrapVector(type1->getMatrixColumnCount()));
 		}
@@ -76,7 +68,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpMatrixTimesVector:
 	{
 		// Matrix must be an OpTypeMatrix whose Column Type is Result Type.
-		if (type1->getType() == spv::Op::OpTypeMatrix)
+		if (type1->isMatrix())
 		{
 			return (typeInstr1->begin() + 1)->getInstruction();
 		}
