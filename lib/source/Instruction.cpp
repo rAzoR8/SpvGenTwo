@@ -585,12 +585,16 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 
 spvgentwo::Instruction* spvgentwo::Instruction::opScalarVec(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg)
 {
-	const spv::Op type = getTypeFromOp(_op);
-	if (_pRight == nullptr && _pLeft->getType()->isScalarOrVectorOf(type))
+	Sign sign = Sign::Any;
+	const spv::Op type = getTypeFromOp(_op, sign);
+	const Type* pLeftType = _pLeft->getType();
+	const Type* pRightType = _pRight != nullptr ? _pRight->getType() : nullptr;
+
+	if (_pRight == nullptr && pLeftType->isScalarOrVectorOf(type) && pLeftType->getBaseType().hasSign(sign))
 	{
 		return makeOp(_op, InvalidInstr, InvalidId, _pLeft);
 	}
-	else if (_pLeft->getType()->isScalarOrVectorOfSameLength(type, *_pRight->getType()))
+	else if (pLeftType->isScalarOrVectorOfSameLength(type, *pRightType) && pLeftType->getBaseType().hasSign(sign) && pRightType->getBaseType().hasSign(sign))
 	{
 		return makeOp(_op, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}

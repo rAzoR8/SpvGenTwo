@@ -154,10 +154,16 @@ namespace spvgentwo
 		return isConstantOp(_instr) || isSpecOp(_instr);
 	}
 
-	// get spv::Op::OpTypeFloat from spv::Op::OpFAdd etc, returns spv::Op::OpNop
-	constexpr spv::Op getTypeFromOp(const spv::Op _op, bool& _intSign)
+	enum class Sign
 	{
-		_intSign = false;
+		Signed = 1 << 0,
+		Unsigned = 1 << 1,
+		Any = Signed | Unsigned,
+	};
+
+	// get spv::Op::OpTypeFloat from spv::Op::OpFAdd etc, returns spv::Op::OpNop
+	constexpr spv::Op getTypeFromOp(const spv::Op _op, Sign& _sign)
+	{
 		switch (_op)
 		{
 		case spv::Op::OpTypeFloat:
@@ -184,6 +190,7 @@ namespace spvgentwo
 		case spv::Op::OpFwidth:
 		case spv::Op::OpFwidthCoarse:
 		case spv::Op::OpFwidthFine:
+			_sign = Sign::Any;
 			return spv::Op::OpTypeFloat;
 
 		case spv::Op::OpSConvert:
@@ -196,7 +203,8 @@ namespace spvgentwo
 		case spv::Op::OpSMulExtended:
 		case spv::Op::OpSNegate:
 		case spv::Op::OpSRem:
-			_intSign = true;
+			_sign = Sign::Signed;
+			return spv::Op::OpTypeInt;
 
 		case spv::Op::OpTypeInt:
 		case spv::Op::OpIAdd:
@@ -210,6 +218,8 @@ namespace spvgentwo
 		case spv::Op::OpISub:
 		case spv::Op::OpISubBorrow:
 		case spv::Op::OpISubSatINTEL:
+			_sign = Sign::Any;
+			return spv::Op::OpTypeInt;
 
 		case spv::Op::OpUAddSatINTEL:
 		case spv::Op::OpUAverageINTEL:
@@ -226,12 +236,13 @@ namespace spvgentwo
 		case spv::Op::OpUMul32x16INTEL:
 		case spv::Op::OpUMulExtended:
 		case spv::Op::OpUSubSatINTEL:
-		
+			_sign = Sign::Unsigned;
 			return spv::Op::OpTypeInt;
 		default:
+			_sign = Sign::Any;
 			return spv::Op::OpNop;
 		}
 	}
 
-	constexpr spv::Op getTypeFromOp(const spv::Op _op) { bool sign = false; return getTypeFromOp(_op, sign); }
+	constexpr spv::Op getTypeFromOp(const spv::Op _op) { Sign sign = Sign::Any; return getTypeFromOp(_op, sign); }
 } //!spvgentwo
