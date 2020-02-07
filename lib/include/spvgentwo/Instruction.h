@@ -254,9 +254,9 @@ namespace spvgentwo
 
 		Instruction* opTranspose(Instruction* _pMatrix);
 
-		Instruction* opSNegate(Instruction* _pSignedInt);
+		Instruction* opSNegate(Instruction* _pSignedInt) { return opScalarVec(spv::Op::OpSNegate, _pSignedInt, nullptr, "Operand of OpSNegate is not a scalar or vector of int type"); }
 
-		Instruction* opFNegate(Instruction* _pFloat);
+		Instruction* opFNegate(Instruction* _pFloat) { return opScalarVec(spv::Op::OpFNegate, _pFloat, nullptr, "Operand of OpFNegate is not a scalar or vector of float type"); }
 
 		Instruction* opIAdd(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpIAdd, _pLeft, _pRight, "Operand of opIAdd is not a scalar or vector of int type"); }
 
