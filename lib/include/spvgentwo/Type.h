@@ -289,7 +289,8 @@ namespace spvgentwo
 		bool isComposite() const { return isAggregate() || isMatrix() || isVector(); }
 
 		// check if this type has same sign as _sign
-		bool hasSign(Sign _sign) const { return _sign == Sign::Any || ((_sign == Sign::Signed) == isSInt()); }
+		bool hasSign(Sign _sign) const { return _sign == Sign::Any || ((_sign == Sign::Signed) == getBaseType().isSInt()); }
+		void setSign(bool _signum) { getBaseType().m_IntSign = _signum; }
 
 		bool isOpaque() const { return m_Type == spv::Op::OpTypeOpaque; }
 
