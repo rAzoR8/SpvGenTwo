@@ -270,6 +270,12 @@ namespace spvgentwo
 
 		Instruction* opFMul(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFMul, _pLeft, _pRight, "Operand of OpFMul is not a scalar or vector of float type"); }
 		
+		Instruction* opUDiv(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpUDiv, _pLeft, _pRight, "Operand of OpUDiv is not a scalar or vector of unsigned int type"); }
+
+		Instruction* opSDiv(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpSDiv, _pLeft, _pRight, "Operand of OpSDiv is not a scalar or vector of signed int type", false); }
+
+		Instruction* opFDiv(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFDiv, _pLeft, _pRight, "Operand of OpFDiv is not a scalar or vector of float type"); }
+		
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
 		// generic base case with image operands
@@ -386,7 +392,7 @@ namespace spvgentwo
 		template <class T, class ...Args>
 		void makeOpInternal(T first, Args ... _args);
 
-		Instruction* opScalarVec(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight = nullptr, const char* _pErrorMsg = nullptr);
+		Instruction* opScalarVec(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight = nullptr, const char* _pErrorMsg = nullptr, bool _checkSign = true);
 
 	};
 

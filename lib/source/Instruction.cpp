@@ -583,18 +583,18 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 	return this;
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opScalarVec(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg)
+spvgentwo::Instruction* spvgentwo::Instruction::opScalarVec(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
 {
 	Sign sign = Sign::Any;
 	const spv::Op type = getTypeFromOp(_op, sign);
 	const Type* pLeftType = _pLeft->getType();
 	const Type* pRightType = _pRight != nullptr ? _pRight->getType() : nullptr;
 
-	if (_pRight == nullptr && pLeftType->isScalarOrVectorOf(type) && pLeftType->getBaseType().hasSign(sign))
+	if (_pRight == nullptr && pLeftType->isScalarOrVectorOf(type) && (!_checkSign || pLeftType->getBaseType().hasSign(sign)))
 	{
 		return makeOp(_op, InvalidInstr, InvalidId, _pLeft);
 	}
-	else if (pLeftType->isScalarOrVectorOfSameLength(type, *pRightType) && pLeftType->getBaseType().hasSign(sign) && pRightType->getBaseType().hasSign(sign))
+	else if (pLeftType->isScalarOrVectorOfSameLength(type, *pRightType) && (!_checkSign || (pLeftType->getBaseType().hasSign(sign) && pRightType->getBaseType().hasSign(sign))))
 	{
 		return makeOp(_op, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
