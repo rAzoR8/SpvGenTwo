@@ -67,7 +67,8 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 		cross = bb->opVectorTimesScalar(cross, fNeg);
 
-		bb->opOuterProduct(uniVec, uniVec);
+		Instruction* mat3 = bb->opOuterProduct(uniVec, uniVec);
+		mat3 = bb->opVectorTimesMatrix(cross, mat3);
 
 		Instruction* uniY = bb->opCompositeExtract(uniVec, 1u);
 
