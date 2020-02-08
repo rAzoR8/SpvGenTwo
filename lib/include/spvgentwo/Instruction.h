@@ -276,6 +276,16 @@ namespace spvgentwo
 
 		Instruction* opFDiv(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFDiv, _pLeft, _pRight, "Operand of OpFDiv is not a scalar or vector of float type"); }
 		
+		Instruction* opUMod(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpUMod, _pLeft, _pRight, "Operand of OpUMod is not a scalar or vector of unsigned int type"); }
+
+		Instruction* opSMod(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpSMod, _pLeft, _pRight, "Operand of OpSMod is not a scalar or vector of int type", false); }
+
+		Instruction* opFMod(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFMod, _pLeft, _pRight, "Operand of OpFMod is not a scalar or vector of float type"); }
+
+		Instruction* opSRem(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpSRem, _pLeft, _pRight, "Operand of OpSRem is not a scalar or vector of int type", false); }
+		
+		Instruction* opFRem(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFRem, _pLeft, _pRight, "Operand of OpFRem is not a scalar or vector of float type"); }
+		
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
 		// generic base case with image operands
