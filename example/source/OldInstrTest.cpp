@@ -93,6 +93,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 		Instruction* mat = bb->opOuterProduct(insert, module.constant(const_vector_t<float, 4>{1.f, 2.f, 3.f, 4.f}));
 		mat = bb->opTranspose(mat);
+		mat = bb->opMatrixTimesScalar(mat, fNeg);
 
 		Instruction* vecType = module.type<vector_t<float, 3>>();
 		Instruction* newVec = bb->opCompositeConstruct(vecType, x, y, z);

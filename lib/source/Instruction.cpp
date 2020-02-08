@@ -559,6 +559,21 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorTimesScalar(Instruction*
 	return this;
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opMatrixTimesScalar(Instruction* _pMatrix, Instruction* _pScalar)
+{
+	const Type* pMatType = _pMatrix->getType();
+	const Type* pScalarType = _pScalar->getType();
+
+	if (pScalarType->isFloat() && pMatType->hasSameBase(*pScalarType) && pMatType->isMatrix())
+	{
+		return makeOp(spv::Op::OpMatrixTimesScalar, _pMatrix->getTypeInstr(), InvalidId, _pMatrix, _pScalar);
+	}
+
+	getModule()->logError("Operand of OpMatrixTimesScalar is not a scalar or matrix of float type");
+
+	return this;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pImage, Instruction* _pSampler)
 {
 	const Type* imageType = _pImage->getType();

@@ -288,6 +288,8 @@ namespace spvgentwo
 		
 		Instruction* opVectorTimesScalar(Instruction* _pVector, Instruction* _pScalar);
 
+		Instruction* opMatrixTimesScalar(Instruction* _pMatrix, Instruction* _pScalar);
+
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
 		// generic base case with image operands
