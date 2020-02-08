@@ -65,6 +65,8 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		fNeg = bb->opFMod(dot, fNeg);
 		fNeg = bb->opFRem(dot, fNeg);
 
+		cross = bb->opVectorTimesScalar(cross, fNeg);
+
 		bb->opOuterProduct(uniVec, uniVec);
 
 		Instruction* uniY = bb->opCompositeExtract(uniVec, 1u);
