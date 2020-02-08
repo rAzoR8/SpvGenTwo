@@ -286,6 +286,8 @@ namespace spvgentwo
 		
 		Instruction* opFRem(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFRem, _pLeft, _pRight, "Operand of OpFRem is not a scalar or vector of float type"); }
 		
+		Instruction* opVectorTimesScalar(Instruction* _pVector, Instruction* _pScalar);
+
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
 		// generic base case with image operands

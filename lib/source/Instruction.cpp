@@ -544,6 +544,21 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 	return this;
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opVectorTimesScalar(Instruction* _pVector, Instruction* _pScalar)
+{
+	const Type* pVecType = _pVector->getType();
+	const Type* pScalarType = _pScalar->getType();
+
+	if (pScalarType->isFloat() && pVecType->isVectorOfFloat(0u, pScalarType->getFloatWidth()))
+	{
+		return makeOp(spv::Op::OpVectorTimesScalar, _pVector->getTypeInstr(), InvalidId, _pVector, _pScalar);
+	}
+
+	getModule()->logError("Operand of OpVectorTimesScalar is not a scalar or vector of float type");
+	
+	return this;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pImage, Instruction* _pSampler)
 {
 	const Type* imageType = _pImage->getType();
