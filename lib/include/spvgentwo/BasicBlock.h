@@ -76,10 +76,10 @@ namespace spvgentwo
 		BasicBlock& Loop(ConditionFunc _condition, ContinueFunc _continue, LoopBodyFunc _body, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::LoopControlMask> _mask = spv::LoopControlMask::MaskNone);
 
 		// infer op code from operands types, emplace instruction in this basic block
-		BasicBlock& Add(Instruction* _pLeft, Instruction* _pRight) { return IntFltOp(_pLeft, _pRight, spv::Op::OpIAdd, spv::Op::OpFAdd); }
-		BasicBlock& Sub(Instruction* _pLeft, Instruction* _pRight) { return IntFltOp(_pLeft, _pRight, spv::Op::OpISub, spv::Op::OpFSub); }
-		BasicBlock& Mul(Instruction* _pLeft, Instruction* _pRight);
-		BasicBlock& Div(Instruction* _pLeft, Instruction* _pRight);
+		BasicBlock& Add(Instruction* _pLeft, Instruction* _pRight) { addInstruction()->add(_pLeft, _pRight); return *this; }
+		BasicBlock& Sub(Instruction* _pLeft, Instruction* _pRight) { addInstruction()->sub(_pLeft, _pRight); return *this; }
+		BasicBlock& Mul(Instruction* _pLeft, Instruction* _pRight) { addInstruction()->mul(_pLeft, _pRight); return *this; }
+		BasicBlock& Div(Instruction* _pLeft, Instruction* _pRight) { addInstruction()->div(_pLeft, _pRight); return *this; }
 
 		BasicBlock& Not(Instruction* _pLeft);
 		BasicBlock& Eq(Instruction* _pLeft, Instruction* _pRight) { return IntFltOp(_pLeft, _pRight, spv::Op::OpIEqual, spv::Op::OpFOrdEqual); }
