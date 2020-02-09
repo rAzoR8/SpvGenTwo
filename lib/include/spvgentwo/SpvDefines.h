@@ -154,20 +154,95 @@ namespace spvgentwo
 		return isConstantOp(_instr) || isSpecOp(_instr);
 	}
 
-	// spir-v specific traits
-	namespace traits
+	enum class Sign
 	{
-		template <class T> constexpr bool is_primitive_type_v = false;
-		template <>	constexpr bool is_primitive_type_v<bool> = true;
-		template <>	constexpr bool is_primitive_type_v<short> = true;
-		template <>	constexpr bool is_primitive_type_v<unsigned short> = true;
-		template <>	constexpr bool is_primitive_type_v<int> = true;
-		template <>	constexpr bool is_primitive_type_v<unsigned int> = true;
-		template <>	constexpr bool is_primitive_type_v<long> = true;
-		template <>	constexpr bool is_primitive_type_v<unsigned long> = true;
-		template <>	constexpr bool is_primitive_type_v<long long> = true;
-		template <>	constexpr bool is_primitive_type_v<unsigned long long> = true;
-		template <>	constexpr bool is_primitive_type_v<float> = true;
-		template <>	constexpr bool is_primitive_type_v<double> = true;
+		Signed = 1 << 0,
+		Unsigned = 1 << 1,
+		Any = Signed | Unsigned,
+	};
+
+	// get spv::Op::OpTypeFloat from spv::Op::OpFAdd etc, returns spv::Op::OpNop
+	constexpr spv::Op getTypeFromOp(const spv::Op _op, Sign& _sign)
+	{
+		switch (_op)
+		{
+		case spv::Op::OpTypeFloat:
+		case spv::Op::OpFAdd:
+		case spv::Op::OpFConvert:
+		case spv::Op::OpFDiv:
+		case spv::Op::OpFMod:
+		case spv::Op::OpFMul:
+		case spv::Op::OpFNegate:
+		case spv::Op::OpFOrdEqual:
+		case spv::Op::OpFOrdGreaterThan:
+		case spv::Op::OpFOrdGreaterThanEqual:
+		case spv::Op::OpFOrdLessThan:
+		case spv::Op::OpFOrdLessThanEqual:
+		case spv::Op::OpFOrdNotEqual:
+		case spv::Op::OpFRem:
+		case spv::Op::OpFSub:
+		case spv::Op::OpFUnordEqual:
+		case spv::Op::OpFUnordGreaterThan:
+		case spv::Op::OpFUnordGreaterThanEqual:
+		case spv::Op::OpFUnordLessThan:
+		case spv::Op::OpFUnordLessThanEqual:
+		case spv::Op::OpFUnordNotEqual:
+		case spv::Op::OpFwidth:
+		case spv::Op::OpFwidthCoarse:
+		case spv::Op::OpFwidthFine:
+			_sign = Sign::Any;
+			return spv::Op::OpTypeFloat;
+
+		case spv::Op::OpSConvert:
+		case spv::Op::OpSDiv:
+		case spv::Op::OpSGreaterThan:
+		case spv::Op::OpSGreaterThanEqual:
+		case spv::Op::OpSLessThan:
+		case spv::Op::OpSLessThanEqual:
+		case spv::Op::OpSMod:
+		case spv::Op::OpSMulExtended:
+		case spv::Op::OpSNegate:
+		case spv::Op::OpSRem:
+			_sign = Sign::Signed;
+			return spv::Op::OpTypeInt;
+
+		case spv::Op::OpTypeInt:
+		case spv::Op::OpIAdd:
+		case spv::Op::OpIAddCarry:
+		case spv::Op::OpIAddSatINTEL:
+		case spv::Op::OpIAverageINTEL:
+		case spv::Op::OpIAverageRoundedINTEL:
+		case spv::Op::OpIEqual:
+		case spv::Op::OpIMul:
+		case spv::Op::OpIMul32x16INTEL:
+		case spv::Op::OpISub:
+		case spv::Op::OpISubBorrow:
+		case spv::Op::OpISubSatINTEL:
+			_sign = Sign::Any;
+			return spv::Op::OpTypeInt;
+
+		case spv::Op::OpUAddSatINTEL:
+		case spv::Op::OpUAverageINTEL:
+		case spv::Op::OpUAverageRoundedINTEL:
+		case spv::Op::OpUConvert:
+		case spv::Op::OpUCountLeadingZerosINTEL:
+		case spv::Op::OpUCountTrailingZerosINTEL:
+		case spv::Op::OpUDiv:
+		case spv::Op::OpUGreaterThan:
+		case spv::Op::OpUGreaterThanEqual:
+		case spv::Op::OpULessThan:
+		case spv::Op::OpULessThanEqual:
+		case spv::Op::OpUMod:
+		case spv::Op::OpUMul32x16INTEL:
+		case spv::Op::OpUMulExtended:
+		case spv::Op::OpUSubSatINTEL:
+			_sign = Sign::Unsigned;
+			return spv::Op::OpTypeInt;
+		default:
+			_sign = Sign::Any;
+			return spv::Op::OpNop;
+		}
 	}
+
+	constexpr spv::Op getTypeFromOp(const spv::Op _op) { Sign sign = Sign::Any; return getTypeFromOp(_op, sign); }
 } //!spvgentwo

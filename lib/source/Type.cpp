@@ -463,6 +463,14 @@ spvgentwo::Type& spvgentwo::Type::Matrix(const dyn_matrix_t& _matrixType)
 	return *this;
 }
 
+spvgentwo::Type& spvgentwo::Type::Matrix(unsigned int _columns, unsigned int _rows, const Type* _componentType)
+{
+	m_Type = spv::Op::OpTypeMatrix;
+	m_MatColumnCount = _columns; // length of the row
+	Member().Vector(_rows, _componentType);
+	return *this;
+}
+
 spvgentwo::Type& spvgentwo::Type::Member(const Type* _pSubType)
 {
 	if (_pSubType == nullptr)
@@ -504,7 +512,7 @@ spvgentwo::Type spvgentwo::Type::wrapVector(const unsigned int _elements) const
 	return vec;
 };
 
-spvgentwo::Type spvgentwo::Type::wrapMatrix(const unsigned int _columns)
+spvgentwo::Type spvgentwo::Type::wrapMatrix(const unsigned int _columns) const
 {
 	Type mat(m_subTypes.getAllocator());
 	mat.Matrix(_columns, this);

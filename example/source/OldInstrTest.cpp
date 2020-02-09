@@ -56,14 +56,36 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* uniVec = bb->opLoad(uniformVar);
 
 		Instruction* cross = bb.ext<GLSL>()->opCross(uniVec, uniVec);
-		bb->opDot(cross, uniVec);
+		Instruction* dot = bb->opDot(cross, uniVec);
+		Instruction* fNeg = bb->opFNegate(dot);
+		fNeg = bb->opFAdd(fNeg, fNeg);
+		fNeg = bb->opFSub(dot, fNeg);
+		fNeg = bb->opFMul(dot, fNeg);
+		fNeg = bb->opFDiv(dot, fNeg);
+		fNeg = bb->opFMod(dot, fNeg);
+		fNeg = bb->opFRem(dot, fNeg);
 
-		bb->opOuterProduct(uniVec, uniVec);
+		cross = bb->opVectorTimesScalar(cross, fNeg);
+
+		Instruction* mat3 = bb->opOuterProduct(uniVec, uniVec);
+		bb->opVectorTimesMatrix(cross, mat3);
 
 		Instruction* uniY = bb->opCompositeExtract(uniVec, 1u);
 
 		Instruction* index = entry.variable<int>(2, "index");
 		index = bb->opLoad(index);
+
+		Instruction* uInt = module.constant(22u);
+
+		uInt = bb->opUDiv(uInt, uInt);
+		uInt = bb->opUMod(uInt, uInt);
+
+		Instruction* sNeg = bb->opSNegate(index);
+		sNeg = bb->opIAdd(sNeg, sNeg);
+		sNeg = bb->opISub(index, sNeg);
+		sNeg = bb->opIMul(sNeg, index);
+		sNeg = bb->opSMod(sNeg, index);
+		uInt = bb->opSDiv(uInt, sNeg);
 
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
 
@@ -72,6 +94,9 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 		Instruction* mat = bb->opOuterProduct(insert, module.constant(const_vector_t<float, 4>{1.f, 2.f, 3.f, 4.f}));
 		mat = bb->opTranspose(mat);
+		mat = bb->opMatrixTimesScalar(mat, fNeg);
+		bb->opMatrixTimesVector(mat, insert);
+		bb->opMatrixTimesMatrix(mat, mat3);
 
 		Instruction* vecType = module.type<vector_t<float, 3>>();
 		Instruction* newVec = bb->opCompositeConstruct(vecType, x, y, z);

@@ -245,7 +245,7 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::Div(Instruction* _pLeft, Instructi
 		}
 		else if (rType->getIntWidth() == 32u)
 		{
-			one = getModule()->constant(1);
+			one = getModule()->constant(1u);
 		}
 		else if (rType->getIntWidth() == 64u)
 		{

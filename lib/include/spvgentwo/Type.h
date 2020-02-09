@@ -152,7 +152,6 @@ namespace spvgentwo
 
 		// return new subtype, if _pSubType is not nullptr, returned member type is a copy of _pSubType
 		Type& Member(const Type* _pSubType = nullptr);
-		Type& Parent();
 
 		// makes this a void type
 		Type& Void();
@@ -170,10 +169,10 @@ namespace spvgentwo
 		Type& UIntM(const unsigned int _bits = 32u) { return IntM(_bits, false); }
 
 		Type& Float(const unsigned int _bits = 32u);
-		Type& FloatM(const unsigned int _bits = 32u) { Member().Float(); return *this; }
+		Type& FloatM(const unsigned int _bits = 32u) { Member().Float(_bits); return *this; }
 
 		Type& Double() { return Float(64u); };
-		Type& DoubleM() { Member().Float(44u); return *this; }
+		Type& DoubleM() { Member().Float(64u); return *this; }
 
 		Type& Scalar(const spv::Op _base, const unsigned int _bits, const bool _sign);
 		Type& Scalar(const dyn_scalar_t& _scalarType);
@@ -182,11 +181,11 @@ namespace spvgentwo
 		Type& Struct(const Type* _pSubType = nullptr);
 
 		// makes this an array
-		Type& Array(const unsigned int _elements, const Type* _elementType = nullptr);
+		Type& Array(const unsigned int _elements = 0u, const Type* _elementType = nullptr);
 		// makes this an array, returns element type
-		Type& ArrayElement(const unsigned int _elements) { Array(_elements); return m_subTypes.empty() ? Member() : m_subTypes.front(); }
+		Type& ArrayElement(const unsigned int _elements) { Array(_elements); return Member(); }
 
-		Type& RuntimeArray(const Type* _elementType);
+		Type& RuntimeArray(const Type* _elementType = nullptr);
 
 		// makes this a function
 		Type& Function();
@@ -225,17 +224,18 @@ namespace spvgentwo
 
 		Type& NamedBarrier();
 
-		Type& Vector(unsigned int _elements, const Type* _elementType = nullptr);
+		Type& Vector(unsigned int _elements = 0u, const Type* _elementType = nullptr);
 		Type& Vector(const dyn_vector_t& _vectorType);
 
 		// makes this a vector type, returns element type
 		Type& VectorElement(unsigned int _elements) { Vector(_elements); return Member(); }
 
-		Type& Matrix(unsigned int _columns, const Type* _columnType = nullptr);
+		Type& Matrix(unsigned int _columns = 0, const Type* _columnType = nullptr);
 		Type& Matrix(const dyn_matrix_t& _matrixType);
+		Type& Matrix(unsigned int _columns, unsigned int _rows, const Type* _componentType);
 
-		// makes this a matrix type, returns column type
-		Type& MatrixColumn(unsigned int _columns) { Matrix(_columns); return Member(); }
+		// makes this a matrix type, returns column vector type
+		Type& MatrixColumn(unsigned int _columns) { Matrix(_columns); return Member().Vector(); }
 		
 		Iterator begin() const { return m_subTypes.begin(); }
 		Iterator end() const { return m_subTypes.end(); }
@@ -289,6 +289,10 @@ namespace spvgentwo
 		bool isAggregate() const { return isStruct() || isArray(); }
 		bool isComposite() const { return isAggregate() || isMatrix() || isVector(); }
 
+		// check if this type has same sign as _sign
+		bool hasSign(Sign _sign) const { return _sign == Sign::Any || ((_sign == Sign::Signed) == getBaseType().isSInt()); }
+		void setSign(bool _signum) { getBaseType().m_IntSign = _signum; }
+
 		bool isOpaque() const { return m_Type == spv::Op::OpTypeOpaque; }
 
 		bool isFunction() const { return m_Type == spv::Op::OpTypeFunction; }
@@ -298,18 +302,21 @@ namespace spvgentwo
 		bool isPipe() const { return m_Type == spv::Op::OpTypePipe; }
 		bool isQueue() const { return m_Type == spv::Op::OpTypeQueue; }
 
-		bool isVectorOf(const spv::Op _type, const unsigned int _length = 0u) const { return isVector() && front().getType() == _type && (_length == 0u || m_VecComponentCount == _length); }
-		bool isVectorOfLength(const unsigned int _length) const { return isVector() && (_length == 0u || m_VecComponentCount == _length); }
-		bool isVectorOfInt(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isInt(); }
-		bool isVectorOfSInt(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isSInt(); }
-		bool isVectorOfUInt(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isUInt(); }
-		bool isVectorOfFloat(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isFloat(); }
-		bool isVectorOfScalar(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isScalar(); }
-		bool isVectorOfBool(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isBool(); }
+		bool isVectorOf(const spv::Op _type, const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVector() && front().getType() == _type && (_length == 0u || m_VecComponentCount == _length) && (_componentWidth == 0u || front().getIntWidth() == _componentWidth); }
+		// does not check for type
+		bool isVectorOfLength(const unsigned int _length, const unsigned int _componentWidth = 0u) const { return isVector() && (_length == 0u || m_VecComponentCount == _length) && (_componentWidth == 0u || front().getIntWidth() == _componentWidth); }
+		bool isVectorOfInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isInt(); }
+		bool isVectorOfSInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isSInt(); }
+		bool isVectorOfUInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isUInt(); }
+		bool isVectorOfFloat(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isFloat(); }
+		bool isVectorOfScalar(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isScalar(); }
+		bool isVectorOfBool(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isBool(); }
 
 		bool isScalarOrVectorOf(const spv::Op _type) const { return m_Type == _type || isVectorOf(_type); }
 		bool hasSameVectorLength(const Type& _other) const { return isVector() && _other.isVector() && m_VecComponentCount == _other.m_VecComponentCount; }
 		bool hasSameVectorLength(const Type& _other, const spv::Op _componentType) const { return isVectorOf(_componentType) && _other.isVectorOf(_componentType) && m_VecComponentCount == _other.m_VecComponentCount; }
+		bool isScalarOrVectorOfSameLength(const spv::Op _type, const Type& _other, bool _sameComponentWidth = true) const { return (!_sameComponentWidth || getBaseType().getIntWidth() == _other.getBaseType().getIntWidth()) && (hasSameVectorLength(_other, _type) || (m_Type == _type && _other.m_Type == _type && isScalar() && _other.isScalar())); }
+		bool hasSameComponentWidth(const Type& _other) const { const Type& a = getBaseType(), b = _other.getBaseType(); return a.getType() == b.getType() && a.getIntWidth() == b.getIntWidth(); }
 
 		bool isMatrixOf(const spv::Op _baseType) const { return isMatrix() && getBaseTypeOp() == _baseType; }
 		bool isSqareMatrix() const { return isMatrix() && m_MatColumnCount == front().getVectorComponentCount(); }
@@ -336,8 +343,8 @@ namespace spvgentwo
 		// wraps a copy of this into a new vector of _elements
 		Type wrapVector(const unsigned int _elements) const;
 
-		// wraps a copy of this row type into a matrix of columns
-		Type wrapMatrix(const unsigned int _columns);
+		// wraps a copy of this column type into a matrix of _columns
+		Type wrapMatrix(const unsigned int _columns) const;
 
 		// wraps a copy of this into a new array of _elements
 		Type wrapArray(const unsigned int _elements) const;

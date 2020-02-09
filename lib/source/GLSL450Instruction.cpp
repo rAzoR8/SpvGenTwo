@@ -3,7 +3,7 @@
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const extinstr::GLSLstd450 _op, Instruction* _pFloat, const bool _no64Bit)
 {
-	Instruction* _pTypeInstr = _pFloat->getTypeInst();
+	Instruction* _pTypeInstr = _pFloat->getTypeInstr();
 	const Type* pType = _pTypeInstr->getType();
 
 	if ((pType->isFloat() || pType->isVectorOfFloat()) && (_no64Bit ? pType->getBaseType().getFloatWidth() <= 32u : true))
@@ -18,7 +18,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const ex
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const extinstr::GLSLstd450 _op, Instruction* _pOp1, Instruction* _pOp2)
 {
-	Instruction* returnType = _pOp1->getTypeInst();
+	Instruction* returnType = _pOp1->getTypeInstr();
 
 	const Type* leftType = returnType->getType();
 	const Type* rightType = _pOp2->getType();
@@ -35,7 +35,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const ex
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(const extinstr::GLSLstd450 _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3)
 {
-	Instruction* returnType = _pOp1->getTypeInst();
+	Instruction* returnType = _pOp1->getTypeInstr();
 
 	const Type* type1 = returnType->getType();
 	const Type* type2 = _pOp2->getType();
@@ -53,7 +53,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(const ex
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(const extinstr::GLSLstd450 _op, Instruction* _pInt, const bool _signed)
 {
-	Instruction* _pTypeInstr = _pInt->getTypeInst();
+	Instruction* _pTypeInstr = _pInt->getTypeInstr();
 	const Type* pType = _pTypeInstr->getType();
 
 	if (pType->isScalarOrVectorOf(spv::Op::OpTypeInt) && _signed == pType->getBaseType().getIntSign())
@@ -68,7 +68,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(const exti
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(const extinstr::GLSLstd450 _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed)
 {
-	Instruction* returnType = _pOp1->getTypeInst();
+	Instruction* returnType = _pOp1->getTypeInstr();
 
 	const Type* leftType = returnType->getType();
 	const Type* rightType = _pOp2->getType();
@@ -85,7 +85,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(const exti
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(const extinstr::GLSLstd450 _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed)
 {
-	Instruction* returnType = _pOp1->getTypeInst();
+	Instruction* returnType = _pOp1->getTypeInstr();
 
 	const Type* type1 = returnType->getType();
 	const Type* type2 = _pOp2->getType();
@@ -103,8 +103,8 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(const exti
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opCross(Instruction* _pLeft, Instruction* _pRight)
 {
-	Instruction* _pLeftTypeInstr = _pLeft->getTypeInst();
-	Instruction* _pRightTypeInstr = _pRight->getTypeInst();
+	Instruction* _pLeftTypeInstr = _pLeft->getTypeInstr();
+	Instruction* _pRightTypeInstr = _pRight->getTypeInstr();
 
 	const Type* pType = _pLeftTypeInstr->getType();
 	if (_pLeftTypeInstr == _pRightTypeInstr && pType->isVectorOfScalar(3u))
@@ -134,7 +134,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opDeterminant(Instruction*
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opMatrixInverse(Instruction* _pMatrix)
 {
-	Instruction* _pTypeInstr = _pMatrix->getTypeInst();
+	Instruction* _pTypeInstr = _pMatrix->getTypeInstr();
 	const Type* pType = _pTypeInstr->getType();
 
 	if (pType->isSqareMatrix())

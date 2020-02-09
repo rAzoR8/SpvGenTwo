@@ -52,7 +52,7 @@ namespace spvgentwo::stdrep
 	struct enable_if {};
 
 	template <class T>
-	struct enable_if<true, T> {	using type = T;	};
+	struct enable_if<true, T> { using type = T; };
 
 	template <bool cond, class T = void>
 	using enable_if_t = typename enable_if<cond, T>::type;
@@ -80,11 +80,11 @@ namespace spvgentwo::stdrep
 	inline constexpr bool is_lvalue_reference_v<T&> = true;
 
 	template <class T>
-	struct remove_reference { using type = T;};
+	struct remove_reference { using type = T; };
 	template <class T>
-	struct remove_reference<T&> {using type = T;};
+	struct remove_reference<T&> { using type = T; };
 	template <class T>
-	struct remove_reference<T&&> { using type = T;};
+	struct remove_reference<T&&> { using type = T; };
 
 	template <class T>
 	using remove_reference_t = typename remove_reference<T>::type;
@@ -97,9 +97,9 @@ namespace spvgentwo::stdrep
 
 	template <class T>
 	[[nodiscard]] constexpr T&& forward(remove_reference_t<T>&& _Arg) noexcept
-	{ 
+	{
 		static_assert(!is_lvalue_reference_v<T>, "forward of lvalue");
-		return static_cast<T&&>(_Arg);		
+		return static_cast<T&&>(_Arg);
 	}
 
 	template <class T>
@@ -114,10 +114,10 @@ namespace spvgentwo::stdrep
 	inline constexpr bool is_same_v<T, T> = true;
 
 	template <class T>
-	struct remove_const { using type = T;};
+	struct remove_const { using type = T; };
 
 	template <class T>
-	struct remove_const<const T> {using type = T;};
+	struct remove_const<const T> { using type = T; };
 
 	template <class T>
 	using remove_const_t = typename remove_const<T>::type;
@@ -151,7 +151,7 @@ namespace spvgentwo::stdrep
 	namespace detail {
 
 		template <class T>
-		struct type_identity { using type = T; }; 
+		struct type_identity { using type = T; };
 
 		template <class T>
 		auto try_add_lvalue_reference(int)->type_identity<T&>;
@@ -188,7 +188,7 @@ namespace spvgentwo::stdrep
 		template <class T, class... Args>
 		struct is_constructible_impl<void_t<decltype(T(declval<Args>()...))>, T, Args...> : true_type {};
 	}
-	
+
 	template <class T, class... Args>
 	using is_constructible = detail::is_constructible_impl<void_t<>, T, Args...>;
 
@@ -200,6 +200,19 @@ namespace spvgentwo::stdrep
 // custom traits
 namespace spvgentwo::traits
 {
+	template <class T> constexpr bool is_primitive_type_v = false;
+	template <>	constexpr bool is_primitive_type_v<bool> = true;
+	template <>	constexpr bool is_primitive_type_v<short> = true;
+	template <>	constexpr bool is_primitive_type_v<unsigned short> = true;
+	template <>	constexpr bool is_primitive_type_v<int> = true;
+	template <>	constexpr bool is_primitive_type_v<unsigned int> = true;
+	template <>	constexpr bool is_primitive_type_v<long> = true;
+	template <>	constexpr bool is_primitive_type_v<unsigned long> = true;
+	template <>	constexpr bool is_primitive_type_v<long long> = true;
+	template <>	constexpr bool is_primitive_type_v<unsigned long long> = true;
+	template <>	constexpr bool is_primitive_type_v<float> = true;
+	template <>	constexpr bool is_primitive_type_v<double> = true;
+
 	// cpp20
 	template <class T>
 	using remove_cvref_t = stdrep::remove_cv_t<stdrep::remove_reference_t<T>>;
@@ -256,7 +269,7 @@ namespace spvgentwo::traits
 	T& to_ref(T* _ptr) { return *_ptr; }
 
 	template <int N, int I, class Element, class... Args>
-	auto selectNthElement(Element&& elem, Args&& ... args) 
+	auto selectNthElement(Element&& elem, Args&& ... args)
 	{
 		if constexpr (I == N)
 		{

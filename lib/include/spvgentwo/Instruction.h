@@ -76,7 +76,7 @@ namespace spvgentwo
 
 		// operand helper
 		spv::Id getResultId() const;
-		Instruction* getTypeInst() const;
+		Instruction* getTypeInstr() const;
 		const Type* getType() const;
 
 		// operand iterator helpers return null iterator of not compatible with operation 
@@ -237,6 +237,10 @@ namespace spvgentwo
 
 		Instruction* opAll(Instruction* _pBoolVec);
 
+		Instruction* opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt);
+
+		Instruction* opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt);
+
 		template <class ... ConstituentInstr>
 		Instruction* opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituents, ConstituentInstr* ... _constituents);
 
@@ -250,9 +254,47 @@ namespace spvgentwo
 
 		Instruction* opTranspose(Instruction* _pMatrix);
 
-		Instruction* opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt);
+		Instruction* opSNegate(Instruction* _pSignedInt) { return opScalarVec(spv::Op::OpSNegate, _pSignedInt, nullptr, "Operand of OpSNegate is not a scalar or vector of int type"); }
 
-		Instruction* opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt);
+		Instruction* opFNegate(Instruction* _pFloat) { return opScalarVec(spv::Op::OpFNegate, _pFloat, nullptr, "Operand of OpFNegate is not a scalar or vector of float type"); }
+
+		Instruction* opIAdd(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpIAdd, _pLeft, _pRight, "Operand of opIAdd is not a scalar or vector of int type"); }
+
+		Instruction* opFAdd(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFAdd, _pLeft, _pRight, "Operand of OpFAdd is not a scalar or vector of float type"); }
+
+		Instruction* opISub(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpISub, _pLeft, _pRight, "Operand of OpISub is not a scalar or vector of int type"); }
+
+		Instruction* opFSub(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFSub, _pLeft, _pRight, "Operand of OpFSub is not a scalar or vector of float type"); }
+
+		Instruction* opIMul(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpIMul, _pLeft, _pRight, "Operand of OpIMul is not a scalar or vector of int type"); }
+
+		Instruction* opFMul(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFMul, _pLeft, _pRight, "Operand of OpFMul is not a scalar or vector of float type"); }
+		
+		Instruction* opUDiv(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpUDiv, _pLeft, _pRight, "Operand of OpUDiv is not a scalar or vector of unsigned int type"); }
+
+		Instruction* opSDiv(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpSDiv, _pLeft, _pRight, "Operand of OpSDiv is not a scalar or vector of signed int type", false); }
+
+		Instruction* opFDiv(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFDiv, _pLeft, _pRight, "Operand of OpFDiv is not a scalar or vector of float type"); }
+		
+		Instruction* opUMod(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpUMod, _pLeft, _pRight, "Operand of OpUMod is not a scalar or vector of unsigned int type"); }
+
+		Instruction* opSMod(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpSMod, _pLeft, _pRight, "Operand of OpSMod is not a scalar or vector of int type", false); }
+
+		Instruction* opFMod(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFMod, _pLeft, _pRight, "Operand of OpFMod is not a scalar or vector of float type"); }
+
+		Instruction* opSRem(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpSRem, _pLeft, _pRight, "Operand of OpSRem is not a scalar or vector of int type", false); }
+		
+		Instruction* opFRem(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFRem, _pLeft, _pRight, "Operand of OpFRem is not a scalar or vector of float type"); }
+		
+		Instruction* opVectorTimesScalar(Instruction* _pVector, Instruction* _pScalar);
+
+		Instruction* opMatrixTimesScalar(Instruction* _pMatrix, Instruction* _pScalar);
+
+		Instruction* opVectorTimesMatrix(Instruction* _pVector, Instruction* _pMatrix);
+
+		Instruction* opMatrixTimesVector(Instruction* _pMatrix, Instruction* _pVector);
+
+		Instruction* opMatrixTimesMatrix(Instruction* _pLeft, Instruction* _pRight);
 
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
@@ -369,6 +411,8 @@ namespace spvgentwo
 		// creates literals
 		template <class T, class ...Args>
 		void makeOpInternal(T first, Args ... _args);
+
+		Instruction* opScalarVec(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight = nullptr, const char* _pErrorMsg = nullptr, bool _checkSign = true);
 
 	};
 
@@ -494,7 +538,7 @@ namespace spvgentwo
 	template<class ...VarInst>
 	inline Instruction* Instruction::opPhi(Instruction* _pVar, VarInst* ..._variables)
 	{
-		makeOp(spv::Op::OpPhi, _pVar->getTypeInst(), InvalidId);
+		makeOp(spv::Op::OpPhi, _pVar->getTypeInstr(), InvalidId);
 
 		auto addVar = [&](Instruction* var)
 		{
@@ -621,7 +665,7 @@ namespace spvgentwo
 
 			if (*it == *pValueType)
 			{
-				return makeOp(spv::Op::OpCompositeInsert, _pComposite->getTypeInst(), InvalidId, _pValue, _pComposite, literal_t{ _firstIndex }, literal_t{ _indices }...);
+				return makeOp(spv::Op::OpCompositeInsert, _pComposite->getTypeInstr(), InvalidId, _pValue, _pComposite, literal_t{ _firstIndex }, literal_t{ _indices }...);
 			}
 
 			pModule->logError("Value type does not match composite insertion type");

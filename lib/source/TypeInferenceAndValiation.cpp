@@ -11,9 +11,9 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	auto op2 = op1 + 1;
 	auto op3 = op2 + 1;
 
-	Instruction* typeInstr1 = op1 != nullptr && op1->isInstruction() && op1->instruction != nullptr ? op1->instruction->getTypeInst() : nullptr;
-	Instruction* typeInstr2 = op2 != nullptr && op2->isInstruction() && op2->instruction != nullptr ? op2->instruction->getTypeInst() : nullptr;
-	Instruction* typeInstr3 = op3 != nullptr && op3->isInstruction() && op3->instruction != nullptr ? op3->instruction->getTypeInst() : nullptr;
+	Instruction* typeInstr1 = op1 != nullptr && op1->isInstruction() && op1->instruction != nullptr ? op1->instruction->getTypeInstr() : nullptr;
+	Instruction* typeInstr2 = op2 != nullptr && op2->isInstruction() && op2->instruction != nullptr ? op2->instruction->getTypeInstr() : nullptr;
+	Instruction* typeInstr3 = op3 != nullptr && op3->isInstruction() && op3->instruction != nullptr ? op3->instruction->getTypeInstr() : nullptr;
 
 	const Type* type1 = typeInstr1 != nullptr ? typeInstr1->getType() : nullptr;
 	const Type* type2 = typeInstr2 != nullptr ? typeInstr2->getType() : nullptr;
@@ -24,18 +24,13 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpSizeOf:
 		return module->type<unsigned int>();
 	case spv::Op::OpSNegate:
+	case spv::Op::OpSDiv:
+	case spv::Op::OpSRem:
+	case spv::Op::OpSMod:
+	case spv::Op::OpSConvert:
 	{
-		Type t(module->getAllocator());
-
-		if (type1->isVector())
-		{
-			t.VectorElement(type1->getVectorComponentCount()).Int(type1->front().getIntWidth(), true);
-		}
-		else
-		{
-			t.Int(type1->getIntWidth(), true);
-		}
-
+		Type t(*type1);
+		t.setSign(true);
 		return module->addType(t);
 	}
 	// types where operands must match result type, no further validation at this point
@@ -47,11 +42,8 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpIMul:
 	case spv::Op::OpFMul:
 	case spv::Op::OpUDiv:
-	case spv::Op::OpSDiv:
 	case spv::Op::OpFDiv:
 	case spv::Op::OpUMod:
-	case spv::Op::OpSRem:
-	case spv::Op::OpSMod:
 	case spv::Op::OpFRem:
 	case spv::Op::OpFMod:
 		return typeInstr1;
@@ -67,7 +59,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		// Matrix must be a matrix with the same Component Type as the Component Type in Result Type.
 		// Its number of columns must equal the number of components in Result Type.
 		// => return matrix row type:
-		if (type1->getType() == spv::Op::OpTypeMatrix)
+		if (type1->isMatrix())
 		{
 			return module->addType(type1->front().wrapVector(type1->getMatrixColumnCount()));
 		}
@@ -76,7 +68,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpMatrixTimesVector:
 	{
 		// Matrix must be an OpTypeMatrix whose Column Type is Result Type.
-		if (type1->getType() == spv::Op::OpTypeMatrix)
+		if (type1->isMatrix())
 		{
 			return (typeInstr1->begin() + 1)->getInstruction();
 		}
@@ -88,21 +80,20 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		// Result Type must be an OpTypeMatrix whose Column Type is a vector of ﬂoating - point type.
 		// LeftMatrix must be a matrix whose Column Type is the same as the Column Type in Result Type.
 		// RightMatrix must be a matrix with the same Component Type as the Component Type in Result Type.
-		// Its number of columns must equal the number of columns in Result Type.Its columns must have the same number of components as the number of columns in LeftMatrix.
+		// Its number of columns must equal the number of columns in Result Type.
+		// Its columns must have the same number of components as the number of columns in LeftMatrix.
 
-		//Type matType(stdrep::move(module->newType()));
-		//matType.MatrixColumn(_pType2->getMatrixColumnCount()).VectorElement(_pType2->getMatrixColumnCount()).Float(_pType1->front().front().getFloatWidth());
-		return module->addType(type1->front().front().wrapVector(type1->getMatrixColumnCount()).wrapMatrix(type2->getMatrixColumnCount()));
+		return module->addType(type1->front().wrapMatrix(type2->getMatrixColumnCount()));
 	}
 	case spv::Op::OpOuterProduct:
 	{
 		// Linear - algebraic outer product of Vector 1 and Vector 2.
 		// Result Type must be an OpTypeMatrix whose Column Type is a vector of ﬂoating - point type.
 		// Vector 1 must have the same type as the Column Type in Result Type.
-		// Vector 2 must be a vector with the same Component Type as the Component Type in Result Type.Its number of components must equal the number of columns in Result Type.
-		Type matType(module->getAllocator());
-		matType.MatrixColumn(type2->getVectorComponentCount()).VectorElement(type1->getVectorComponentCount()).Float(type1->front().getFloatWidth());
-		return module->addType(matType);
+		// Vector 2 must be a vector with the same Component Type as the Component Type in Result Type.
+		// Its number of components must equal the number of columns in Result Type.
+
+		return module->addType(type1->wrapMatrix(type2->getVectorComponentCount()));
 	}
 	case spv::Op::OpDot:
 	{
@@ -113,8 +104,8 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpTranspose: 
 	{
 		// Matrix must be an object of type OpTypeMatrix.
-		// The number of columnsand the column size of Matrix must be the reverse of those in Result Type.
-		// The types of the scalar components in Matrixand Result Type must be the same.
+		// The number of columns and the column size of Matrix must be the reverse of those in Result Type.
+		// The types of the scalar components in Matrix and Result Type must be the same.
 		Type matType(module->getAllocator());
 		matType.MatrixColumn(type1->front().getVectorComponentCount()).VectorElement(type1->getMatrixColumnCount()) = type1->getBaseType();
 		return module->addType(matType);
