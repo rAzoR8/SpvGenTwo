@@ -274,11 +274,21 @@ bool spvgentwo::defaultimpl::validateOperands(const spvgentwo::Instruction& _ins
 				module->logError("Unassigned instruction operand (nullptr)");
 				return false;
 			}
+			else if (op.instruction == &_instr)
+			{
+				module->logError("Recursive instruction operand");
+				return false;
+			}
 			break;
 		case Operand::Type::BranchTarget:
 			if (op.branchTarget == nullptr)
 			{
 				module->logError("Unassigned branchtarget operand (nullptr)");
+				return false;
+			}
+			else if (&op.branchTarget->front() == &_instr)
+			{
+				module->logError("Recursive branch target instruction operand");
 				return false;
 			}
 			break;
