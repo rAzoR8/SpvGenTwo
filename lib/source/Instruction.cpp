@@ -165,6 +165,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::getTypeInstr() const
 	{
 		return front().getInstruction();
 	}
+
 	return nullptr;
 }
 
@@ -310,6 +311,58 @@ spvgentwo::Instruction* spvgentwo::Instruction::mul(Instruction* _pLeft, Instruc
 	}
 
 	getModule()->logError("Failed to match Mul's operand types for this instruction");
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::div(Instruction* _pLeft, Instruction* _pRight, bool _allowVecDividedByScalar)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *rType) && lType->isUnsigned() && rType->isUnsigned())
+	{
+		return opUDiv(_pLeft, _pRight);
+	}
+	else if (lType->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *rType))
+	{
+		return opSDiv(_pLeft, _pRight);
+	}
+	else if (lType->isScalarOrVectorOfSameLength(spv::Op::OpTypeFloat, *rType))
+	{
+		return opFDiv(_pLeft, _pRight);
+	}
+	else if (BasicBlock* bb = getBasicBlock(); bb != nullptr && _allowVecDividedByScalar &&
+		lType->isVectorOfScalar() && rType->isScalar())
+	{
+		Instruction* one = nullptr;
+
+		// TODO: find a better way to construct constants from a Type with a value thats not exaclty of type, e.g. getModule()->constant(lType, 1)
+		if (rType->isF32())
+		{
+			one = getModule()->constant(1.f);
+		}
+		else if (rType->isF64())
+		{
+			one = getModule()->constant(1.0);
+		}
+		else if (rType->isInt(32u))
+		{
+			one = getModule()->constant(1u);
+		}
+		else if (rType->isInt(64u))
+		{
+			one = getModule()->constant(1ull);
+		}
+
+		if (one != nullptr)
+		{			
+			// vec / scalar => vec * ( 1 / scalar )
+			return (*bb)->mul(_pLeft, div(one, _pRight));
+		}
+	}
+
+	getModule()->logError("Failed to match Div's operand types for this instruction");
 
 	return this;
 }

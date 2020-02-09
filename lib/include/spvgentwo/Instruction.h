@@ -141,7 +141,7 @@ namespace spvgentwo
 		Instruction* add(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opIAdd, &Instruction::opFAdd, "Failed to match Add's operand types for this instruction"); }
 		Instruction* sub(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opISub, &Instruction::opFSub, "Failed to match Add's operand types for this instruction"); }
 		Instruction* mul(Instruction* _pLeft, Instruction* _pRight);
-		//Instruction* Div(Instruction* _pLeft, Instruction* _pRight);
+		Instruction* div(Instruction* _pLeft, Instruction* _pRight, bool _allowVecDividedByScalar = true);
 
 		//
 		// SPIR-V OPERATIONS

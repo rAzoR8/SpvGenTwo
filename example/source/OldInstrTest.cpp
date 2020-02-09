@@ -98,6 +98,11 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		bb->mul(fNeg, cross);
 		bb->mul(mat3, mat3);
 
+		bb->div(sNeg, uInt); // sdiv
+		bb->div(uInt, uInt); // udiv
+		bb->div(fNeg, fNeg); // fdiv
+		bb->div(cross, fNeg); // vec / scalar
+
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
 
 		Instruction* insert = bb->opCompositeInsert(uniVec, z, 2u); // insert at z
