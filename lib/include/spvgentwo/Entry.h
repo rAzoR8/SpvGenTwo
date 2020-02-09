@@ -83,7 +83,7 @@ namespace spvgentwo
 
 	template<class T>
 	inline Entry<T>::Entry(Entry&& _other) noexcept :
-		m_data{ std::move(_other.m_data) },
+		m_data{ stdrep::move(_other.m_data) },
 		m_pNext(_other.m_pNext),
 		m_pPrev(_other.m_pPrev),
 	{
