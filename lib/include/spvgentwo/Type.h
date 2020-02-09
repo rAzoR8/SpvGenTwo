@@ -319,6 +319,9 @@ namespace spvgentwo
 		bool hasSameComponentWidth(const Type& _other) const { const Type& a = getBaseType(), b = _other.getBaseType(); return a.getType() == b.getType() && a.getIntWidth() == b.getIntWidth(); }
 
 		bool isMatrixOf(const spv::Op _baseType) const { return isMatrix() && getBaseTypeOp() == _baseType; }
+		bool isMatrixOfFloat() const { return isMatrixOf(spv::Op::OpTypeFloat); }
+		bool isMatrixOfInt() const { return isMatrixOf(spv::Op::OpTypeInt); }
+
 		bool isSqareMatrix() const { return isMatrix() && m_MatColumnCount == front().getVectorComponentCount(); }
 		bool isSqareMatrixOf(const spv::Op _baseType) const { return isMatrixOf(_baseType) && m_MatColumnCount == front().getVectorComponentCount(); }
 

@@ -267,6 +267,53 @@ spv::Id spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id& _resultId)
 	return ID;
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::mul(Instruction* _pLeft, Instruction* _pRight)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType->isInt() && rType->isInt())
+	{
+		return opIMul(_pLeft, _pRight);
+	}
+	else if (lType->isFloat() && rType->isFloat())
+	{
+		return opFMul(_pLeft, _pRight);
+	}
+	else if (lType->isVectorOfFloat() && rType->isFloat())
+	{
+		return opVectorTimesScalar(_pLeft, _pRight);
+	}
+	else if (lType->isFloat() && rType->isVectorOfFloat())
+	{
+		return opVectorTimesScalar(_pRight, _pLeft); // OpVectorTimesScalar expects vector as first operand
+	}
+	else if (lType->isMatrixOfFloat() && rType->isFloat())
+	{
+		return opMatrixTimesScalar(_pLeft, _pRight);
+	}
+	else if (lType->isFloat() && rType->isMatrixOfFloat())
+	{
+		return opMatrixTimesScalar(_pRight, _pLeft); // opMatrixTimesScalar expects vector as first operand
+	}
+	else if (lType->isVector() && rType->isMatrix())
+	{
+		return opVectorTimesMatrix(_pLeft, _pRight);
+	}
+	else if (lType->isMatrix() && rType->isVector())
+	{
+		return opMatrixTimesVector(_pLeft, _pRight);
+	}
+	else if (lType->isMatrix() && rType->isMatrix())
+	{
+		return opMatrixTimesMatrix(_pLeft, _pRight);
+	}
+
+	getModule()->logError("Failed to match Mul's operand types for this instruction");
+
+	return this;
+}
+
 void spvgentwo::Instruction::opNop()
 {
 	makeOp(spv::Op::OpNop);
@@ -638,7 +685,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 	return this;
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opScalarVec(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
+spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
 {
 	Sign sign = Sign::Any;
 	const spv::Op type = getTypeFromOp(_op, sign);
@@ -657,6 +704,28 @@ spvgentwo::Instruction* spvgentwo::Instruction::opScalarVec(const spv::Op _op, I
 	{
 		getModule()->logError(_pErrorMsg);
 	}
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _intFun, DualOpMemberFun _floatFun, const char* _pErrorMsg)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType->getBaseType().isInt() && rType->getBaseType().isInt())
+	{
+		return (this->*_intFun)(_pLeft, _pRight);
+	}
+	else if (lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
+	{
+		return (this->*_floatFun)(_pLeft, _pRight);
+	}
+
+	if (_pErrorMsg != nullptr)
+	{
+		getModule()->logError(_pErrorMsg);
+	}
+
 	return this;
 }
 
@@ -696,23 +765,4 @@ bool spvgentwo::Instruction::validateOperands()
 {
 	ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
 	return validator != nullptr ? validator->validateOperands(*this) : defaultimpl::validateOperands(*this);
-}
-
-spvgentwo::Instruction* spvgentwo::Instruction::add(Instruction* _pLeft, Instruction* _pRight)
-{
-	const Type* lType = _pLeft->getType();
-	const Type* rType = _pRight->getType();
-
-	if (lType->getBaseType().isInt() && rType->getBaseType().isInt())
-	{
-		return opIAdd(_pLeft, _pRight);
-	}
-	else if (lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
-	{
-		return opFAdd(_pLeft, _pRight);
-	}
-
-	getModule()->logError("Failed to match Add's operand types for this instruction");
-
-	return this;
 }

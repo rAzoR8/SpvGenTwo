@@ -90,6 +90,13 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		// generic
 		bb->add(sNeg, uInt);
 		bb->add(fNeg, x);
+		bb->sub(sNeg, uInt);
+		bb->sub(fNeg, x);
+
+		bb->mul(sNeg, uInt);
+		bb->mul(fNeg, fNeg);
+		bb->mul(fNeg, cross);
+		bb->mul(mat3, mat3);
 
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
 
@@ -101,6 +108,8 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		mat = bb->opMatrixTimesScalar(mat, fNeg);
 		bb->opMatrixTimesVector(mat, insert);
 		bb->opMatrixTimesMatrix(mat, mat3);
+
+		bb->mul(mat, mat3);
 
 		Instruction* vecType = module.type<vector_t<float, 3>>();
 		Instruction* newVec = bb->opCompositeConstruct(vecType, x, y, z);
