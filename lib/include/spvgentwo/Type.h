@@ -342,8 +342,8 @@ namespace spvgentwo
 		// wraps a copy of this into a new vector of _elements
 		Type wrapVector(const unsigned int _elements) const;
 
-		// wraps a copy of this row type into a matrix of columns
-		Type wrapMatrix(const unsigned int _columns);
+		// wraps a copy of this column type into a matrix of _columns
+		Type wrapMatrix(const unsigned int _columns) const;
 
 		// wraps a copy of this into a new array of _elements
 		Type wrapArray(const unsigned int _elements) const;

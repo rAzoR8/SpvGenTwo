@@ -294,6 +294,8 @@ namespace spvgentwo
 
 		Instruction* opMatrixTimesVector(Instruction* _pMatrix, Instruction* _pVector);
 
+		Instruction* opMatrixTimesMatrix(Instruction* _pLeft, Instruction* _pRight);
+
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
 		// generic base case with image operands

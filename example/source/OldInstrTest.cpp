@@ -68,7 +68,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		cross = bb->opVectorTimesScalar(cross, fNeg);
 
 		Instruction* mat3 = bb->opOuterProduct(uniVec, uniVec);
-		mat3 = bb->opVectorTimesMatrix(cross, mat3);
+		bb->opVectorTimesMatrix(cross, mat3);
 
 		Instruction* uniY = bb->opCompositeExtract(uniVec, 1u);
 
@@ -96,6 +96,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		mat = bb->opTranspose(mat);
 		mat = bb->opMatrixTimesScalar(mat, fNeg);
 		bb->opMatrixTimesVector(mat, insert);
+		bb->opMatrixTimesMatrix(mat, mat3);
 
 		Instruction* vecType = module.type<vector_t<float, 3>>();
 		Instruction* newVec = bb->opCompositeConstruct(vecType, x, y, z);

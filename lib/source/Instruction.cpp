@@ -604,6 +604,25 @@ spvgentwo::Instruction* spvgentwo::Instruction::opMatrixTimesVector(Instruction*
 	return this;
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opMatrixTimesMatrix(Instruction* _pLeft, Instruction* _pRight)
+{
+	const Type* pLeftType = _pLeft->getType();
+	const Type* pRightType = _pRight->getType();
+
+	// RightMatrix must be a matrix with the same Component Type as the Component Type in Result Type. Its number of columns must equal the number of columns in Result Type.
+	// Its columns must have the same number of components as the number of columns in LeftMatrix.
+
+	if (pLeftType->isMatrixOf(spv::Op::OpTypeFloat) && pRightType->isMatrixOf(spv::Op::OpTypeFloat) &&
+		pLeftType->hasSameBase(*pRightType) && pLeftType->getMatrixColumnCount() == pRightType->front().getVectorComponentCount())
+	{
+		return makeOp(spv::Op::OpMatrixTimesMatrix, InvalidInstr, InvalidId, _pLeft, _pRight);
+	}
+
+	getModule()->logError("Operand of OpMatrixTimesMatrix is not a matrix of float type");
+
+	return this;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pImage, Instruction* _pSampler)
 {
 	const Type* imageType = _pImage->getType();

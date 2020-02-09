@@ -504,7 +504,7 @@ spvgentwo::Type spvgentwo::Type::wrapVector(const unsigned int _elements) const
 	return vec;
 };
 
-spvgentwo::Type spvgentwo::Type::wrapMatrix(const unsigned int _columns)
+spvgentwo::Type spvgentwo::Type::wrapMatrix(const unsigned int _columns) const
 {
 	Type mat(m_subTypes.getAllocator());
 	mat.Matrix(_columns, this);

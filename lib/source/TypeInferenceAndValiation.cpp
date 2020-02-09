@@ -80,11 +80,10 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		// Result Type must be an OpTypeMatrix whose Column Type is a vector of ﬂoating - point type.
 		// LeftMatrix must be a matrix whose Column Type is the same as the Column Type in Result Type.
 		// RightMatrix must be a matrix with the same Component Type as the Component Type in Result Type.
-		// Its number of columns must equal the number of columns in Result Type.Its columns must have the same number of components as the number of columns in LeftMatrix.
+		// Its number of columns must equal the number of columns in Result Type.
+		// Its columns must have the same number of components as the number of columns in LeftMatrix.
 
-		//Type matType(stdrep::move(module->newType()));
-		//matType.MatrixColumn(_pType2->getMatrixColumnCount()).VectorElement(_pType2->getMatrixColumnCount()).Float(_pType1->front().front().getFloatWidth());
-		return module->addType(type1->front().front().wrapVector(type1->getMatrixColumnCount()).wrapMatrix(type2->getMatrixColumnCount()));
+		return module->addType(type1->front().wrapMatrix(type2->getMatrixColumnCount()));
 	}
 	case spv::Op::OpOuterProduct:
 	{
