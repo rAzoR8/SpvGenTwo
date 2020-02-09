@@ -589,6 +589,21 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorTimesMatrix(Instruction*
 	return this;
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opMatrixTimesVector(Instruction* _pMatrix, Instruction* _pVector)
+{
+	const Type* pMatType = _pMatrix->getType();
+	const Type* pVecType = _pVector->getType();
+
+	if (pVecType->isVectorOfFloat() && pMatType->isMatrix() && pMatType->hasSameBase(*pVecType) && pMatType->getMatrixColumnCount() == pVecType->getVectorComponentCount())
+	{
+		return makeOp(spv::Op::OpMatrixTimesVector, InvalidInstr, InvalidId, _pMatrix, _pVector);
+	}
+
+	getModule()->logError("Operand of OpMatrixTimesVector is not a vector or matrix of float type");
+
+	return this;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pImage, Instruction* _pSampler)
 {
 	const Type* imageType = _pImage->getType();
