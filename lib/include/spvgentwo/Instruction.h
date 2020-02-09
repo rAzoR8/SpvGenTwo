@@ -132,7 +132,16 @@ namespace spvgentwo
 		bool validateOperands();
 
 		//
-		// OPERATIONS
+		// GENERIC OPERATIONS
+		//
+
+		Instruction* add(Instruction* _pLeft, Instruction* _pRight);
+		//Instruction* Sub(Instruction* _pLeft, Instruction* _pRight);
+		//Instruction* Mul(Instruction* _pLeft, Instruction* _pRight);
+		//Instruction* Div(Instruction* _pLeft, Instruction* _pRight);
+
+		//
+		// SPIR-V OPERATIONS
 		//
 
 		void opNop();

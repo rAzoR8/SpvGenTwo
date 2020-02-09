@@ -697,3 +697,22 @@ bool spvgentwo::Instruction::validateOperands()
 	ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
 	return validator != nullptr ? validator->validateOperands(*this) : defaultimpl::validateOperands(*this);
 }
+
+spvgentwo::Instruction* spvgentwo::Instruction::add(Instruction* _pLeft, Instruction* _pRight)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType->getBaseType().isInt() && rType->getBaseType().isInt())
+	{
+		return opIAdd(_pLeft, _pRight);
+	}
+	else if (lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
+	{
+		return opFAdd(_pLeft, _pRight);
+	}
+
+	getModule()->logError("Failed to match Add's operand types for this instruction");
+
+	return this;
+}

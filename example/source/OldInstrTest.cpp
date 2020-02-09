@@ -87,6 +87,10 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		sNeg = bb->opSMod(sNeg, index);
 		uInt = bb->opSDiv(uInt, sNeg);
 
+		// generic
+		bb->add(sNeg, uInt);
+		bb->add(fNeg, x);
+
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
 
 		Instruction* insert = bb->opCompositeInsert(uniVec, z, 2u); // insert at z
