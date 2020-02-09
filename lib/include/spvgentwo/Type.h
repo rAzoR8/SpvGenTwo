@@ -224,7 +224,7 @@ namespace spvgentwo
 
 		Type& NamedBarrier();
 
-		Type& Vector(unsigned int _elements, const Type* _elementType = nullptr);
+		Type& Vector(unsigned int _elements = 0u, const Type* _elementType = nullptr);
 		Type& Vector(const dyn_vector_t& _vectorType);
 
 		// makes this a vector type, returns element type
@@ -232,9 +232,10 @@ namespace spvgentwo
 
 		Type& Matrix(unsigned int _columns, const Type* _columnType = nullptr);
 		Type& Matrix(const dyn_matrix_t& _matrixType);
+		Type& Matrix(unsigned int _columns, unsigned int _rows, const Type* _componentType);
 
-		// makes this a matrix type, returns column type
-		Type& MatrixColumn(unsigned int _columns) { Matrix(_columns); return Member(); }
+		// makes this a matrix type, returns column vector type
+		Type& MatrixColumn(unsigned int _columns) { Matrix(_columns); return Member().Vector(); }
 		
 		Iterator begin() const { return m_subTypes.begin(); }
 		Iterator end() const { return m_subTypes.end(); }

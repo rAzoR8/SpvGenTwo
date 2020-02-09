@@ -104,8 +104,8 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpTranspose: 
 	{
 		// Matrix must be an object of type OpTypeMatrix.
-		// The number of columnsand the column size of Matrix must be the reverse of those in Result Type.
-		// The types of the scalar components in Matrixand Result Type must be the same.
+		// The number of columns and the column size of Matrix must be the reverse of those in Result Type.
+		// The types of the scalar components in Matrix and Result Type must be the same.
 		Type matType(module->getAllocator());
 		matType.MatrixColumn(type1->front().getVectorComponentCount()).VectorElement(type1->getMatrixColumnCount()) = type1->getBaseType();
 		return module->addType(matType);

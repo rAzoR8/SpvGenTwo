@@ -463,6 +463,14 @@ spvgentwo::Type& spvgentwo::Type::Matrix(const dyn_matrix_t& _matrixType)
 	return *this;
 }
 
+spvgentwo::Type& spvgentwo::Type::Matrix(unsigned int _columns, unsigned int _rows, const Type* _componentType)
+{
+	m_Type = spv::Op::OpTypeMatrix;
+	m_MatColumnCount = _columns; // length of the row
+	Member().Vector(_rows, _componentType);
+	return *this;
+}
+
 spvgentwo::Type& spvgentwo::Type::Member(const Type* _pSubType)
 {
 	if (_pSubType == nullptr)
