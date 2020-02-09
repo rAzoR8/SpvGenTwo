@@ -169,10 +169,10 @@ namespace spvgentwo
 		Type& UIntM(const unsigned int _bits = 32u) { return IntM(_bits, false); }
 
 		Type& Float(const unsigned int _bits = 32u);
-		Type& FloatM(const unsigned int _bits = 32u) { Member().Float(); return *this; }
+		Type& FloatM(const unsigned int _bits = 32u) { Member().Float(_bits); return *this; }
 
 		Type& Double() { return Float(64u); };
-		Type& DoubleM() { Member().Float(44u); return *this; }
+		Type& DoubleM() { Member().Float(64u); return *this; }
 
 		Type& Scalar(const spv::Op _base, const unsigned int _bits, const bool _sign);
 		Type& Scalar(const dyn_scalar_t& _scalarType);
@@ -181,11 +181,11 @@ namespace spvgentwo
 		Type& Struct(const Type* _pSubType = nullptr);
 
 		// makes this an array
-		Type& Array(const unsigned int _elements, const Type* _elementType = nullptr);
+		Type& Array(const unsigned int _elements = 0u, const Type* _elementType = nullptr);
 		// makes this an array, returns element type
-		Type& ArrayElement(const unsigned int _elements) { Array(_elements); return m_subTypes.empty() ? Member() : m_subTypes.front(); }
+		Type& ArrayElement(const unsigned int _elements) { Array(_elements); return Member(); }
 
-		Type& RuntimeArray(const Type* _elementType);
+		Type& RuntimeArray(const Type* _elementType = nullptr);
 
 		// makes this a function
 		Type& Function();
@@ -230,7 +230,7 @@ namespace spvgentwo
 		// makes this a vector type, returns element type
 		Type& VectorElement(unsigned int _elements) { Vector(_elements); return Member(); }
 
-		Type& Matrix(unsigned int _columns, const Type* _columnType = nullptr);
+		Type& Matrix(unsigned int _columns = 0, const Type* _columnType = nullptr);
 		Type& Matrix(const dyn_matrix_t& _matrixType);
 		Type& Matrix(unsigned int _columns, unsigned int _rows, const Type* _componentType);
 
