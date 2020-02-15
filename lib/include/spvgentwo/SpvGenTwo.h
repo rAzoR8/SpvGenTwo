@@ -18,7 +18,7 @@
 #include "Allocator.h"
 #include "Logger.h"
 #include "Writer.h"
-#include "InferResultType.h"
+#include "TypeInferenceAndValiation.h"
 
 // extensions
 #include "GLSL450Instruction.h"
