@@ -782,6 +782,32 @@ spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, 
 	return this;
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, const char* _pErrorMsg)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType->getBaseType().isSInt() && rType->getBaseType().isSInt())
+	{
+		return (this->*_sIntFun)(_pLeft, _pRight);
+	}
+	if (lType->getBaseType().isUInt() && rType->getBaseType().isUInt())
+	{
+		return (this->*_uIntFun)(_pLeft, _pRight);
+	}
+	else if (lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
+	{
+		return (this->*_floatFun)(_pLeft, _pRight);
+	}
+
+	if (_pErrorMsg != nullptr)
+	{
+		getModule()->logError(_pErrorMsg);
+	}
+
+	return this;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 {
 	Instruction* pResultType = nullptr;
