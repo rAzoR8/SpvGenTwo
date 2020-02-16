@@ -123,6 +123,10 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		bb->greaterEqual(uInt, uInt); // unsigned
 		bb->greaterEqual(sNeg, uInt); // signed
 		bb->greaterEqual(fNeg, x); // float
+		Instruction* const boolVec = bb->greaterEqual(cross, uniVec); // float vec
+
+		bb->not(uInt);// int scalar
+		bb->not(boolVec);
 
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
 

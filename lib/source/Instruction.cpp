@@ -367,6 +367,22 @@ spvgentwo::Instruction* spvgentwo::Instruction::div(Instruction* _pLeft, Instruc
 	return this;
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::not(Instruction* _pIntOrBool)
+{
+	const Type* type = _pIntOrBool->getType();
+
+	if (type->isBaseTypeOf(spv::Op::OpTypeInt))
+	{
+		return opNot(_pIntOrBool);
+	}
+	else if (type->isBaseTypeOf(spv::Op::OpTypeBool))
+	{
+		return opLogicalNot(_pIntOrBool);
+	}
+
+	return this;
+}
+
 void spvgentwo::Instruction::opNop()
 {
 	makeOp(spv::Op::OpNop);
@@ -738,7 +754,27 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 	return this;
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
+spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
+{
+	const Type* pLeftType = _pLeft->getType();
+	const Type* pRightType = _pRight != nullptr ? _pRight->getType() : nullptr;
+
+	if (_pRight == nullptr && pLeftType->isScalarOrVectorOf(_type) && (!_checkSign || pLeftType->getBaseType().hasSign(_sign)))
+	{
+		return makeOp(_op, InvalidInstr, InvalidId, _pLeft);
+	}
+	else if (pLeftType->isScalarOrVectorOfSameLength(_type, *pRightType) && (!_checkSign || (pLeftType->getBaseType().hasSign(_sign) && pRightType->getBaseType().hasSign(_sign))))
+	{
+		return makeOp(_op, InvalidInstr, InvalidId, _pLeft, _pRight);
+	}
+	if (_pErrorMsg != nullptr)
+	{
+		getModule()->logError(_pErrorMsg);
+	}
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(spv::Op _op, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
 {
 	Sign sign = Sign::Any;
 	const spv::Op type = getTypeFromOp(_op, sign);
@@ -749,22 +785,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(const spv::Op _op, I
 		return this;
 	}
 
-	const Type* pLeftType = _pLeft->getType();
-	const Type* pRightType = _pRight != nullptr ? _pRight->getType() : nullptr;
-
-	if (_pRight == nullptr && pLeftType->isScalarOrVectorOf(type) && (!_checkSign || pLeftType->getBaseType().hasSign(sign)))
-	{
-		return makeOp(_op, InvalidInstr, InvalidId, _pLeft);
-	}
-	else if (pLeftType->isScalarOrVectorOfSameLength(type, *pRightType) && (!_checkSign || (pLeftType->getBaseType().hasSign(sign) && pRightType->getBaseType().hasSign(sign))))
-	{
-		return makeOp(_op, InvalidInstr, InvalidId, _pLeft, _pRight);
-	}
-	if (_pErrorMsg != nullptr)
-	{
-		getModule()->logError(_pErrorMsg);
-	}
-	return this;
+	return scalarVecOp(_op, type, sign, _pLeft, _pRight, _pErrorMsg, _checkSign);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _intFun, DualOpMemberFun _floatFun, const char* _pErrorMsg)

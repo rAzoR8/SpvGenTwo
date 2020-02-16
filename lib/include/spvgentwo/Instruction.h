@@ -143,6 +143,7 @@ namespace spvgentwo
 		Instruction* mul(Instruction* _pLeft, Instruction* _pRight);
 		Instruction* div(Instruction* _pLeft, Instruction* _pRight, bool _allowVecDividedByScalar = true);
 
+		Instruction* not(Instruction* _pIntOrBool);
 		Instruction* equal(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opIEqual, &Instruction::opFOrdEqual, "Failed to match Equals's operand types for this instruction"); }
 		Instruction* notEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opINotEqual, &Instruction::opFOrdNotEqual, "Failed to match NotEqual's operand types for this instruction"); }
 		Instruction* greater(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSGreaterThan, &Instruction::opUGreaterThan, &Instruction::opFOrdGreaterThan, "Failed to match Greater's operand types for this instruction"); }
@@ -255,6 +256,10 @@ namespace spvgentwo
 		Instruction* opAny(Instruction* _pBoolVec);
 
 		Instruction* opAll(Instruction* _pBoolVec);
+
+		Instruction* opNot(Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpNot, _pIntVec, nullptr, "Operand of OpNot is not a scalar or vector of int type"); }
+
+		Instruction* opLogicalNot(Instruction* _pBoolVec) { return scalarVecOp(spv::Op::OpLogicalNot, _pBoolVec, nullptr, "Operand of OpLogicalNot is not a scalar or vector of bool type"); }
 
 		Instruction* opIEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpIEqual, _pLeft, _pRight, "Operand of OpIEqual is not a scalar or vector of int type"); }
 
@@ -475,8 +480,11 @@ namespace spvgentwo
 		template <class T, class ...Args>
 		void makeOpInternal(T first, Args ... _args);
 
+		// checks types based on passed _type and_sign
+		Instruction* scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign);
+
 		// checks types based on passed _op using getTypeFromOp(_op, sign)
-		Instruction* scalarVecOp(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight = nullptr, const char* _pErrorMsg = nullptr, bool _checkSign = true);
+		Instruction* scalarVecOp(spv::Op _op, Instruction* _pLeft, Instruction* _pRight = nullptr, const char* _pErrorMsg = nullptr, bool _checkSign = true);
 
 		// decides based on type of _pLeft and _pRight if _intFun or _floatFun should be called
 		Instruction* intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _intFun, DualOpMemberFun _floatFun, const char* _pErrorMsg = nullptr);
