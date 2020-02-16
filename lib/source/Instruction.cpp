@@ -165,6 +165,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::getTypeInstr() const
 	{
 		return front().getInstruction();
 	}
+
 	return nullptr;
 }
 
@@ -265,6 +266,121 @@ spv::Id spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id& _resultId)
 	}
 	
 	return ID;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::Mul(Instruction* _pLeft, Instruction* _pRight)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType->isInt() && rType->isInt())
+	{
+		return opIMul(_pLeft, _pRight);
+	}
+	else if (lType->isFloat() && rType->isFloat())
+	{
+		return opFMul(_pLeft, _pRight);
+	}
+	else if (lType->isVectorOfFloat() && rType->isFloat())
+	{
+		return opVectorTimesScalar(_pLeft, _pRight);
+	}
+	else if (lType->isFloat() && rType->isVectorOfFloat())
+	{
+		return opVectorTimesScalar(_pRight, _pLeft); // OpVectorTimesScalar expects vector as first operand
+	}
+	else if (lType->isMatrixOfFloat() && rType->isFloat())
+	{
+		return opMatrixTimesScalar(_pLeft, _pRight);
+	}
+	else if (lType->isFloat() && rType->isMatrixOfFloat())
+	{
+		return opMatrixTimesScalar(_pRight, _pLeft); // opMatrixTimesScalar expects vector as first operand
+	}
+	else if (lType->isVector() && rType->isMatrix())
+	{
+		return opVectorTimesMatrix(_pLeft, _pRight);
+	}
+	else if (lType->isMatrix() && rType->isVector())
+	{
+		return opMatrixTimesVector(_pLeft, _pRight);
+	}
+	else if (lType->isMatrix() && rType->isMatrix())
+	{
+		return opMatrixTimesMatrix(_pLeft, _pRight);
+	}
+
+	getModule()->logError("Failed to match Mul's operand types for this instruction");
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::Div(Instruction* _pLeft, Instruction* _pRight, bool _allowVecDividedByScalar)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *rType) && lType->isUnsigned() && rType->isUnsigned())
+	{
+		return opUDiv(_pLeft, _pRight);
+	}
+	else if (lType->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *rType))
+	{
+		return opSDiv(_pLeft, _pRight);
+	}
+	else if (lType->isScalarOrVectorOfSameLength(spv::Op::OpTypeFloat, *rType))
+	{
+		return opFDiv(_pLeft, _pRight);
+	}
+	else if (BasicBlock* bb = getBasicBlock(); bb != nullptr && _allowVecDividedByScalar &&
+		lType->isVectorOfScalar() && rType->isScalar())
+	{
+		Instruction* one = nullptr;
+
+		// TODO: find a better way to construct constants from a Type with a value thats not exaclty of type, e.g. getModule()->constant(lType, 1)
+		if (rType->isF32())
+		{
+			one = getModule()->constant(1.f);
+		}
+		else if (rType->isF64())
+		{
+			one = getModule()->constant(1.0);
+		}
+		else if (rType->isInt(32u))
+		{
+			one = getModule()->constant(1u);
+		}
+		else if (rType->isInt(64u))
+		{
+			one = getModule()->constant(1ull);
+		}
+
+		if (one != nullptr)
+		{			
+			// vec / scalar => vec * ( 1 / scalar )
+			return (*bb)->Mul(_pLeft, Div(one, _pRight));
+		}
+	}
+
+	getModule()->logError("Failed to match Div's operand types for this instruction");
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::Not(Instruction* _pIntOrBool)
+{
+	const Type* type = _pIntOrBool->getType();
+
+	if (type->isBaseTypeOf(spv::Op::OpTypeInt))
+	{
+		return opNot(_pIntOrBool);
+	}
+	else if (type->isBaseTypeOf(spv::Op::OpTypeBool))
+	{
+		return opLogicalNot(_pIntOrBool);
+	}
+
+	return this;
 }
 
 void spvgentwo::Instruction::opNop()
@@ -638,18 +754,16 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 	return this;
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opScalarVec(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
+spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
 {
-	Sign sign = Sign::Any;
-	const spv::Op type = getTypeFromOp(_op, sign);
 	const Type* pLeftType = _pLeft->getType();
 	const Type* pRightType = _pRight != nullptr ? _pRight->getType() : nullptr;
 
-	if (_pRight == nullptr && pLeftType->isScalarOrVectorOf(type) && (!_checkSign || pLeftType->getBaseType().hasSign(sign)))
+	if (_pRight == nullptr && pLeftType->isScalarOrVectorOf(_type) && (!_checkSign || pLeftType->getBaseType().hasSign(_sign)))
 	{
 		return makeOp(_op, InvalidInstr, InvalidId, _pLeft);
 	}
-	else if (pLeftType->isScalarOrVectorOfSameLength(type, *pRightType) && (!_checkSign || (pLeftType->getBaseType().hasSign(sign) && pRightType->getBaseType().hasSign(sign))))
+	else if (pLeftType->isScalarOrVectorOfSameLength(_type, *pRightType) && (!_checkSign || (pLeftType->getBaseType().hasSign(_sign) && pRightType->getBaseType().hasSign(_sign))))
 	{
 		return makeOp(_op, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
@@ -657,6 +771,68 @@ spvgentwo::Instruction* spvgentwo::Instruction::opScalarVec(const spv::Op _op, I
 	{
 		getModule()->logError(_pErrorMsg);
 	}
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(spv::Op _op, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
+{
+	Sign sign = Sign::Any;
+	const spv::Op type = getTypeFromOp(_op, sign);
+
+	if (type == spv::Op::OpNop)
+	{
+		getModule()->logError("Could not derive operand type from instruction _op");
+		return this;
+	}
+
+	return scalarVecOp(_op, type, sign, _pLeft, _pRight, _pErrorMsg, _checkSign);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _intFun, DualOpMemberFun _floatFun, const char* _pErrorMsg)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType->getBaseType().isInt() && rType->getBaseType().isInt())
+	{
+		return (this->*_intFun)(_pLeft, _pRight);
+	}
+	else if (lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
+	{
+		return (this->*_floatFun)(_pLeft, _pRight);
+	}
+
+	if (_pErrorMsg != nullptr)
+	{
+		getModule()->logError(_pErrorMsg);
+	}
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, const char* _pErrorMsg)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType->getBaseType().isUInt() && rType->getBaseType().isUInt())
+	{
+		return (this->*_uIntFun)(_pLeft, _pRight);
+	}
+	else if (lType->getBaseType().isInt() && rType->getBaseType().isInt()) // if l or r is unsinged call signed func
+	{
+		return (this->*_sIntFun)(_pLeft, _pRight);
+	}
+	else if (lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
+	{
+		return (this->*_floatFun)(_pLeft, _pRight);
+	}
+
+	if (_pErrorMsg != nullptr)
+	{
+		getModule()->logError(_pErrorMsg);
+	}
+
 	return this;
 }
 

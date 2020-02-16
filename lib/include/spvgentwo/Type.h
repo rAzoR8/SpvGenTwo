@@ -292,6 +292,9 @@ namespace spvgentwo
 		// check if this type has same sign as _sign
 		bool hasSign(Sign _sign) const { return _sign == Sign::Any || ((_sign == Sign::Signed) == getBaseType().isSInt()); }
 		void setSign(bool _signum) { getBaseType().m_IntSign = _signum; }
+		// check for base sign of int
+		bool isSigned() const { return getBaseType().isSInt(); }
+		bool isUnsigned() const { return getBaseType().isUInt(); }
 
 		bool isOpaque() const { return m_Type == spv::Op::OpTypeOpaque; }
 
@@ -319,6 +322,9 @@ namespace spvgentwo
 		bool hasSameComponentWidth(const Type& _other) const { const Type& a = getBaseType(), b = _other.getBaseType(); return a.getType() == b.getType() && a.getIntWidth() == b.getIntWidth(); }
 
 		bool isMatrixOf(const spv::Op _baseType) const { return isMatrix() && getBaseTypeOp() == _baseType; }
+		bool isMatrixOfFloat() const { return isMatrixOf(spv::Op::OpTypeFloat); }
+		bool isMatrixOfInt() const { return isMatrixOf(spv::Op::OpTypeInt); }
+
 		bool isSqareMatrix() const { return isMatrix() && m_MatColumnCount == front().getVectorComponentCount(); }
 		bool isSqareMatrixOf(const spv::Op _baseType) const { return isMatrixOf(_baseType) && m_MatColumnCount == front().getVectorComponentCount(); }
 

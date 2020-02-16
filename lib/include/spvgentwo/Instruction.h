@@ -36,6 +36,9 @@ namespace spvgentwo
 			Module* pModule;
 		} m_parent = {};
 
+		using SingleOpMemberFun = Instruction* (Instruction::*)(Instruction*, Instruction*);
+		using DualOpMemberFun = Instruction* (Instruction::*)(Instruction*, Instruction*);
+
 	public:
 		using Iterator = EntryIterator<Operand>;
 
@@ -132,7 +135,24 @@ namespace spvgentwo
 		bool validateOperands();
 
 		//
-		// OPERATIONS
+		// GENERIC OPERATIONS
+		//
+
+		Instruction* Add(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opIAdd, &Instruction::opFAdd, "Failed to match Add's operand types for this instruction"); }
+		Instruction* Sub(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opISub, &Instruction::opFSub, "Failed to match Add's operand types for this instruction"); }
+		Instruction* Mul(Instruction* _pLeft, Instruction* _pRight);
+		Instruction* Div(Instruction* _pLeft, Instruction* _pRight, bool _allowVecDividedByScalar = true);
+
+		Instruction* Not(Instruction* _pIntOrBool); // lowecase not is a c++ keywork, hence generic functions need to be upper case
+		Instruction* Equal(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opIEqual, &Instruction::opFOrdEqual, "Failed to match Equals's operand types for this instruction"); }
+		Instruction* NotEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opINotEqual, &Instruction::opFOrdNotEqual, "Failed to match NotEqual's operand types for this instruction"); }
+		Instruction* Greater(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSGreaterThan, &Instruction::opUGreaterThan, &Instruction::opFOrdGreaterThan, "Failed to match Greater's operand types for this instruction"); }
+		Instruction* GreaterEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSGreaterThanEqual, &Instruction::opUGreaterThanEqual, &Instruction::opFOrdGreaterThanEqual, "Failed to match GreaterEqual's operand types for this instruction"); }
+		Instruction* Less(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSLessThan, &Instruction::opULessThan, &Instruction::opFOrdLessThan, "Failed to match Less's operand types for this instruction"); }
+		Instruction* LessEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSLessThanEqual, &Instruction::opULessThanEqual, &Instruction::opFOrdLessThanEqual, "Failed to match LessEqual's operand types for this instruction"); }
+
+		//
+		// SPIR-V OPERATIONS
 		//
 
 		void opNop();
@@ -237,6 +257,54 @@ namespace spvgentwo
 
 		Instruction* opAll(Instruction* _pBoolVec);
 
+		Instruction* opNot(Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpNot, _pIntVec, nullptr, "Operand of OpNot is not a scalar or vector of int type"); }
+
+		Instruction* opLogicalNot(Instruction* _pBoolVec) { return scalarVecOp(spv::Op::OpLogicalNot, _pBoolVec, nullptr, "Operand of OpLogicalNot is not a scalar or vector of bool type"); }
+
+		Instruction* opIEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpIEqual, _pLeft, _pRight, "Operand of OpIEqual is not a scalar or vector of int type"); }
+
+		Instruction* opINotEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpINotEqual, _pLeft, _pRight, "Operand of OpINotEqual is not a scalar or vector of int type"); }
+
+		Instruction* opUGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpUGreaterThan, _pLeft, _pRight, "Operand of OpUGreaterThan is not a scalar or vector of int type", false); }
+
+		Instruction* opUGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpUGreaterThanEqual, _pLeft, _pRight, "Operand of OpUGreaterThanEqual is not a scalar or vector of int type", false); }
+
+		Instruction* opSGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSGreaterThan, _pLeft, _pRight, "Operand of OpSGreaterThan is not a scalar or vector of int type", false); }
+
+		Instruction* opSGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSGreaterThanEqual, _pLeft, _pRight, "Operand of OpSGreaterThanEqual is not a scalar or vector of int type", false); }
+
+		Instruction* opULessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpULessThan, _pLeft, _pRight, "Operand of OpULessThan is not a scalar or vector of int type", false); }
+
+		Instruction* opULessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpULessThanEqual, _pLeft, _pRight, "Operand of OpULessThanEqual is not a scalar or vector of int type", false); }
+
+		Instruction* opSLessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSLessThan, _pLeft, _pRight, "Operand of OpSLessThan is not a scalar or vector of int type", false); }
+
+		Instruction* opSLessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSLessThanEqual, _pLeft, _pRight, "Operand of OpSLessThanEqual is not a scalar or vector of int type", false); }
+
+		Instruction* opFOrdEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdEqual, _pLeft, _pRight, "Operand of OpFOrdEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordEqual, _pLeft, _pRight, "Operand of OpFUnordEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdNotEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdNotEqual, _pLeft, _pRight, "Operand of OpFOrdNotEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordNotEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordNotEqual, _pLeft, _pRight, "Operand of OpFUnordNotEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdLessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdLessThan, _pLeft, _pRight, "Operand of OpFOrdLessThan is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordLessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordLessThan, _pLeft, _pRight, "Operand of OpFUnordLessThan is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdGreaterThan, _pLeft, _pRight, "Operand of OpFOrdGreaterThan is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordGreaterThan, _pLeft, _pRight, "Operand of OpFUnordGreaterThan is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdLessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdLessThanEqual, _pLeft, _pRight, "Operand of OpFOrdLessThanEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordLessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordLessThanEqual, _pLeft, _pRight, "Operand of OpFUnordLessThanEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdGreaterThanEqual, _pLeft, _pRight, "Operand of OpFOrdGreaterThanEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordGreaterThanEqual, _pLeft, _pRight, "Operand of OpFUnordGreaterThanEqual is not a scalar or vector of float type"); }
+
 		Instruction* opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt);
 
 		Instruction* opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt);
@@ -254,37 +322,37 @@ namespace spvgentwo
 
 		Instruction* opTranspose(Instruction* _pMatrix);
 
-		Instruction* opSNegate(Instruction* _pSignedInt) { return opScalarVec(spv::Op::OpSNegate, _pSignedInt, nullptr, "Operand of OpSNegate is not a scalar or vector of int type"); }
+		Instruction* opSNegate(Instruction* _pSignedInt) { return scalarVecOp(spv::Op::OpSNegate, _pSignedInt, nullptr, "Operand of OpSNegate is not a scalar or vector of int type"); }
 
-		Instruction* opFNegate(Instruction* _pFloat) { return opScalarVec(spv::Op::OpFNegate, _pFloat, nullptr, "Operand of OpFNegate is not a scalar or vector of float type"); }
+		Instruction* opFNegate(Instruction* _pFloat) { return scalarVecOp(spv::Op::OpFNegate, _pFloat, nullptr, "Operand of OpFNegate is not a scalar or vector of float type"); }
 
-		Instruction* opIAdd(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpIAdd, _pLeft, _pRight, "Operand of opIAdd is not a scalar or vector of int type"); }
+		Instruction* opIAdd(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpIAdd, _pLeft, _pRight, "Operand of opIAdd is not a scalar or vector of int type"); }
 
-		Instruction* opFAdd(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFAdd, _pLeft, _pRight, "Operand of OpFAdd is not a scalar or vector of float type"); }
+		Instruction* opFAdd(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFAdd, _pLeft, _pRight, "Operand of OpFAdd is not a scalar or vector of float type"); }
 
-		Instruction* opISub(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpISub, _pLeft, _pRight, "Operand of OpISub is not a scalar or vector of int type"); }
+		Instruction* opISub(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpISub, _pLeft, _pRight, "Operand of OpISub is not a scalar or vector of int type"); }
 
-		Instruction* opFSub(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFSub, _pLeft, _pRight, "Operand of OpFSub is not a scalar or vector of float type"); }
+		Instruction* opFSub(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFSub, _pLeft, _pRight, "Operand of OpFSub is not a scalar or vector of float type"); }
 
-		Instruction* opIMul(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpIMul, _pLeft, _pRight, "Operand of OpIMul is not a scalar or vector of int type"); }
+		Instruction* opIMul(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpIMul, _pLeft, _pRight, "Operand of OpIMul is not a scalar or vector of int type"); }
 
-		Instruction* opFMul(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFMul, _pLeft, _pRight, "Operand of OpFMul is not a scalar or vector of float type"); }
+		Instruction* opFMul(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFMul, _pLeft, _pRight, "Operand of OpFMul is not a scalar or vector of float type"); }
 		
-		Instruction* opUDiv(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpUDiv, _pLeft, _pRight, "Operand of OpUDiv is not a scalar or vector of unsigned int type"); }
+		Instruction* opUDiv(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpUDiv, _pLeft, _pRight, "Operand of OpUDiv is not a scalar or vector of unsigned int type"); }
 
-		Instruction* opSDiv(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpSDiv, _pLeft, _pRight, "Operand of OpSDiv is not a scalar or vector of signed int type", false); }
+		Instruction* opSDiv(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSDiv, _pLeft, _pRight, "Operand of OpSDiv is not a scalar or vector of signed int type", false); }
 
-		Instruction* opFDiv(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFDiv, _pLeft, _pRight, "Operand of OpFDiv is not a scalar or vector of float type"); }
+		Instruction* opFDiv(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFDiv, _pLeft, _pRight, "Operand of OpFDiv is not a scalar or vector of float type"); }
 		
-		Instruction* opUMod(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpUMod, _pLeft, _pRight, "Operand of OpUMod is not a scalar or vector of unsigned int type"); }
+		Instruction* opUMod(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpUMod, _pLeft, _pRight, "Operand of OpUMod is not a scalar or vector of unsigned int type"); }
 
-		Instruction* opSMod(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpSMod, _pLeft, _pRight, "Operand of OpSMod is not a scalar or vector of int type", false); }
+		Instruction* opSMod(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSMod, _pLeft, _pRight, "Operand of OpSMod is not a scalar or vector of int type", false); }
 
-		Instruction* opFMod(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFMod, _pLeft, _pRight, "Operand of OpFMod is not a scalar or vector of float type"); }
+		Instruction* opFMod(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFMod, _pLeft, _pRight, "Operand of OpFMod is not a scalar or vector of float type"); }
 
-		Instruction* opSRem(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpSRem, _pLeft, _pRight, "Operand of OpSRem is not a scalar or vector of int type", false); }
+		Instruction* opSRem(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSRem, _pLeft, _pRight, "Operand of OpSRem is not a scalar or vector of int type", false); }
 		
-		Instruction* opFRem(Instruction* _pLeft, Instruction* _pRight) { return opScalarVec(spv::Op::OpFRem, _pLeft, _pRight, "Operand of OpFRem is not a scalar or vector of float type"); }
+		Instruction* opFRem(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFRem, _pLeft, _pRight, "Operand of OpFRem is not a scalar or vector of float type"); }
 		
 		Instruction* opVectorTimesScalar(Instruction* _pVector, Instruction* _pScalar);
 
@@ -300,46 +368,46 @@ namespace spvgentwo
 
 		// generic base case with image operands
 		template <class ...ImageOperands>
-		Instruction* opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent = nullptr, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands);
+		Instruction* opImageSample(const spv::Op _imageSampleOp, Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent, const Flag<spv::ImageOperandsMask> _imageOperands, ImageOperands... _operands);
 
 #pragma region SampleMethods
 		// Implicit
 		template <class ...ImageOperands>
-		Instruction* opImageSampleImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageSampleImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate)
 		{
-			return opImageSample(spv::Op::OpImageSampleImplicitLod, _pSampledImage, _pCoordinate, nullptr, _imageOperands, _operands...);
+			return opImageSample(spv::Op::OpImageSampleImplicitLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::MaskNone);
 		}
 
 		// Explicit
 		template <class ...ImageOperands>
-		Instruction* opImageSampleExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pLodLevel, const Flag<spv::ImageOperandsMask> _additionalOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageSampleExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pLodLevel)
 		{
-			return opImageSample(spv::Op::OpImageSampleExplicitLod, _pSampledImage, _pCoordinate, nullptr, _additionalOperands | spv::ImageOperandsMask::Lod, _pLodLevel, _operands...);
+			return opImageSample(spv::Op::OpImageSampleExplicitLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::Lod, _pLodLevel);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageSampleExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pGrad, const Flag<spv::ImageOperandsMask> _additionalOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageSampleExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pGrad)
 		{
-			return opImageSample(spv::Op::OpImageSampleExplicitLod, _pSampledImage, _pCoordinate, nullptr, _additionalOperands | spv::ImageOperandsMask::Grad, _pLodLevel, _operands...);
+			return opImageSample(spv::Op::OpImageSampleExplicitLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::Grad, _pGrad);
 		}
 
 		// Proj
 		template <class ...ImageOperands>
-		Instruction* opImageSampleProjImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageSampleProjImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjImplicitLod, _pSampledImage, _pCoordinate, nullptr, _imageOperands, _operands...);
+			return opImageSample(spv::Op::OpImageSampleProjImplicitLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::MaskNone);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageSampleProjExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pLodLevel, const Flag<spv::ImageOperandsMask> _additionalOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageSampleProjExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pLodLevel)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjExplicitLod, _pSampledImage, _pCoordinate, nullptr, _additionalOperands | spv::ImageOperandsMask::Lod, _pLodLevel, _operands...);
+			return opImageSample(spv::Op::OpImageSampleProjExplicitLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::Lod, _pLodLevel);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageSampleProjExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pGrad, const Flag<spv::ImageOperandsMask> _additionalOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageSampleProjExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pGrad)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjExplicitLod, _pSampledImage, _pCoordinate, nullptr, _additionalOperands | spv::ImageOperandsMask::Grad, _pLodLevel, _operands...);
+			return opImageSample(spv::Op::OpImageSampleProjExplicitLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::Grad, _pGrad);
 		}
 
 		//
@@ -348,60 +416,60 @@ namespace spvgentwo
 
 		// Implicit
 		template <class ...ImageOperands>
-		Instruction* opImageSampleDrefImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageSampleDrefImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference)
 		{
-			return opImageSample(spv::Op::OpImageSampleDrefImplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, _imageOperands, _operands...);
+			return opImageSample(spv::Op::OpImageSampleDrefImplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::MaskNone);
 		}
 
 		// Explicit
 		template <class ...ImageOperands>
-		Instruction* opImageSampleDrefExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pLodLevel, const Flag<spv::ImageOperandsMask> _additionalOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageSampleDrefExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pLodLevel)
 		{
-			return opImageSample(spv::Op::OpImageSampleDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, _additionalOperands | spv::ImageOperandsMask::Lod, _pLodLevel, _operands...);
+			return opImageSample(spv::Op::OpImageSampleDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::Lod, _pLodLevel);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageSampleDrefExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pGrad, const Flag<spv::ImageOperandsMask> _additionalOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageSampleDrefExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pGrad)
 		{
-			return opImageSample(spv::Op::OpImageSampleDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, _additionalOperands | spv::ImageOperandsMask::Grad, _pLodLevel, _operands...);
+			return opImageSample(spv::Op::OpImageSampleDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::Grad, _pGrad);
 		}
 
 		// Proj
 		template <class ...ImageOperands>
-		Instruction* opImageSampleProjDrefImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageSampleProjDrefImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjDrefImplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, _imageOperands, _operands...);
+			return opImageSample(spv::Op::OpImageSampleProjDrefImplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::MaskNone);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageSampleProjDrefExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pLodLevel, const Flag<spv::ImageOperandsMask> _additionalOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageSampleProjDrefExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pLodLevel)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, _additionalOperands | spv::ImageOperandsMask::Lod, _pLodLevel, _operands...);
+			return opImageSample(spv::Op::OpImageSampleProjDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::Lod, _pLodLevel);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageSampleProjDrefExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pGrad, const Flag<spv::ImageOperandsMask> _additionalOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageSampleProjDrefExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pGrad)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, _additionalOperands | spv::ImageOperandsMask::Grad, _pLodLevel, _operands...);
+			return opImageSample(spv::Op::OpImageSampleProjDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference spv::ImageOperandsMask::Grad, _pGrad);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageFetch(Instruction* _pImage, Instruction* _pCoordinate, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageFetch(Instruction* _pImage, Instruction* _pCoordinate)
 		{
-			return opImageSample(spv::Op::OpImageFetch, _pImage, _pCoordinate, nullptr, _imageOperands, _operands...);
+			return opImageSample(spv::Op::OpImageFetch, _pImage, _pCoordinate, nullptr, spv::ImageOperandsMask::MaskNone);
 		}
 
 		// Gather
 		template <class ...ImageOperands>
-		Instruction* opImageGather(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pComponent, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageGather(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pComponent)
 		{
-			return opImageSample(spv::Op::OpImageGather, _pSampledImage, _pCoordinate, _pComponent, _imageOperands, _operands...);
+			return opImageSample(spv::Op::OpImageGather, _pSampledImage, _pCoordinate, _pComponent, spv::ImageOperandsMask::MaskNone);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageDrefGather(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
+		Instruction* opImageDrefGather(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference)
 		{
-			return opImageSample(spv::Op::OpImageDrefGather, _pSampledImage, _pCoordinate, _pDepthReference, _imageOperands, _operands...);
+			return opImageSample(spv::Op::OpImageDrefGather, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::MaskNone);
 		}
 
 #pragma endregion
@@ -412,8 +480,18 @@ namespace spvgentwo
 		template <class T, class ...Args>
 		void makeOpInternal(T first, Args ... _args);
 
-		Instruction* opScalarVec(const spv::Op _op, Instruction* _pLeft, Instruction* _pRight = nullptr, const char* _pErrorMsg = nullptr, bool _checkSign = true);
+		// checks types based on passed _type and_sign
+		Instruction* scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign);
 
+		// checks types based on passed _op using getTypeFromOp(_op, sign)
+		Instruction* scalarVecOp(spv::Op _op, Instruction* _pLeft, Instruction* _pRight = nullptr, const char* _pErrorMsg = nullptr, bool _checkSign = true);
+
+		// decides based on type of _pLeft and _pRight if _intFun or _floatFun should be called
+		Instruction* intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _intFun, DualOpMemberFun _floatFun, const char* _pErrorMsg = nullptr);
+		
+		// decides based on type of _pLeft and _pRight if signed _sIntFun, unsigned _uIntFund or float _floatFun should be called
+		// unsigned & unsinged => unsigned, signed & unsigned => signed, float & float => float
+		Instruction* intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, const char* _pErrorMsg = nullptr);
 	};
 
 	template<class ...Args>

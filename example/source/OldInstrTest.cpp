@@ -85,7 +85,48 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		sNeg = bb->opISub(index, sNeg);
 		sNeg = bb->opIMul(sNeg, index);
 		sNeg = bb->opSMod(sNeg, index);
-		uInt = bb->opSDiv(uInt, sNeg);
+		sNeg = bb->opSDiv(uInt, sNeg);
+
+		// generic
+		bb->Add(sNeg, uInt);
+		bb->Add(fNeg, x);
+		bb->Sub(sNeg, uInt);
+		bb->Sub(fNeg, x);
+
+		bb->Mul(sNeg, uInt);
+		bb->Mul(fNeg, fNeg);
+		bb->Mul(fNeg, cross);
+		bb->Mul(mat3, mat3);
+
+		bb->Div(sNeg, uInt); // sdiv
+		bb->Div(uInt, uInt); // udiv
+		bb->Div(fNeg, fNeg); // fdiv
+		bb->Div(cross, fNeg); // vec / scalar
+
+		bb->Equal(sNeg, uInt); // int
+		bb->Equal(fNeg, x); // float
+		bb->NotEqual(sNeg, uInt); // int
+		bb->NotEqual(fNeg, x); // float
+
+		bb->Less(uInt, uInt); // unsigned
+		bb->Less(sNeg, uInt); // signed
+		bb->Less(fNeg, x); // float
+
+		bb->LessEqual(uInt, uInt); // unsigned
+		bb->LessEqual(sNeg, uInt); // signed
+		bb->LessEqual(fNeg, x); // float
+
+		bb->Greater(uInt, uInt); // unsigned
+		bb->Greater(sNeg, uInt); // signed
+		bb->Greater(fNeg, x); // float
+
+		bb->GreaterEqual(uInt, uInt); // unsigned
+		bb->GreaterEqual(sNeg, uInt); // signed
+		bb->GreaterEqual(fNeg, x); // float
+		Instruction* const boolVec = bb->GreaterEqual(cross, uniVec); // float vec
+
+		bb->Not(uInt);// int scalar
+		bb->Not(boolVec);
 
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
 
@@ -97,6 +138,8 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		mat = bb->opMatrixTimesScalar(mat, fNeg);
 		bb->opMatrixTimesVector(mat, insert);
 		bb->opMatrixTimesMatrix(mat, mat3);
+
+		bb->Mul(mat, mat3);
 
 		Instruction* vecType = module.type<vector_t<float, 3>>();
 		Instruction* newVec = bb->opCompositeConstruct(vecType, x, y, z);
@@ -116,7 +159,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* uniformComp = bb->opAccessChain(uniformVar, 0u);
 		Instruction* uniX = bb->opLoad(uniformComp);
 
-		Instruction* cond = bb.Eq(uniX, uniY);
+		Instruction* cond = bb.Equal(uniX, uniY);
 
 		Instruction* res1 = nullptr;
 		Instruction* res2 = nullptr;
