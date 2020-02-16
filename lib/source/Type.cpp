@@ -212,18 +212,21 @@ void spvgentwo::Type::reset()
 
 spvgentwo::Type& spvgentwo::Type::Void()
 {
+	reset();
 	m_Type = spv::Op::OpTypeVoid;
 	return *this;
 }
 
 spvgentwo::Type& spvgentwo::Type::Bool()
 {
+	reset();
 	m_Type = spv::Op::OpTypeBool;
 	return *this;
 }
 
 spvgentwo::Type& spvgentwo::Type::Int(const unsigned int _bits, const bool _sign)
 {
+	reset();
 	m_Type = spv::Op::OpTypeInt;
 	m_IntWidth = _bits;
 	m_IntSign = _sign;
@@ -232,6 +235,7 @@ spvgentwo::Type& spvgentwo::Type::Int(const unsigned int _bits, const bool _sign
 
 spvgentwo::Type& spvgentwo::Type::Float(const unsigned int _bits)
 {
+	reset();
 	m_Type = spv::Op::OpTypeFloat;
 	m_FloatWidth = _bits;
 	return *this;
@@ -239,6 +243,7 @@ spvgentwo::Type& spvgentwo::Type::Float(const unsigned int _bits)
 
 spvgentwo::Type& spvgentwo::Type::Scalar(const spv::Op _base, const unsigned int _bits, const bool _sign)
 {
+	reset();
 	m_Type = _base;
 	m_FloatWidth = _bits;
 	m_IntSign = _sign;
@@ -248,6 +253,7 @@ spvgentwo::Type& spvgentwo::Type::Scalar(const spv::Op _base, const unsigned int
 
 spvgentwo::Type& spvgentwo::Type::Scalar(const dyn_scalar_t& _scalarType)
 {
+	reset();
 	m_Type = _scalarType.baseType;
 	m_FloatWidth = _scalarType.bits;
 	m_IntSign = _scalarType.sign;
@@ -257,6 +263,7 @@ spvgentwo::Type& spvgentwo::Type::Scalar(const dyn_scalar_t& _scalarType)
 
 spvgentwo::Type& spvgentwo::Type::Struct(const Type* _pSubType)
 {
+	reset();
 	m_Type = spv::Op::OpTypeStruct;
 
 	if (_pSubType != nullptr)
@@ -269,6 +276,7 @@ spvgentwo::Type& spvgentwo::Type::Struct(const Type* _pSubType)
 
 spvgentwo::Type& spvgentwo::Type::Array(const unsigned int _elements, const Type* _pElementType)
 {
+	reset();
 	m_Type = spv::Op::OpTypeArray;
 	m_ArrayLength = _elements;
 
@@ -282,6 +290,7 @@ spvgentwo::Type& spvgentwo::Type::Array(const unsigned int _elements, const Type
 
 spvgentwo::Type& spvgentwo::Type::RuntimeArray(const Type* _elementType)
 {
+	reset();
 	m_Type = spv::Op::OpTypeRuntimeArray;
 
 	if (_elementType != nullptr)
@@ -294,12 +303,14 @@ spvgentwo::Type& spvgentwo::Type::RuntimeArray(const Type* _elementType)
 
 spvgentwo::Type& spvgentwo::Type::Function()
 {
+	reset();
 	m_Type = spv::Op::OpTypeFunction;
 	return *this;
 }
 
 spvgentwo::Type& spvgentwo::Type::Pointer(const spv::StorageClass _storageClass, const Type* _pInnerType)
 {
+	reset();
 	m_Type = spv::Op::OpTypePointer;
 	m_StorageClass = _storageClass;
 
@@ -313,6 +324,7 @@ spvgentwo::Type& spvgentwo::Type::Pointer(const spv::StorageClass _storageClass,
 
 spvgentwo::Type& spvgentwo::Type::ForwardPointer(const spv::StorageClass _storageClass, const Type* _pInnerType)
 {
+	reset();
 	m_Type = spv::Op::OpTypeForwardPointer;
 	m_StorageClass = _storageClass;
 
@@ -326,12 +338,14 @@ spvgentwo::Type& spvgentwo::Type::ForwardPointer(const spv::StorageClass _storag
 
 spvgentwo::Type& spvgentwo::Type::Sampler()
 {
+	reset();
 	m_Type = spv::Op::OpTypeSampler;
 	return *this;
 }
 
 spvgentwo::Type& spvgentwo::Type::Image(const dyn_scalar_t _sampledType, const spv::Dim _dim, const unsigned int _depth, const bool _array, const bool _multiSampled, const SamplerImageAccess _sampled, const spv::ImageFormat _format, const spv::AccessQualifier _access)
 {
+	reset();
 	m_Type = spv::Op::OpTypeImage;
 
 	Member().Scalar(_sampledType.baseType, _sampledType.bits, _sampledType.sign);
@@ -362,6 +376,7 @@ spvgentwo::Type& spvgentwo::Type::Image(const dyn_image_t& _imageType)
 
 spvgentwo::Type& spvgentwo::Type::SampledImage(const Type* _imageType)
 {
+	reset();
 	m_Type = spv::Op::OpTypeSampledImage;
 
 	if (_imageType != nullptr)
@@ -374,6 +389,7 @@ spvgentwo::Type& spvgentwo::Type::SampledImage(const Type* _imageType)
 
 spvgentwo::Type& spvgentwo::Type::SampledImage(const dyn_image_t& _imageType)
 {
+	reset();
 	m_Type = spv::Op::OpTypeSampledImage;
 
 	Member().Image(_imageType);
@@ -383,42 +399,49 @@ spvgentwo::Type& spvgentwo::Type::SampledImage(const dyn_image_t& _imageType)
 
 spvgentwo::Type& spvgentwo::Type::Event()
 {
+	reset();
 	m_Type = spv::Op::OpTypeEvent;
 	return *this;
 }
 
 spvgentwo::Type& spvgentwo::Type::DeviceEvent()
 {
+	reset();
 	m_Type = spv::Op::OpTypeDeviceEvent;
 	return *this;
 }
 
 spvgentwo::Type& spvgentwo::Type::ReserveId()
 {
+	reset();
 	m_Type = spv::Op::OpTypeReserveId;
 	return *this;
 }
 
 spvgentwo::Type& spvgentwo::Type::Queue()
 {
+	reset();
 	m_Type = spv::Op::OpTypeQueue;
 	return *this;
 }
 
 spvgentwo::Type& spvgentwo::Type::PipeStorage()
 {
+	reset();
 	m_Type = spv::Op::OpTypePipeStorage;
 	return *this;
 }
 
 spvgentwo::Type& spvgentwo::Type::NamedBarrier()
 {
+	reset();
 	m_Type = spv::Op::OpTypeNamedBarrier;
 	return *this;
 }
 
 spvgentwo::Type& spvgentwo::Type::Vector(unsigned int _elements, const Type* _elementType)
 {
+	reset();
 	m_Type = spv::Op::OpTypeVector;
 	m_VecComponentCount = _elements;
 
@@ -432,6 +455,7 @@ spvgentwo::Type& spvgentwo::Type::Vector(unsigned int _elements, const Type* _el
 
 spvgentwo::Type& spvgentwo::Type::Vector(const dyn_vector_t& _vectorType)
 {
+	reset();
 	m_Type = spv::Op::OpTypeVector;
 	m_VecComponentCount = _vectorType.elements;
 
@@ -442,6 +466,7 @@ spvgentwo::Type& spvgentwo::Type::Vector(const dyn_vector_t& _vectorType)
 
 spvgentwo::Type& spvgentwo::Type::Matrix(unsigned int _columns, const Type* _columnType)
 {
+	reset();
 	m_Type = spv::Op::OpTypeMatrix;
 	m_MatColumnCount = _columns; // length of the row
 
@@ -455,6 +480,7 @@ spvgentwo::Type& spvgentwo::Type::Matrix(unsigned int _columns, const Type* _col
 
 spvgentwo::Type& spvgentwo::Type::Matrix(const dyn_matrix_t& _matrixType)
 {
+	reset();
 	m_Type = spv::Op::OpTypeMatrix;
 	m_MatColumnCount = _matrixType.columns; // length of the row
 
@@ -465,6 +491,7 @@ spvgentwo::Type& spvgentwo::Type::Matrix(const dyn_matrix_t& _matrixType)
 
 spvgentwo::Type& spvgentwo::Type::Matrix(unsigned int _columns, unsigned int _rows, const Type* _componentType)
 {
+	reset();
 	m_Type = spv::Op::OpTypeMatrix;
 	m_MatColumnCount = _columns; // length of the row
 	Member().Vector(_rows, _componentType);
