@@ -265,6 +265,34 @@ namespace spvgentwo
 
 		Instruction* opULessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpULessThanEqual, _pLeft, _pRight, "Operand of OpULessThanEqual is not a scalar or vector of int type", false); }
 
+		Instruction* opSLessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSLessThan, _pLeft, _pRight, "Operand of OpSLessThan is not a scalar or vector of int type", false); }
+
+		Instruction* opSLessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSLessThanEqual, _pLeft, _pRight, "Operand of OpSLessThanEqual is not a scalar or vector of int type", false); }
+
+		Instruction* opFOrdEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdEqual, _pLeft, _pRight, "Operand of OpFOrdEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordEqual, _pLeft, _pRight, "Operand of OpFUnordEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdNotEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdNotEqual, _pLeft, _pRight, "Operand of OpFOrdNotEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordNotEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordNotEqual, _pLeft, _pRight, "Operand of OpFUnordNotEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdLessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdLessThan, _pLeft, _pRight, "Operand of OpFOrdLessThan is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordLessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordLessThan, _pLeft, _pRight, "Operand of OpFUnordLessThan is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdGreaterThan, _pLeft, _pRight, "Operand of OpFOrdGreaterThan is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordGreaterThan, _pLeft, _pRight, "Operand of OpFUnordGreaterThan is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdLessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdLessThanEqual, _pLeft, _pRight, "Operand of OpFOrdLessThanEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordLessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordLessThanEqual, _pLeft, _pRight, "Operand of OpFUnordLessThanEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdGreaterThanEqual, _pLeft, _pRight, "Operand of OpFOrdGreaterThanEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordGreaterThanEqual, _pLeft, _pRight, "Operand of OpFUnordGreaterThanEqual is not a scalar or vector of float type"); }
+
 		Instruction* opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt);
 
 		Instruction* opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt);
