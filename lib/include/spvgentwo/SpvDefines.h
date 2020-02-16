@@ -164,6 +164,7 @@ namespace spvgentwo
 	// get spv::Op::OpTypeFloat from spv::Op::OpFAdd etc, returns spv::Op::OpNop
 	constexpr spv::Op getTypeFromOp(const spv::Op _op, Sign& _sign)
 	{
+		// this is not a complete match for all instructions, but for most that have variants for several types
 		switch (_op)
 		{
 		case spv::Op::OpTypeFloat:
@@ -190,6 +191,15 @@ namespace spvgentwo
 		case spv::Op::OpFwidth:
 		case spv::Op::OpFwidthCoarse:
 		case spv::Op::OpFwidthFine:
+
+		case spv::Op::OpIsNan:
+		case spv::Op::OpIsInf:
+		case spv::Op::OpIsFinite:
+		case spv::Op::OpIsNormal:
+		case spv::Op::OpSignBitSet:
+		case spv::Op::OpLessOrGreater:
+		case spv::Op::OpOrdered:
+		case spv::Op::OpUnordered:
 			_sign = Sign::Any;
 			return spv::Op::OpTypeFloat;
 
@@ -218,6 +228,7 @@ namespace spvgentwo
 		case spv::Op::OpISub:
 		case spv::Op::OpISubBorrow:
 		case spv::Op::OpISubSatINTEL:
+		case spv::Op::OpNot:
 			_sign = Sign::Any;
 			return spv::Op::OpTypeInt;
 
@@ -238,6 +249,19 @@ namespace spvgentwo
 		case spv::Op::OpUSubSatINTEL:
 			_sign = Sign::Unsigned;
 			return spv::Op::OpTypeInt;
+
+		case spv::Op::OpTypeBool:
+		case spv::Op::OpLogicalEqual:
+		case spv::Op::OpLogicalNotEqual:
+		case spv::Op::OpLogicalOr:
+		case spv::Op::OpLogicalAnd:
+		case spv::Op::OpLogicalNot:
+		case spv::Op::OpAny:
+		case spv::Op::OpAll:
+
+			_sign = Sign::Any;
+			return spv::Op::OpTypeBool;
+
 		default:
 			_sign = Sign::Any;
 			return spv::Op::OpNop;
