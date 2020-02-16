@@ -223,6 +223,7 @@ namespace spvgentwo
 		case spv::Op::OpIAverageINTEL:
 		case spv::Op::OpIAverageRoundedINTEL:
 		case spv::Op::OpIEqual:
+		case spv::Op::OpINotEqual:
 		case spv::Op::OpIMul:
 		case spv::Op::OpIMul32x16INTEL:
 		case spv::Op::OpISub:

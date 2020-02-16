@@ -143,6 +143,13 @@ namespace spvgentwo
 		Instruction* mul(Instruction* _pLeft, Instruction* _pRight);
 		Instruction* div(Instruction* _pLeft, Instruction* _pRight, bool _allowVecDividedByScalar = true);
 
+		Instruction* equal(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opIEqual, &Instruction::opFOrdEqual, "Failed to match Equals's operand types for this instruction"); }
+		Instruction* notEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opINotEqual, &Instruction::opFOrdNotEqual, "Failed to match NotEqual's operand types for this instruction"); }
+		Instruction* greater(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSGreaterThan, &Instruction::opUGreaterThan, &Instruction::opFOrdGreaterThan, "Failed to match Greater's operand types for this instruction"); }
+		Instruction* greaterEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSGreaterThanEqual, &Instruction::opUGreaterThanEqual, &Instruction::opFOrdGreaterThanEqual, "Failed to match GreaterEqual's operand types for this instruction"); }
+		Instruction* less(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSLessThan, &Instruction::opULessThan, &Instruction::opFOrdLessThan, "Failed to match Less's operand types for this instruction"); }
+		Instruction* lessEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSLessThanEqual, &Instruction::opULessThanEqual, &Instruction::opFOrdLessThanEqual, "Failed to match LessEqual's operand types for this instruction"); }
+
 		//
 		// SPIR-V OPERATIONS
 		//

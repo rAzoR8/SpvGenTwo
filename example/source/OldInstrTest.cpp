@@ -85,7 +85,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		sNeg = bb->opISub(index, sNeg);
 		sNeg = bb->opIMul(sNeg, index);
 		sNeg = bb->opSMod(sNeg, index);
-		uInt = bb->opSDiv(uInt, sNeg);
+		sNeg = bb->opSDiv(uInt, sNeg);
 
 		// generic
 		bb->add(sNeg, uInt);
@@ -102,6 +102,27 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		bb->div(uInt, uInt); // udiv
 		bb->div(fNeg, fNeg); // fdiv
 		bb->div(cross, fNeg); // vec / scalar
+
+		bb->equal(sNeg, uInt); // int
+		bb->equal(fNeg, x); // float
+		bb->notEqual(sNeg, uInt); // int
+		bb->notEqual(fNeg, x); // float
+
+		bb->less(uInt, uInt); // unsigned
+		bb->less(sNeg, uInt); // signed
+		bb->less(fNeg, x); // float
+
+		bb->lessEqual(uInt, uInt); // unsigned
+		bb->lessEqual(sNeg, uInt); // signed
+		bb->lessEqual(fNeg, x); // float
+
+		bb->greater(uInt, uInt); // unsigned
+		bb->greater(sNeg, uInt); // signed
+		bb->greater(fNeg, x); // float
+
+		bb->greaterEqual(uInt, uInt); // unsigned
+		bb->greaterEqual(sNeg, uInt); // signed
+		bb->greaterEqual(fNeg, x); // float
 
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
 
