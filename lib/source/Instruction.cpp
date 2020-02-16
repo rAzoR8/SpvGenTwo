@@ -742,6 +742,13 @@ spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(const spv::Op _op, I
 {
 	Sign sign = Sign::Any;
 	const spv::Op type = getTypeFromOp(_op, sign);
+
+	if (type == spv::Op::OpNop)
+	{
+		getModule()->logError("Could not derive operand type from instruction _op");
+		return this;
+	}
+
 	const Type* pLeftType = _pLeft->getType();
 	const Type* pRightType = _pRight != nullptr ? _pRight->getType() : nullptr;
 
@@ -787,13 +794,13 @@ spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, 
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
 
-	if (lType->getBaseType().isSInt() && rType->getBaseType().isSInt())
-	{
-		return (this->*_sIntFun)(_pLeft, _pRight);
-	}
 	if (lType->getBaseType().isUInt() && rType->getBaseType().isUInt())
 	{
 		return (this->*_uIntFun)(_pLeft, _pRight);
+	}
+	else if (lType->getBaseType().isInt() && rType->getBaseType().isInt()) // if l or r is unsinged call signed func
+	{
+		return (this->*_sIntFun)(_pLeft, _pRight);
 	}
 	else if (lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
 	{
