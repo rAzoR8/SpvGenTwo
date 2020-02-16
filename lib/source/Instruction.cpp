@@ -268,7 +268,7 @@ spv::Id spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id& _resultId)
 	return ID;
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::mul(Instruction* _pLeft, Instruction* _pRight)
+spvgentwo::Instruction* spvgentwo::Instruction::Mul(Instruction* _pLeft, Instruction* _pRight)
 {
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
@@ -315,7 +315,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::mul(Instruction* _pLeft, Instruc
 	return this;
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::div(Instruction* _pLeft, Instruction* _pRight, bool _allowVecDividedByScalar)
+spvgentwo::Instruction* spvgentwo::Instruction::Div(Instruction* _pLeft, Instruction* _pRight, bool _allowVecDividedByScalar)
 {
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
@@ -358,7 +358,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::div(Instruction* _pLeft, Instruc
 		if (one != nullptr)
 		{			
 			// vec / scalar => vec * ( 1 / scalar )
-			return (*bb)->mul(_pLeft, div(one, _pRight));
+			return (*bb)->Mul(_pLeft, Div(one, _pRight));
 		}
 	}
 
@@ -367,7 +367,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::div(Instruction* _pLeft, Instruc
 	return this;
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::not(Instruction* _pIntOrBool)
+spvgentwo::Instruction* spvgentwo::Instruction::Not(Instruction* _pIntOrBool)
 {
 	const Type* type = _pIntOrBool->getType();
 

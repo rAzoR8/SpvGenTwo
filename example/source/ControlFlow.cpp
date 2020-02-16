@@ -54,7 +54,7 @@ spvgentwo::Module examples::controlFlow(spvgentwo::IAllocator* _pAllocator, spvg
         Instruction* offset = bb->opLoad(uniOffset);
         Instruction* value = bb->opLoad(entry.variable(42, "value")); // function scope variable
 
-        Instruction* cond = bb.Lt(offset, value); // offset < 42
+        Instruction* cond = bb.Less(offset, value); // offset < 42
 
         Instruction* res1 = nullptr;
         Instruction* res2 = nullptr;

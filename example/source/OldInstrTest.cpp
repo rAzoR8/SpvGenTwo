@@ -88,45 +88,45 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		sNeg = bb->opSDiv(uInt, sNeg);
 
 		// generic
-		bb->add(sNeg, uInt);
-		bb->add(fNeg, x);
-		bb->sub(sNeg, uInt);
-		bb->sub(fNeg, x);
+		bb->Add(sNeg, uInt);
+		bb->Add(fNeg, x);
+		bb->Sub(sNeg, uInt);
+		bb->Sub(fNeg, x);
 
-		bb->mul(sNeg, uInt);
-		bb->mul(fNeg, fNeg);
-		bb->mul(fNeg, cross);
-		bb->mul(mat3, mat3);
+		bb->Mul(sNeg, uInt);
+		bb->Mul(fNeg, fNeg);
+		bb->Mul(fNeg, cross);
+		bb->Mul(mat3, mat3);
 
-		bb->div(sNeg, uInt); // sdiv
-		bb->div(uInt, uInt); // udiv
-		bb->div(fNeg, fNeg); // fdiv
-		bb->div(cross, fNeg); // vec / scalar
+		bb->Div(sNeg, uInt); // sdiv
+		bb->Div(uInt, uInt); // udiv
+		bb->Div(fNeg, fNeg); // fdiv
+		bb->Div(cross, fNeg); // vec / scalar
 
-		bb->equal(sNeg, uInt); // int
-		bb->equal(fNeg, x); // float
-		bb->notEqual(sNeg, uInt); // int
-		bb->notEqual(fNeg, x); // float
+		bb->Equal(sNeg, uInt); // int
+		bb->Equal(fNeg, x); // float
+		bb->NotEqual(sNeg, uInt); // int
+		bb->NotEqual(fNeg, x); // float
 
-		bb->less(uInt, uInt); // unsigned
-		bb->less(sNeg, uInt); // signed
-		bb->less(fNeg, x); // float
+		bb->Less(uInt, uInt); // unsigned
+		bb->Less(sNeg, uInt); // signed
+		bb->Less(fNeg, x); // float
 
-		bb->lessEqual(uInt, uInt); // unsigned
-		bb->lessEqual(sNeg, uInt); // signed
-		bb->lessEqual(fNeg, x); // float
+		bb->LessEqual(uInt, uInt); // unsigned
+		bb->LessEqual(sNeg, uInt); // signed
+		bb->LessEqual(fNeg, x); // float
 
-		bb->greater(uInt, uInt); // unsigned
-		bb->greater(sNeg, uInt); // signed
-		bb->greater(fNeg, x); // float
+		bb->Greater(uInt, uInt); // unsigned
+		bb->Greater(sNeg, uInt); // signed
+		bb->Greater(fNeg, x); // float
 
-		bb->greaterEqual(uInt, uInt); // unsigned
-		bb->greaterEqual(sNeg, uInt); // signed
-		bb->greaterEqual(fNeg, x); // float
-		Instruction* const boolVec = bb->greaterEqual(cross, uniVec); // float vec
+		bb->GreaterEqual(uInt, uInt); // unsigned
+		bb->GreaterEqual(sNeg, uInt); // signed
+		bb->GreaterEqual(fNeg, x); // float
+		Instruction* const boolVec = bb->GreaterEqual(cross, uniVec); // float vec
 
-		bb->not(uInt);// int scalar
-		bb->not(boolVec);
+		bb->Not(uInt);// int scalar
+		bb->Not(boolVec);
 
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
 
@@ -139,7 +139,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		bb->opMatrixTimesVector(mat, insert);
 		bb->opMatrixTimesMatrix(mat, mat3);
 
-		bb->mul(mat, mat3);
+		bb->Mul(mat, mat3);
 
 		Instruction* vecType = module.type<vector_t<float, 3>>();
 		Instruction* newVec = bb->opCompositeConstruct(vecType, x, y, z);
@@ -159,7 +159,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* uniformComp = bb->opAccessChain(uniformVar, 0u);
 		Instruction* uniX = bb->opLoad(uniformComp);
 
-		Instruction* cond = bb.Eq(uniX, uniY);
+		Instruction* cond = bb.Equal(uniX, uniY);
 
 		Instruction* res1 = nullptr;
 		Instruction* res2 = nullptr;

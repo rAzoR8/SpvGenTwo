@@ -48,60 +48,60 @@ spvgentwo::BasicBlock& spvgentwo::ops::operator/(BasicBlock& _left, Instruction&
 
 spvgentwo::BasicBlock& spvgentwo::ops::operator==(BasicBlock& _left, Instruction* _pRight)
 {
-	return _left.Eq(_pRight);
+	return _left.Equal(_pRight);
 }
 
 spvgentwo::BasicBlock& spvgentwo::ops::operator==(BasicBlock& _left, Instruction& _right)
 {
-	return _left.Eq(&_right);
+	return _left.Equal(&_right);
 }
 
 spvgentwo::BasicBlock& spvgentwo::ops::operator!=(BasicBlock& _left, Instruction* _pRight)
 {
-	return _left.Neq(_pRight);
+	return _left.NotEqual(_pRight);
 }
 
 spvgentwo::BasicBlock& spvgentwo::ops::operator!=(BasicBlock& _left, Instruction& _right)
 {
-	return _left.Neq(&_right);
+	return _left.NotEqual(&_right);
 }
 
 spvgentwo::BasicBlock& spvgentwo::ops::operator<(BasicBlock& _left, Instruction* _pRight)
 {
-	return _left.Lt(_pRight);
+	return _left.Less(_pRight);
 }
 
 spvgentwo::BasicBlock& spvgentwo::ops::operator<(BasicBlock& _left, Instruction& _right)
 {
-	return _left.Lt(&_right);
+	return _left.Less(&_right);
 }
 
 spvgentwo::BasicBlock& spvgentwo::ops::operator<=(BasicBlock& _left, Instruction* _pRight)
 {
-	return _left.Lte(_pRight);
+	return _left.LessEqual(_pRight);
 }
 
 spvgentwo::BasicBlock& spvgentwo::ops::operator<=(BasicBlock& _left, Instruction& _right)
 {
-	return _left.Lte(&_right);
+	return _left.LessEqual(&_right);
 }
 
 spvgentwo::BasicBlock& spvgentwo::ops::operator>(BasicBlock& _left, Instruction* _pRight)
 {
-	return _left.Gt(_pRight);
+	return _left.Greater(_pRight);
 }
 
 spvgentwo::BasicBlock& spvgentwo::ops::operator>(BasicBlock& _left, Instruction& _right)
 {
-	return _left.Gt(&_right);
+	return _left.Greater(&_right);
 }
 
 spvgentwo::BasicBlock& spvgentwo::ops::operator>=(BasicBlock& _left, Instruction* _pRight)
 {
-	return _left.Gte(_pRight);
+	return _left.GreaterEqual(_pRight);
 }
 
 spvgentwo::BasicBlock& spvgentwo::ops::operator>=(BasicBlock& _left, Instruction& _right)
 {
-	return _left.Gte(&_right);
+	return _left.GreaterEqual(&_right);
 }
