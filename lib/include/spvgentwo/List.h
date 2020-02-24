@@ -17,7 +17,7 @@ namespace spvgentwo
 		using ReferenceType = T &;
 		using PointerType = T *;
 
-		List(IAllocator* _pAllocator);
+		List(IAllocator* _pAllocator = nullptr);
 		List(const List& _other);
 		List(List&& _other) noexcept;
 

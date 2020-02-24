@@ -30,7 +30,7 @@ namespace spvgentwo
 
 	public:
 
-		HashMap(IAllocator* _pAllocator, const unsigned int _buckets = DefaultBucktCount);
+		HashMap(IAllocator* _pAllocator = nullptr, const unsigned int _buckets = DefaultBucktCount);
 		HashMap(HashMap&& _other) noexcept;
 
 		~HashMap();
