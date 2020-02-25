@@ -8,15 +8,22 @@ namespace spvgentwo
 	class Expression
 	{
 		Func m_func;
+		bool ran = false;
 	public:
 		Expression(const Func& _func) : m_func(_func) {}
 
 		//template <class ...Args>
 		//Expression(Args&& ... _args) : m_func{ stdrep::forward<Args>(_args)... } {}
 
+		Func& get() { return m_func; }
+		const Func& get() const { return m_func; }
+
+		bool evaluated() const { return ran; }
+
 		template <class ...Args>
 		auto operator()(Args&& ... _args)
 		{ 
+			ran = true;
 			return m_func(stdrep::forward<Args>(_args)...);
 		}
 	};
