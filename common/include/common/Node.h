@@ -6,8 +6,10 @@ namespace spvgentwo
 {
 	class IAllocator;
 
+	struct EmptyEdge {};
+
 	// N = node data, E = edge data
-	template <class N, class E>
+	template <class N, class E = EmptyEdge>
 	class Node
 	{
 	public:
@@ -34,6 +36,9 @@ namespace spvgentwo
 		const N& data() const { return m_data(); }
 		N& data() { return m_data(); }
 
+		typename List<Edge>::Iterator remove_input(const Node* _pNode);
+		typename List<Edge>::Iterator remove_output(const Node* _pNode);
+
 	private:
 		N m_data;
 
@@ -46,6 +51,28 @@ namespace spvgentwo
 		m_inputs(_pAllocator),
 		m_outputs(_pAllocator)
 	{
+	}
+
+	template<class N, class E>
+	inline typename List<typename Node<N, E>::Edge>::Iterator Node<N, E>::remove_input(const Node* _pNode)
+	{
+		auto it = m_inputs.find([_pNode](const Edge& e) {return e.pTarget == _pNode; });
+		if (it != nullptr)
+		{
+			return m_inputs.erase(it);
+		}
+		return it;
+	}
+
+	template<class N, class E>
+	inline typename List<typename Node<N, E>::Edge>::Iterator Node<N, E>::remove_output(const Node* _pNode)
+	{
+		auto it = m_outputs.find([_pNode](const Edge& e) {return e.pTarget == _pNode; });
+		if (it != nullptr)
+		{
+			return m_outputs.erase(it);
+		}
+		return it;
 	}
 
 	template<class N, class E>

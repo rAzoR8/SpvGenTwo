@@ -3,6 +3,7 @@
 #include "common/ConsoleLogger.h"
 #include "common/HeapAllocator.h"
 #include "common/BinaryFileWriter.h"
+#include "common/Graph.h"
 
 // examples
 #include "OldInstrTest.h"
@@ -30,6 +31,10 @@ int main(int argc, char* argv[])
 {
 	TestLogger log;
 	HeapAllocator alloc; // custom user allocator
+
+	Graph<spv::Op> g(&alloc);
+
+	g.emplace(spv::Op::OpIAdd)->connect(g.emplace(spv::Op::OpIMul));
 
 	// old cli test
 	{

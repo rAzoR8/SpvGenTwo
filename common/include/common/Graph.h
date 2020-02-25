@@ -4,7 +4,7 @@
 
 namespace spvgentwo
 {
-	template <class N, class E>
+	template <class N, class E = EmptyEdge>
 	class Graph
 	{
 	public:
@@ -13,16 +13,18 @@ namespace spvgentwo
 
 		Graph(IAllocator* _pAllocator = nullptr);
 
+		IAllocator* getAllocator() const { return m_nodes.getAllocator(); }
+
 		Iterator begin() const { return m_nodes.begin(); }
 		Iterator end() const { return m_nodes.end(); }
 
 		// add new node
 		template <class ...Args>
-		NodeType& emplace(Args&& ..._args);
-
-		IAllocator* getAllocator() const { return m_nodes.getAllocator(); }
+		NodeType* emplace(Args&& ..._args);
 
 		Iterator erase(Iterator _pos);
+
+		void clear();
 
 	private:
 
@@ -38,13 +40,33 @@ namespace spvgentwo
 	template<class N, class E>
 	inline typename Graph<N, E>::Iterator Graph<N, E>::erase(Iterator _pos)
 	{
-		return m_nodes.erase(_pos);
+		if (_pos != nullptr)
+		{
+			NodeType& n = *_pos;
+			for (NodeType& in : n.inputs())
+			{
+				in.remove_output(&n);
+			}
+			for (NodeType& out : n.out())
+			{
+				out.remove_input(&n);
+			}
+			return m_nodes.erase(_pos);		
+		}
+
+		return _pos;
 	}
 
 	template<class N, class E>
 	template<class ...Args>
-	inline Graph<N, E>::NodeType& Graph<N, E>::emplace(Args&& ..._args)
+	inline typename Graph<N, E>::NodeType* Graph<N, E>::emplace(Args&& ..._args)
 	{
-		return m_nodes.emplace_back(getAllocator(), stdrep::forward<Args>(_args)...);
+		return &m_nodes.emplace_back(getAllocator(), stdrep::forward<Args>(_args)...);
+	}
+
+	template<class N, class E>
+	inline void Graph<N, E>::clear()
+	{
+		m_nodes.clear();
 	}
 } // spvgentwo
