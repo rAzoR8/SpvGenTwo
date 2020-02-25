@@ -1,32 +1,68 @@
 #pragma once
 
 #include "Graph.h"
-#include "SimpleExpr.h"
+#include "Expression.h"
 #include "spvgentwo/HashMap.h"
 
 namespace spvgentwo
 {
-	template <class Expr>
-	class ExprGraph : public Graph<SimpleExpr<Expr>>
+	template <class Func>
+	class ExprGraph : public Graph<Expression<Func>>
 	{
 	public:
-		using Graph<SimpleExpr<Expr>>::Graph;
+		using Graph<Expression<Func>>::Graph;
 
-		using NodeType = typename Graph<SimpleExpr<Expr>>::NodeType;
+		using NodeType = typename Graph<Expression<Func>>::NodeType;
 
 		void evaluate(NodeType* _pExitNode);
 	};
 
-	template<class Expr>
-	inline void ExprGraph<Expr>::evaluate(NodeType* _pExitNode)
+	template<class Func>
+	inline void ExprGraph<Func>::evaluate(NodeType* _pExitNode)
 	{
-		HashMap<NodeType*, bool> processed;
+		int count = 0;
+		HashMap<NodeType*, int> processedNodes(getAllocator());
+		List<NodeType*> stack(getAllocator());
 
-		// todo: find exit node
-		if (empty() == false)
+		auto parent = [&](NodeType* _pNode) -> bool
 		{
-			//auto& node = back();
-			_pExitNode->data()(*_pExitNode);
+			if (processedNodes.count(_pNode) == 0u)
+			{
+				processedNodes.emplaceUnique(_pNode, count++);
+				return true;
+			}
+			return false;
+		};
+
+		stack.emplace_back(_pExitNode);
+
+		while (stack.empty() == false)
+		{
+			NodeType* node = stack.pop_back();
+
+			if (parent(node))
+			{
+				for (auto& in : node->inputs())
+				{
+					if (parent(in.pTarget))
+					{
+						stack.emplace_back(in.pTarget);
+					}
+				}
+			}
+		}
+
+		while (count > 0)
+		{
+			for (auto& [node, id] : processedNodes)
+			{
+				if (id == count-1)
+				{
+					node->data()(*node);
+					--count;
+					break; // todo: remove from processed to speed up					
+				}
+			}
 		}
 	}
 } // !spvgentwo

@@ -32,13 +32,6 @@ struct MyExpr
 	BasicBlock* bb = nullptr;
 	Instruction* result = nullptr;
 
-	//template<class Node, class Data>
-	//void operator()(const List<Edge<Node, Data>>& inputs)
-	//{
-	//	result = bb->addInstruction();
-	//	//printf("%s: %d", str, val);
-	//};
-
 	template<class Node>
 	void operator()(Node& parent)
 	{

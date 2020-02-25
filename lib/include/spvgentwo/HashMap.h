@@ -58,6 +58,7 @@ namespace spvgentwo
 		Key* findKey(const Value& _value) const;
 
 		const unsigned int count(const Hash64 _hash) const;
+		const unsigned int count(const Key& _key) const { return count(hash(_key)); }
 
 		const Bucket& getBucket(const unsigned int _index) const { return m_pBuckets[_index]; }
 		unsigned int getBucketCount() const { return m_Buckets; }
