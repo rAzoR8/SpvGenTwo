@@ -27,6 +27,26 @@ public:
 	}
 };
 
+struct MyExpr
+{
+	BasicBlock* bb = nullptr;
+	Instruction* result = nullptr;
+
+	//template<class Node, class Data>
+	//void operator()(const List<Edge<Node, Data>>& inputs)
+	//{
+	//	result = bb->addInstruction();
+	//	//printf("%s: %d", str, val);
+	//};
+
+	template<class Node>
+	void operator()(Node& parent)
+	{
+		result = bb->addInstruction();
+		//printf("%s: %d", str, val);
+	};
+};
+
 int main(int argc, char* argv[])
 {
 	TestLogger log;
@@ -36,15 +56,9 @@ int main(int argc, char* argv[])
 
 	auto val = expr();
 
-	struct MyExpr
-	{
-		const char* str = "halloData";
-		void operator()(int val) { printf("%s: %d", str, val); };
-	};
-
 	ExprGraph<MyExpr> exprgraph(&alloc);
 
-	exprgraph.emplace(MyExpr{ "otherStr" });
+	exprgraph.emplace(MyExpr{  });
 
 	exprgraph.evaluate();
 

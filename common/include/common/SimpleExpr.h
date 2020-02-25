@@ -7,7 +7,7 @@ namespace spvgentwo
 	template <class Func>
 	class SimpleExpr
 	{
-		/*const*/ Func/*&*/ m_func;
+		Func m_func;
 	public:
 		SimpleExpr(const Func& _func) : m_func(_func) {}
 

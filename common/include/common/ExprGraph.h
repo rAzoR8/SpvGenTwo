@@ -20,7 +20,8 @@ namespace spvgentwo
 		// todo: find exit node
 		if (empty() == false)
 		{
-			back().data()(3);
+			auto& node = back();
+			node.data()(node);
 		}
 	}
 } // !spvgentwo
