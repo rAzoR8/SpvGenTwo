@@ -33,8 +33,8 @@ namespace spvgentwo
 		const List<Edge>& outputs() const { return m_outputs; }
 		List<Edge>& output() { return m_outputs; }
 
-		const N& data() const { return m_data(); }
-		N& data() { return m_data(); }
+		const N& data() const { return m_data; }
+		N& data() { return m_data; }
 
 		typename List<Edge>::Iterator remove_input(const Node* _pNode);
 		typename List<Edge>::Iterator remove_output(const Node* _pNode);

@@ -26,6 +26,14 @@ namespace spvgentwo
 
 		void clear();
 
+		bool empty() const { return m_nodes.empty(); }
+
+		NodeType& front() { return m_nodes.front(); }
+		const NodeType& front() const { return m_nodes.front(); }
+
+		NodeType& back() { return m_nodes.front(); }
+		const NodeType& back() const { return m_nodes.front(); }
+
 	private:
 
 		List<NodeType> m_nodes;

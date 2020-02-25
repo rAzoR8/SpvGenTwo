@@ -3,7 +3,7 @@
 #include "common/ConsoleLogger.h"
 #include "common/HeapAllocator.h"
 #include "common/BinaryFileWriter.h"
-#include "common/Graph.h"
+#include "common/ExprGraph.h"
 
 // examples
 #include "OldInstrTest.h"
@@ -31,6 +31,22 @@ int main(int argc, char* argv[])
 {
 	TestLogger log;
 	HeapAllocator alloc; // custom user allocator
+
+	auto expr = make_expr([]() {printf("hallo"); return 1u; });
+
+	auto val = expr();
+
+	struct MyExpr
+	{
+		const char* str = "halloData";
+		void operator()(int val) { printf("%s: %d", str, val); };
+	};
+
+	ExprGraph<MyExpr> exprgraph(&alloc);
+
+	exprgraph.emplace(MyExpr{ "otherStr" });
+
+	exprgraph.evaluate();
 
 	Graph<spv::Op> g(&alloc);
 
