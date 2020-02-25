@@ -58,9 +58,9 @@ int main(int argc, char* argv[])
 
 	ExprGraph<MyExpr> exprgraph(&alloc);
 
-	exprgraph.emplace(MyExpr{  });
+	auto* node = exprgraph.emplace(MyExpr{  });
 
-	exprgraph.evaluate();
+	exprgraph.evaluate(node);
 
 	Graph<spv::Op> g(&alloc);
 
