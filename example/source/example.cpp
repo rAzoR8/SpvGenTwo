@@ -3,7 +3,6 @@
 #include "common/ConsoleLogger.h"
 #include "common/HeapAllocator.h"
 #include "common/BinaryFileWriter.h"
-#include "common/ExprGraph.h"
 
 // examples
 #include "OldInstrTest.h"
@@ -12,6 +11,7 @@
 #include "Extensions.h"
 #include "Types.h"
 #include "Constants.h"
+#include "ExpressionGraph.h"
 
 #include <assert.h>
 
@@ -27,37 +27,19 @@ public:
 	}
 };
 
-struct MyExpr
-{
-	BasicBlock* bb = nullptr;
-	Instruction* result = nullptr;
-
-	template<class Node>
-	void operator()(Node& parent)
-	{
-		result = bb->addInstruction();
-		//printf("%s: %d", str, val);
-	};
-};
-
 int main(int argc, char* argv[])
 {
 	TestLogger log;
 	HeapAllocator alloc; // custom user allocator
 
-	auto expr = make_expr([]() {printf("hallo"); return 1u; });
+		// expression graph example
+	{
+		BinaryFileWriter writer("test.spv");
+		examples::expressionGraph(&alloc, &log).write(&writer);
 
-	auto val = expr();
-
-	ExprGraph<MyExpr> exprgraph(&alloc);
-
-	auto* node = exprgraph.emplace(MyExpr{  });
-
-	exprgraph.evaluate(node);
-
-	Graph<spv::Op> g(&alloc);
-
-	g.emplace(spv::Op::OpIAdd)->connect(g.emplace(spv::Op::OpIMul));
+		system("spirv-dis test.spv");
+		assert(system("spirv-val test.spv") == 0);
+	}
 
 	// old cli test
 	{
