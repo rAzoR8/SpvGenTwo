@@ -16,6 +16,7 @@ enum class Op
 
 struct MyExpr
 {
+	const char* name = nullptr;
 	BasicBlock& bb;
 	Op op = Op::Nop;
 	//Instruction* constnt = nullptr;
@@ -100,13 +101,13 @@ spvgentwo::Module examples::expressionGraph(spvgentwo::IAllocator* _pAllocator, 
 
 	ExprGraph<MyExpr> exprgraph(_pAllocator);
 
-	auto* c1 = exprgraph.emplace(MyExpr{ bb, Op::Const, module.constant(1337) });
-	auto* c2 = exprgraph.emplace(MyExpr{ bb, Op::Const, module.constant(42) });
+	auto* c1 = exprgraph.emplace(MyExpr{ "c1", bb, Op::Const, module.constant(1337) });
+	auto* c2 = exprgraph.emplace(MyExpr{ "c1",bb, Op::Const, module.constant(42) });
 
-	auto* add = exprgraph.emplace(MyExpr{ bb, Op::Add });
-	auto* sub = exprgraph.emplace(MyExpr{ bb, Op::Sub });
-	auto* mul = exprgraph.emplace(MyExpr{ bb, Op::Mul });
-	auto* div = exprgraph.emplace(MyExpr{ bb, Op::Div });
+	auto* add = exprgraph.emplace(MyExpr{ "add",bb, Op::Add });
+	auto* sub = exprgraph.emplace(MyExpr{ "sub",bb, Op::Sub });
+	auto* mul = exprgraph.emplace(MyExpr{ "mul",bb, Op::Mul });
+	auto* div = exprgraph.emplace(MyExpr{ "div",bb, Op::Div });
 
 	// c1 + c1 = add
 	c1->connect(add);
@@ -124,7 +125,7 @@ spvgentwo::Module examples::expressionGraph(spvgentwo::IAllocator* _pAllocator, 
 	c1->connect(div);
 	mul->connect(div);
 
-	exprgraph.evaluate(div);
+	exprgraph.evaluateRecursive(div);
 
 	bb.returnValue();
 

@@ -14,8 +14,31 @@ namespace spvgentwo
 
 		using NodeType = typename Graph<Expression<Func>>::NodeType;
 
+		void evaluateRecursive(NodeType* _pExitNode);
+
 		void evaluate(NodeType* _pExitNode);
 	};
+
+	template<class Func>
+	inline void ExprGraph<Func>::evaluateRecursive(NodeType* _pExitNode)
+	{
+		for (auto& edge : _pExitNode->inputs())
+		{
+			NodeType* in = edge.pTarget;
+			auto& expr = in->data();
+			if (!expr)
+			{
+				evaluateRecursive(in);
+			}
+		}
+
+		auto& expr = _pExitNode->data();
+
+		if (!expr)
+		{
+			expr(*_pExitNode);
+		}
+	}
 
 	template<class Func>
 	inline void ExprGraph<Func>::evaluate(NodeType* _pExitNode)
@@ -38,7 +61,7 @@ namespace spvgentwo
 
 		while (stack.empty() == false)
 		{
-			NodeType* node = stack.pop_back();
+			NodeType* node = stack.pop_front();
 
 			if (parent(node))
 			{
