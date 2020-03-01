@@ -10,6 +10,8 @@ namespace spvgentwo
 		Func m_func;
 		bool ran = false;
 	public:
+		using FuncType = Func;
+
 		Expression(const Func& _func) : m_func(_func) {}
 
 		//template <class ...Args>

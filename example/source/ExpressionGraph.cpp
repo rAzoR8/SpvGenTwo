@@ -22,9 +22,12 @@ struct MyExpr
 	//Instruction* constnt = nullptr;
 	Instruction* result = nullptr;
 
-	template<class Node>
-	void operator()(Node& parent)
+	//template<class Node>
+	void operator()(const List<MyExpr*>& _inputs, const List<MyExpr*>& _outputs)
 	{
+		Instruction* lhs = _inputs.empty() ? nullptr : _inputs.front()->result;
+		Instruction* rhs = _inputs.size() == 2u ? _inputs.back()->result : nullptr;
+
 		switch (op)
 		{
 		case Op::Nop:
@@ -36,48 +39,16 @@ struct MyExpr
 			//result = constant;//bb.getModule()->addConstant(constant);
 			break;
 		case Op::Add:
-		{
-			Node* lex = parent.inputs().front().pTarget;
-			Node* rex = parent.inputs().back().pTarget;
-
-			Instruction* lhs = lex->data().get().result;
-			Instruction* rhs = rex->data().get().result;
-
 			result = bb->Add(lhs, rhs);
-		}
 			break;
 		case Op::Sub:
-		{
-			Node* lex = parent.inputs().front().pTarget;
-			Node* rex = parent.inputs().back().pTarget;
-
-			Instruction* lhs = lex->data().get().result;
-			Instruction* rhs = rex->data().get().result;
-
 			result = bb->Sub(lhs, rhs);
-		}
 			break;
 		case Op::Mul:
-		{
-			Node* lex = parent.inputs().front().pTarget;
-			Node* rex = parent.inputs().back().pTarget;
-
-			Instruction* lhs = lex->data().get().result;
-			Instruction* rhs = rex->data().get().result;
-
 			result = bb->Mul(lhs, rhs);
-		}
 			break;
 		case Op::Div:
-		{
-			Node* lex = parent.inputs().front().pTarget;
-			Node* rex = parent.inputs().back().pTarget;
-
-			Instruction* lhs = lex->data().get().result;
-			Instruction* rhs = rex->data().get().result;
-
 			result = bb->Div(lhs, rhs);
-		}
 			break;
 		default:
 			break;
@@ -125,7 +96,7 @@ spvgentwo::Module examples::expressionGraph(spvgentwo::IAllocator* _pAllocator, 
 	c1->connect(div);
 	mul->connect(div);
 
-	exprgraph.evaluateRecursive(div);
+	exprgraph.evaluateRecursive<ExprArgs::FunctionPtrLists>(div);
 
 	bb.returnValue();
 
