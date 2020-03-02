@@ -22,7 +22,7 @@ namespace spvgentwo
 		using NodeType = typename Graph<Expression<Func>>::NodeType;
 
 		template <ExprArgs args> // unfold => call expr with List<Func*> ins, List<Func*> outs, or if unfold == false => List<NodeType>& ins, List<NodeType>& outs
-		void evaluateRecursive(NodeType* _pExitNode);
+		static void evaluateRecursive(NodeType* _pExitNode);
 
 		//void evaluate(NodeType* _pExitNode);
 	};
