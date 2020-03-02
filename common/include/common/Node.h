@@ -20,7 +20,7 @@ namespace spvgentwo
 	class Node
 	{
 	public:
-		using EdgeType = typename Edge<Node, E>;
+		using EdgeType = Edge<Node, E>;
 
 		Node(IAllocator* _pAllocator = nullptr);
 
@@ -34,7 +34,7 @@ namespace spvgentwo
 		List<EdgeType>& inputs() { return m_inputs; }
 
 		const List<EdgeType>& outputs() const { return m_outputs; }
-		List<EdgeType>& output() { return m_outputs; }
+		List<EdgeType>& outputs() { return m_outputs; }
 
 		const N& data() const { return m_data; }
 		N& data() { return m_data; }
