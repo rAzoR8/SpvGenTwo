@@ -96,7 +96,7 @@ spvgentwo::Module examples::expressionGraph(spvgentwo::IAllocator* _pAllocator, 
 	c1->connect(div);
 	mul->connect(div);
 
-	exprgraph.evaluateRecursive<ExprArgs::FunctionPtrLists>(div);
+	ExprGraph<MyExpr>::evaluateRecursive<ExprArgs::FunctionPtrLists>(div);
 
 	bb.returnValue();
 
