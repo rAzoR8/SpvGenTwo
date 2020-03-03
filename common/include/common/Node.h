@@ -22,10 +22,14 @@ namespace spvgentwo
 	public:
 		using EdgeType = Edge<Node, E>;
 
+		Node(Node<N, E>&& _other) noexcept;
+
 		Node(IAllocator* _pAllocator = nullptr);
 
 		template <class ...Args>
 		Node(IAllocator* _pAllocator, Args&& ... _args);
+
+		Node<N, E>& operator=(Node<N, E>&& _other) noexcept;
 
 		template <class ...EdgeArgs>
 		void connect(Node* _pTarget, EdgeArgs&& ..._args);
@@ -50,10 +54,30 @@ namespace spvgentwo
 	};
 
 	template<class N, class E>
+	inline Node<N, E>::Node(Node<N,E>&& _other) noexcept :
+		m_data(stdrep::move(_other.m_data)),
+		m_inputs(stdrep::move(_other.m_inputs)),
+		m_outputs(stdrep::move(_other.m_outputs)),
+	{
+	}
+
+	template<class N, class E>
 	inline Node<N, E>::Node(IAllocator* _pAllocator) :
 		m_inputs(_pAllocator),
 		m_outputs(_pAllocator)
 	{
+	}
+
+	template<class N, class E>
+	inline Node<N, E>& Node<N, E>::operator=(Node<N, E>&& _other) noexcept
+	{
+		if (this == &_other) return this;
+
+		m_data = stdrep::move(_other.m_data);
+		m_inputs = stdrep::move(_other.m_inputs);
+		m_outputs = stdrep::move(_other.m_outputs);
+
+		return *this;
 	}
 
 	template<class N, class E>
