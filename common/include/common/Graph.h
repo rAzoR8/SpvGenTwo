@@ -13,6 +13,14 @@ namespace spvgentwo
 
 		Graph(IAllocator* _pAllocator = nullptr);
 
+		Graph(Graph<N, E>&& _other) noexcept;
+
+		// since nodes can not be copied, neither can graphs
+		Graph(const Graph<N, E>& _other) = delete;
+
+		Graph<N, E>& operator=(Graph<N, E>&& _other) noexcept;
+		Graph<N, E>& operator=(const Graph<N, E>& _other) = delete;
+
 		IAllocator* getAllocator() const { return m_nodes.getAllocator(); }
 
 		Iterator begin() const { return m_nodes.begin(); }
@@ -43,6 +51,18 @@ namespace spvgentwo
 	inline Graph<N, E>::Graph(IAllocator* _pAllocator) :
 		m_nodes(_pAllocator)
 	{
+	}
+
+	template<class N, class E>
+	inline Graph<N, E>::Graph(Graph<N, E>&& _other) noexcept :
+		m_nodes(stdrep::move(_other.m_nodes))
+	{
+	}
+
+	template<class N, class E>
+	inline Graph<N, E>& Graph<N, E>::operator=(Graph<N, E>&& _other) noexcept
+	{
+		m_nodes = stdrep::move(_other.m_nodes);
 	}
 
 	template<class N, class E>

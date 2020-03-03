@@ -24,12 +24,16 @@ namespace spvgentwo
 
 		Node(Node<N, E>&& _other) noexcept;
 
+		// node edges store pointers to other graph nodes and cant be copied
+		Node(const Node<N, E>& _other) = delete;
+
 		Node(IAllocator* _pAllocator = nullptr);
 
 		template <class ...Args>
 		Node(IAllocator* _pAllocator, Args&& ... _args);
 
 		Node<N, E>& operator=(Node<N, E>&& _other) noexcept;
+		Node<N, E>& operator=(const Node<N, E>& _other) = delete;
 
 		template <class ...EdgeArgs>
 		void connect(Node* _pTarget, EdgeArgs&& ..._args);
