@@ -2,7 +2,6 @@
 
 #include "Graph.h"
 #include "Expression.h"
-//#include "spvgentwo/HashMap.h"
 #include "Algorithms.h"
 
 namespace spvgentwo
@@ -24,7 +23,8 @@ namespace spvgentwo
 		template <ExprArgs args> // unfold => call expr with List<Func*> ins, List<Func*> outs, or if unfold == false => List<NodeType>& ins, List<NodeType>& outs
 		static void evaluateRecursive(NodeType* _pExitNode);
 
-		//void evaluate(NodeType* _pExitNode);
+		template <ExprArgs args> // every node in _nodeOrder must be unique
+		static bool evaluateExplicit(const List<NodeType*>& _nodeOrder);
 	};
 
 	template<class Func>
@@ -58,52 +58,31 @@ namespace spvgentwo
 		}
 	}
 
-	//template<class Func>
-	//inline void ExprGraph<Func>::evaluate(NodeType* _pExitNode)
-	//{
-	//	int count = 0;
-	//	HashMap<NodeType*, int> processedNodes(getAllocator());
-	//	List<NodeType*> stack(getAllocator());
+	template<class Func>
+	template<ExprArgs args>
+	inline bool ExprGraph<Func>::evaluateExplicit(const List<NodeType*>& _nodeOrder)
+	{
+		for (NodeType* node : _nodeOrder)
+		{
+			auto& expr = node->data();
 
-	//	auto parent = [&](NodeType* _pNode) -> bool
-	//	{
-	//		if (processedNodes.count(_pNode) == 0u)
-	//		{
-	//			processedNodes.emplaceUnique(_pNode, count++);
-	//			return true;
-	//		}
-	//		return false;
-	//	};
+			if (expr.evaluated()) // node was already evaluated (non unique)
+			{
+				return false;
+			}
 
-	//	stack.emplace_back(_pExitNode);
+			if constexpr (args == ExprArgs::FunctionPtrLists)
+			{
+				auto inputs = transform(node->inputs(), [](auto& edge) -> Func* {return &edge.pTarget->data().get(); });
+				auto outputs = transform(node->outputs(), [](auto& edge) -> Func* {return &edge.pTarget->data().get(); });
+				expr(inputs, outputs);
+			}
+			else
+			{
+				expr(node->inputs(), node->output());
+			}
+		}
 
-	//	while (stack.empty() == false)
-	//	{
-	//		NodeType* node = stack.pop_front();
-
-	//		if (parent(node))
-	//		{
-	//			for (auto& in : node->inputs())
-	//			{
-	//				if (parent(in.pTarget))
-	//				{
-	//					stack.emplace_back(in.pTarget);
-	//				}
-	//			}
-	//		}
-	//	}
-
-	//	while (count > 0)
-	//	{
-	//		for (auto& [node, id] : processedNodes)
-	//		{
-	//			if (id == count-1)
-	//			{
-	//				node->data()(*node);
-	//				--count;
-	//				break; // todo: remove from processed to speed up					
-	//			}
-	//		}
-	//	}
-	//}
+		return true;
+	}
 } // !spvgentwo
