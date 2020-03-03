@@ -42,7 +42,7 @@ namespace spvgentwo
 		NodeType& back() { return m_nodes.front(); }
 		const NodeType& back() const { return m_nodes.front(); }
 
-	private:
+	protected:
 
 		List<NodeType> m_nodes;
 	};
