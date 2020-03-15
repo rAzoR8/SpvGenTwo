@@ -12,6 +12,7 @@ namespace spvgentwo
 	public:
 		using FuncType = Func;
 
+		Expression(Func&& _func) : m_func(stdrep::move(_func)) {}
 		Expression(const Func& _func) : m_func(_func) {}
 
 		//template <class ...Args>
