@@ -21,6 +21,9 @@ namespace spvgentwo
 
 		String(IAllocator* _pAllocator = nullptr, const char* _pStr = nullptr) : Vector(_pAllocator, _pStr, stringLength(_pStr)) {};
 
+		template <size_t N>
+		String(IAllocator* _pAllocator, const char(&_pStr)[N]) : Vector(_pAllocator, _pStr) {};
+
 		String& operator=(const char* _pStr);
 
 		auto c_str() const { return data(); }
