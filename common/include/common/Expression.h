@@ -21,8 +21,12 @@ namespace spvgentwo
 		Func& get() { return m_func; }
 		const Func& get() const { return m_func; }
 
+		Func* operator->() { return &m_func; }
+		const Func* operator->() const { return &m_func; }
+
 		bool evaluated() const { return ran; }
 		operator bool() const { return ran; }
+		void reset() { ran = false; }
 
 		template <class ...Args>
 		auto operator()(Args&& ... _args)

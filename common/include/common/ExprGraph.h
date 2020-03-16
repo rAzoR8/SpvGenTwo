@@ -25,6 +25,9 @@ namespace spvgentwo
 
 		template <ExprArgs args> // every node in _nodeOrder must be unique
 		static bool evaluateExplicit(const List<NodeType*>& _nodeOrder);
+
+		// resets nodes 'evaluated' state to false
+		void resetEvaluationState();
 	};
 
 	template<class Func>
@@ -84,5 +87,14 @@ namespace spvgentwo
 		}
 
 		return true;
+	}
+
+	template<class Func>
+	inline void ExprGraph<Func>::resetEvaluationState()
+	{
+		for (NodeType& node : m_nodes)
+		{
+			node.data().reset();
+		}
 	}
 } // !spvgentwo
