@@ -35,8 +35,12 @@ namespace spvgentwo
 		Node<N, E>& operator=(Node<N, E>&& _other) noexcept;
 		Node<N, E>& operator=(const Node<N, E>& _other) = delete;
 
+		// connect this nodes (output edge) to target (input edge)
 		template <class ...EdgeArgs>
 		void connect(Node* _pTarget, EdgeArgs&& ..._args);
+
+		// disconnect pTarget form this outputs, and remove this from pTarget inputs
+		void disconnect(Node* _pTarget);
 
 		const List<EdgeType>& inputs() const { return m_inputs; }
 		List<EdgeType>& inputs() { return m_inputs; }
@@ -121,5 +125,12 @@ namespace spvgentwo
 	{
 		m_outputs.emplace_back(_pTarget, stdrep::forward<EdgeArgs>(_args)...);
 		_pTarget->m_inputs.emplace_back(this, stdrep::forward<EdgeArgs>(_args)...);
+	}
+
+	template<class N, class E>
+	inline void Node<N, E>::disconnect(Node* _pTarget)
+	{
+		remove_output(_pTarget);
+		_pTarget->remove_input(this);
 	}
 } // spvgentwo
