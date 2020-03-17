@@ -22,6 +22,9 @@ namespace spvgentwo
 
 		Vector(const Vector<U>& _other);
 
+		template <typename ...Args>
+		Vector(IAllocator* _pAllocator, const T& _first, Args&& ... _args);
+
 		virtual ~Vector();
 
 		Vector<U>& operator=(Vector<U>&& _other) noexcept;
@@ -58,6 +61,9 @@ namespace spvgentwo
 
 		template <class ...Args>
 		T* emplace_back(Args&& ..._args);
+
+		template <class ...Args>
+		void emplace_back_args(const T& _first, Args&& ..._tail);
 
 		// assign _data to elements, _count == max means all
 		void assign(const T& _data, size_t _offset = 0u, size_t _count = ~0ull);
@@ -110,6 +116,14 @@ namespace spvgentwo
 
 	template<class U>
 	inline Vector<U>::Vector(const Vector<U>& _other) : Vector(_other.m_pAllocator, _other.m_pData, _other.m_elements)	{}
+
+	template<class U>
+	template<typename ...Args>
+	inline Vector<U>::Vector(IAllocator* _pAllocator, const T& _first, Args&& ..._args)
+	{
+		reserve(sizeof...(_args));
+		emplace_back_args(_first, stdrep::forward<Args>(_args)...);
+	}
 
 	template<class U>
 	inline Vector<U>::~Vector()
@@ -317,6 +331,18 @@ namespace spvgentwo
 		}
 
 		return traits::constructWithArgs(m_pData + m_elements++, stdrep::forward<Args>(_args)...);
+	}
+
+	template<class U>
+	template<class ...Args>
+	inline void Vector<U>::emplace_back_args(const T& _first, Args&& ..._tail)
+	{
+		emplace_back(_first);
+
+		if constexpr (sizeof...(_tail) > 0)
+		{
+			emplace_back_args(stdrep::forward<Args>(_args...));
+		}		
 	}
 
 } // !spvgentwo
