@@ -92,7 +92,7 @@ namespace spvgentwo
 	template<class Func>
 	inline void ExprGraph<Func>::resetEvaluationState()
 	{
-		for (NodeType& node : m_nodes)
+		for (NodeType& node : Graph<Expression<Func>>::m_nodes)
 		{
 			node.data().reset();
 		}
