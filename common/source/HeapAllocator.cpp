@@ -20,3 +20,9 @@ spvgentwo::HeapAllocator::~HeapAllocator()
 {
 	assert(m_Allocated == m_Deallocated);
 }
+
+spvgentwo::HeapAllocator* spvgentwo::HeapAllocator::instance()
+{
+	static HeapAllocator alloc;
+	return &alloc;
+}

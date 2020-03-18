@@ -43,8 +43,6 @@ namespace spvgentwo
 
 		String& operator+=(const String& _other);
 		String& operator+=(const char* _pStr);
-
-	private:
 	};
 
 	template<size_t length>
