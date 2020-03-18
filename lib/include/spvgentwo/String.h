@@ -19,9 +19,15 @@ namespace spvgentwo
 	public:
 		using Vector<char>::Vector;
 
-		String(IAllocator* _pAllocator = nullptr, const char* _pStr = nullptr) : Vector(_pAllocator, _pStr, stringLength(_pStr)) {};
+		String(IAllocator* _pAllocator = nullptr, const char* _pStr = nullptr, size_t _length = 0u) : Vector(_pAllocator, _pStr, _length == 0u ? stringLength(_pStr) : _length) {};
+
+		template <size_t N>
+		String(IAllocator* _pAllocator, const char(&_pStr)[N]) : Vector(_pAllocator, _pStr) {};
 
 		String& operator=(const char* _pStr);
+		
+		template <size_t N>
+		String& operator=(const char(&_pStr)[N]);
 
 		auto c_str() const { return data(); }
 
@@ -40,4 +46,20 @@ namespace spvgentwo
 
 	private:
 	};
+
+	template<size_t length>
+	inline String& String::operator=(const char(&_pStr)[length])
+	{
+		if (reserve(length))
+		{
+			for (size_t i = 0; i < length; ++i)
+			{
+				m_pData[i] = _pStr[i];
+			}
+
+			m_elements = length;
+		}
+
+		return *this;
+	}
 }

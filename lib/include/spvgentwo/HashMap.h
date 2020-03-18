@@ -30,7 +30,7 @@ namespace spvgentwo
 
 	public:
 
-		HashMap(IAllocator* _pAllocator, const unsigned int _buckets = DefaultBucktCount);
+		HashMap(IAllocator* _pAllocator = nullptr, const unsigned int _buckets = DefaultBucktCount);
 		HashMap(HashMap&& _other) noexcept;
 
 		~HashMap();
@@ -58,6 +58,7 @@ namespace spvgentwo
 		Key* findKey(const Value& _value) const;
 
 		const unsigned int count(const Hash64 _hash) const;
+		const unsigned int count(const Key& _key) const { return count(hash(_key)); }
 
 		const Bucket& getBucket(const unsigned int _index) const { return m_pBuckets[_index]; }
 		unsigned int getBucketCount() const { return m_Buckets; }
@@ -67,6 +68,8 @@ namespace spvgentwo
 
 		void clear();
 
+		unsigned int elements() const { return m_Elements; }
+
 	private:
 		void destroy();
 
@@ -74,6 +77,7 @@ namespace spvgentwo
 		IAllocator* m_pAllocator = nullptr;
 		Bucket* m_pBuckets = nullptr;
 		unsigned int m_Buckets = 0u;
+		unsigned int m_Elements = 0u;
 	};
 
 	template<class Key, class Value>
@@ -91,11 +95,13 @@ namespace spvgentwo
 	inline HashMap<Key, Value>::HashMap(HashMap&& _other) noexcept :
 		m_pAllocator(_other.m_pAllocator),
 		m_pBuckets(_other.m_pBuckets),
-		m_Buckets(_other.m_Buckets)
+		m_Buckets(_other.m_Buckets),
+		m_Elements(_other.m_Elements)
 	{
 		_other.m_pAllocator = nullptr;
 		_other.m_pBuckets = 0u;
 		_other.m_Buckets = 0u;
+		_other.m_Elements = 0u;
 	}
 
 	template<class Key, class Value>
@@ -110,6 +116,7 @@ namespace spvgentwo
 			m_pAllocator->deallocate(m_pBuckets, m_Buckets * sizeof(Bucket));
 			m_pBuckets = nullptr;
 			m_pAllocator = nullptr;
+			m_Elements = 0u;
 		}
 	}
 
@@ -123,6 +130,7 @@ namespace spvgentwo
 				m_pBuckets[i].clear();
 			}
 		}
+		m_Elements = 0u;
 	}
 
 	template<class Key, class Value>
@@ -142,10 +150,12 @@ namespace spvgentwo
 		m_Buckets = _other.m_Buckets;
 		m_pAllocator = _other.m_pAllocator;
 		m_pBuckets = _other.m_pBuckets;
+		m_Elements = _other.m_Elements;
 
 		_other.m_Buckets = 0u;
 		_other.m_pAllocator = nullptr;
 		_other.m_pBuckets = nullptr;
+		_other.m_Elements = 0u;
 
 		return *this;
 	}
@@ -241,6 +251,8 @@ namespace spvgentwo
 		// append to chain
 		m_pBuckets[index].append_entry(pNode);
 
+		++m_Elements;
+
 		return n;
 	}
 
@@ -266,6 +278,8 @@ namespace spvgentwo
 
 		m_pBuckets[index].append_entry(pNode);
 
+		++m_Elements;
+
 		return n;
 	}
 
@@ -286,6 +300,9 @@ namespace spvgentwo
 
 		Node& n = m_pBuckets[index].emplace_back(_key, stdrep::forward<Args>(_args)...);
 		n.hash = h;
+
+		++m_Elements;
+
 		return n;
 	}
 
@@ -304,6 +321,9 @@ namespace spvgentwo
 
 		Node& n = m_pBuckets[index].emplace_back();
 		n.hash = _hash;
+
+		++m_Elements;
+
 		return n;
 	}
 

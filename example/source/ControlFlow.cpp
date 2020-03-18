@@ -1,5 +1,6 @@
 #include "ControlFlow.h"
 #include "spvgentwo/Operators.h"
+#include "common/ControlFlowGraph.h"
 
 using namespace spvgentwo;
 using namespace ops;
@@ -42,6 +43,8 @@ spvgentwo::Module examples::controlFlow(spvgentwo::IAllocator* _pAllocator, spvg
         auto s = merge->opLoad(varSum);
 
         merge.returnValue(s);
+
+        ControlFlowGraph<> cfg(loopFunc);
     }
 
     // void entryPoint();

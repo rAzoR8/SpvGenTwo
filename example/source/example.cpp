@@ -11,6 +11,7 @@
 #include "Extensions.h"
 #include "Types.h"
 #include "Constants.h"
+#include "ExpressionGraph.h"
 
 #include <assert.h>
 
@@ -30,6 +31,15 @@ int main(int argc, char* argv[])
 {
 	TestLogger log;
 	HeapAllocator alloc; // custom user allocator
+
+		// expression graph example
+	{
+		BinaryFileWriter writer("test.spv");
+		examples::expressionGraph(&alloc, &log).write(&writer);
+
+		system("spirv-dis test.spv");
+		assert(system("spirv-val test.spv") == 0);
+	}
 
 	// old cli test
 	{

@@ -98,7 +98,7 @@ namespace spvgentwo
 		template <class ... TypeInstr>
 		Instruction* compositeType(const spv::Op _Type, TypeInstr ... _types);
 		
-		Instruction* addConstant(const Constant& _const);
+		Instruction* addConstant(const Constant& _const, const char* _pName = nullptr);
 
 		template <class T>
 		Instruction* constant(const T& _value, const bool _spec = false);

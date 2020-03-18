@@ -264,7 +264,7 @@ spvgentwo::Instruction* spvgentwo::Module::addDecorationInstr()
 	return &m_Decorations.emplace_back(this);
 }
 
-spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
+spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, const char* _pName)
 {
 	auto& node = m_ConstantBuilder.emplaceUnique(_const, nullptr);
 	if (node.kv.value != nullptr)
@@ -320,6 +320,11 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const)
 	pInstr->validateOperands();
 
 	m_TypesAndConstants.append_entry(entry);
+
+	if (_pName != nullptr)
+	{
+		addName(pInstr, _pName);
+	}
 
 	return pInstr;
 }

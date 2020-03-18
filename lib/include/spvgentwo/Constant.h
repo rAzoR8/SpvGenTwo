@@ -7,7 +7,7 @@ namespace spvgentwo
 	class Constant
 	{
 	public:
-		Constant(IAllocator* _pAllocator);
+		Constant(IAllocator* _pAllocator = nullptr);
 		Constant(const Constant& _other);
 		Constant(Constant&& _other) noexcept;
 		~Constant();
