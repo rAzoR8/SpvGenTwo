@@ -119,10 +119,13 @@ namespace spvgentwo
 
 	template<class U>
 	template<typename ...Args>
-	inline Vector<U>::Vector(IAllocator* _pAllocator, const T& _first, Args&& ..._args)
+	inline Vector<U>::Vector(IAllocator* _pAllocator, const T& _first, Args&& ..._args) :
+		m_pAllocator(_pAllocator)
 	{
-		reserve(sizeof...(_args));
-		emplace_back_args(_first, stdrep::forward<Args>(_args)...);
+		if (reserve(sizeof...(_args) + 1u))
+		{
+			emplace_back_args(_first, stdrep::forward<Args>(_args)...);		
+		}
 	}
 
 	template<class U>
@@ -341,7 +344,7 @@ namespace spvgentwo
 
 		if constexpr (sizeof...(_tail) > 0)
 		{
-			emplace_back_args(stdrep::forward<Args>(_args...));
+			emplace_back_args(stdrep::forward<Args>(_tail)...);
 		}		
 	}
 
