@@ -22,10 +22,17 @@ namespace spvgentwo
 
 		virtual ~String() override = default;
 
+		String(const String& _other) : Vector(_other) {}
+
+		String(String&& _other) noexcept : Vector(stdrep::move(_other)) {}
+
 		String(IAllocator* _pAllocator = nullptr, const char* _pStr = nullptr, size_t _length = 0u) : Vector(_pAllocator, _pStr, _length == 0u ? stringLength(_pStr) : _length) {};
 
 		template <size_t N>
 		String(IAllocator* _pAllocator, const char(&_pStr)[N]) : Vector(_pAllocator, _pStr) {};
+
+		String& operator=(const String& _other) { Vector::operator=(_other); return *this; }
+		String& operator=(String&& _other) noexcept { Vector::operator=(stdrep::move(_other)); return *this; }
 
 		String& operator=(const char* _pStr);
 		

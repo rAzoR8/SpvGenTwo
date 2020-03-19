@@ -13,6 +13,10 @@ namespace spvgentwo
 
 		using Vector<U>::Vector;
 
+		HeapVector(const HeapVector& _other) : Vector<U>(_other) {}
+
+		HeapVector(HeapVector&& _other) noexcept : Vector<U>(stdrep::move(_other)) {}
+
 		HeapVector(size_t _size = 0u) : Vector<U>(HeapAllocator::instance(), _size) {}
 
 		// copy from array
@@ -25,5 +29,8 @@ namespace spvgentwo
 		HeapVector(const T& _first, Args&& ... _args) : Vector<U>(HeapAllocator::instance(), _first, stdrep::forward<Args>(_args)...) {}
 
 		virtual ~HeapVector() override = default;
+
+		HeapVector& operator=(const HeapVector& _other) { Vector<U>::operator=(_other); return *this; }
+		HeapVector& operator=(HeapVector&& _other) noexcept { Vector<U>::operator=(stdrep::move(_other)); return *this; }
 	};
 } // !spvgentwo
