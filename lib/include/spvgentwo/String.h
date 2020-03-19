@@ -4,6 +4,7 @@
 
 namespace spvgentwo
 {
+	// includes terminator string
 	inline constexpr size_t stringLength(const char* _pStr)
 	{
 		if (_pStr == nullptr) 
@@ -11,13 +12,15 @@ namespace spvgentwo
 
 		size_t i = 0u;
 		for (; _pStr[i] != '\0'; ++i) {}
-		return i;
+		return i+1u;
 	}
 
 	class String : public Vector<char>
 	{
 	public:
 		using Vector<char>::Vector;
+
+		virtual ~String() override = default;
 
 		String(IAllocator* _pAllocator = nullptr, const char* _pStr = nullptr, size_t _length = 0u) : Vector(_pAllocator, _pStr, _length == 0u ? stringLength(_pStr) : _length) {};
 
@@ -32,9 +35,6 @@ namespace spvgentwo
 		auto c_str() const { return data(); }
 
 		operator const char* () const { return data(); }
-
-		// size excluding zero
-		bool reserve(size_t _size);
 
 		String substr(size_t _offset, size_t _length);
 

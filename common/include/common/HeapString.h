@@ -15,6 +15,6 @@ namespace spvgentwo
 		template <size_t N>
 		HeapString(const char(&_pStr)[N]) : String(HeapAllocator::instance(), _pStr) {};
 
-		~HeapString() override = default;
+		virtual ~HeapString() override = default;
 	};
 } // !spvgentwo

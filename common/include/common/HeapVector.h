@@ -24,6 +24,6 @@ namespace spvgentwo
 		template <typename ...Args>
 		HeapVector(const T& _first, Args&& ... _args) : Vector<U>(HeapAllocator::instance(), _first, stdrep::forward<Args>(_args)...) {}
 
-		~HeapVector() override = default;
+		virtual ~HeapVector() override = default;
 	};
 } // !spvgentwo

@@ -19,6 +19,6 @@ namespace spvgentwo
 		template <typename Functor>
 		HeapCallable(Functor&& f) : Callable<Func>(HeapAllocator::instance(), spvgentwo::stdrep::move(f)) {}
 
-		~HeapCallable() override = default;
+		virtual ~HeapCallable() override = default;
 	};
 } // !spvgentwo

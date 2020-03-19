@@ -17,17 +17,6 @@ spvgentwo::String& spvgentwo::String::operator=(const char* _pStr)
 	return *this;
 }
 
-bool spvgentwo::String::reserve(size_t _size)
-{
-	bool ret = true;
-	if (_size + 1u > m_capacity)
-	{
-		ret = Vector::reserve(_size + 1u);
-		m_pData[_size] = '\0';
-	}
-	return ret;
-}
-
 spvgentwo::String spvgentwo::String::substr(size_t _offset, size_t _length)
 {
 	const size_t available = m_elements - _offset;

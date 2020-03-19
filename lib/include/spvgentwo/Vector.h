@@ -43,7 +43,7 @@ namespace spvgentwo
 		bool resize(size_t _size, const T* _pInitValue = nullptr);
 
 		// only destructs, does not deallocate
-		void clear();
+		void clear(bool _resetCount = true);
 
 		T* data() const noexcept{ return m_pData; }
 		size_t size() const noexcept { return m_elements; }
@@ -230,6 +230,7 @@ namespace spvgentwo
 		// free old data
 		if (m_pData != nullptr)
 		{
+			clear(false);
 			m_pAllocator->deallocate(m_pData, m_capacity * sizeof(T));
 		}
 
@@ -279,7 +280,7 @@ namespace spvgentwo
 	}
 
 	template<class U>
-	inline void Vector<U>::clear()
+	inline void Vector<U>::clear(bool _resetCount)
 	{
 		// call destructor (TODO: if there is one)
 		for (size_t i = 0; i < m_elements; ++i)
@@ -287,7 +288,10 @@ namespace spvgentwo
 			m_pData[i].~T();
 		}
 
-		m_elements = 0u;
+		if (_resetCount)
+		{
+			m_elements = 0u;
+		}
 	}
 
 	template<class U>
