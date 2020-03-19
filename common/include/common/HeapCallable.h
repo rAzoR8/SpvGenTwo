@@ -11,6 +11,10 @@ namespace spvgentwo
 	public:
 		using Callable<Func>::Callable;
 
+		HeapCallable(const HeapCallable& _other) noexcept : Callable<Func>(_other){}
+
+		HeapCallable(HeapCallable&& _other) noexcept : Callable<Func>(stdrep::move(_other)) {}
+
 		HeapCallable() : Callable<Func>(HeapAllocator::instance()) {}
 
 		template <typename Functor>
@@ -20,5 +24,8 @@ namespace spvgentwo
 		HeapCallable(Functor&& f) : Callable<Func>(HeapAllocator::instance(), spvgentwo::stdrep::move(f)) {}
 
 		virtual ~HeapCallable() override = default;
+
+		HeapCallable& operator=(const HeapCallable& _other) { Callable<Func>::operator=(_other); return *this; }
+		HeapCallable& operator=(HeapCallable&& _other) noexcept { Callable<Func>::operator=(stdrep::move(_other)); return *this; }
 	};
 } // !spvgentwo
