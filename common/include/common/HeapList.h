@@ -6,7 +6,7 @@
 namespace spvgentwo
 {
 	template <class T>
-	class HeapList : List<T>
+	class HeapList : public List<T>
 	{
 	public:
 		using List<T>::List;
