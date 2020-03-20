@@ -60,6 +60,11 @@ namespace spvgentwo
 			Functor m_func;
 		};
 
+	private:
+
+		spvgentwo::IAllocator* m_pAllocator = nullptr;
+		ICallable* m_pCallable = nullptr;
+
 	public:
 
 		Callable(spvgentwo::IAllocator* _pAllocator = nullptr) : 
@@ -156,10 +161,5 @@ namespace spvgentwo
 		{
 			reset();
 		}
-
-	private:
-
-		spvgentwo::IAllocator* m_pAllocator = nullptr;
-		ICallable* m_pCallable = nullptr;
 	};
 } //! spvgentwo
