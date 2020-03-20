@@ -20,6 +20,9 @@ namespace spvgentwo
 		template <typename Functor>
 		HeapCallable(const Functor& f) : Callable<Func>(HeapAllocator::instance(), f) {}
 
+		template <typename Obj, typename ReturnType, typename ... Args>
+		HeapCallable(Obj* _obj, ReturnType(Obj::* _func)(Args...)) : Callable<Func>(HeapAllocator::instance(), _obj, _func) {}
+
 		template <typename Functor>
 		HeapCallable(Functor&& f) : Callable<Func>(HeapAllocator::instance(), spvgentwo::stdrep::move(f)) {}
 
