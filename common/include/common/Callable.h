@@ -11,7 +11,7 @@ namespace spvgentwo
 		Obj* pObj = nullptr;
 		MemberFuncType pMemberFn = nullptr;
 
-		ReturnValue operator()(Args... _args) { return pObj->(*pMemberFn)(_args...); }
+		ReturnValue operator()(Args... _args) const { return (pObj->*pMemberFn)(_args...); }
 	};
 
 	template <typename Obj, typename ReturnValue, typename... Args>
@@ -37,11 +37,14 @@ namespace spvgentwo
 		struct CallableImpl : public ICallable
 		{
 			CallableImpl(const Functor& t) : m_func(t) {}
-			CallableImpl(Functor&& t) : m_func(spvgentwo::stdrep::move(t)) {}
+			CallableImpl(Functor&& t) : m_func(stdrep::move(t)) {}
 			CallableImpl(const CallableImpl& _other) : m_func(_other.m_func) {}
-			CallableImpl(CallableImpl&& _other) : m_func(spvgentwo::stdrep::move(_other.m_func)) {}
+			CallableImpl(CallableImpl&& _other) : m_func(stdrep::move(_other.m_func)) {}
 
-			~CallableImpl() override = default;
+			template <typename ... ImplArgs>
+			CallableImpl(ImplArgs&& ... _args) : m_func{ stdrep::forward<ImplArgs>(_args)... } {}
+
+			virtual ~CallableImpl() override = default;
 
 			ReturnValue invoke(Args... args) final
 			{
@@ -59,6 +62,8 @@ namespace spvgentwo
 
 	public:
 
+		using ReturnType = ReturnValue;
+
 		Callable(spvgentwo::IAllocator* _pAllocator = nullptr) : 
 			m_pAllocator(_pAllocator)
 		{}
@@ -74,6 +79,13 @@ namespace spvgentwo
 			m_pAllocator(_pAllocator),
 			m_pCallable(_pAllocator->construct<CallableImpl<Functor>>(spvgentwo::stdrep::move(f)))
 		{}
+
+		template <typename Obj>
+		Callable(spvgentwo::IAllocator* _pAllocator, Obj* _obj, ReturnValue(Obj::* _func)(Args...)) :
+			m_pAllocator(_pAllocator),
+			m_pCallable(_pAllocator->construct<CallableImpl<MemberFunc<Obj, ReturnValue, Args...>>>(_obj, _func))
+		{
+		}
 
 		Callable(const Callable& _other) :
 			m_pAllocator(_other.m_pAllocator)
@@ -152,7 +164,4 @@ namespace spvgentwo
 		spvgentwo::IAllocator* m_pAllocator = nullptr;
 		ICallable* m_pCallable = nullptr;
 	};
-
-	template <typename ReturnValue, typename... Args>
-	using CallableT = Callable<ReturnValue(Args...)>;
 } //! spvgentwo
