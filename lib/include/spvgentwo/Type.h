@@ -458,8 +458,18 @@ namespace spvgentwo
 	constexpr bool is_const_vector_v = is_const_vector<T>::value;
 
 	template <class T, class ...Elems>
-	auto make_vector(T&& val, Elems&& ... _elements) {
-		return const_vector_t<traits::remove_cvref_t<T>, 1 + sizeof...(_elements)>{stdrep::forward<T>(val), stdrep::forward<Elems>(_elements)...};
+	auto make_vector(T&& first, T&& second, Elems&& ... _elements) {
+		return const_vector_t<traits::remove_cvref_t<T>, 2 + sizeof...(_elements)>{stdrep::forward<T>(first), stdrep::forward<T>(second), stdrep::forward<Elems>(_elements)...};
+	};
+
+	template <class T, unsigned int N>
+	auto make_vector(const T (&val)[N]) {
+		const_vector_t<traits::remove_cvref_t<T>, N> v;
+		for (auto i = 0u; i < N; ++i)
+		{
+			v.data[i] = val[i];
+		}
+		return v;
 	};
 
 	template <class T, unsigned int _Columns, unsigned int _Rows>
@@ -484,6 +494,19 @@ namespace spvgentwo
 		return const_matrix_t<traits::remove_cvref_t<T>, 1 + sizeof...(_columns), Rows>{col0, _columns...};
 	};
 
+	template <class T, unsigned int Columns, unsigned int Rows>
+	auto make_matrix(const T(&val)[Columns][Rows]) {
+		const_matrix_t<traits::remove_cvref_t<T>, Columns, Rows> m;
+		for (auto c = 0u; c < Columns; ++c)
+		{
+			for (auto r = 0u; r < Rows; ++r)
+			{
+				m.data[c].data[r] = val[c][r];
+			}
+		}
+		return m;
+	};
+
 	template <class T, unsigned int N>
 	struct const_array_t
 	{
@@ -500,9 +523,19 @@ namespace spvgentwo
 	template<class T>
 	constexpr bool is_const_array_v = is_const_array<T>::value;
 
+	template <class T, unsigned int N>
+	auto make_array(const T(&val)[N]) {
+		const_array_t<traits::remove_cvref_t<T>, N> a;
+		for (auto i = 0u; i < N; ++i)
+		{
+			a.data[i] = val[i];
+		}
+		return a;
+	};
+
 	template <class T, class ...Elems>
-	auto make_array(T&& val, Elems&& ... _elements) {
-		return const_array_t<traits::remove_cvref_t<T>, 1 + sizeof...(_elements)>{stdrep::forward<T>(val), stdrep::forward<Elems>(_elements)...};
+	auto make_array(T&& first, T&& second, Elems&& ... _elements) {
+		return const_array_t<traits::remove_cvref_t<T>, 2 + sizeof...(_elements)>{stdrep::forward<T>(first), stdrep::forward<T>(second), stdrep::forward<Elems>(_elements)...};
 	};
 #pragma endregion
 
