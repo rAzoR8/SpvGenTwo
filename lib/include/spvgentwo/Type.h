@@ -321,9 +321,9 @@ namespace spvgentwo
 		bool isScalarOrVectorOfSameLength(const spv::Op _type, const Type& _other, bool _sameComponentWidth = true) const { return (!_sameComponentWidth || getBaseType().getIntWidth() == _other.getBaseType().getIntWidth()) && (hasSameVectorLength(_other, _type) || (m_Type == _type && _other.m_Type == _type && isScalar() && _other.isScalar())); }
 		bool hasSameComponentWidth(const Type& _other) const { const Type& a = getBaseType(), b = _other.getBaseType(); return a.getType() == b.getType() && a.getIntWidth() == b.getIntWidth(); }
 
-		bool isMatrixOf(const spv::Op _baseType) const { return isMatrix() && getBaseTypeOp() == _baseType; }
-		bool isMatrixOfFloat() const { return isMatrixOf(spv::Op::OpTypeFloat); }
-		bool isMatrixOfInt() const { return isMatrixOf(spv::Op::OpTypeInt); }
+		bool isMatrixOf(const spv::Op _baseType, const unsigned int _columns = 0u, const unsigned int _rows = 0u, const unsigned int _componentWidth = 0u) const { return isMatrix() && getBaseTypeOp() == _baseType && (_columns == 0u || (getMatrixColumnCount() == _columns)) && (_rows == 0u || (front().getVectorComponentCount() == _rows)) && (_componentWidth == 0u || getBaseType().getFloatWidth() == _componentWidth); }
+		bool isMatrixOfFloat(const unsigned int _columns = 0u, const unsigned int _rows = 0u, const unsigned int _componentWidth = 0u) const { return isMatrixOf(spv::Op::OpTypeFloat, _columns, _rows, _componentWidth); }
+		bool isMatrixOfInt(const unsigned int _columns = 0u, const unsigned int _rows = 0u, const unsigned int _componentWidth = 0u, const Sign _sign = Sign::Any) const { return isMatrixOf(spv::Op::OpTypeInt, _columns, _rows, _componentWidth) && getBaseType().hasSign(_sign); }
 
 		bool isSqareMatrix() const { return isMatrix() && m_MatColumnCount == front().getVectorComponentCount(); }
 		bool isSqareMatrixOf(const spv::Op _baseType) const { return isMatrixOf(_baseType) && m_MatColumnCount == front().getVectorComponentCount(); }
