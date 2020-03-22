@@ -138,6 +138,9 @@ namespace spvgentwo
 		unsigned int getMatrixColumnCount() const { return m_MatColumnCount; }
 		void setMatrixColumnCount(unsigned int _count) { m_MatColumnCount = _count; }
 
+		unsigned int getMatrixRowCount() const { return isMatrix() ? front().getVectorComponentCount() : 0u; }
+		void getMatrixRowCount(unsigned int _rows) { if(isMatrix()) front().setVectorComponentCount(_rows); }
+
 		unsigned int getArrayLength() const { return m_ArrayLength; }
 		void setArrayLength(unsigned int _legnth) { m_ArrayLength = _legnth;}
 
