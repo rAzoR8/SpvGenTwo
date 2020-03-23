@@ -9,7 +9,9 @@ namespace spvgentwo
 	{
 		using FuncType = ReturnType(*)(Args...);
 		FuncType pMemberFn = nullptr;
-		ReturnType operator()(Args... _args) const { return (*pMemberFn)(_args...); }
+
+		template <typename ... OtherArgs>
+		ReturnType operator()(OtherArgs... _args) const { return (*pMemberFn)(_args...); }
 	};
 
 	template <typename ReturnType, typename... Args>

@@ -38,20 +38,23 @@ namespace spvgentwo
 	template <typename ReturnType, typename... Args>
 	auto make_callable(ReturnType(*_func)(Args...))
 	{
-		return HeapCallable<ReturnType(*)(Args...)>(_func);
+		//return HeapCallable<ReturnType(Args...)>(_func);
+		return Callable<ReturnType(Args...)>(HeapAllocator::instance(), _func);
 	}
 
 	template <typename ReturnType, typename... Args>
 	auto make_callable(ReturnType(*_func)(Args..., ...))
 	{
 		//auto functor = maker_variadic_func(_func);
-		return HeapCallable<ReturnType(*)(Args..., ...)>(_pAllocator, functor);
+		//return HeapCallable<ReturnType(Args..., ...)>(_pAllocator, functor);
+		return Callable<ReturnType(Args..., ...)>(HeapAllocator::instance(), _func);
 	}
 
 	template <typename Obj, typename ReturnType, typename... Args>
 	auto make_callable(Obj* _obj, ReturnType(*_func)(Args...))
 	{
-		return HeapCallable<ReturnType(*)(Args...)>(_obj, _func);
+		//return HeapCallable<ReturnType(Args...)>(_obj, _func);
+		return HeapCallable<ReturnType(Args...)>(HeapAllocator::instance(), _obj, _func);
 	}
 
 } // !spvgentwo
