@@ -8,10 +8,12 @@ namespace spvgentwo
 	struct Func
 	{
 		using FuncType = ReturnType(*)(Args...);
-		FuncType pMemberFn = nullptr;
+		FuncType pFn = nullptr;
+
+		operator bool() const { return pFn != nullptr; }
 
 		template <typename ... OtherArgs>
-		ReturnType operator()(OtherArgs... _args) const { return (*pMemberFn)(_args...); }
+		ReturnType operator()(OtherArgs... _args) const { return (*pFn)(_args...); }
 	};
 
 	template <typename ReturnType, typename... Args>
@@ -20,14 +22,34 @@ namespace spvgentwo
 		return Func<ReturnType, Args...> {_func};
 	}
 
+	template <typename Obj, typename ReturnType, typename... Args>
+	struct MemberFunc
+	{
+		using FuncType = ReturnType(Obj::*)(Args...);
+		Obj* pObj = nullptr;
+		FuncType pFn = nullptr;
+
+		operator bool() const { return pFn != nullptr; }
+
+		ReturnType operator()(Args... _args) const { return (pObj->*pFn)(_args...); }
+	};
+
+	template <typename Obj, typename ReturnType, typename... Args>
+	auto make_memeber_func(Obj* _obj, ReturnType(Obj::* _func)(Args...))
+	{
+		return MemberFunc<Obj, ReturnType, Args...> {_obj, _func};
+	}
+
 	template <typename ReturnType, typename... Args>
 	struct VariadicFunc
 	{
 		using FuncType = ReturnType(*)(Args..., ...);
-		FuncType pMemberFn = nullptr;
+		FuncType pFn = nullptr;
+
+		operator bool() const { return pFn != nullptr; }
 
 		template <typename ... OtherArgs>
-		ReturnType operator()(OtherArgs... _args) const { return (*pMemberFn)(_args...); }
+		ReturnType operator()(OtherArgs... _args) const { return (*pFn)(_args...); }
 	};
 
 	template <typename ReturnType, typename... Args>
@@ -37,19 +59,22 @@ namespace spvgentwo
 	}
 
 	template <typename Obj, typename ReturnType, typename... Args>
-	struct MemberFunc
+	struct VariadicMemberFunc
 	{
-		using MemberFuncType = ReturnType(Obj::*)(Args...);
+		using FuncType = ReturnType(Obj::*)(Args..., ...);
 		Obj* pObj = nullptr;
-		MemberFuncType pMemberFn = nullptr;
+		FuncType pFn = nullptr;
 
-		ReturnType operator()(Args... _args) const { return (pObj->*pMemberFn)(_args...); }
+		operator bool() const { return pFn != nullptr; }
+
+		template <typename ... OtherArgs>
+		ReturnType operator()(OtherArgs... _args) const { return (pObj->*pMemberFn)(_args...); }
 	};
 
 	template <typename Obj, typename ReturnType, typename... Args>
-	auto make_memeber_func(Obj* _obj, ReturnType(Obj::* _func)(Args...))
+	auto make_variadic_memeber_func(Obj* _obj, ReturnType(Obj::* _func)(Args..., ...))
 	{
-		return MemberFunc<Obj, ReturnType, Args...> {_obj, _func};
+		return VariadicMemberFunc<Obj, ReturnType, Args...> {_obj, _func};
 	}
 
 	template <typename T>
@@ -204,53 +229,23 @@ namespace spvgentwo
 	template <typename ReturnType, typename... Args>
 	class Callable<ReturnType(Args..., ...)>
 	{
-		struct ICallable
-		{
-			virtual ~ICallable() = default;
-			virtual ReturnType invoke(Args..., ...) = 0;
-			virtual ICallable* copy(IAllocator* _pAllocator) const = 0;
-		};
+		VariadicFunc<ReturnType, Args...> m_func{};
 
-		template <typename Functor>
-		struct CallableImpl : public ICallable
-		{
-			CallableImpl(const Functor& t) : m_func(t) {}
-			CallableImpl(Functor&& t) noexcept : m_func{ stdrep::move(t) } {}
-			CallableImpl(const CallableImpl& _other) : m_func(_other.m_func) {}
-			CallableImpl(CallableImpl&& _other) noexcept : m_func(stdrep::move(_other.m_func)) {}
-
-			template <typename ... ImplArgs>
-			CallableImpl(ImplArgs&& ... _args) : m_func{ stdrep::forward<ImplArgs>(_args)... } {}
-
-			virtual ~CallableImpl() override = default;
-
-			ReturnType invoke(Args... args, ...) final
-			{
-				return m_func(stdrep::forward<Args>(args).../*, ...*/);
-			}
-
-			ICallable* copy(IAllocator* _pAllocator) const final
-			{
-				return _pAllocator->construct<CallableImpl<Functor>>(m_func);
-			}
-
-		private:
-			Functor m_func;
-		};
-
-		IAllocator* m_pAllocator = nullptr;
-		ICallable* m_pCallable = nullptr;
 	public:
+		Callable(ReturnType(*_func)(Args..., ...)) :
+			m_func{ _func }
+		{
+		}
+
 		Callable(spvgentwo::IAllocator* _pAllocator, ReturnType(*_func)(Args..., ...)) :
-			m_pAllocator(_pAllocator),
-			m_pCallable(_pAllocator->construct<CallableImpl<VariadicFunc<ReturnType, Args...>>>(_func))
+			m_func{ _func }
 		{
 		}
 
 		template <typename ...OtherArgs>
-		ReturnType operator()(OtherArgs... args)
+		ReturnType operator()(OtherArgs... _args)
 		{
-			return m_pCallable->invoke(stdrep::forward<OtherArgs>(args)...);
+			return m_func(_args...);
 		}
 	};
 
