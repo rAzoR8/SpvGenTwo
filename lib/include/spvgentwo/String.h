@@ -4,6 +4,7 @@
 
 namespace spvgentwo
 {
+	// includes terminator string
 	inline constexpr size_t stringLength(const char* _pStr)
 	{
 		if (_pStr == nullptr) 
@@ -11,7 +12,7 @@ namespace spvgentwo
 
 		size_t i = 0u;
 		for (; _pStr[i] != '\0'; ++i) {}
-		return i;
+		return i+1u;
 	}
 
 	class String : public Vector<char>
@@ -19,10 +20,19 @@ namespace spvgentwo
 	public:
 		using Vector<char>::Vector;
 
+		virtual ~String() override = default;
+
+		String(const String& _other) : Vector(_other) {}
+
+		String(String&& _other) noexcept : Vector(stdrep::move(_other)) {}
+
 		String(IAllocator* _pAllocator = nullptr, const char* _pStr = nullptr, size_t _length = 0u) : Vector(_pAllocator, _pStr, _length == 0u ? stringLength(_pStr) : _length) {};
 
 		template <size_t N>
 		String(IAllocator* _pAllocator, const char(&_pStr)[N]) : Vector(_pAllocator, _pStr) {};
+
+		String& operator=(const String& _other) { Vector::operator=(_other); return *this; }
+		String& operator=(String&& _other) noexcept { Vector::operator=(stdrep::move(_other)); return *this; }
 
 		String& operator=(const char* _pStr);
 		
@@ -33,9 +43,6 @@ namespace spvgentwo
 
 		operator const char* () const { return data(); }
 
-		// size excluding zero
-		bool reserve(size_t _size);
-
 		String substr(size_t _offset, size_t _length);
 
 		String operator+(const String& _other) const;
@@ -43,8 +50,6 @@ namespace spvgentwo
 
 		String& operator+=(const String& _other);
 		String& operator+=(const char* _pStr);
-
-	private:
 	};
 
 	template<size_t length>

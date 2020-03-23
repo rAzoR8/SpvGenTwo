@@ -138,6 +138,9 @@ namespace spvgentwo
 		unsigned int getMatrixColumnCount() const { return m_MatColumnCount; }
 		void setMatrixColumnCount(unsigned int _count) { m_MatColumnCount = _count; }
 
+		unsigned int getMatrixRowCount() const { return isMatrix() ? front().getVectorComponentCount() : 0u; }
+		void getMatrixRowCount(unsigned int _rows) { if(isMatrix()) front().setVectorComponentCount(_rows); }
+
 		unsigned int getArrayLength() const { return m_ArrayLength; }
 		void setArrayLength(unsigned int _legnth) { m_ArrayLength = _legnth;}
 
@@ -321,9 +324,9 @@ namespace spvgentwo
 		bool isScalarOrVectorOfSameLength(const spv::Op _type, const Type& _other, bool _sameComponentWidth = true) const { return (!_sameComponentWidth || getBaseType().getIntWidth() == _other.getBaseType().getIntWidth()) && (hasSameVectorLength(_other, _type) || (m_Type == _type && _other.m_Type == _type && isScalar() && _other.isScalar())); }
 		bool hasSameComponentWidth(const Type& _other) const { const Type& a = getBaseType(), b = _other.getBaseType(); return a.getType() == b.getType() && a.getIntWidth() == b.getIntWidth(); }
 
-		bool isMatrixOf(const spv::Op _baseType) const { return isMatrix() && getBaseTypeOp() == _baseType; }
-		bool isMatrixOfFloat() const { return isMatrixOf(spv::Op::OpTypeFloat); }
-		bool isMatrixOfInt() const { return isMatrixOf(spv::Op::OpTypeInt); }
+		bool isMatrixOf(const spv::Op _baseType, const unsigned int _columns = 0u, const unsigned int _rows = 0u, const unsigned int _componentWidth = 0u) const { return isMatrix() && getBaseTypeOp() == _baseType && (_columns == 0u || (getMatrixColumnCount() == _columns)) && (_rows == 0u || (front().getVectorComponentCount() == _rows)) && (_componentWidth == 0u || getBaseType().getFloatWidth() == _componentWidth); }
+		bool isMatrixOfFloat(const unsigned int _columns = 0u, const unsigned int _rows = 0u, const unsigned int _componentWidth = 0u) const { return isMatrixOf(spv::Op::OpTypeFloat, _columns, _rows, _componentWidth); }
+		bool isMatrixOfInt(const unsigned int _columns = 0u, const unsigned int _rows = 0u, const unsigned int _componentWidth = 0u, const Sign _sign = Sign::Any) const { return isMatrixOf(spv::Op::OpTypeInt, _columns, _rows, _componentWidth) && getBaseType().hasSign(_sign); }
 
 		bool isSqareMatrix() const { return isMatrix() && m_MatColumnCount == front().getVectorComponentCount(); }
 		bool isSqareMatrixOf(const spv::Op _baseType) const { return isMatrixOf(_baseType) && m_MatColumnCount == front().getVectorComponentCount(); }
@@ -458,8 +461,18 @@ namespace spvgentwo
 	constexpr bool is_const_vector_v = is_const_vector<T>::value;
 
 	template <class T, class ...Elems>
-	auto make_vector(T&& val, Elems&& ... _elements) {
-		return const_vector_t<traits::remove_cvref_t<T>, 1 + sizeof...(_elements)>{stdrep::forward<T>(val), stdrep::forward<Elems>(_elements)...};
+	auto make_vector(T&& first, T&& second, Elems&& ... _elements) {
+		return const_vector_t<traits::remove_cvref_t<T>, 2 + sizeof...(_elements)>{stdrep::forward<T>(first), stdrep::forward<T>(second), stdrep::forward<Elems>(_elements)...};
+	};
+
+	template <class T, unsigned int N>
+	auto make_vector(const T (&val)[N]) {
+		const_vector_t<traits::remove_cvref_t<T>, N> v;
+		for (auto i = 0u; i < N; ++i)
+		{
+			v.data[i] = val[i];
+		}
+		return v;
 	};
 
 	template <class T, unsigned int _Columns, unsigned int _Rows>
@@ -484,6 +497,19 @@ namespace spvgentwo
 		return const_matrix_t<traits::remove_cvref_t<T>, 1 + sizeof...(_columns), Rows>{col0, _columns...};
 	};
 
+	template <class T, unsigned int Columns, unsigned int Rows>
+	auto make_matrix(const T(&val)[Columns][Rows]) {
+		const_matrix_t<traits::remove_cvref_t<T>, Columns, Rows> m;
+		for (auto c = 0u; c < Columns; ++c)
+		{
+			for (auto r = 0u; r < Rows; ++r)
+			{
+				m.data[c].data[r] = val[c][r];
+			}
+		}
+		return m;
+	};
+
 	template <class T, unsigned int N>
 	struct const_array_t
 	{
@@ -500,9 +526,19 @@ namespace spvgentwo
 	template<class T>
 	constexpr bool is_const_array_v = is_const_array<T>::value;
 
+	template <class T, unsigned int N>
+	auto make_array(const T(&val)[N]) {
+		const_array_t<traits::remove_cvref_t<T>, N> a;
+		for (auto i = 0u; i < N; ++i)
+		{
+			a.data[i] = val[i];
+		}
+		return a;
+	};
+
 	template <class T, class ...Elems>
-	auto make_array(T&& val, Elems&& ... _elements) {
-		return const_array_t<traits::remove_cvref_t<T>, 1 + sizeof...(_elements)>{stdrep::forward<T>(val), stdrep::forward<Elems>(_elements)...};
+	auto make_array(T&& first, T&& second, Elems&& ... _elements) {
+		return const_array_t<traits::remove_cvref_t<T>, 2 + sizeof...(_elements)>{stdrep::forward<T>(first), stdrep::forward<T>(second), stdrep::forward<Elems>(_elements)...};
 	};
 #pragma endregion
 
