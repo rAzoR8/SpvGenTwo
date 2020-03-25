@@ -26,8 +26,8 @@ namespace spvgentwo
 	struct MemberFunc
 	{
 		using FuncType = ReturnType(Obj::*)(Args...);
-		Obj* pObj = nullptr;
 		FuncType pFn = nullptr;
+		Obj* pObj = nullptr;
 
 		operator bool() const { return pFn != nullptr; }
 
@@ -48,6 +48,9 @@ namespace spvgentwo
 
 		operator bool() const { return pFn != nullptr; }
 
+		//template <typename Obj, typename ... OtherArgs>
+		//static ReturnType objFn(Obj* _obj, ReturnType(Obj::* _fn)(Args..., ...), OtherArgs... _args) { return (_obj->*_fn)(_args...); }
+
 		template <typename ... OtherArgs>
 		ReturnType operator()(OtherArgs... _args) const { return (*pFn)(_args...); }
 	};
@@ -62,8 +65,8 @@ namespace spvgentwo
 	struct VariadicMemberFunc
 	{
 		using FuncType = ReturnType(Obj::*)(Args..., ...);
-		Obj* pObj = nullptr;
 		FuncType pFn = nullptr;
+		Obj* pObj = nullptr;
 
 		operator bool() const { return pFn != nullptr; }
 
@@ -87,6 +90,7 @@ namespace spvgentwo
 		{
 			virtual ~ICallable() = default;
 			virtual ReturnType invoke(Args...) = 0;
+			//virtual ReturnType invoke(Args..., ...) = 0;
 			virtual ICallable* copy(IAllocator* _pAllocator) const = 0;
 		};
 
@@ -149,7 +153,7 @@ namespace spvgentwo
 		template <typename Obj>
 		Callable(IAllocator* _pAllocator, Obj* _obj, ReturnType(Obj::* _func)(Args...)) :
 			m_pAllocator(_pAllocator),
-			m_pCallable(_pAllocator->construct<CallableImpl<MemberFunc<Obj, ReturnType, Args...>>>(_obj, _func))
+			m_pCallable(_pAllocator->construct<CallableImpl<MemberFunc<Obj, ReturnType, Args...>>>(_func, _obj))
 		{
 		}
 
@@ -231,6 +235,8 @@ namespace spvgentwo
 	{
 		VariadicFunc<ReturnType, Args...> m_func{};
 
+		//using X = decltype([](void* pObj, void* pFunc, auto ..._args)->ReturnType {return ReturnType{}; });
+
 	public:
 		Callable(ReturnType(*_func)(Args..., ...)) :
 			m_func{ _func }
@@ -242,6 +248,13 @@ namespace spvgentwo
 		{
 		}
 
+		template <typename Obj>
+		Callable(Obj* _obj, ReturnType(Obj::* _func)(Args..., ...)) //:
+			//m_func{ _func }
+		{
+			auto x = [](void* pObj, void* pFunc, auto ..._args) -> ReturnType { return (((Obj*)pObj)->* (ReturnType(Obj::* )(Args..., ...))pFunc)(_args...); };
+		}
+
 		template <typename ...OtherArgs>
 		ReturnType operator()(OtherArgs... _args)
 		{
@@ -249,23 +262,53 @@ namespace spvgentwo
 		}
 	};
 
+	template <typename Func>
+	class XCallable
+	{
+	public:
+		template <typename ... ImplArgs>
+		XCallable(ImplArgs&& ... _args) : m_func{ stdrep::forward<ImplArgs>(_args)... } {}
+
+		template <typename ...Args>
+		auto operator()(Args&&... _args) /*const*/ { return m_func(stdrep::forward<Args>(_args)...); }
+	private:
+		Func m_func;
+	};
+
 	template <typename ReturnType, typename... Args>
 	auto make_callable(spvgentwo::IAllocator* _pAllocator, ReturnType(*_func)(Args...))
 	{
-		return Callable<ReturnType(*)(Args...)>(_pAllocator, _func);
+		return Callable<ReturnType(Args...)>(_pAllocator, _func);
 	}
 
 	template <typename ReturnType, typename... Args>
 	auto make_callable(spvgentwo::IAllocator* _pAllocator, ReturnType(*_func)(Args..., ...))
 	{
-		//auto functor = maker_variadic_func(_func);
-		return Callable<ReturnType(*)(Args..., ...)>(_pAllocator, _func);
+		return Callable<ReturnType(Args..., ...)>(_pAllocator, _func);
 	}
 
 	template <typename Obj, typename ReturnType, typename... Args>
-	auto make_callable(spvgentwo::IAllocator* _pAllocator, Obj* _obj, ReturnType(*_func)(Args...))
+	auto make_callable(spvgentwo::IAllocator* _pAllocator, Obj* _obj, ReturnType(Obj::*_func)(Args...))
 	{
-		return Callable<ReturnType(*)(Args...)>(_pAllocator, _obj, _func);
+		return Callable<ReturnType(Args...)>(_pAllocator, _func, _obj);
 	}
 
+	template <typename Obj, typename ReturnType, typename... Args>
+	auto make_callable(spvgentwo::IAllocator* _pAllocator, Obj* _obj, ReturnType(Obj::* _func)(Args..., ...))
+	{
+		return Callable<ReturnType(Args..., ...)>(_pAllocator, _func, _obj);
+	}
+
+	// fallback
+	template <typename Func>
+	auto make_callable(spvgentwo::IAllocator* _pAllocator, const Func& _func)
+	{
+		return Callable<Func>(_pAllocator, _func);
+	}
+
+	template <typename Obj, typename Func>
+	auto make_callable(spvgentwo::IAllocator* _pAllocator, Obj* _pObj, const Func& _func)
+	{
+		return Callable<Func>(_pAllocator, _pObj, _func);
+	}
 } //! spvgentwo

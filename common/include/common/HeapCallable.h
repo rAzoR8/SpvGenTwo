@@ -18,16 +18,17 @@ namespace spvgentwo
 
 		HeapCallable(HeapCallable&& _other) noexcept : Callable<Func>(stdrep::move(_other)) {}
 
-		HeapCallable() : Callable<Func>(HeapAllocator::instance()) {}
+		template <typename ...Args>
+		HeapCallable(Args&& ... _args) : Callable<Func>(HeapAllocator::instance(), stdrep::forward<Args>(_args)...) {}
 
-		template <typename Functor>
-		HeapCallable(const Functor& f) : Callable<Func>(HeapAllocator::instance(), f) {}
+		//template <typename Functor>
+		//HeapCallable(const Functor& f) : Callable<Func>(HeapAllocator::instance(), f) {}
 
-		template <typename Obj, typename ReturnType, typename ... Args>
-		HeapCallable(Obj* _obj, ReturnType(Obj::* _func)(Args...)) : Callable<Func>(HeapAllocator::instance(), _obj, _func) {}
+		//template <typename Obj, typename ReturnType, typename ... Args>
+		//HeapCallable(Obj* _obj, ReturnType(Obj::* _func)(Args...)) : Callable<Func>(HeapAllocator::instance(), _func, _obj) {}
 
-		template <typename Functor>
-		HeapCallable(Functor&& f) : Callable<Func>(HeapAllocator::instance(), spvgentwo::stdrep::move(f)) {}
+		//template <typename Functor>
+		//HeapCallable(Functor&& f) : Callable<Func>(HeapAllocator::instance(), spvgentwo::stdrep::move(f)) {}
 
 		virtual ~HeapCallable() override = default;
 
@@ -38,23 +39,38 @@ namespace spvgentwo
 	template <typename ReturnType, typename... Args>
 	auto make_callable(ReturnType(*_func)(Args...))
 	{
-		//return HeapCallable<ReturnType(Args...)>(_func);
 		return Callable<ReturnType(Args...)>(HeapAllocator::instance(), _func);
 	}
 
 	template <typename ReturnType, typename... Args>
 	auto make_callable(ReturnType(*_func)(Args..., ...))
 	{
-		//auto functor = maker_variadic_func(_func);
-		//return HeapCallable<ReturnType(Args..., ...)>(_pAllocator, functor);
 		return Callable<ReturnType(Args..., ...)>(HeapAllocator::instance(), _func);
 	}
 
 	template <typename Obj, typename ReturnType, typename... Args>
-	auto make_callable(Obj* _obj, ReturnType(*_func)(Args...))
+	auto make_callable(Obj* _obj, ReturnType(Obj::*_func)(Args...))
 	{
-		//return HeapCallable<ReturnType(Args...)>(_obj, _func);
-		return HeapCallable<ReturnType(Args...)>(HeapAllocator::instance(), _obj, _func);
+		return Callable<ReturnType(Args...)>(HeapAllocator::instance(), _obj, _func);
+	}
+
+	template <typename Obj, typename ReturnType, typename... Args>
+	auto make_callable(Obj* _obj, ReturnType(Obj::*_func)(Args..., ...))
+	{
+		return Callable<ReturnType(Args..., ...)>(HeapAllocator::instance(), _obj, _func);
+	}
+
+	// fallback
+	template <typename Func>
+	auto make_callable(const Func& _func)
+	{
+		return HeapCallable<Func>(_func);
+	}
+
+	template <typename Obj, typename Func>
+	auto make_callable(Obj* _pObj, const Func& _func)
+	{
+		return HeapCallable<Func>(_pObj, _func);
 	}
 
 } // !spvgentwo
