@@ -51,20 +51,39 @@ namespace spvgentwo
 		void setITypeInferenceAndVailation(ITypeInferenceAndVailation* _pTypeInferenceAndVailation) { m_pTypeInferenceAndVailation = _pTypeInferenceAndVailation; }
 
 		const List<Function>& getFunctions() const { return m_Functions; }
+		List<Function>& getFunctions() { return m_Functions; }
+
 		const List<EntryPoint>& getEntryPoints() const { return m_EntryPoints; }
+		List<EntryPoint>& getEntryPoints() { return m_EntryPoints; }
 
 		const List<Instruction>& getCapabilities() const { return m_Capabilities; }
+		List<Instruction>& getCapabilities() { return m_Capabilities; }
+
 		const List<Instruction>& getExtensions() const { return m_Extensions; }
+		List<Instruction>& getExtensions() { return m_Extensions; }
+
 		const HashMap<const char*, Instruction>& getExtInstrImports() const { return m_ExtInstrImport; }
+
 		const Instruction& getMemoryModel() const { return m_MemoryModel; }
+		Instruction& getMemoryModel() { return m_MemoryModel; }
 
 		const List<Instruction>& getSourceStrings() const { return m_SourceStrings; }
+		List<Instruction>& getSourceStrings() { return m_SourceStrings; }
+
 		const List<Instruction>& getNames() const { return m_Names; }
+		List<Instruction>& getNames() { return m_Names; }
+
 		const List<Instruction>& getModulesProcessed() const { return m_ModuleProccessed; }
+		List<Instruction>& getModulesProcessed() { return m_ModuleProccessed; }
+
 		const List<Instruction>& getDecorations() const { return m_Decorations; }
+		List<Instruction>& getDecorations() { return m_Decorations; }
+
 		const List<Instruction>& getTypesAndConstants() const { return m_TypesAndConstants; }
+		List<Instruction>& getTypesAndConstants() { return m_TypesAndConstants; }
 
 		const List<Instruction>& getGlobalVariables() const { return m_GlobalVariables; }
+		List<Instruction>& getGlobalVariables() { return m_GlobalVariables; }
 
 		// add empty function
 		Function& addFunction();
