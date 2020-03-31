@@ -73,13 +73,13 @@ namespace spvgentwo
 		if (_pos != nullptr)
 		{
 			NodeType& n = *_pos;
-			for (NodeType& in : n.inputs())
+			for (auto& in : n.inputs())
 			{
-				in.remove_output(&n);
+				in.pTarget->remove_output(&n);
 			}
-			for (NodeType& out : n.out())
+			for (auto& out : n.outputs())
 			{
-				out.remove_input(&n);
+				out.pTarget->remove_input(&n);
 			}
 			return m_nodes.erase(_pos);		
 		}
