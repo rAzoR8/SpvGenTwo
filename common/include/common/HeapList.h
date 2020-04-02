@@ -15,7 +15,7 @@ namespace spvgentwo
 
 		HeapList(const HeapList& _other) : List<T>(_other) {}
 
-		HeapList(HeapList&& _other) : List<T>(stdrep::move(_other)) {}
+		HeapList(HeapList&& _other) noexcept : List<T>(stdrep::move(_other)) {}
 
 		template <class ...Args> // args must be of type T
 		HeapList(T&& _first, Args&& ... _args) : List<T>(HeapAllocator::instance(), stdrep::forward<T>(_first), stdrep::forward<Args>(_args)...) {}
