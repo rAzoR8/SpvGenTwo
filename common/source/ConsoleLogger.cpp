@@ -1,7 +1,12 @@
 #include "common/ConsoleLogger.h"
-#include <cstdio>
+#include <stdio.h>
+#include <stdarg.h>
 
-void spvgentwo::ConsoleLogger::log(const LogLevel _level, const char* _pMsg)
+spvgentwo::ConsoleLogger::ConsoleLogger() : ILogger(LogImpl)
+{
+}
+
+void spvgentwo::ConsoleLogger::LogImpl(ILogger* _pInstance, LogLevel _level, const char* _pFormat, ...)
 {
 	switch (_level)
 	{
@@ -19,6 +24,9 @@ void spvgentwo::ConsoleLogger::log(const LogLevel _level, const char* _pMsg)
 		break;
 	}
 
-	printf("%s", _pMsg);
+	va_list args;
+	va_start(args, _pFormat);
+	vprintf(_pFormat, args);
+	va_end(args);
 	printf("\n");
 }

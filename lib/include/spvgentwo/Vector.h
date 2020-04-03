@@ -45,6 +45,9 @@ namespace spvgentwo
 		// only destructs, does not deallocate
 		void clear(bool _resetCount = true);
 
+		// only resets elements counter, no destructor or deallocation invoked, only use with primitive types
+		void reset(size_t _elements = 0u);
+
 		T* data() const noexcept{ return m_pData; }
 		size_t size() const noexcept { return m_elements; }
 		size_t capacity() const noexcept { return m_capacity; }
@@ -292,6 +295,12 @@ namespace spvgentwo
 		{
 			m_elements = 0u;
 		}
+	}
+
+	template<class U>
+	inline void Vector<U>::reset(size_t _elements)
+	{
+		m_elements = _elements;
 	}
 
 	template<class U>

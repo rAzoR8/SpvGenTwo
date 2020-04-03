@@ -33,17 +33,19 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 #this project
-project(SpvGenTwo)
+project(SpvGenTwo VERSION 1.0 DESCRIPTION "SPIR-V codegen library")
 
 #dependencies
 find_package(Vulkan)
 
 set(SPIRV_INCLUDE_DIR "${Vulkan_INCLUDE_DIR}/vulkan/" CACHE STRING "Path containing spirv.hpp11 and GLSL.std.450.h")
 
+cmake_option(BUILD_SHARED_LIBS "Build spvgentwo as shared library" TRUE)
 cmake_option(SPVGENTWO_LOGGING "Enable Logging" TRUE)
 cmake_option(SPVGENTWO_REPLACE_PLACEMENTNEW "Don't use replacement new from <new>" TRUE)
 cmake_option(SPVGENTWO_REPLACE_TRAITS "Use custom traits instead of <type_traits>" TRUE)
 cmake_option(SPVGENTWO_BUILD_EXAMPLES "Build examples" FALSE)
+cmake_option(SPVGENTWO_DEBUG_HEAP_ALLOC "Log heap allocations" FALSE)
 
 #lib sources
 add_sources("lib/source/*.cpp" "lib_sources")
@@ -51,7 +53,7 @@ add_sources("lib/include/spvgentwo/*.h" "lib_sources")
 add_include_folder("lib/include" "lib_includes")
 
 #lib project
-add_library(SpvGenTwoLib SHARED "${lib_sources}")
+add_library(SpvGenTwoLib "${lib_sources}")
 target_include_directories(SpvGenTwoLib PUBLIC "${lib_includes}")
 target_include_directories(SpvGenTwoLib PUBLIC "${SPIRV_INCLUDE_DIR}")
 
@@ -60,7 +62,7 @@ add_sources("common/source/*.cpp" "common_sources")
 add_sources("common/include/common/*.h" "common_sources")
 add_include_folder("common/include" "common_includes")
 
-add_library(SpvGenTwoCommon SHARED "${common_sources}")
+add_library(SpvGenTwoCommon "${common_sources}")
 target_include_directories(SpvGenTwoCommon PRIVATE "${lib_includes}")
 target_include_directories(SpvGenTwoCommon PUBLIC "${common_includes}")
 

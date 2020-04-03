@@ -91,7 +91,7 @@ namespace spvgentwo
 	template<class N, class E>
 	inline typename List<typename Node<N, E>::EdgeType>::Iterator Node<N, E>::remove_input(const Node* _pNode)
 	{
-		auto it = m_inputs.find([_pNode](const Edge& e) {return e.pTarget == _pNode; });
+		auto it = m_inputs.find_if([_pNode](const auto& e) {return e.pTarget == _pNode; });
 		if (it != nullptr)
 		{
 			return m_inputs.erase(it);
@@ -102,7 +102,7 @@ namespace spvgentwo
 	template<class N, class E>
 	inline typename List<typename Node<N, E>::EdgeType>::Iterator Node<N, E>::remove_output(const Node* _pNode)
 	{
-		auto it = m_outputs.find([_pNode](const Edge& e) {return e.pTarget == _pNode; });
+		auto it = m_outputs.find_if([_pNode](const auto& e) {return e.pTarget == _pNode; });
 		if (it != nullptr)
 		{
 			return m_outputs.erase(it);
