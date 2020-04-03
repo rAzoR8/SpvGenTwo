@@ -138,9 +138,17 @@ spv::Id spvgentwo::Instruction::resolveId(spv::Id& _previousId)
 		switch (op.type)
 		{
 		case Operand::Type::Instruction:
+			if (getModule()->logError(op.instruction != nullptr, "Invalid instruction operand (null)") == false)
+			{	
+				return InvalidId;
+			}
 			op.instruction->resolveId(_previousId);
 			break;
 		case Operand::Type::BranchTarget:
+			if (getModule()->logError(op.branchTarget != nullptr, "Invalid branch target operand (null)") == false)
+			{
+				return InvalidId;
+			}
 			op.branchTarget->front().resolveId(_previousId);
 			break;
 		default:
