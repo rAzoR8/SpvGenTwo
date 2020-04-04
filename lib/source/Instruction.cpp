@@ -414,7 +414,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::opUndef(Instruction* _pResultTyp
 
 spvgentwo::Instruction* spvgentwo::Instruction::opSizeOf(Instruction* _pPointerToVar)
 {
-	if (_pPointerToVar->getType()->isPointer())
+	const Type* ptrType = _pPointerToVar->getType();
+	if (ptrType == nullptr) return this;
+
+	if (ptrType->isPointer())
 	{
 		return makeOp(spv::Op::OpSizeOf, InvalidInstr, InvalidId, _pPointerToVar);	
 	}
@@ -650,9 +653,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instructi
 spvgentwo::Instruction* spvgentwo::Instruction::opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt)
 {
 	const Type* pVecType = _pVector->getType();
-	if (pVecType == nullptr) return this;
+	const Type* indexType = _pIndexInt->getType();
+	if (pVecType == nullptr || indexType == nullptr) return this;
 
-	if (pVecType->isVector() && pVecType->front() == *_pComponent->getType() && _pIndexInt->getType()->isInt())
+	if (pVecType->isVector() && pVecType->front() == *_pComponent->getType() && indexType->isInt())
 	{
 		return makeOp(spv::Op::OpVectorInsertDynamic, InvalidInstr, InvalidId, _pVector, _pComponent, _pIndexInt);
 	}
