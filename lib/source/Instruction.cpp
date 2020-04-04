@@ -478,7 +478,7 @@ void spvgentwo::Instruction::opReturn()
 void spvgentwo::Instruction::opReturnValue(Instruction* _pValue)
 {
 	Function* func = getFunction();
-	if (func != nullptr && func->getReturnType()->getType() == _pValue->getType())
+	if (func != nullptr && (func->getReturnType() != nullptr && func->getReturnType()->getType() == _pValue->getType()))
 	{
 		makeOp(spv::Op::OpReturnValue, _pValue);	
 	}

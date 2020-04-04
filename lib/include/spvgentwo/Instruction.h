@@ -36,7 +36,6 @@ namespace spvgentwo
 			Module* pModule;
 		} m_parent = {};
 
-		using SingleOpMemberFun = Instruction* (Instruction::*)(Instruction*, Instruction*);
 		using DualOpMemberFun = Instruction* (Instruction::*)(Instruction*, Instruction*);
 
 	public:
@@ -848,7 +847,7 @@ namespace spvgentwo
 		{
 			if (isDref || isComponent)
 			{
-				if (_pDrefOrCompnent == nullptr)
+				if (_pDrefOrCompnent == nullptr || _pDrefOrCompnent->getType() == nullptr)
 				{
 					module.logError("Depth reference parameter is null");
 					return false;
