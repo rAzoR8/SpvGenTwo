@@ -114,8 +114,8 @@ namespace spvgentwo
 		// returns the ID assigned to this instrucions
 		spv::Id resolveId(spv::Id& _previousId);
 
-		// serialize instructions of this basic block to the IWriter, returns ID that was assigned to this instruction
-		spv::Id write(IWriter* _pWriter, spv::Id& _resultId);
+		// serialize instructions of this basic block to the IWriter
+		void write(IWriter* _pWriter);
 
 		// transforms _args to operands, calls inferResultTypeOperand and validateOperands()
 		template <class ...Args>

@@ -50,7 +50,7 @@ namespace spvgentwo
 
 		Instruction* getParameter(unsigned int _index);
 
-		void write(IWriter* _pWriter, spv::Id& _resultId);		
+		void write(IWriter* _pWriter);		
 
 		const List<Instruction>& getParameters() const { return m_Parameters; }
 

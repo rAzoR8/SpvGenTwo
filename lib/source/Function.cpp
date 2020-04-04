@@ -49,21 +49,21 @@ spvgentwo::Function& spvgentwo::Function::operator=(Function&& _other) noexcept
 	return *this;
 }
 
-void spvgentwo::Function::write(IWriter* _pWriter, spv::Id& _resultId)
+void spvgentwo::Function::write(IWriter* _pWriter)
 {
-	m_Function.write(_pWriter, _resultId);
+	m_Function.write(_pWriter);
 
 	for (Instruction& instr : m_Parameters)
 	{
-		instr.write(_pWriter, _resultId);
+		instr.write(_pWriter);
 	}
 
 	for (BasicBlock& bb : *this)
 	{
-		bb.write(_pWriter, _resultId);
+		bb.write(_pWriter);
 	}
 
-	m_FunctionEnd.write(_pWriter, _resultId);
+	m_FunctionEnd.write(_pWriter);
 }
 
 const char* spvgentwo::Function::getName() const

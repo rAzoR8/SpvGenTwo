@@ -262,18 +262,14 @@ bool spvgentwo::Instruction::isSpecOrConstant() const
 	return isSpecOrConstantOp(m_Operation);
 }
 
-spv::Id spvgentwo::Instruction::write(IWriter* _pWriter, spv::Id& _resultId)
+void spvgentwo::Instruction::write(IWriter* _pWriter)
 {
-	const spv::Id ID = resolveId(_resultId);
-
 	_pWriter->put(getOpCode());
 	
 	for (const Operand& operand : *this)
 	{
 		operand.write(_pWriter);
 	}
-	
-	return ID;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::Mul(Instruction* _pLeft, Instruction* _pRight)
