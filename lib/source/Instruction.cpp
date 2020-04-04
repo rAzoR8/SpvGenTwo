@@ -92,10 +92,8 @@ bool spvgentwo::Instruction::getBranchTargets(List<BasicBlock*>& _outTargetBlock
 			{
 				_outTargetBlocks.emplace_back(o.getBranchTarget());
 			}
-			else if (o.isInstruction())
+			else if (Instruction* instr = o.getInstruction(); instr != nullptr)
 			{
-				Instruction* instr = o.getInstruction();
-
 				if (instr->getOperation() == spv::Op::OpLabel)
 				{
 					_outTargetBlocks.emplace_back(instr->getBasicBlock());
@@ -173,6 +171,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::getTypeInstr() const
 	{
 		return front().getInstruction();
 	}
+
+	getModule()->logError("Instruction has no result type");
 
 	return nullptr;
 }
@@ -281,6 +281,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::Mul(Instruction* _pLeft, Instruc
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
 
+	if (lType == nullptr || rType == nullptr) return this;
+
 	if (lType->isInt() && rType->isInt())
 	{
 		return opIMul(_pLeft, _pRight);
@@ -327,6 +329,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::Div(Instruction* _pLeft, Instruc
 {
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
+
+	if (lType == nullptr || rType == nullptr) return this;
 
 	if (lType->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *rType) && lType->isUnsigned() && rType->isUnsigned())
 	{
@@ -378,6 +382,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::Div(Instruction* _pLeft, Instruc
 spvgentwo::Instruction* spvgentwo::Instruction::Not(Instruction* _pIntOrBool)
 {
 	const Type* type = _pIntOrBool->getType();
+
+	if (type == nullptr) return this;
 
 	if (type->isBaseTypeOf(spv::Op::OpTypeInt))
 	{
@@ -542,11 +548,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResult
 
 spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLeft, Instruction* _pRight)
 {
-	Instruction* _pLeftTypeInstr = _pLeft->getTypeInstr();
-	Instruction* _pRightTypeInstr = _pRight->getTypeInstr();
+	const Type* pLeftType = _pLeft->getType();
+	const Type* pRightType = _pRight->getType();
 
-	const Type* pLeftType = _pLeftTypeInstr->getType();
-	const Type* pRightType = _pRightTypeInstr->getType();
+	if (pLeftType == nullptr || pRightType == nullptr) return this;
 
 	if (pLeftType->isVectorOfFloat() && pRightType->isVectorOfFloat() && pLeftType->hasSameBase(*pRightType))
 	{
@@ -560,11 +565,13 @@ spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLe
 
 spvgentwo::Instruction* spvgentwo::Instruction::opDot(Instruction* _pLeft, Instruction* _pRight)
 {
-	Instruction* _pLeftTypeInstr = _pLeft->getTypeInstr();
-	Instruction* _pRightTypeInstr = _pRight->getTypeInstr();
+	Instruction* pLeftTypeInstr = _pLeft->getTypeInstr();
+	Instruction* pRightTypeInstr = _pRight->getTypeInstr();
 
-	const Type* pType = _pLeftTypeInstr->getType();
-	if (_pLeftTypeInstr == _pRightTypeInstr && pType->isVectorOfFloat())
+	if (pLeftTypeInstr == nullptr || pRightTypeInstr == nullptr) return this;
+
+	const Type* pType = pLeftTypeInstr->getType();
+	if (pLeftTypeInstr == pRightTypeInstr && pType->isVectorOfFloat())
 	{
 		return makeOp(spv::Op::OpDot, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
@@ -576,7 +583,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::opDot(Instruction* _pLeft, Instr
 
 spvgentwo::Instruction* spvgentwo::Instruction::opAny(Instruction* _pBoolVec)
 {
-	if (_pBoolVec->getType()->isVectorOfBool())
+	const Type* type = _pBoolVec->getType();
+	if (type == nullptr) return this;
+
+	if (type->isVectorOfBool())
 	{
 		return makeOp(spv::Op::OpAny, InvalidInstr, InvalidId, _pBoolVec);
 	}
@@ -588,7 +598,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAny(Instruction* _pBoolVec)
 
 spvgentwo::Instruction* spvgentwo::Instruction::opAll(Instruction* _pBoolVec)
 {
-	if (_pBoolVec->getType()->isVectorOfBool())
+	const Type* type = _pBoolVec->getType();
+	if (type == nullptr) return this;
+
+	if (type->isVectorOfBool())
 	{
 		return makeOp(spv::Op::OpAll, InvalidInstr, InvalidId, _pBoolVec);
 	}
@@ -605,7 +618,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::opCopyObject(Instruction* _pObje
 
 spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatrix)
 {
-	if (_pMatrix->getType()->isMatrix())
+	const Type* type = _pMatrix->getType();
+	if (type == nullptr) return this;
+
+	if (type->isMatrix())
 	{
 		return makeOp(spv::Op::OpTranspose, InvalidInstr, InvalidId, _pMatrix);	
 	}
@@ -617,11 +633,16 @@ spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatri
 
 spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt)
 {
-	if (_pVector->getType()->isVector() && _pIndexInt->getType()->isInt())
+	const Type* vecType = _pVector->getType();
+	const Type* indexType = _pIndexInt->getType();
+	if (vecType == nullptr || indexType == nullptr) return this;
+
+	if (vecType->isVector() && indexType->isInt())
 	{
 		auto component = _pVector->getTypeInstr()->getFirstActualOperand();
 		return makeOp(spv::Op::OpVectorExtractDynamic, component->getInstruction(), InvalidId, _pVector, _pIndexInt);	
 	}
+
 	getModule()->logError("opVectorExtractDynamic: _pVector must be of type vector, _pIndexInt must be of type integer");
 	return this;
 }
@@ -629,6 +650,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instructi
 spvgentwo::Instruction* spvgentwo::Instruction::opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt)
 {
 	const Type* pVecType = _pVector->getType();
+	if (pVecType == nullptr) return this;
 
 	if (pVecType->isVector() && pVecType->front() == *_pComponent->getType() && _pIndexInt->getType()->isInt())
 	{
@@ -645,6 +667,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 	const Type* trueType = _pTrueObj->getType();
 	const Type* falseType = _pFalseObj->getType();
 	const Type* condType = _pCondBool->getType();
+
+	if (trueType == nullptr || falseType == false || condType == false) return this;
 
 	if (*trueType == *falseType && condType->isScalarOrVectorOf(spv::Op::OpTypeBool) && 
 		condType->getVectorComponentCount() == trueType->getVectorComponentCount())
@@ -673,6 +697,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorTimesScalar(Instruction*
 	const Type* pVecType = _pVector->getType();
 	const Type* pScalarType = _pScalar->getType();
 
+	if (pVecType == nullptr || pScalarType == nullptr) return this;
+
 	if (pScalarType->isFloat() && pVecType->isVectorOfFloat(0u, pScalarType->getFloatWidth()))
 	{
 		return makeOp(spv::Op::OpVectorTimesScalar, _pVector->getTypeInstr(), InvalidId, _pVector, _pScalar);
@@ -687,6 +713,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opMatrixTimesScalar(Instruction*
 {
 	const Type* pMatType = _pMatrix->getType();
 	const Type* pScalarType = _pScalar->getType();
+
+	if (pMatType == nullptr || pScalarType == nullptr) return this;
 
 	if (pScalarType->isFloat() && pMatType->hasSameBase(*pScalarType) && pMatType->isMatrix())
 	{
@@ -703,6 +731,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorTimesMatrix(Instruction*
 	const Type* pVecType = _pVector->getType();
 	const Type* pMatType = _pMatrix->getType();
 
+	if (pVecType == nullptr || pMatType == nullptr) return this;
+
 	if (pVecType->isVectorOfFloat() && pMatType->isMatrix() && pMatType->hasSameBase(*pVecType) && pMatType->front().getVectorComponentCount() == pVecType->getVectorComponentCount())
 	{
 		return makeOp(spv::Op::OpVectorTimesMatrix, _pVector->getTypeInstr(), InvalidId, _pVector, _pMatrix);
@@ -718,6 +748,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opMatrixTimesVector(Instruction*
 	const Type* pMatType = _pMatrix->getType();
 	const Type* pVecType = _pVector->getType();
 
+	if (pVecType == nullptr || pMatType == nullptr) return this;
+
 	if (pVecType->isVectorOfFloat() && pMatType->isMatrix() && pMatType->hasSameBase(*pVecType) && pMatType->getMatrixColumnCount() == pVecType->getVectorComponentCount())
 	{
 		return makeOp(spv::Op::OpMatrixTimesVector, InvalidInstr, InvalidId, _pMatrix, _pVector);
@@ -732,6 +764,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opMatrixTimesMatrix(Instruction*
 {
 	const Type* pLeftType = _pLeft->getType();
 	const Type* pRightType = _pRight->getType();
+
+	if (pLeftType == nullptr || pRightType == nullptr) return this;
 
 	// RightMatrix must be a matrix with the same Component Type as the Component Type in Result Type. Its number of columns must equal the number of columns in Result Type.
 	// Its columns must have the same number of components as the number of columns in LeftMatrix.
@@ -752,6 +786,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 	const Type* imageType = _pImage->getType();
 	const Type* samplerType = _pSampler->getType();
 
+	if (imageType == nullptr || samplerType == nullptr) return this;
+
 	if (imageType->isImage() && samplerType->isSampler() && imageType->getImageSamplerAccess() != SamplerImageAccess::Storage && imageType->getImageDimension() != spv::Dim::SubpassData)
 	{
 		return makeOp(spv::Op::OpSampledImage, InvalidInstr, InvalidId, _pImage, _pSampler);
@@ -767,11 +803,13 @@ spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(spv::Op _op, spv::Op
 	const Type* pLeftType = _pLeft->getType();
 	const Type* pRightType = _pRight != nullptr ? _pRight->getType() : nullptr;
 
+	if (pLeftType == nullptr) return this;
+
 	if (_pRight == nullptr && pLeftType->isScalarOrVectorOf(_type) && (!_checkSign || pLeftType->getBaseType().hasSign(_sign)))
 	{
 		return makeOp(_op, InvalidInstr, InvalidId, _pLeft);
 	}
-	else if (pLeftType->isScalarOrVectorOfSameLength(_type, *pRightType) && (!_checkSign || (pLeftType->getBaseType().hasSign(_sign) && pRightType->getBaseType().hasSign(_sign))))
+	else if (pRightType != nullptr && pLeftType->isScalarOrVectorOfSameLength(_type, *pRightType) && (!_checkSign || (pLeftType->getBaseType().hasSign(_sign) && pRightType->getBaseType().hasSign(_sign))))
 	{
 		return makeOp(_op, InvalidInstr, InvalidId, _pLeft, _pRight);
 	}
@@ -801,6 +839,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, 
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
 
+	if (lType == nullptr || rType == nullptr) return this;
+
 	if (lType->getBaseType().isInt() && rType->getBaseType().isInt())
 	{
 		return (this->*_intFun)(_pLeft, _pRight);
@@ -822,6 +862,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, 
 {
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
+
+	if (lType == nullptr || rType == nullptr) return this;
 
 	if (lType->getBaseType().isUInt() && rType->getBaseType().isUInt())
 	{
