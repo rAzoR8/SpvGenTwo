@@ -487,7 +487,7 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	_pWriter->put(spv::MagicNumber);
 	_pWriter->put(m_spvVersion);
 	_pWriter->put(GeneratorId);
-	_pWriter->put(maxId); 
+	_pWriter->put(maxId+1u); 
 	_pWriter->put(0u); // schema
 
 	auto writeInstr = [_pWriter](Instruction& instr)
