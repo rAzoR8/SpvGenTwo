@@ -56,65 +56,65 @@ int main(int argc, char* argv[])
 	TestLogger log;
 	HeapAllocator alloc; // custom user allocator
 
-		// expression graph example
+	// expression graph example
+	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
 	{
-		BinaryFileWriter writer("test.spv");
 		examples::expressionGraph(&alloc, &log).write(&writer);
-
+		writer.close();
 		system("spirv-dis test.spv");
 		assert(system("spirv-val test.spv") == 0);
 	}
 
 	// old cli test
+	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
 	{
-		BinaryFileWriter writer("test.spv");
 		examples::oldInstrTest(&alloc, &log).write(&writer);
-
+		writer.close();
 		system("spirv-dis test.spv");
 		assert(system("spirv-val test.spv") == 0);
 	}
 
 	// function call example
+	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
 	{
-		BinaryFileWriter writer("test.spv");
 		examples::functionCall(&alloc, &log).write(&writer);
-
+		writer.close();
 		system("spirv-dis test.spv");
 		assert(system("spirv-val test.spv") == 0);
 	}
 
 	// control flow example
+	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
 	{
-		BinaryFileWriter writer("test.spv");
 		examples::controlFlow(&alloc, &log).write(&writer);
-
+		writer.close();
 		system("spirv-dis test.spv");
 		assert(system("spirv-val test.spv") == 0);
 	}
 
 	// extension example
+	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
 	{
-		BinaryFileWriter writer("test.spv");
 		examples::extensions(&alloc, &log).write(&writer);
-
+		writer.close();
 		system("spirv-dis test.spv");
 		assert(system("spirv-val test.spv") == 0);
 	}
 
 	// types example
+	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
 	{
-		BinaryFileWriter writer("test.spv");
 		examples::types(&alloc, &log).write(&writer);
-
+		writer.close();
 		system("spirv-dis test.spv");
 		assert(system("spirv-val test.spv") == 0);
 	}
 
 	// constants example
+	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
 	{
-		BinaryFileWriter writer("test.spv");
 		examples::constants(&alloc, &log).write(&writer);
-
+		writer.close();
 		system("spirv-dis test.spv");
 		assert(system("spirv-val test.spv") == 0);
 	}
