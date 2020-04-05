@@ -210,6 +210,25 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		}
 	}		
 		break;
+
+	case spv::Op::OpConvertFToU:
+	{
+		Type t(*type1);
+		Type& base = t.getBaseType();
+		base.setType(spv::Op::OpTypeInt);
+		base.setIntSign(false); // int/float with stays the same
+
+		return module->addType(t);
+	}
+	case spv::Op::OpConvertFToS:
+	{
+		Type t(*type1);
+		Type& base = t.getBaseType();
+		base.setType(spv::Op::OpTypeInt);
+		base.setIntSign(true);
+
+		return module->addType(t);
+	}
 	default:
 		break;
 	}

@@ -473,6 +473,10 @@ namespace spvgentwo
 
 #pragma endregion
 
+		Instruction* opConvertFToU(Instruction* _pFloatVec);
+
+		Instruction* opConvertFToS(Instruction* _pFloatVec);
+
 	private:
 
 		// creates literals
