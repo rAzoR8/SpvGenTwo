@@ -29,20 +29,6 @@ namespace spvgentwo
 
 		unsigned int getSpvVersion() const { return m_spvVersion; }
 
-		void log(const LogLevel _level, const char* _pMsg) const;
-		void logDebug(const char* _pMsg) const { log(LogLevel::Debug, _pMsg); }
-		void logInfo(const char* _pMsg) const { log(LogLevel::Info, _pMsg); }
-		void logWarning(const char* _pMsg) const { log(LogLevel::Warning, _pMsg); }
-		void logError(const char* _pMsg) const { log(LogLevel::Error, _pMsg); }
-		void logFatal(const char* _pMsg) const { log(LogLevel::Fatal, _pMsg); }
-
-		// like assert, _pred == false -> log, returns _pred
-		bool log(bool _pred, const LogLevel _level, const char* _pMsg) const { if (!_pred) log(_level, _pMsg); return _pred; }
-		bool logDebug(bool _pred, const char* _pMsg) const { if (!_pred) log(LogLevel::Debug, _pMsg); return _pred; }
-		bool logWarning(bool _pred, const char* _pMsg) const { if (!_pred) log(LogLevel::Warning, _pMsg); return _pred; }
-		bool logError(bool _pred, const char* _pMsg) const { if (!_pred) log(LogLevel::Error, _pMsg); return _pred; }
-		bool logFatal(bool _pred, const char* _pMsg) const { if (!_pred) log(LogLevel::Fatal, _pMsg); return _pred; }
-
 		IAllocator* getAllocator() const { return m_pAllocator; }
 
 		ILogger* getLogger() const { return m_pLogger; }
@@ -204,6 +190,36 @@ namespace spvgentwo
 		template <class Func> // func takes Instruction& -> func(instr)
 		void iterateInstructions(Func _func);
 
+		// ILogger proxy calls
+		template <typename ...Args>
+		bool log(bool _pred, const LogLevel _level, const char* _pFormat, Args... _args) const;
+
+		template <typename ...Args>
+		void log(const LogLevel _level, const char* _pFormat, Args... _args) const { log(false, _level, _pFormat, _args...); }
+
+		template <typename ...Args>
+		void logDebug(const char* _pFormat, Args... _args) { log(LogLevel::Debug, _pFormat, _args...); }
+		template <typename ...Args>
+		void logInfo(const char* _pFormat, Args... _args) { log(LogLevel::Info, _pFormat, _args...); }
+		template <typename ...Args>
+		void logWarning(const char* _pFormat, Args... _args) { log(LogLevel::Warning, _pFormat, _args...); }
+		template <typename ...Args>
+		void logError(const char* _pFormat, Args... _args) { log(LogLevel::Error, _pFormat, _args...); }
+		template <typename ...Args>
+		void logFatal(const char* _pFormat, Args... _args) { log(LogLevel::Fatal, _pFormat, _args...); }
+
+		// like assert, _pred == false -> log, returns _pred
+		template <typename ...Args>
+		bool logDebug(bool _pred, const char* _pFormat, Args... _args) { return log(_pred, LogLevel::Debug, _pFormat, _args...); }
+		template <typename ...Args>
+		bool logInfo(bool _pred, const char* _pFormat, Args... _args) { return log(_pred, LogLevel::Info, _pFormat, _args...); }
+		template <typename ...Args>
+		bool logWarning(bool _pred, const char* _pFormat, Args... _args) { return log(_pred, LogLevel::Warning, _pFormat, _args...); }
+		template <typename ...Args>
+		bool logError(bool _pred, const char* _pFormat, Args... _args) { return log(_pred, LogLevel::Error, _pFormat, _args...); }
+		template <typename ...Args>
+		bool logFatal(bool _pred, const char* _pFormat, Args... _args) { return log(_pred, LogLevel::Fatal, _pFormat, _args...); }
+
 	private:
 		template <class ... TypeInstr>
 		void compositeType(Type& _compositeTye, Instruction* _pSubType, TypeInstr ... _types);
@@ -240,6 +256,18 @@ namespace spvgentwo
 
 		List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function
 	};
+
+	template<typename ...Args>
+	inline bool Module::log(bool _pred, const LogLevel _level, const char* _pFormat, Args ..._args) const
+	{
+#ifdef SPVGENTWO_LOGGING
+		if (m_pLogger != nullptr && _pred == false)
+		{
+			m_pLogger->log(_level, _pFormat, _args...);
+		}
+#endif
+		return _pred;
+	}
 
 	template<class ReturnType, class ...ParameterTypes>
 	inline Function& Module::addFunction(const char* _pFunctionName, const Flag<spv::FunctionControlMask> _control, const bool _addEntryBasicBlock)

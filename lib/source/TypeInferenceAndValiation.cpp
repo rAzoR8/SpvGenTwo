@@ -331,6 +331,12 @@ bool spvgentwo::defaultimpl::validateImageOperandType(const Instruction& _instr)
 	auto coordIt = imgIt.next();
 	auto drefCompoOrMask = coordIt.next();
 
+	if (imgIt == nullptr || coordIt == nullptr)
+	{
+		module->logError("Insufficient number of arguments");
+		return false;
+	}
+
 	const Type* imageType = imgIt->getInstruction()->getType();
 	const Type* coordType = coordIt->getInstruction()->getType();
 

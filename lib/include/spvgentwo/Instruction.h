@@ -36,7 +36,6 @@ namespace spvgentwo
 			Module* pModule;
 		} m_parent = {};
 
-		using SingleOpMemberFun = Instruction* (Instruction::*)(Instruction*, Instruction*);
 		using DualOpMemberFun = Instruction* (Instruction::*)(Instruction*, Instruction*);
 
 	public:
@@ -115,8 +114,8 @@ namespace spvgentwo
 		// returns the ID assigned to this instrucions
 		spv::Id resolveId(spv::Id& _previousId);
 
-		// serialize instructions of this basic block to the IWriter, returns ID that was assigned to this instruction
-		spv::Id write(IWriter* _pWriter, spv::Id& _resultId);
+		// serialize instructions of this basic block to the IWriter
+		void write(IWriter* _pWriter);
 
 		// transforms _args to operands, calls inferResultTypeOperand and validateOperands()
 		template <class ...Args>
@@ -648,6 +647,8 @@ namespace spvgentwo
 		// Base must be a pointer, pointing to the base of a composite object.
 
 		const Type* pBaseType = _pBase->getType();
+		if (pBaseType == nullptr) return this;
+
 		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...); // base is a pointer type, so 0 is used to get the inner type
 		Module* pModule = _pBase->getModule();
 		Instruction* pResultType = nullptr;
@@ -674,9 +675,12 @@ namespace spvgentwo
 	template<class ...Operands>
 	inline Instruction* Instruction::opLoad(Instruction* _pPointerToVar, const Flag<MemoryOperands> _memOperands, Operands ..._operands)
 	{
+		const Type* ptrType = _pPointerToVar->getType();
+		if (ptrType == nullptr) return this;
+
 		// Result Type is the type of the loaded object.It must be a type with ﬁxed size; i.e., it cannot be, nor include, any OpTypeRuntimeArray types.
 		// Pointer is the pointer to load through.Its type must be an OpTypePointer whose Type operand is the same as Result Type.
-		Instruction* pResultType = getModule()->addType(_pPointerToVar->getType()->front());
+		Instruction* pResultType = getModule()->addType(ptrType->front());
 		return makeOp(spv::Op::OpLoad, pResultType, InvalidId, _pPointerToVar, _memOperands.mask, _operands...);
 	}
 
@@ -689,7 +693,10 @@ namespace spvgentwo
 	template<class ...ConstituentInstr>
 	inline Instruction* Instruction::opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituent, ConstituentInstr* ..._constituents)
 	{
-		if (_pResultType->getType()->isComposite() == false)
+		const Type* type =  _pResultType->getType();
+		if (type == nullptr) return this;
+
+		if (type->isComposite() == false)
 		{
 			getModule()->logError("Result type of opCompositeConstruct is not a composite type");
 			return this;
@@ -702,6 +709,8 @@ namespace spvgentwo
 	inline Instruction* Instruction::opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ..._indices)
 	{
 		const Type* pBaseType = _pComposite->getType();
+		if (pBaseType == nullptr) return this;
+
 		Module* pModule = _pComposite->getModule();
 
 		if (pBaseType->isComposite() == false)
@@ -727,6 +736,8 @@ namespace spvgentwo
 	inline Instruction* Instruction::opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, const unsigned int _firstIndex, IntIndices ..._indices)
 	{
 		const Type* pBaseType = _pComposite->getType();
+		if (pBaseType == nullptr) return this;
+
 		Module* pModule = _pComposite->getModule();
 
 		if (pBaseType->isComposite() == false)
@@ -740,6 +751,7 @@ namespace spvgentwo
 		if (it != nullptr)
 		{
 			const Type* pValueType = _pValue->getType();
+			if (pValueType == nullptr) return this;
 
 			if (*it == *pValueType)
 			{
@@ -762,6 +774,8 @@ namespace spvgentwo
 		const Type* type = _pSampledImage->getType();
 		const Type* imageType = type->isSampledImage() ? &type->front() : type;
 		const Type* coordType = _pCoordinate->getType();
+
+		if (type == nullptr || imageType == nullptr || coordType == nullptr) return this;
 
 		bool isDref = false;
 		bool isProj = false;
@@ -833,7 +847,7 @@ namespace spvgentwo
 		{
 			if (isDref || isComponent)
 			{
-				if (_pDrefOrCompnent == nullptr)
+				if (_pDrefOrCompnent == nullptr || _pDrefOrCompnent->getType() == nullptr)
 				{
 					module.logError("Depth reference parameter is null");
 					return false;

@@ -103,11 +103,11 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::returnValue(Instruction* _pValue)
 	return pRet;
 }
 
-void spvgentwo::BasicBlock::write(IWriter* _pWriter, spv::Id& _resultId)
+void spvgentwo::BasicBlock::write(IWriter* _pWriter)
 {
 	for (Instruction& instr : *this)
 	{
-		instr.write(_pWriter, _resultId);
+		instr.write(_pWriter);
 	}
 }
 

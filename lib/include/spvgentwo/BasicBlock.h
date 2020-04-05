@@ -54,7 +54,7 @@ namespace spvgentwo
 		// return last operation
 		operator Instruction* () const { return m_pLast != nullptr ? m_pLast->operator->() : nullptr; };
 
-		void write(IWriter* _pWriter, spv::Id& _resultId);
+		void write(IWriter* _pWriter);
 
 		// structured if: true and false block must NOT have a terminator yet!
 		// returns last instruction of MergeBlock which creats a result

@@ -126,16 +126,6 @@ spvgentwo::Module::~Module()
 {
 }
 
-void spvgentwo::Module::log(const LogLevel _level, const char* _pMsg) const
-{
-#ifdef SPVGENTWO_LOGGING
-	if (m_pLogger != nullptr)
-	{
-		m_pLogger->log(_level, _pMsg);
-	}
-#endif
-}
-
 void spvgentwo::Module::reset()
 {
 	m_Functions.clear();
@@ -491,23 +481,21 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 		}
 	}
 
-	spv::Id maxId = 0u;
+	const spv::Id maxId = assignIDs();
 
 	// write header
 	_pWriter->put(spv::MagicNumber);
 	_pWriter->put(m_spvVersion);
 	_pWriter->put(GeneratorId);
-	const long boundsPos = _pWriter->put(1024u)  - 4u; // bounds dummy
+	_pWriter->put(maxId+1u); 
 	_pWriter->put(0u); // schema
 
-	auto writeInstr = [&maxId, _pWriter](Instruction& instr)
+	auto writeInstr = [_pWriter](Instruction& instr)
 	{
-		instr.write(_pWriter, maxId);
+		instr.write(_pWriter);
 	};
 
 	iterateInstructions(writeInstr);
-
-	_pWriter->putAt(maxId + 1u, boundsPos);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, const char* _pName, Instruction* _pInitialzer)
