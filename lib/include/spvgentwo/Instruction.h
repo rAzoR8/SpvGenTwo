@@ -477,6 +477,10 @@ namespace spvgentwo
 
 		Instruction* opConvertFToS(Instruction* _pFloatVec);
 
+		Instruction* opConvertSToF(Instruction* _pSIntVec);
+
+		Instruction* opConvertUToF(Instruction* _pUIntVec);
+
 	private:
 
 		// creates literals

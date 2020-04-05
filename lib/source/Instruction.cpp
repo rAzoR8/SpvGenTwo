@@ -828,6 +828,36 @@ spvgentwo::Instruction* spvgentwo::Instruction::opConvertFToS(Instruction* _pFlo
 	return this;
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opConvertSToF(Instruction* _pSIntVec)
+{
+	const Type* type = _pSIntVec->getType();
+
+	if (type == nullptr) return this;
+
+	if (type->isScalarOrVectorOf(spv::Op::OpTypeInt) && type->isSigned())
+	{
+		return makeOp(spv::Op::OpConvertSToF, InvalidInstr, InvalidId, _pSIntVec);
+	}
+	getModule()->logError("Operand of OpConvertSToF is not a scalar or vector of int type");
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opConvertUToF(Instruction* _pUIntVec)
+{
+	const Type* type = _pUIntVec->getType();
+
+	if (type == nullptr) return this;
+
+	if (type->isScalarOrVectorOf(spv::Op::OpTypeInt) && type->isUnsigned())
+	{
+		return makeOp(spv::Op::OpConvertUToF, InvalidInstr, InvalidId, _pUIntVec);
+	}
+	getModule()->logError("Operand of OpConvertUToF is not a scalar or vector of int type");
+
+	return this;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
 {
 	const Type* pLeftType = _pLeft->getType();

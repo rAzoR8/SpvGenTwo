@@ -229,6 +229,16 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 
 		return module->addType(t);
 	}
+	case spv::Op::OpConvertSToF:
+	case spv::Op::OpConvertUToF:
+	{
+		Type t(*type1);
+		Type& base = t.getBaseType();
+		base.setType(spv::Op::OpTypeFloat);
+		base.setIntSign(false); // reset sign
+
+		return module->addType(t);
+	}
 	default:
 		break;
 	}
