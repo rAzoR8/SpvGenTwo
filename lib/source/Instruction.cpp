@@ -798,66 +798,6 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 	return this;
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opConvertFToU(Instruction* _pFloatVec)
-{
-	const Type* type = _pFloatVec->getType();
-
-	if (type == nullptr) return this;
-
-	if (type->isScalarOrVectorOf(spv::Op::OpTypeFloat))
-	{
-		return makeOp(spv::Op::OpConvertFToU, InvalidInstr, InvalidId, _pFloatVec);
-	}
-	getModule()->logError("Operand of OpConvertFToU is not a scalar or vector of float type");
-
-	return this;
-}
-
-spvgentwo::Instruction* spvgentwo::Instruction::opConvertFToS(Instruction* _pFloatVec)
-{
-	const Type* type = _pFloatVec->getType();
-
-	if (type == nullptr) return this;
-
-	if (type->isScalarOrVectorOf(spv::Op::OpTypeFloat))
-	{
-		return makeOp(spv::Op::OpConvertFToS, InvalidInstr, InvalidId, _pFloatVec);
-	}
-	getModule()->logError("Operand of OpConvertFToS is not a scalar or vector of float type");
-
-	return this;
-}
-
-spvgentwo::Instruction* spvgentwo::Instruction::opConvertSToF(Instruction* _pSIntVec)
-{
-	const Type* type = _pSIntVec->getType();
-
-	if (type == nullptr) return this;
-
-	if (type->isScalarOrVectorOf(spv::Op::OpTypeInt) && type->isSigned())
-	{
-		return makeOp(spv::Op::OpConvertSToF, InvalidInstr, InvalidId, _pSIntVec);
-	}
-	getModule()->logError("Operand of OpConvertSToF is not a scalar or vector of int type");
-
-	return this;
-}
-
-spvgentwo::Instruction* spvgentwo::Instruction::opConvertUToF(Instruction* _pUIntVec)
-{
-	const Type* type = _pUIntVec->getType();
-
-	if (type == nullptr) return this;
-
-	if (type->isScalarOrVectorOf(spv::Op::OpTypeInt) && type->isUnsigned())
-	{
-		return makeOp(spv::Op::OpConvertUToF, InvalidInstr, InvalidId, _pUIntVec);
-	}
-	getModule()->logError("Operand of OpConvertUToF is not a scalar or vector of int type");
-
-	return this;
-}
-
 spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
 {
 	const Type* pLeftType = _pLeft->getType();

@@ -473,13 +473,13 @@ namespace spvgentwo
 
 #pragma endregion
 
-		Instruction* opConvertFToU(Instruction* _pFloatVec);
+		Instruction* opConvertFToU(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpConvertFToU, _pFloatVec, nullptr, "Operand of OpConvertFToU is not a scalar or vector of float type", false); }
 
-		Instruction* opConvertFToS(Instruction* _pFloatVec);
+		Instruction* opConvertFToS(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpConvertFToS, _pFloatVec, nullptr, "Operand of OpConvertFToS is not a scalar or vector of float type", false); }
 
-		Instruction* opConvertSToF(Instruction* _pSIntVec);
+		Instruction* opConvertSToF(Instruction* _pSIntVec) { return scalarVecOp(spv::Op::OpConvertSToF, _pSIntVec, nullptr, "Operand of OpConvertSToF is not a scalar or vector of int type"); }
 
-		Instruction* opConvertUToF(Instruction* _pUIntVec);
+		Instruction* opConvertUToF(Instruction* _pUIntVec) { return scalarVecOp(spv::Op::OpConvertUToF, _pUIntVec, nullptr, "Operand of OpConvertUToF is not a scalar or vector of int type"); }
 
 	private:
 

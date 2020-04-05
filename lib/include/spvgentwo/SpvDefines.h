@@ -161,7 +161,7 @@ namespace spvgentwo
 		Any = Signed | Unsigned,
 	};
 
-	// get spv::Op::OpTypeFloat from spv::Op::OpFAdd etc, returns spv::Op::OpNop
+	// get spv::Op::OpTypeFloat from spv::Op::OpFAdd etc (argument type), returns spv::Op::OpNop
 	constexpr spv::Op getTypeFromOp(const spv::Op _op, Sign& _sign)
 	{
 		// this is not a complete match for all instructions, but for most that have variants for several types
@@ -200,6 +200,8 @@ namespace spvgentwo
 		case spv::Op::OpLessOrGreater:
 		case spv::Op::OpOrdered:
 		case spv::Op::OpUnordered:
+		case spv::Op::OpConvertFToS:
+		case spv::Op::OpConvertFToU:
 			_sign = Sign::Any;
 			return spv::Op::OpTypeFloat;
 
@@ -213,6 +215,7 @@ namespace spvgentwo
 		case spv::Op::OpSMulExtended:
 		case spv::Op::OpSNegate:
 		case spv::Op::OpSRem:
+		case spv::Op::OpConvertSToF:
 			_sign = Sign::Signed;
 			return spv::Op::OpTypeInt;
 
@@ -248,6 +251,7 @@ namespace spvgentwo
 		case spv::Op::OpUMul32x16INTEL:
 		case spv::Op::OpUMulExtended:
 		case spv::Op::OpUSubSatINTEL:
+		case spv::Op::OpConvertUToF:
 			_sign = Sign::Unsigned;
 			return spv::Op::OpTypeInt;
 
