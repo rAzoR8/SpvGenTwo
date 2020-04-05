@@ -112,8 +112,19 @@ Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
 
 * [FunctionCall Example](example/source/FunctionCall.cpp)
 * [ControlFlow Example](example/source/ControlFlow.cpp)
+* [FunctionCall Example](example/source/FunctionCall.cpp)
 * [Extensions Example](example/source/Extensions.cpp)
 * [Constants Example](example/source/Constants.cpp)
+* [Types Example](example/source/Types.cpp)
+* [ExpressionGraph Example](example/source/ExpressionGraph.cpp)
+
+# Project Structure
+
+SpvGenTwo is split into 3 folders:
+
+* `lib` contains the foundation to generate SPIR-V code, it only requires `stddef.h` and `spirv.hpp11` to be built. SpvGenTwo makes excessive use of its abstract Allocator, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those a not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :).
+* `common` contains some convenience implementations of abstract interfaces: HeapAllocator uses C malloc and free, BindaryFileWriter uses fopen, ConsoleLogger uses vprintf. It also as some additional container classes like Callable (std::function replacement), Graph, ControlFlowGraph, Expression and ExprGraph, they follow the same design principles and might sooner or later be moved to `lib` if needed.
+* `example` contains small, self-contained code snippets that each generate a SPIR-V module to show some of the fundamental mechanics and APIs of SpvGenTwo.
 
 # Building
 
@@ -124,6 +135,8 @@ Use the supplied CMakeLists.txt to generate project files for your build system.
 * `SPVGENTWO_REPLACE_PLACEMENTNEW` is set to TRUE by default. If FALSE, placement-new will be included from `<new>` header.
 * `SPVGENTWO_REPLACE_TRAITS` is set to TRUE by default. If FALSE, `<type_traits>` and `<utility>` header will be included under `spvgentwo::stdrep` namespace.
 * `SPVGENTWO_LOGGING` is set to TRUE by default, calls to module.log() will have not effect if FALSE.
+
+Note that the SpvGenTwoExample executable project requires the Vulkan SDK to be installed as it calls spirv-val and spriv-dis.
 
 # Documentation
 
