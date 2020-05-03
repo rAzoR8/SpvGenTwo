@@ -36,9 +36,12 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 project(SpvGenTwo VERSION 1.0 DESCRIPTION "SPIR-V codegen library")
 
 #dependencies
-find_package(Vulkan)
+find_path(SPIRV-Headers_INCLUDE_DIR
+  NAMES spirv-headers/spirv.hpp11
+  PATHS
+  "$ENV{VULKAN_SDK}/include")
 
-set(SPIRV_INCLUDE_DIR "${Vulkan_INCLUDE_DIR}/vulkan/" CACHE STRING "Path containing spirv.hpp11 and GLSL.std.450.h")
+set(SPIRV_INCLUDE_DIR "${SPIRV-Headers_INCLUDE_DIR}/spirv-headers/" CACHE STRING "Path containing spirv.hpp11 and GLSL.std.450.h")
 
 cmake_option(BUILD_SHARED_LIBS "Build spvgentwo as shared library" TRUE)
 cmake_option(SPVGENTWO_LOGGING "Enable Logging" TRUE)

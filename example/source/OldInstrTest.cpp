@@ -50,6 +50,8 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* abs = bb.ext<GLSL>()->opSAbs(signs);
 		Instruction* smin = bb.ext<GLSL>()->opSMin(abs, signs);
 
+		bb->opConvertSToF(smin);
+
 		Instruction* z = bb.Add(x, y);
 		z = bb.ext<GLSL>()->opRound(z);
 
@@ -65,6 +67,9 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		fNeg = bb->opFMod(dot, fNeg);
 		fNeg = bb->opFRem(dot, fNeg);
 
+		bb->opConvertFToS(cross);
+		bb->opConvertFToU(dot);
+
 		cross = bb->opVectorTimesScalar(cross, fNeg);
 
 		Instruction* mat3 = bb->opOuterProduct(uniVec, uniVec);
@@ -76,6 +81,8 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		index = bb->opLoad(index);
 
 		Instruction* uInt = module.constant(22u);
+
+		bb->opConvertUToF(uInt);
 
 		uInt = bb->opUDiv(uInt, uInt);
 		uInt = bb->opUMod(uInt, uInt);
