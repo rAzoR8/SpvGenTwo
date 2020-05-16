@@ -168,7 +168,7 @@ namespace spvgentwo
 	{
 		if (this == &_other) return *this;
 
-		if (reserve(_other.m_elements))
+		if (resize(_other.m_elements))
 		{
 			for (size_t i = 0u; i < _other.m_elements; ++i)
 			{
