@@ -793,8 +793,59 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 		return makeOp(spv::Op::OpSampledImage, InvalidInstr, InvalidId, _pImage, _pSampler);
 	}
 
-	getModule()->logError("Image or sampler type does not match (storage / subpass image not allowed");
+	getModule()->logError("Image or sampler type does not match (storage / subpass image not allowed)");
 	
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opUConvert(Instruction* _pUintVec, unsigned int _bitWidth)
+{
+	const Type* type = _pUintVec->getType();
+
+	if (type == nullptr) return this;
+
+	if (Type t = type->getBaseType(); t.isUInt() && t.getIntWidth() != _bitWidth)
+	{
+		t.getBaseType().setIntWidth(_bitWidth);
+		return makeOp(spv::Op::OpUConvert, getModule()->addType(t), InvalidId, _pUintVec);
+	}
+
+	getModule()->logError("Operand of OpUConvert is not a unsigned integer type with differing component width");
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opSConvert(Instruction* _pSIntVec, unsigned int _bitWidth)
+{
+	const Type* type = _pSIntVec->getType();
+
+	if (type == nullptr) return this;
+
+	if (Type t = type->getBaseType(); t.isSInt() && t.getIntWidth() != _bitWidth)
+	{
+		t.getBaseType().setIntWidth(_bitWidth);
+		return makeOp(spv::Op::OpSConvert, getModule()->addType(t), InvalidId, _pSIntVec);
+	}
+
+	getModule()->logError("Operand of OpsConvert is not a signed integer type with differing component width");
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opFConvert(Instruction* _pFloatVec, unsigned int _bitWidth)
+{
+	const Type* type = _pFloatVec->getType();
+
+	if (type == nullptr) return this;
+
+	if (Type t = type->getBaseType(); t.isFloat() && t.getFloatWidth() != _bitWidth)
+	{
+		t.getBaseType().setFloatWidth(_bitWidth);
+		return makeOp(spv::Op::OpFConvert, getModule()->addType(t), InvalidId, _pFloatVec);
+	}
+
+	getModule()->logError("Operand of OpFConvert is not a unsigned integer type with differing component width");
+
 	return this;
 }
 

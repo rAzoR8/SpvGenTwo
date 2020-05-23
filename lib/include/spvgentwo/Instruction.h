@@ -481,6 +481,13 @@ namespace spvgentwo
 
 		Instruction* opConvertUToF(Instruction* _pUIntVec) { return scalarVecOp(spv::Op::OpConvertUToF, _pUIntVec, nullptr, "Operand of OpConvertUToF is not a scalar or vector of int type"); }
 
+		// convert scalar or vector to different componenet bit width
+		Instruction* opUConvert(Instruction* _pUIntVec, unsigned int _bitWidth);
+
+		Instruction* opSConvert(Instruction* _pSIntVec, unsigned int _bitWidth);
+
+		Instruction* opFConvert(Instruction* _pFloatVec, unsigned int _bitWidth);
+
 	private:
 
 		// creates literals
