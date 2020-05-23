@@ -341,7 +341,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::Div(Instruction* _pLeft, Instruc
 		return opFDiv(_pLeft, _pRight);
 	}
 	else if (BasicBlock* bb = getBasicBlock(); bb != nullptr && _allowVecDividedByScalar &&
-		lType->isVectorOfScalar() && rType->isScalar())
+		lType->isVector() && rType->isScalar())
 	{
 		Instruction* one = nullptr;
 
@@ -804,7 +804,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opUConvert(Instruction* _pUintVe
 
 	if (type == nullptr) return this;
 
-	if (Type t = type->getBaseType(); t.isUInt() && t.getIntWidth() != _bitWidth)
+	if (Type t = type->getBaseType(); t.isScalarOrVectorOf(spv::Op::OpTypeInt, 0u, 0u, Sign::Unsigned) && t.getIntWidth() != _bitWidth)
 	{
 		t.getBaseType().setIntWidth(_bitWidth);
 		return makeOp(spv::Op::OpUConvert, getModule()->addType(t), InvalidId, _pUintVec);
@@ -821,7 +821,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSConvert(Instruction* _pSIntVe
 
 	if (type == nullptr) return this;
 
-	if (Type t = type->getBaseType(); t.isSInt() && t.getIntWidth() != _bitWidth)
+	if (Type t = type->getBaseType(); t.isScalarOrVectorOf(spv::Op::OpTypeInt, 0u, 0u, Sign::Signed) && t.getIntWidth() != _bitWidth)
 	{
 		t.getBaseType().setIntWidth(_bitWidth);
 		return makeOp(spv::Op::OpSConvert, getModule()->addType(t), InvalidId, _pSIntVec);
@@ -838,13 +838,29 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFConvert(Instruction* _pFloatV
 
 	if (type == nullptr) return this;
 
-	if (Type t = type->getBaseType(); t.isFloat() && t.getFloatWidth() != _bitWidth)
+	if (Type t = type->getBaseType(); t.isScalarOrVectorOf(spv::Op::OpTypeFloat) && t.getFloatWidth() != _bitWidth)
 	{
 		t.getBaseType().setFloatWidth(_bitWidth);
 		return makeOp(spv::Op::OpFConvert, getModule()->addType(t), InvalidId, _pFloatVec);
 	}
 
-	getModule()->logError("Operand of OpFConvert is not a unsigned integer type with differing component width");
+	getModule()->logError("Operand of OpFConvert is not a float type with differing component width");
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opQuantizeToF16(Instruction* _pFloatVec)
+{
+	const Type* type = _pFloatVec->getType();
+
+	if (type == nullptr) return this;
+
+	if (type->isScalarOrVectorOf(spv::Op::OpTypeFloat, 0u, 32u))
+	{
+		return makeOp(spv::Op::OpQuantizeToF16, _pFloatVec->getTypeInstr(), InvalidId, _pFloatVec);
+	}
+
+	getModule()->logError("Operand of OpQuantizeToF16 is not a float type with 32 bit component width");
 
 	return this;
 }

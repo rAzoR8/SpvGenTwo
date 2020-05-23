@@ -488,6 +488,8 @@ namespace spvgentwo
 
 		Instruction* opFConvert(Instruction* _pFloatVec, unsigned int _bitWidth);
 
+		Instruction* opQuantizeToF16(Instruction* _pFloatVec);
+
 	private:
 
 		// creates literals

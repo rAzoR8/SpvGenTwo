@@ -77,6 +77,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 		Instruction* f64 = bb->opFConvert(dot, 64u);
 		Instruction* f16 = bb->opFConvert(dot, 16u);
+		Instruction* q16 = bb->opQuantizeToF16(dot);
 
 		cross = bb->opVectorTimesScalar(cross, fNeg);
 
