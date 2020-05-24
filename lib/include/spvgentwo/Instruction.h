@@ -492,6 +492,11 @@ namespace spvgentwo
 
 		Instruction* opConvertPtrToU(Instruction* _pPhysPtr, unsigned int _bitWidth);
 
+		Instruction* opBitcast(Instruction* _pResultType, Instruction* _pOperand);
+
+		template<class T> // generic version of opBitcast, generates spv type from T
+		Instruction* bitcast(Instruction* _pOperand);
+
 	private:
 
 		// creates literals
@@ -554,6 +559,12 @@ namespace spvgentwo
 		return this;
 	}
 	
+	template<class T>
+	inline Instruction* Instruction::bitcast(Instruction* _pOperand)
+	{
+		return opBitcast(getModule()->type<T>(), _pOperand);
+	}
+
 	template<class T, class ...Args>
 	inline void Instruction::makeOpInternal(T _first, Args ..._args)
 	{

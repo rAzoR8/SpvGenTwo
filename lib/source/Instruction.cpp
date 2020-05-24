@@ -882,6 +882,31 @@ spvgentwo::Instruction* spvgentwo::Instruction::opConvertPtrToU(Instruction* _pP
 	return this;
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opBitcast(Instruction* _pResultType, Instruction* _pOperand)
+{
+	const Type* resultType = _pResultType->getType();
+	const Type* operandType = _pOperand->getType();
+
+	if (resultType == nullptr || operandType == nullptr) return this;
+
+	if (*resultType == *operandType)
+	{
+		getModule()->logError("Operand and result type of OpBitcast are identical");
+		return this;
+	}
+
+	if ((operandType->isPointer() && resultType->isPointer()) || 
+		(operandType->getScalarOrVectorLength() * operandType->getBaseType().getIntWidth() ==
+			resultType->getScalarOrVectorLength() * resultType->getBaseType().getIntWidth()))
+	{
+		return makeOp(spv::Op::OpBitcast, _pResultType, InvalidId, _pOperand);
+	}
+
+	getModule()->logError("Operand or result type of OpBitcast is not a pointer or numerical scalar or vector type whose total bitwidth match");
+
+	return this;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
 {
 	const Type* pLeftType = _pLeft->getType();

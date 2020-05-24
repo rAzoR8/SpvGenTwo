@@ -288,7 +288,8 @@ namespace spvgentwo
 		bool isF32() const { return m_Type == spv::Op::OpTypeFloat && m_FloatWidth == 32u; }
 		bool isF64() const { return m_Type == spv::Op::OpTypeFloat && m_FloatWidth == 64u; }
 
-		bool isScalar() const { return isInt() || isFloat(); }
+		bool isNumerial() const { return isInt() || isFloat(); }
+		bool isScalar() const { return isNumerial() || isBool(); }
 		bool isAggregate() const { return isStruct() || isArray(); }
 		bool isComposite() const { return isAggregate() || isMatrix() || isVector(); }
 
@@ -311,14 +312,16 @@ namespace spvgentwo
 		bool isVectorOf(const spv::Op _type, const unsigned int _length = 0u, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return isVector() && front().getType() == _type && (_length == 0u || m_VecComponentCount == _length) && (_componentWidth == 0u || front().getIntWidth() == _componentWidth) && front().hasSign(_sign); }
 
 		// does not check for type
-		bool isVectorOfLength(const unsigned int _length, const unsigned int _componentWidth = 0u) const { return isVector() && (_length == 0u || m_VecComponentCount == _length) && (_componentWidth == 0u || front().getIntWidth() == _componentWidth); }
-		bool isVectorOfInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isInt(); }
-		bool isVectorOfSInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isSInt(); }
-		bool isVectorOfUInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isUInt(); }
+		bool isVectorOfLength(const unsigned int _length, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return isVector() && front().hasSign(_sign) && (_length == 0u || m_VecComponentCount == _length) && (_componentWidth == 0u || front().getIntWidth() == _componentWidth); }
+		bool isVectorOfInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return isVectorOfLength(_length, _componentWidth, _sign) && front().isInt(); }
+		bool isVectorOfSInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfInt(_length, _componentWidth, Sign::Signed); }
+		bool isVectorOfUInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfInt(_length, _componentWidth, Sign::Unsigned); }
 		bool isVectorOfFloat(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isFloat(); }
 		bool isVectorOfBool(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isBool(); }
 
 		bool isScalarOrVectorOf(const spv::Op _type, const unsigned int _length = 0u, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return (m_Type == _type && (_componentWidth == 0u || m_IntWidth == _componentWidth) && hasSign(_sign)) || isVectorOf(_type, _length, _componentWidth, _sign); }
+		bool isNumericalScalarOrVector(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return (isNumerial() && (_componentWidth == 0u || m_IntWidth == _componentWidth) && hasSign(_sign)) || (isVectorOfLength(_length, _componentWidth, _sign) && front().isNumerial()); }
+
 		bool hasSameVectorLength(const Type& _other) const { return isVector() && _other.isVector() && m_VecComponentCount == _other.m_VecComponentCount; }
 		bool hasSameVectorLength(const Type& _other, const spv::Op _componentType) const { return isVectorOf(_componentType) && _other.isVectorOf(_componentType) && m_VecComponentCount == _other.m_VecComponentCount; }
 		bool isScalarOrVectorOfSameLength(const spv::Op _type, const Type& _other, bool _sameComponentWidth = true) const { return (!_sameComponentWidth || getBaseType().getIntWidth() == _other.getBaseType().getIntWidth()) && (hasSameVectorLength(_other, _type) || (m_Type == _type && _other.m_Type == _type && isScalar() && _other.isScalar())); }

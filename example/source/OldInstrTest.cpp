@@ -61,6 +61,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		z = bb.ext<GLSL>()->opRound(z);
 
 		Instruction* uniVec = bb->opLoad(uniformVar);
+		bb->bitcast<vector_t<int, 3>>(uniVec);
 
 		Instruction* cross = bb.ext<GLSL>()->opCross(uniVec, uniVec);
 		Instruction* dot = bb->opDot(cross, uniVec);
@@ -92,6 +93,8 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* uInt = module.constant(22u);
 		Instruction* uInt64 = bb->opUConvert(uInt, 64u); // zero extend
 		Instruction* uInt16 = bb->opUConvert(uInt, 16u);
+
+		bb->bitcast<double>(uInt64);
 
 		bb->opConvertUToF(uInt);
 
