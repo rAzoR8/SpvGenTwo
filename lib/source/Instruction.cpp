@@ -865,6 +865,23 @@ spvgentwo::Instruction* spvgentwo::Instruction::opQuantizeToF16(Instruction* _pF
 	return this;
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opConvertPtrToU(Instruction* _pPhysPtr, unsigned int _bitWidth)
+{
+	const Type* type = _pPhysPtr->getType();
+
+	if (type == nullptr) return this;
+
+	if (type->isPointer() && (type->getStorageClass() == spv::StorageClass::PhysicalStorageBuffer || type->getStorageClass() == spv::StorageClass::PhysicalStorageBufferEXT))
+	{
+		Type t(getModule()->newType());
+		return makeOp(spv::Op::OpConvertPtrToU, getModule()->addType(t.UInt(_bitWidth)), InvalidId, _pPhysPtr);
+	}
+
+	getModule()->logError("Operand of OpConvertPtrToU is not a physical pointer type");
+
+	return this;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
 {
 	const Type* pLeftType = _pLeft->getType();

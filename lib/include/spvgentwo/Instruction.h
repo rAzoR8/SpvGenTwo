@@ -490,6 +490,8 @@ namespace spvgentwo
 
 		Instruction* opQuantizeToF16(Instruction* _pFloatVec);
 
+		Instruction* opConvertPtrToU(Instruction* _pPhysPtr, unsigned int _bitWidth);
+
 	private:
 
 		// creates literals
