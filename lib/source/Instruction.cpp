@@ -871,7 +871,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opConvertPtrToU(Instruction* _pP
 
 	if (type == nullptr) return this;
 
-	if (type->isPointer() && (type->getStorageClass() == spv::StorageClass::PhysicalStorageBuffer || type->getStorageClass() == spv::StorageClass::PhysicalStorageBufferEXT))
+	if (type->isPointer() && type->getStorageClass() == spv::StorageClass::PhysicalStorageBuffer)
 	{
 		Type t(getModule()->newType());
 		return makeOp(spv::Op::OpConvertPtrToU, getModule()->addType(t.UInt(_bitWidth)), InvalidId, _pPhysPtr);
