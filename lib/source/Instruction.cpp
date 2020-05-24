@@ -668,10 +668,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 	const Type* falseType = _pFalseObj->getType();
 	const Type* condType = _pCondBool->getType();
 
-	if (trueType == nullptr || falseType == false || condType == false) return this;
+	if (trueType == nullptr || falseType == nullptr || condType == nullptr) return this;
 
 	if (*trueType == *falseType && condType->isScalarOrVectorOf(spv::Op::OpTypeBool) && 
-		condType->getVectorComponentCount() == trueType->getVectorComponentCount())
+		condType->getScalarOrVectorLength() == trueType->getScalarOrVectorLength())
 	{
 		// Before version1.4, results are only computed per component.
 		// Before version1.4, Result Type must be a pointer, scalar, or vector.Starting withv ersion1.4, Result Type can additionally be a composite type other than a vector.
