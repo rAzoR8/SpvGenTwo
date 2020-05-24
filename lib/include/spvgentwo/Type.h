@@ -317,7 +317,7 @@ namespace spvgentwo
 		bool isVectorOfSInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfInt(_length, _componentWidth, Sign::Signed); }
 		bool isVectorOfUInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfInt(_length, _componentWidth, Sign::Unsigned); }
 		bool isVectorOfFloat(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isFloat(); }
-		bool isVectorOfBool(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isBool(); }
+		bool isVectorOfBool(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isBool(); }
 
 		bool isScalarOrVectorOf(const spv::Op _type, const unsigned int _length = 0u, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return (m_Type == _type && (_componentWidth == 0u || m_IntWidth == _componentWidth) && hasSign(_sign)) || isVectorOf(_type, _length, _componentWidth, _sign); }
 		bool isNumericalScalarOrVector(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return (isNumerial() && (_componentWidth == 0u || m_IntWidth == _componentWidth) && hasSign(_sign)) || (isVectorOfLength(_length, _componentWidth, _sign) && front().isNumerial()); }
