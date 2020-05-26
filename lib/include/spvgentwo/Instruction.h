@@ -481,6 +481,22 @@ namespace spvgentwo
 
 		Instruction* opConvertUToF(Instruction* _pUIntVec) { return scalarVecOp(spv::Op::OpConvertUToF, _pUIntVec, nullptr, "Operand of OpConvertUToF is not a scalar or vector of int type"); }
 
+		// convert scalar or vector to different componenet bit width
+		Instruction* opUConvert(Instruction* _pUIntVec, unsigned int _bitWidth);
+
+		Instruction* opSConvert(Instruction* _pSIntVec, unsigned int _bitWidth);
+
+		Instruction* opFConvert(Instruction* _pFloatVec, unsigned int _bitWidth);
+
+		Instruction* opQuantizeToF16(Instruction* _pFloatVec);
+
+		Instruction* opConvertPtrToU(Instruction* _pPhysPtr, unsigned int _bitWidth);
+
+		Instruction* opBitcast(Instruction* _pResultType, Instruction* _pOperand);
+
+		template<class T> // generic version of opBitcast, generates spv type from T
+		Instruction* bitcast(Instruction* _pOperand);
+
 	private:
 
 		// creates literals
@@ -543,6 +559,12 @@ namespace spvgentwo
 		return this;
 	}
 	
+	template<class T>
+	inline Instruction* Instruction::bitcast(Instruction* _pOperand)
+	{
+		return opBitcast(getModule()->type<T>(), _pOperand);
+	}
+
 	template<class T, class ...Args>
 	inline void Instruction::makeOpInternal(T _first, Args ..._args)
 	{

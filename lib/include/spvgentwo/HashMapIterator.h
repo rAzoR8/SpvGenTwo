@@ -8,7 +8,7 @@ namespace spvgentwo
 	template <class Key, class Value>
 	struct NodeT
 	{
-		template <class Key, class Value>
+		template <class K, class V>
 		friend class HashMap;
 
 		template <class ...Args>

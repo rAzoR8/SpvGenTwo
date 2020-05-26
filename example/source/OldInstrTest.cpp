@@ -17,6 +17,11 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::VulkanMemoryModelKHR);
+	module.addCapability(spv::Capability::Float16);
+	module.addCapability(spv::Capability::Float64);
+	module.addCapability(spv::Capability::Int16);
+	module.addCapability(spv::Capability::Int64);
+
 	module.addExtension("SPV_KHR_vulkan_memory_model");
 	Instruction* ext = module.getExtensionInstructionImport("GLSL.std.450");
 	module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
@@ -56,6 +61,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		z = bb.ext<GLSL>()->opRound(z);
 
 		Instruction* uniVec = bb->opLoad(uniformVar);
+		bb->bitcast<vector_t<int, 3>>(uniVec);
 
 		Instruction* cross = bb.ext<GLSL>()->opCross(uniVec, uniVec);
 		Instruction* dot = bb->opDot(cross, uniVec);
@@ -70,6 +76,10 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		bb->opConvertFToS(cross);
 		bb->opConvertFToU(dot);
 
+		Instruction* f64 = bb->opFConvert(dot, 64u);
+		Instruction* f16 = bb->opFConvert(dot, 16u);
+		Instruction* q16 = bb->opQuantizeToF16(dot);
+
 		cross = bb->opVectorTimesScalar(cross, fNeg);
 
 		Instruction* mat3 = bb->opOuterProduct(uniVec, uniVec);
@@ -81,6 +91,10 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		index = bb->opLoad(index);
 
 		Instruction* uInt = module.constant(22u);
+		Instruction* uInt64 = bb->opUConvert(uInt, 64u); // zero extend
+		Instruction* uInt16 = bb->opUConvert(uInt, 16u);
+
+		bb->bitcast<double>(uInt64);
 
 		bb->opConvertUToF(uInt);
 
@@ -93,6 +107,9 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		sNeg = bb->opIMul(sNeg, index);
 		sNeg = bb->opSMod(sNeg, index);
 		sNeg = bb->opSDiv(uInt, sNeg);
+
+		Instruction* s64 = bb->opSConvert(sNeg, 64u);
+		Instruction* s16 = bb->opSConvert(sNeg, 16u);
 
 		// generic
 		bb->Add(sNeg, uInt);

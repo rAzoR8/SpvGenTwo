@@ -126,12 +126,12 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opCross(Instruction* _pLef
 	if (pLeftTypeInstr == nullptr || pRightTypeInstr == nullptr) return this;
 
 	const Type* pType = pLeftTypeInstr->getType();
-	if (pLeftTypeInstr == pRightTypeInstr && pType->isVectorOfScalar(3u))
+	if (pLeftTypeInstr == pRightTypeInstr && pType->isVectorOfFloat(3u))
 	{
 		return opExtInst(pLeftTypeInstr, ExtName, extinstr::GLSLstd450::GLSLstd450Cross, _pLeft, _pRight);	
 	}
 	
-	getModule()->logError("Operands of opCross are not scalar vector of length 3");
+	getModule()->logError("Operands of opCross are not vector of length 3");
 
 	return this;
 }

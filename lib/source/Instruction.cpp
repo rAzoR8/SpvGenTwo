@@ -341,7 +341,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::Div(Instruction* _pLeft, Instruc
 		return opFDiv(_pLeft, _pRight);
 	}
 	else if (BasicBlock* bb = getBasicBlock(); bb != nullptr && _allowVecDividedByScalar &&
-		lType->isVectorOfScalar() && rType->isScalar())
+		lType->isVector() && rType->isScalar())
 	{
 		Instruction* one = nullptr;
 
@@ -668,10 +668,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 	const Type* falseType = _pFalseObj->getType();
 	const Type* condType = _pCondBool->getType();
 
-	if (trueType == nullptr || falseType == false || condType == false) return this;
+	if (trueType == nullptr || falseType == nullptr || condType == nullptr) return this;
 
 	if (*trueType == *falseType && condType->isScalarOrVectorOf(spv::Op::OpTypeBool) && 
-		condType->getVectorComponentCount() == trueType->getVectorComponentCount())
+		condType->getScalarOrVectorLength() == trueType->getScalarOrVectorLength())
 	{
 		// Before version1.4, results are only computed per component.
 		// Before version1.4, Result Type must be a pointer, scalar, or vector.Starting withv ersion1.4, Result Type can additionally be a composite type other than a vector.
@@ -793,8 +793,117 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 		return makeOp(spv::Op::OpSampledImage, InvalidInstr, InvalidId, _pImage, _pSampler);
 	}
 
-	getModule()->logError("Image or sampler type does not match (storage / subpass image not allowed");
+	getModule()->logError("Image or sampler type does not match (storage / subpass image not allowed)");
 	
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opUConvert(Instruction* _pUintVec, unsigned int _bitWidth)
+{
+	const Type* type = _pUintVec->getType();
+
+	if (type == nullptr) return this;
+
+	if (Type t = type->getBaseType(); t.isScalarOrVectorOf(spv::Op::OpTypeInt, 0u, 0u, Sign::Unsigned) && t.getIntWidth() != _bitWidth)
+	{
+		t.getBaseType().setIntWidth(_bitWidth);
+		return makeOp(spv::Op::OpUConvert, getModule()->addType(t), InvalidId, _pUintVec);
+	}
+
+	getModule()->logError("Operand of OpUConvert is not a unsigned integer type with differing component width");
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opSConvert(Instruction* _pSIntVec, unsigned int _bitWidth)
+{
+	const Type* type = _pSIntVec->getType();
+
+	if (type == nullptr) return this;
+
+	if (Type t = type->getBaseType(); t.isScalarOrVectorOf(spv::Op::OpTypeInt, 0u, 0u, Sign::Signed) && t.getIntWidth() != _bitWidth)
+	{
+		t.getBaseType().setIntWidth(_bitWidth);
+		return makeOp(spv::Op::OpSConvert, getModule()->addType(t), InvalidId, _pSIntVec);
+	}
+
+	getModule()->logError("Operand of OpsConvert is not a signed integer type with differing component width");
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opFConvert(Instruction* _pFloatVec, unsigned int _bitWidth)
+{
+	const Type* type = _pFloatVec->getType();
+
+	if (type == nullptr) return this;
+
+	if (Type t = type->getBaseType(); t.isScalarOrVectorOf(spv::Op::OpTypeFloat) && t.getFloatWidth() != _bitWidth)
+	{
+		t.getBaseType().setFloatWidth(_bitWidth);
+		return makeOp(spv::Op::OpFConvert, getModule()->addType(t), InvalidId, _pFloatVec);
+	}
+
+	getModule()->logError("Operand of OpFConvert is not a float type with differing component width");
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opQuantizeToF16(Instruction* _pFloatVec)
+{
+	const Type* type = _pFloatVec->getType();
+
+	if (type == nullptr) return this;
+
+	if (type->isScalarOrVectorOf(spv::Op::OpTypeFloat, 0u, 32u))
+	{
+		return makeOp(spv::Op::OpQuantizeToF16, _pFloatVec->getTypeInstr(), InvalidId, _pFloatVec);
+	}
+
+	getModule()->logError("Operand of OpQuantizeToF16 is not a float type with 32 bit component width");
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opConvertPtrToU(Instruction* _pPhysPtr, unsigned int _bitWidth)
+{
+	const Type* type = _pPhysPtr->getType();
+
+	if (type == nullptr) return this;
+
+	if (type->isPointer() && type->getStorageClass() == spv::StorageClass::PhysicalStorageBuffer)
+	{
+		Type t(getModule()->newType());
+		return makeOp(spv::Op::OpConvertPtrToU, getModule()->addType(t.UInt(_bitWidth)), InvalidId, _pPhysPtr);
+	}
+
+	getModule()->logError("Operand of OpConvertPtrToU is not a physical pointer type");
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opBitcast(Instruction* _pResultType, Instruction* _pOperand)
+{
+	const Type* resultType = _pResultType->getType();
+	const Type* operandType = _pOperand->getType();
+
+	if (resultType == nullptr || operandType == nullptr) return this;
+
+	if (*resultType == *operandType)
+	{
+		getModule()->logError("Operand and result type of OpBitcast are identical");
+		return this;
+	}
+
+	if ((operandType->isPointer() && resultType->isPointer()) || 
+		(operandType->getScalarOrVectorLength() * operandType->getBaseType().getIntWidth() ==
+			resultType->getScalarOrVectorLength() * resultType->getBaseType().getIntWidth()))
+	{
+		return makeOp(spv::Op::OpBitcast, _pResultType, InvalidId, _pOperand);
+	}
+
+	getModule()->logError("Operand or result type of OpBitcast is not a pointer or numerical scalar or vector type whose total bitwidth match");
+
 	return this;
 }
 

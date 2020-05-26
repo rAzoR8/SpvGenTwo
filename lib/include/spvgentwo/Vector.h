@@ -253,14 +253,14 @@ namespace spvgentwo
 				return false;
 			}
 
-			if (_pInitValue != nullptr)
+			if (_pInitValue == nullptr)
 			{
 				for (size_t i = m_elements; i < m_capacity; ++i)
 				{
 					new(m_pData + i) T{};
 				}
 			}
-			else //if constexpr(stdrep::is_constructible_v<T, const T&>)
+			else if constexpr(stdrep::is_constructible_v<T, const T&>)
 			{
 				for (size_t i = m_elements; i < m_capacity; ++i)
 				{
