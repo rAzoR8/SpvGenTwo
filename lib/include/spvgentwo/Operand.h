@@ -54,8 +54,8 @@ namespace spvgentwo
 
 		Operand(BasicBlock* _target) : type(Type::BranchTarget), branchTarget(_target) {}
 		Operand(Instruction* _instr) : type(Type::Instruction), instruction(_instr) {}
-		Operand(const literal_t _value) : type(Type::Literal), value(_value) {}
-		Operand(const spv::Id _resutlId) : type(Type::ResultId), resultId(_resutlId) {}
+		Operand(const literal_t _value) : type(Type::Literal), instruction(nullptr) { value = _value; }
+		Operand(const spv::Id _resutlId) : type(Type::ResultId), instruction(nullptr) { resultId = _resutlId; }
 
 		void write(IWriter* _pWriter) const;
 
