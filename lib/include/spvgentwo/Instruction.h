@@ -134,7 +134,7 @@ namespace spvgentwo
 		bool validateOperands();
 
 		// checks if this instruction is the Modules generic invalid instruction (OpNop)
-		bool isInvalidInstr() const;
+		bool isErrorInstr() const;
 
 		//
 		// GENERIC OPERATIONS
@@ -501,6 +501,8 @@ namespace spvgentwo
 		Instruction* bitcast(Instruction* _pOperand);
 
 	private:
+		// return error instr
+		Instruction* error() const;
 
 		// creates literals
 		template <class T, class ...Args>

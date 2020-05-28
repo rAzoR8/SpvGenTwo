@@ -221,8 +221,8 @@ namespace spvgentwo
 		bool logFatal(bool _pred, const char* _pFormat, Args... _args) { return log(_pred, LogLevel::Fatal, _pFormat, _args...); }
 
 		// this instruction can be used as a return value for a failed operation (instruction could not be constructed etc)
-		Instruction* getInvalidInstr() { return &m_invalidInstr; }
-		const Instruction* getInvalidInstr() const { return &m_invalidInstr; }
+		Instruction* getErrorInstr() { return &m_errorInstr; }
+		const Instruction* getErrorInstr() const { return &m_errorInstr; }
 
 	private:
 		template <class ... TypeInstr>
@@ -260,7 +260,7 @@ namespace spvgentwo
 
 		List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function
 
-		Instruction m_invalidInstr; // opNop
+		Instruction m_errorInstr; // opNop
 	};
 
 	template<typename ...Args>

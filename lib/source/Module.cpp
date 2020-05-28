@@ -28,7 +28,7 @@ spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersio
 	m_NameLookup(_pAllocator),
 	m_ConstantBuilder(_pAllocator),
 	m_GlobalVariables(_pAllocator),
-	m_invalidInstr(this)
+	m_errorInstr(this)
 {
 	setMemoryModel(_addressModel, _memoryModel);
 }
@@ -54,7 +54,7 @@ spvgentwo::Module::Module(Module&& _other) noexcept:
 	m_NameLookup(stdrep::move(_other.m_NameLookup)),
 	m_ConstantBuilder(stdrep::move(_other.m_ConstantBuilder)),
 	m_GlobalVariables(stdrep::move(_other.m_GlobalVariables)),
-	m_invalidInstr(this, stdrep::move(_other.m_invalidInstr))
+	m_errorInstr(this, stdrep::move(_other.m_errorInstr))
 {
 	updateParentPointers();
 }

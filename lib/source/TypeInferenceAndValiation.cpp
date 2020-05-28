@@ -26,7 +26,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpSMod:
 	case spv::Op::OpSConvert:
 	{
-		if (type1 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr) return module->getErrorInstr();
 		Type t(*type1);
 		t.setSign(true);
 		return module->addType(t);
@@ -55,7 +55,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		return checkType(spv::Op::OpTypeMatrix, typeInstr1);
 	case spv::Op::OpVectorTimesMatrix:
 	{
-		if (type1 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr) return module->getErrorInstr();
 
 		// Matrix must be a matrix with the same Component Type as the Component Type in Result Type.
 		// Its number of columns must equal the number of components in Result Type.
@@ -68,7 +68,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	}
 	case spv::Op::OpMatrixTimesVector:
 	{
-		if (type1 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr) return module->getErrorInstr();
 
 		// Matrix must be an OpTypeMatrix whose Column Type is Result Type.
 		if (type1->isMatrix())
@@ -79,7 +79,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	}
 	case spv::Op::OpMatrixTimesMatrix:
 	{
-		if (type1 == nullptr || type2 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr || type2 == nullptr) return module->getErrorInstr();
 
 		// Linear - algebraic multiply of LeftMatrix X RightMatrix.
 		// Result Type must be an OpTypeMatrix whose Column Type is a vector of ﬂoating - point type.
@@ -92,7 +92,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	}
 	case spv::Op::OpOuterProduct:
 	{
-		if (type1 == nullptr || type2 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr || type2 == nullptr) return module->getErrorInstr();
 
 		// Linear - algebraic outer product of Vector 1 and Vector 2.
 		// Result Type must be an OpTypeMatrix whose Column Type is a vector of ﬂoating - point type.
@@ -104,14 +104,14 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	}
 	case spv::Op::OpDot:
 	{
-		if (type1 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr) return module->getErrorInstr();
 		Type floatType(module->getAllocator());
 		floatType.Float(type1->front().getFloatWidth());
 		return module->addType(floatType);
 	}
 	case spv::Op::OpTranspose: 
 	{
-		if (type1 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr) return module->getErrorInstr();
 		// Matrix must be an object of type OpTypeMatrix.
 		// The number of columns and the column size of Matrix must be the reverse of those in Result Type.
 		// The types of the scalar components in Matrix and Result Type must be the same.
@@ -120,7 +120,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		return module->addType(matType);
 	}
 	case spv::Op::OpVectorExtractDynamic:
-		if (type1 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr) return module->getErrorInstr();
 		return module->addType(type1->front()); 
 	case spv::Op::OpAny:
 	case spv::Op::OpAll:
@@ -165,7 +165,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpOrdered:
 	case spv::Op::OpUnordered:
 	{
-		if (type1 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr) return module->getErrorInstr();
 
 		Type t(module->getAllocator());
 
@@ -187,7 +187,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpSelect:
 		return typeInstr2;
 	case spv::Op::OpSampledImage:
-		if (type1 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr) return module->getErrorInstr();
 		return module->addType(type1->wrap(spv::Op::OpTypeSampledImage));
 
 	case spv::Op::OpImageSampleImplicitLod:
@@ -203,7 +203,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpImageDrefGather:
 	case spv::Op::OpImageRead:
 	{
-		if (type1 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr) return module->getErrorInstr();
 
 		const Type* image = type1->isSampledImage() ? &type1->front() : (type1->isImage() ? type1 : nullptr); // _pType1 is SampleImage or Image
 		if (image == nullptr) break;
@@ -227,7 +227,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 
 	case spv::Op::OpConvertFToU:
 	{
-		if (type1 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr) return module->getErrorInstr();
 
 		Type t(*type1);
 		Type& base = t.getBaseType();
@@ -238,7 +238,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	}
 	case spv::Op::OpConvertFToS:
 	{
-		if (type1 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr) return module->getErrorInstr();
 
 		Type t(*type1);
 		Type& base = t.getBaseType();
@@ -250,7 +250,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpConvertSToF:
 	case spv::Op::OpConvertUToF:
 	{
-		if (type1 == nullptr) return module->getInvalidInstr();
+		if (type1 == nullptr) return module->getErrorInstr();
 
 		Type t(*type1);
 		Type& base = t.getBaseType();
@@ -265,7 +265,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 
 	module->logError("Could not infer result type for operation");
 
-	return module->getInvalidInstr();
+	return module->getErrorInstr();
 }
 
 bool spvgentwo::defaultimpl::validateOperands(const spvgentwo::Instruction& _instr)
@@ -327,6 +327,11 @@ bool spvgentwo::defaultimpl::validateOperands(const spvgentwo::Instruction& _ins
 			else if (op.instruction == &_instr)
 			{
 				module->logError("Recursive instruction operand");
+				return false;
+			}
+			else if (op.instruction->isErrorInstr())
+			{
+				module->logError("Error instructions (result of invalid constrution)");
 				return false;
 			}
 			break;
