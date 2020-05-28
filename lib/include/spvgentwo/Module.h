@@ -220,6 +220,10 @@ namespace spvgentwo
 		template <typename ...Args>
 		bool logFatal(bool _pred, const char* _pFormat, Args... _args) { return log(_pred, LogLevel::Fatal, _pFormat, _args...); }
 
+		// this instruction can be used as a return value for a failed operation (instruction could not be constructed etc)
+		Instruction* getInvalidInstr() { return &m_invalidInstr; }
+		const Instruction* getInvalidInstr() const { return &m_invalidInstr; }
+
 	private:
 		template <class ... TypeInstr>
 		void compositeType(Type& _compositeTye, Instruction* _pSubType, TypeInstr ... _types);
@@ -255,6 +259,8 @@ namespace spvgentwo
 		HashMap<Constant, Instruction*> m_ConstantBuilder;
 
 		List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function
+
+		Instruction m_invalidInstr; // opNop
 	};
 
 	template<typename ...Args>

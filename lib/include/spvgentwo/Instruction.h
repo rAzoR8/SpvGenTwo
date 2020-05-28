@@ -133,6 +133,9 @@ namespace spvgentwo
 		// validate m_Operations and operands with ITypeInferenceAndValiation instance if present, return true if okay
 		bool validateOperands();
 
+		// checks if this instruction is the Modules generic invalid instruction (OpNop)
+		bool isInvalidInstr() const;
+
 		//
 		// GENERIC OPERATIONS
 		//

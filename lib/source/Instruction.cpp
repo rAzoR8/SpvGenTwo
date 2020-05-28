@@ -674,7 +674,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 		condType->getScalarOrVectorLength() == trueType->getScalarOrVectorLength())
 	{
 		// Before version1.4, results are only computed per component.
-		// Before version1.4, Result Type must be a pointer, scalar, or vector.Starting withv ersion1.4, Result Type can additionally be a composite type other than a vector.
+		// Before version1.4, Result Type must be a pointer, scalar, or vector. Starting with version 1.4, Result Type can additionally be a composite type other than a vector.
 
 		if (trueType->isScalar() || trueType->isVector() || trueType->isPointer() ||
 			(getModule()->getSpvVersion() >= makeVersion(1u, 4u) && trueType->isComposite()))
@@ -1031,4 +1031,9 @@ bool spvgentwo::Instruction::validateOperands()
 {
 	ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
 	return validator != nullptr ? validator->validateOperands(*this) : defaultimpl::validateOperands(*this);
+}
+
+bool spvgentwo::Instruction::isInvalidInstr() const
+{
+	return getModule()->getInvalidInstr() == this;
 }
