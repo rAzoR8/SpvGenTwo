@@ -691,6 +691,10 @@ namespace spvgentwo
 		{
 			make<typename T::const_sampler_type>();
 		}
+		else if constexpr (is_const_null_v<T>)
+		{
+			make<typename T::const_null_type>();
+		}
 		else
 		{
 			fundamental<T>(traits::selectTypeFromArgs<T>(_props...));
