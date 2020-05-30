@@ -434,7 +434,7 @@ const spvgentwo::Type* spvgentwo::Module::getTypeInfo(const Instruction* _pTypeI
 	return nullptr;
 }
 
-spvgentwo::Instruction* spvgentwo::Module::addTypeInstr(/*const*/ Type* _pType)
+spvgentwo::Instruction* spvgentwo::Module::addTypeInstr(const Type* _pType)
 {
 	Instruction* instr = &m_TypesAndConstants.emplace_back(this);
 
@@ -447,7 +447,7 @@ spvgentwo::Instruction* spvgentwo::Module::addTypeInstr(/*const*/ Type* _pType)
 	return instr;
 }
 
-spvgentwo::Instruction* spvgentwo::Module::addConstantInstr(/*const*/ Constant* _pConstant)
+spvgentwo::Instruction* spvgentwo::Module::addConstantInstr(const Constant* _pConstant)
 {
 	Instruction* instr = &m_TypesAndConstants.emplace_back(this);
 

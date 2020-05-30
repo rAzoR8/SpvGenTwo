@@ -96,10 +96,10 @@ namespace spvgentwo
 		const Type* getTypeInfo(const Instruction* _pTypeInstr) const;
 
 		// add a new instruction to m_TypesAndConstants, if _pType is not nullptr, also add entries in m_TypeToInstr and m_InstrToType maps
-		Instruction* addTypeInstr(/*const*/ Type* _pType = nullptr);
+		Instruction* addTypeInstr(const Type* _pType = nullptr);
 
 		// add a new instruction to m_TypesAndConstants, if _pConstant is not nullptr, also add entry in m_ConstantBuilder map
-		Instruction* addConstantInstr(/*const*/ Constant* _pConstant = nullptr);
+		Instruction* addConstantInstr(const Constant* _pConstant = nullptr);
 
 		template <class T, class ... Props>
 		Instruction* type(const Props& ... _props);
@@ -257,7 +257,7 @@ namespace spvgentwo
 		
 		List<Instruction> m_TypesAndConstants;
 		HashMap<Type, Instruction*> m_TypeToInstr;
-		HashMap<const Instruction*, Type*> m_InstrToType;
+		HashMap<const Instruction*, const Type*> m_InstrToType;
 
 		// instruction that was decorated with opName -> name
 		HashMap<const Instruction*, String> m_NameLookup;
