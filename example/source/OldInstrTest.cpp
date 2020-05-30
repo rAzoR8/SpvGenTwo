@@ -36,6 +36,10 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 	Instruction* uniImage = module.uniform<dyn_image_t>("u_someImage", img.imageType);
 
+	Instruction* s1 = module.constant(1u, true);
+	Instruction* s2 = module.constant(3u, true);
+	Instruction* specOp = module.addConstantInstr()->opUDiv(s1, s2)->toSpecOp();
+
 	// void entryPoint();
 	{
 		EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, "main");

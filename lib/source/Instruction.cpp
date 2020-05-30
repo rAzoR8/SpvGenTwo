@@ -907,6 +907,22 @@ spvgentwo::Instruction* spvgentwo::Instruction::opBitcast(Instruction* _pResultT
 	return error();
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::toSpecOp()
+{
+	spv::Op opcode = m_Operation;
+	m_Operation = spv::Op::OpSpecConstantOp;
+
+	auto it = getFirstActualOperand();
+	if (it == nullptr)
+	{
+		return error();
+	}
+
+	insert_before(it, opcode);
+
+	return this;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::error() const
 {
 	return getModule()->getErrorInstr();

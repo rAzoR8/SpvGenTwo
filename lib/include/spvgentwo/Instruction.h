@@ -500,6 +500,9 @@ namespace spvgentwo
 		template<class T> // generic version of opBitcast, generates spv type from T
 		Instruction* bitcast(Instruction* _pOperand);
 
+		// convert this instruction to its OpSpecConstantOp variant
+		Instruction* toSpecOp();
+
 	private:
 		// return error instr
 		Instruction* error() const;
