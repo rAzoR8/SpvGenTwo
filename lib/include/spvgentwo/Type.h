@@ -431,13 +431,26 @@ namespace spvgentwo
 	constexpr bool is_matrix_v = is_matrix<T>::value;
 
 #pragma region const_types
-	//template <spv::SamplerAddressingMode _addr, ConstantSamplerCoordMode _coord, spv::SamplerFilterMode _filter>
+	
+	template <class T>
+	struct const_null_t
+	{
+		using const_null_type = T;
+	};
+
+	template<class, class = stdrep::void_t<>>
+	struct is_const_null : stdrep::false_type {};
+	template<class T>
+	struct is_const_null<T, stdrep::void_t<typename T::const_null_type>> : stdrep::true_type {};
+	template<class T>
+	constexpr bool is_const_null_v = is_const_null<T>::value;
+
 	struct const_sampler_t
 	{
 		using const_sampler_type = sampler_t;
 		spv::SamplerAddressingMode addressMode = spv::SamplerAddressingMode::None;
 		ConstantSamplerCoordMode coordMode = ConstantSamplerCoordMode::UnNormalized;
-		spv::SamplerFilterMode filterMode = spv::SamplerFilterMode::Nearest;;
+		spv::SamplerFilterMode filterMode = spv::SamplerFilterMode::Nearest;
 	};
 
 	template<class, class = stdrep::void_t<>>

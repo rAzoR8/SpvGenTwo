@@ -287,6 +287,7 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, c
 		break;
 	case spv::Op::OpConstant:
 	case spv::Op::OpSpecConstant:
+	case spv::Op::OpConstantSampler:
 		for(const unsigned int& val : _const.getData())
 		{
 			pInstr->addOperand(literal_t{ val });
@@ -299,10 +300,9 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, c
 			pInstr->addOperand(addConstant(component));		
 		}
 		break;
-
-		// TODO: remaining complex types
-	case spv::Op::OpConstantSampler:
 	case spv::Op::OpSpecConstantOp:
+		logFatal("OpSpecConstantOp not supported by Module::constant() or addConstant(), use Instruction::toSpecOp or opSpecConstantOp()");
+		break;
 	default:
 
 		logFatal("Constant not implemented");

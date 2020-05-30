@@ -63,9 +63,26 @@ namespace spvgentwo
 	template <class T>
 	Constant& Constant::make(const T& _value, const bool _spec)
 	{
-		// TODO: handle OpConstantNull, OpSpecConstantOp
-		if constexpr (is_const_array_v<T>)
+		if constexpr (stdrep::is_same_v<T, bool>)
 		{
+			m_Operation = _value ? (_spec ? spv::Op::OpSpecConstantTrue : spv::Op::OpConstantTrue) : (_spec ? spv::Op::OpSpecConstantFalse : spv::Op::OpConstantFalse);
+			m_Type.make<bool>();
+			appendLiteralsToContainer(m_literalData, _value);
+		}
+		else if constexpr (traits::is_primitive_type_v<traits::remove_cvref_t<T>>)
+		{
+			m_Operation = _spec ? spv::Op::OpSpecConstant : spv::Op::OpConstant;
+			m_Type.make<T>();
+			appendLiteralsToContainer(m_literalData, _value);
+		}
+		else if constexpr (is_const_null_v<T>)
+		{
+			m_Type.make<typename T::const_null_type>();
+			m_Operation = spv::Op::OpConstantNull; // no literal data
+		}
+		else if constexpr (is_const_array_v<T>)
+		{
+			m_Operation = _spec ? spv::Op::OpSpecConstantComposite : spv::Op::OpConstantComposite;
 			m_Type.make<typename T::const_array_type>();
 			for (unsigned int i = 0u; i < T::Elements; ++i)
 			{
@@ -74,6 +91,7 @@ namespace spvgentwo
 		}
 		else if constexpr (is_const_vector_v<T>)
 		{
+			m_Operation = _spec ? spv::Op::OpSpecConstantComposite : spv::Op::OpConstantComposite;
 			m_Type.make<typename T::const_vector_type>();
 			for (unsigned int i = 0u; i < T::Elements; ++i)
 			{
@@ -82,6 +100,7 @@ namespace spvgentwo
 		}
 		else if constexpr (is_const_matrix_v<T>)
 		{
+			m_Operation = _spec ? spv::Op::OpSpecConstantComposite : spv::Op::OpConstantComposite;
 			m_Type.make<typename T::const_matrix_type>();
 			for (unsigned int i = 0u; i < T::Columns; ++i)
 			{
@@ -90,6 +109,7 @@ namespace spvgentwo
 		}
 		else if constexpr(is_const_sampler_v<T>)
 		{
+			m_Operation = spv::Op::OpConstantSampler;
 			m_Type.make<typename T::const_sampler_type>();
 			appendLiteralsToContainer(m_literalData, _value.addressMode);
 			appendLiteralsToContainer(m_literalData, _value.coordMode);
@@ -97,21 +117,17 @@ namespace spvgentwo
 		}
 		else
 		{
-			m_Type.make<T>();			
-			appendLiteralsToContainer(m_literalData, _value);
-		}
+			// required for clang which can't deduce that this code is unreachable for supported type instantiation
+			constexpr bool match =
+				stdrep::is_same_v<T, bool> ||
+				traits::is_primitive_type_v<traits::remove_cvref_t<T>> ||
+				is_const_null_v<T> ||
+				is_const_array_v<T> ||
+				is_const_vector_v<T> ||
+				is_const_matrix_v<T> ||
+				is_const_sampler_v<T>;
 
-		if constexpr (stdrep::is_same_v<T, bool>)
-		{
-			m_Operation = _value ? (_spec ? spv::Op::OpSpecConstantTrue : spv::Op::OpConstantTrue) : (_spec ? spv::Op::OpSpecConstantFalse : spv::Op::OpConstantFalse);
-		}
-		else if constexpr(traits::is_primitive_type_v<T>)
-		{
-			m_Operation = _spec ? spv::Op::OpSpecConstant : spv::Op::OpConstant;
-		}
-		else // composite type
-		{
-			m_Operation = _spec ? spv::Op::OpSpecConstantComposite : spv::Op::OpConstantComposite;
+			static_assert(match, "Could not match type");
 		}
 
 		return *this;
