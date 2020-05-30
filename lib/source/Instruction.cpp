@@ -915,6 +915,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::toSpecOp()
 	auto it = getFirstActualOperand();
 	if (it == nullptr)
 	{
+		getModule()->logError("First actual operand for OpSpecConstantOp not found");
 		return error();
 	}
 

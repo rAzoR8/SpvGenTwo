@@ -500,6 +500,9 @@ namespace spvgentwo
 		template<class T> // generic version of opBitcast, generates spv type from T
 		Instruction* bitcast(Instruction* _pOperand);
 
+		template <class ...Args>
+		Instruction* opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, Args&& ..._instrOperands);
+
 		// convert this instruction to its OpSpecConstantOp variant
 		Instruction* toSpecOp();
 
@@ -571,6 +574,13 @@ namespace spvgentwo
 	inline Instruction* Instruction::bitcast(Instruction* _pOperand)
 	{
 		return opBitcast(getModule()->type<T>(), _pOperand);
+	}
+
+	template<class ...Args>
+	inline Instruction* Instruction::opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, Args&& ..._instrOperands)
+	{
+		// TODO: check _opcode for valid operations
+		return makeOp(spv::Op::OpSpecConstantOp, _pResultType, InvalidId, _opcode, stdrep::forward<Args>(_instrOperands)...);
 	}
 
 	template<class T, class ...Args>

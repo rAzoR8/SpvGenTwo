@@ -39,6 +39,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 	Instruction* s1 = module.constant(1u, true);
 	Instruction* s2 = module.constant(3u, true);
 	Instruction* specOp = module.addConstantInstr()->opUDiv(s1, s2)->toSpecOp();
+	specOp = module.addConstantInstr()->opSpecConstantOp(module.type<unsigned int>(), spv::Op::OpIMul, s2, s1);
 
 	// void entryPoint();
 	{
