@@ -287,6 +287,7 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, c
 		break;
 	case spv::Op::OpConstant:
 	case spv::Op::OpSpecConstant:
+	case spv::Op::OpConstantSampler:
 		for(const unsigned int& val : _const.getData())
 		{
 			pInstr->addOperand(literal_t{ val });
@@ -299,10 +300,9 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, c
 			pInstr->addOperand(addConstant(component));		
 		}
 		break;
-
-		// TODO: remaining complex types
-	case spv::Op::OpConstantSampler:
 	case spv::Op::OpSpecConstantOp:
+		logFatal("OpSpecConstantOp not supported by Module::constant() or addConstant(), use Instruction::toSpecOp or opSpecConstantOp()");
+		break;
 	default:
 
 		logFatal("Constant not implemented");
@@ -432,6 +432,31 @@ const spvgentwo::Type* spvgentwo::Module::getTypeInfo(const Instruction* _pTypeI
 		}
 	}
 	return nullptr;
+}
+
+spvgentwo::Instruction* spvgentwo::Module::addTypeInstr(const Type* _pType)
+{
+	Instruction* instr = &m_TypesAndConstants.emplace_back(this);
+
+	if (_pType != nullptr)
+	{
+		m_TypeToInstr.emplaceUnique(*_pType, instr);
+		m_InstrToType.emplaceUnique(instr, _pType);
+	}
+
+	return instr;
+}
+
+spvgentwo::Instruction* spvgentwo::Module::addConstantInstr(const Constant* _pConstant)
+{
+	Instruction* instr = &m_TypesAndConstants.emplace_back(this);
+
+	if (_pConstant != nullptr)
+	{
+		m_ConstantBuilder.emplaceUnique(*_pConstant, instr);
+	}
+
+	return instr;
 }
 
 spvgentwo::Instruction* spvgentwo::Module::compositeType(const spv::Op _Type, const List<Instruction*>& _subTypes)
