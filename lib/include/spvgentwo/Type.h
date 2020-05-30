@@ -431,7 +431,6 @@ namespace spvgentwo
 	constexpr bool is_matrix_v = is_matrix<T>::value;
 
 #pragma region const_types
-	
 	template <class T>
 	struct const_null_t
 	{

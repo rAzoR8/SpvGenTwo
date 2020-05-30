@@ -113,6 +113,9 @@ namespace spvgentwo
 
 		template <class T>
 		Instruction* constant(const T& _value, const bool _spec = false);
+
+		template <class T>
+		Instruction* specConstant(const T& _value) { return constant<T>(_value, true); };
 		
 		void setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
 
