@@ -567,3 +567,7 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator)
 	m_instructions.emplaceUnique(spv::Op::OpRayQueryGetIntersectionObjectToWorldKHR, Instruction{"OpRayQueryGetIntersectionObjectToWorldKHR", spv::Op::OpRayQueryGetIntersectionObjectToWorldKHR, _pAllocator, _pAllocator, _pAllocator, 0});
 	m_instructions.emplaceUnique(spv::Op::OpRayQueryGetIntersectionWorldToObjectKHR, Instruction{"OpRayQueryGetIntersectionWorldToObjectKHR", spv::Op::OpRayQueryGetIntersectionWorldToObjectKHR, _pAllocator, _pAllocator, _pAllocator, 0});
 };
+const Grammar::Instruction* Grammar::getInfo(spv::Op _opcode) const
+{
+	return m_instructions.get(_opcode);
+};

@@ -90,6 +90,7 @@ class Grammar
 	};
 	public:
 		Grammar(IAllocator* _pAllocator);
+		const Instruction* getInfo(spv::Op _opcode) const;
 	private:
 		HashMap<spv::Op, Instruction> m_instructions;
 };
