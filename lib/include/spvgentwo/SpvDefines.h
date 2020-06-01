@@ -1,7 +1,6 @@
 #pragma once
 
-#define SPV_ENABLE_UTILITY_CODE
-#include <spirv.hpp11>
+#include "Spv.h"
 
 namespace spvgentwo
 {

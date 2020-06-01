@@ -165,7 +165,7 @@ const char* spvgentwo::Type::getString() const
 	return "";
 }
 
-spv::Op spvgentwo::Type::getBaseTypeOp() const
+spvgentwo::spv::Op spvgentwo::Type::getBaseTypeOp() const
 {
 	return getBaseType().m_Type;
 }

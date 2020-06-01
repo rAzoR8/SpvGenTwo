@@ -481,7 +481,7 @@ void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel,
 	m_MemoryModel.opMemoryModel(_addressModel, _memoryModel);
 }
 
-spv::Id spvgentwo::Module::assignIDs()
+spvgentwo::spv::Id spvgentwo::Module::assignIDs()
 {
 	spv::Id maxId = 0;
 
