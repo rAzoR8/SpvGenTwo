@@ -246,10 +246,10 @@ namespace spvgentwo
 		Instruction* opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ... _pIndices);
 
 		template <class ... Operands>
-		Instruction* opLoad(Instruction* _pPointerToVar, const Flag<MemoryOperands> _memOperands = MemoryOperands::None, Operands ... _operands);
+		Instruction* opLoad(Instruction* _pPointerToVar, const Flag<spv::MemoryAccessMask> _memOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands);
 
 		template <class ... Operands>
-		void opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<MemoryOperands> _memOperands = MemoryOperands::None, Operands ... _operands);
+		void opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<spv::MemoryAccessMask> _memOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands);
 
 		Instruction* opOuterProduct(Instruction* _pLeft, Instruction* _pRight);
 
@@ -721,7 +721,7 @@ namespace spvgentwo
 	}
 
 	template<class ...Operands>
-	inline Instruction* Instruction::opLoad(Instruction* _pPointerToVar, const Flag<MemoryOperands> _memOperands, Operands ..._operands)
+	inline Instruction* Instruction::opLoad(Instruction* _pPointerToVar, const Flag<spv::MemoryAccessMask> _memOperands, Operands ..._operands)
 	{
 		const Type* ptrType = _pPointerToVar->getType();
 		if (ptrType == nullptr) return this;
@@ -733,7 +733,7 @@ namespace spvgentwo
 	}
 
 	template<class ...Operands>
-	inline void Instruction::opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<MemoryOperands> _memOperands, Operands ..._operands)
+	inline void Instruction::opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<spv::MemoryAccessMask> _memOperands, Operands ..._operands)
 	{
 		makeOp(spv::Op::OpStore, _pPointerToVar, _valueToStore, _memOperands.mask, _operands...);
 	}
