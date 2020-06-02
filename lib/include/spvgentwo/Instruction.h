@@ -95,8 +95,8 @@ namespace spvgentwo
 		bool isSpecConstant() const;
 		bool isSpecOrConstant() const;
 
-		bool hasResult() const { return hasResultId(m_Operation); }
-		bool hasResultType() const { return hasResultTypeId(m_Operation); }
+		bool hasResult() const { return spv::HasResult(m_Operation); }
+		bool hasResultType() const { return spv::HasResultType(m_Operation); }
 		bool hasResultAndType() const { return hasResultAndTypeId(m_Operation); }
 
 		// returns a list of BasicBlock branch targets if this instuction is a Terminator

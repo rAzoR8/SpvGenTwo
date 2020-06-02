@@ -185,7 +185,7 @@ bool spvgentwo::Type::hasSameBase(const Type& _other, const bool _onlyCheckTyeOp
 
 void spvgentwo::Type::setType(const spv::Op _type)
 {
-	if (isTypeOp(_type))
+	if (spv::IsTypeOp(_type))
 	{
 		m_Type = _type;
 	}

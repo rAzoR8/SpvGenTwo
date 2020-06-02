@@ -239,7 +239,7 @@ spvgentwo::spv::StorageClass spvgentwo::Instruction::getStorageClass() const
 
 bool spvgentwo::Instruction::isType() const
 {
-	return isTypeOp(m_Operation);
+	return spv::IsTypeOp(m_Operation);
 }
 
 bool spvgentwo::Instruction::isTerminator() const
@@ -249,12 +249,12 @@ bool spvgentwo::Instruction::isTerminator() const
 
 bool spvgentwo::Instruction::isConstant() const
 {
-	return isConstantOp(m_Operation);
+	return spv::IsConstantOp(m_Operation);
 }
 
 bool spvgentwo::Instruction::isSpecConstant() const
 {
-	return isSpecOp(m_Operation);
+	return spv::IsSpecConstantOp(m_Operation);
 }
 
 bool spvgentwo::Instruction::isSpecOrConstant() const

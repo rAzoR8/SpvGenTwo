@@ -23,45 +23,9 @@ namespace spvgentwo
 		Normalized = 1
 	};
 
-	constexpr bool isTypeOp(const spv::Op _type)
-	{		
-		if ((_type >= spv::Op::OpTypeVoid && _type <= spv::Op::OpTypeForwardPointer) || // basic types
-			(_type >= spv::Op::OpTypeVmeImageINTEL && _type <= spv::Op::OpTypeAvcSicResultINTEL) // intel ext
-			)
-		{
-			return true;
-		}
-
-		// special cases and small extensions
-		switch (_type)
-		{
-		case spv::Op::OpTypePipeStorage:
-		case spv::Op::OpTypeNamedBarrier:
-		case spv::Op::OpTypeAccelerationStructureNV:
-		case spv::Op::OpTypeCooperativeMatrixNV:
-			return true;
-		default:
-			return false;
-		}
-	}
-
 	constexpr size_t wordCount(const size_t _byteCount)
 	{
 		return (_byteCount / sizeof(spv::Id)) + (_byteCount % sizeof(spv::Id) != 0u ? 1u : 0u);
-	}
-
-	inline bool hasResultId(const spv::Op _operation)
-	{
-		bool res = false, type = false;
-		spv::HasResultAndType(_operation, &res, &type);
-		return res;
-	}
-
-	inline bool hasResultTypeId(const spv::Op _operation)
-	{
-		bool res = false, type = false;
-		spv::HasResultAndType(_operation, &res, &type);
-		return type;
 	}
 
 	inline bool hasResultAndTypeId(const spv::Op _operation)
@@ -102,44 +66,10 @@ namespace spvgentwo
 		}
 	}
 
-	// starts with "OpConstant" 
-	constexpr bool isConstantOp(const spv::Op _instr)
-	{
-		switch (_instr)
-		{
-		case spv::Op::OpConstantTrue:
-		case spv::Op::OpConstantFalse:
-		case spv::Op::OpConstant:
-		case spv::Op::OpConstantComposite:
-		case spv::Op::OpConstantSampler:
-		case spv::Op::OpConstantNull:
-		case spv::Op::OpConstantPipeStorage:
-			return true;
-		default:
-			return false;
-		}
-	}
-
-	// starts with "OpSpec" 
-	constexpr bool isSpecOp(const spv::Op _instr)
-	{
-		switch (_instr)
-		{
-		case spv::Op::OpSpecConstant:
-		case spv::Op::OpSpecConstantTrue:
-		case spv::Op::OpSpecConstantFalse:
-		case spv::Op::OpSpecConstantComposite:
-		case spv::Op::OpSpecConstantOp:
-			return true;
-		default:
-			return false;
-		}
-	}
-
 	// Instructions that start "OpConstant" or "OpSpec"
 	constexpr bool isSpecOrConstantOp(const spv::Op _instr)
 	{
-		return isConstantOp(_instr) || isSpecOp(_instr);
+		return IsConstantOp(_instr) || IsSpecConstantOp(_instr);
 	}
 
 	enum class Sign

@@ -1572,6 +1572,133 @@ namespace spvgentwo::spv
 		OpRayQueryGetIntersectionWorldToObjectKHR = 6032,
 		Max = 0x7fffffff
 	};
+	enum class Extensions : unsigned
+	{
+		SPV_EXT_shader_stencil_export = 0,
+		SPV_GOOGLE_decorate_string = 1,
+		SPV_KHR_no_integer_wrap_decoration = 2,
+		SPV_KHR_ray_query = 3,
+		SPV_NV_cooperative_matrix = 4,
+		SPV_NV_fragment_shader_barycentric = 5,
+		SPV_INTEL_subgroups = 6,
+		SPV_INTEL_function_pointers = 7,
+		SPV_KHR_device_group = 8,
+		SPV_EXT_physical_storage_buffer = 9,
+		SPV_NV_shader_subgroup_partitioned = 10,
+		SPV_INTEL_fpga_loop_controls = 11,
+		SPV_AMD_shader_image_load_store_lod = 12,
+		SPV_EXT_demote_to_helper_invocation = 13,
+		SPV_KHR_8bit_storage = 14,
+		SPV_INTEL_fpga_reg = 15,
+		SPV_KHR_storage_buffer_storage_class = 16,
+		SPV_GOOGLE_user_type = 17,
+		SPV_INTEL_media_block_io = 18,
+		SPV_KHR_float_controls = 19,
+		SPV_KHR_variable_pointers = 20,
+		SPV_NV_ray_tracing = 21,
+		SPV_NV_geometry_shader_passthrough = 22,
+		SPV_KHR_vulkan_memory_model = 23,
+		SPV_KHR_ray_tracing = 24,
+		SPV_KHR_shader_ballot = 25,
+		SPV_AMD_shader_ballot = 26,
+		SPV_AMD_gpu_shader_half_float_fetch = 27,
+		SPV_NVX_multiview_per_view_attributes = 28,
+		SPV_KHR_subgroup_vote = 29,
+		SPV_INTEL_kernel_attributes = 30,
+		SPV_AMD_shader_explicit_vertex_parameter = 31,
+		SPV_EXT_fragment_shader_interlock = 32,
+		SPV_GOOGLE_hlsl_functionality1 = 33,
+		SPV_AMD_texture_gather_bias_lod = 34,
+		SPV_NV_compute_shader_derivatives = 35,
+		SPV_NV_viewport_array2 = 36,
+		SPV_NV_shader_sm_builtins = 37,
+		SPV_INTEL_unstructured_loop_controls = 38,
+		SPV_KHR_shader_draw_parameters = 39,
+		SPV_KHR_multiview = 40,
+		SPV_EXT_descriptor_indexing = 41,
+		SPV_KHR_shader_atomic_counter_ops = 42,
+		SPV_AMD_shader_fragment_mask = 43,
+		SPV_EXT_fragment_fully_covered = 44,
+		SPV_NV_mesh_shader = 45,
+		SPV_KHR_shader_clock = 46,
+		SPV_INTEL_device_side_avc_motion_estimation = 47,
+		SPV_NV_shading_rate = 48,
+		SPV_INTEL_blocking_pipes = 49,
+		SPV_EXT_fragment_invocation_density = 50,
+		SPV_INTEL_fpga_memory_attributes = 51,
+		SPV_KHR_16bit_storage = 52,
+		SPV_KHR_post_depth_coverage = 53,
+		SPV_NV_shader_image_footprint = 54,
+		SPV_KHR_physical_storage_buffer = 55,
+		SPV_EXT_shader_viewport_index_layer = 56,
+		SPV_INTEL_shader_integer_functions2 = 57,
+		SPV_NV_sample_mask_override_coverage = 58,
+		SPV_NV_stereo_view_rendering = 59,
+		Max = 0x7fffffff
+	};
+	static constexpr const char* ExtensionNames[] =
+	{
+		"SPV_EXT_shader_stencil_export",
+		"SPV_GOOGLE_decorate_string",
+		"SPV_KHR_no_integer_wrap_decoration",
+		"SPV_KHR_ray_query",
+		"SPV_NV_cooperative_matrix",
+		"SPV_NV_fragment_shader_barycentric",
+		"SPV_INTEL_subgroups",
+		"SPV_INTEL_function_pointers",
+		"SPV_KHR_device_group",
+		"SPV_EXT_physical_storage_buffer",
+		"SPV_NV_shader_subgroup_partitioned",
+		"SPV_INTEL_fpga_loop_controls",
+		"SPV_AMD_shader_image_load_store_lod",
+		"SPV_EXT_demote_to_helper_invocation",
+		"SPV_KHR_8bit_storage",
+		"SPV_INTEL_fpga_reg",
+		"SPV_KHR_storage_buffer_storage_class",
+		"SPV_GOOGLE_user_type",
+		"SPV_INTEL_media_block_io",
+		"SPV_KHR_float_controls",
+		"SPV_KHR_variable_pointers",
+		"SPV_NV_ray_tracing",
+		"SPV_NV_geometry_shader_passthrough",
+		"SPV_KHR_vulkan_memory_model",
+		"SPV_KHR_ray_tracing",
+		"SPV_KHR_shader_ballot",
+		"SPV_AMD_shader_ballot",
+		"SPV_AMD_gpu_shader_half_float_fetch",
+		"SPV_NVX_multiview_per_view_attributes",
+		"SPV_KHR_subgroup_vote",
+		"SPV_INTEL_kernel_attributes",
+		"SPV_AMD_shader_explicit_vertex_parameter",
+		"SPV_EXT_fragment_shader_interlock",
+		"SPV_GOOGLE_hlsl_functionality1",
+		"SPV_AMD_texture_gather_bias_lod",
+		"SPV_NV_compute_shader_derivatives",
+		"SPV_NV_viewport_array2",
+		"SPV_NV_shader_sm_builtins",
+		"SPV_INTEL_unstructured_loop_controls",
+		"SPV_KHR_shader_draw_parameters",
+		"SPV_KHR_multiview",
+		"SPV_EXT_descriptor_indexing",
+		"SPV_KHR_shader_atomic_counter_ops",
+		"SPV_AMD_shader_fragment_mask",
+		"SPV_EXT_fragment_fully_covered",
+		"SPV_NV_mesh_shader",
+		"SPV_KHR_shader_clock",
+		"SPV_INTEL_device_side_avc_motion_estimation",
+		"SPV_NV_shading_rate",
+		"SPV_INTEL_blocking_pipes",
+		"SPV_EXT_fragment_invocation_density",
+		"SPV_INTEL_fpga_memory_attributes",
+		"SPV_KHR_16bit_storage",
+		"SPV_KHR_post_depth_coverage",
+		"SPV_NV_shader_image_footprint",
+		"SPV_KHR_physical_storage_buffer",
+		"SPV_EXT_shader_viewport_index_layer",
+		"SPV_INTEL_shader_integer_functions2",
+		"SPV_NV_sample_mask_override_coverage",
+		"SPV_NV_stereo_view_rendering",
+	};
 	inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
 		*hasResult = *hasResultType = false;
 		switch (opcode) {
@@ -2060,6 +2187,7 @@ namespace spvgentwo::spv
 	inline constexpr bool HasResult(Op opcode) {
 		switch (opcode) {
 		default: return true; // majority of instructions has a result
+		case Op::OpNop: return false;
 		case Op::OpSourceContinued: return false;
 		case Op::OpSource: return false;
 		case Op::OpSourceExtension: return false;
@@ -2072,6 +2200,7 @@ namespace spvgentwo::spv
 		case Op::OpExecutionMode: return false;
 		case Op::OpCapability: return false;
 		case Op::OpTypeForwardPointer: return false;
+		case Op::OpFunctionEnd: return false;
 		case Op::OpStore: return false;
 		case Op::OpCopyMemory: return false;
 		case Op::OpCopyMemorySized: return false;
@@ -2080,6 +2209,8 @@ namespace spvgentwo::spv
 		case Op::OpGroupDecorate: return false;
 		case Op::OpGroupMemberDecorate: return false;
 		case Op::OpImageWrite: return false;
+		case Op::OpEmitVertex: return false;
+		case Op::OpEndPrimitive: return false;
 		case Op::OpEmitStreamVertex: return false;
 		case Op::OpEndStreamPrimitive: return false;
 		case Op::OpControlBarrier: return false;
@@ -2090,7 +2221,10 @@ namespace spvgentwo::spv
 		case Op::OpBranch: return false;
 		case Op::OpBranchConditional: return false;
 		case Op::OpSwitch: return false;
+		case Op::OpKill: return false;
+		case Op::OpReturn: return false;
 		case Op::OpReturnValue: return false;
+		case Op::OpUnreachable: return false;
 		case Op::OpLifetimeStart: return false;
 		case Op::OpLifetimeStop: return false;
 		case Op::OpGroupWaitEvents: return false;
@@ -2102,6 +2236,7 @@ namespace spvgentwo::spv
 		case Op::OpReleaseEvent: return false;
 		case Op::OpSetUserEventStatus: return false;
 		case Op::OpCaptureEventProfilingInfo: return false;
+		case Op::OpNoLine: return false;
 		case Op::OpAtomicFlagClear: return false;
 		case Op::OpMemoryNamedBarrier: return false;
 		case Op::OpModuleProcessed: return false;
@@ -2112,9 +2247,14 @@ namespace spvgentwo::spv
 		case Op::OpRayQueryGenerateIntersectionKHR: return false;
 		case Op::OpRayQueryConfirmIntersectionKHR: return false;
 		case Op::OpWritePackedPrimitiveIndices4x8NV: return false;
+		case Op::OpIgnoreIntersectionNV: return false;
+		case Op::OpTerminateRayNV: return false;
 		case Op::OpTraceNV: return false;
 		case Op::OpExecuteCallableNV: return false;
 		case Op::OpCooperativeMatrixStoreNV: return false;
+		case Op::OpBeginInvocationInterlockEXT: return false;
+		case Op::OpEndInvocationInterlockEXT: return false;
+		case Op::OpDemoteToHelperInvocationEXT: return false;
 		case Op::OpSubgroupBlockWriteINTEL: return false;
 		case Op::OpSubgroupImageBlockWriteINTEL: return false;
 		case Op::OpSubgroupImageMediaBlockWriteINTEL: return false;
@@ -2126,6 +2266,7 @@ namespace spvgentwo::spv
 	inline constexpr bool HasResultType(Op opcode) {
 		switch (opcode) {
 		default: return true; // majority of instructions has a result type
+		case Op::OpNop: return false;
 		case Op::OpSourceContinued: return false;
 		case Op::OpSource: return false;
 		case Op::OpSourceExtension: return false;
@@ -2160,6 +2301,7 @@ namespace spvgentwo::spv
 		case Op::OpTypeQueue: return false;
 		case Op::OpTypePipe: return false;
 		case Op::OpTypeForwardPointer: return false;
+		case Op::OpFunctionEnd: return false;
 		case Op::OpStore: return false;
 		case Op::OpCopyMemory: return false;
 		case Op::OpCopyMemorySized: return false;
@@ -2169,6 +2311,8 @@ namespace spvgentwo::spv
 		case Op::OpGroupDecorate: return false;
 		case Op::OpGroupMemberDecorate: return false;
 		case Op::OpImageWrite: return false;
+		case Op::OpEmitVertex: return false;
+		case Op::OpEndPrimitive: return false;
 		case Op::OpEmitStreamVertex: return false;
 		case Op::OpEndStreamPrimitive: return false;
 		case Op::OpControlBarrier: return false;
@@ -2180,7 +2324,10 @@ namespace spvgentwo::spv
 		case Op::OpBranch: return false;
 		case Op::OpBranchConditional: return false;
 		case Op::OpSwitch: return false;
+		case Op::OpKill: return false;
+		case Op::OpReturn: return false;
 		case Op::OpReturnValue: return false;
+		case Op::OpUnreachable: return false;
 		case Op::OpLifetimeStart: return false;
 		case Op::OpLifetimeStop: return false;
 		case Op::OpGroupWaitEvents: return false;
@@ -2192,6 +2339,7 @@ namespace spvgentwo::spv
 		case Op::OpReleaseEvent: return false;
 		case Op::OpSetUserEventStatus: return false;
 		case Op::OpCaptureEventProfilingInfo: return false;
+		case Op::OpNoLine: return false;
 		case Op::OpAtomicFlagClear: return false;
 		case Op::OpTypePipeStorage: return false;
 		case Op::OpTypeNamedBarrier: return false;
@@ -2205,11 +2353,16 @@ namespace spvgentwo::spv
 		case Op::OpRayQueryGenerateIntersectionKHR: return false;
 		case Op::OpRayQueryConfirmIntersectionKHR: return false;
 		case Op::OpWritePackedPrimitiveIndices4x8NV: return false;
+		case Op::OpIgnoreIntersectionNV: return false;
+		case Op::OpTerminateRayNV: return false;
 		case Op::OpTraceNV: return false;
 		case Op::OpTypeAccelerationStructureNV: return false;
 		case Op::OpExecuteCallableNV: return false;
 		case Op::OpTypeCooperativeMatrixNV: return false;
 		case Op::OpCooperativeMatrixStoreNV: return false;
+		case Op::OpBeginInvocationInterlockEXT: return false;
+		case Op::OpEndInvocationInterlockEXT: return false;
+		case Op::OpDemoteToHelperInvocationEXT: return false;
 		case Op::OpSubgroupBlockWriteINTEL: return false;
 		case Op::OpSubgroupImageBlockWriteINTEL: return false;
 		case Op::OpSubgroupImageMediaBlockWriteINTEL: return false;
@@ -2229,6 +2382,72 @@ namespace spvgentwo::spv
 		case Op::OpTypeAvcRefResultINTEL: return false;
 		case Op::OpTypeAvcSicResultINTEL: return false;
 		case Op::OpLoopControlINTEL: return false;
+		}
+	}
+	inline constexpr bool IsTypeOp(Op opcode) {
+		switch (opcode) {
+		default: return false; // majority of instructions are not types
+		case Op::OpTypeVoid: return true;
+		case Op::OpTypeBool: return true;
+		case Op::OpTypeInt: return true;
+		case Op::OpTypeFloat: return true;
+		case Op::OpTypeVector: return true;
+		case Op::OpTypeMatrix: return true;
+		case Op::OpTypeImage: return true;
+		case Op::OpTypeSampler: return true;
+		case Op::OpTypeSampledImage: return true;
+		case Op::OpTypeArray: return true;
+		case Op::OpTypeRuntimeArray: return true;
+		case Op::OpTypeStruct: return true;
+		case Op::OpTypeOpaque: return true;
+		case Op::OpTypePointer: return true;
+		case Op::OpTypeFunction: return true;
+		case Op::OpTypeEvent: return true;
+		case Op::OpTypeDeviceEvent: return true;
+		case Op::OpTypeReserveId: return true;
+		case Op::OpTypeQueue: return true;
+		case Op::OpTypePipe: return true;
+		case Op::OpTypeForwardPointer: return true;
+		case Op::OpTypePipeStorage: return true;
+		case Op::OpTypeNamedBarrier: return true;
+		case Op::OpTypeRayQueryProvisionalKHR: return true;
+		case Op::OpTypeAccelerationStructureNV: return true;
+		case Op::OpTypeCooperativeMatrixNV: return true;
+		case Op::OpTypeVmeImageINTEL: return true;
+		case Op::OpTypeAvcImePayloadINTEL: return true;
+		case Op::OpTypeAvcRefPayloadINTEL: return true;
+		case Op::OpTypeAvcSicPayloadINTEL: return true;
+		case Op::OpTypeAvcMcePayloadINTEL: return true;
+		case Op::OpTypeAvcMceResultINTEL: return true;
+		case Op::OpTypeAvcImeResultINTEL: return true;
+		case Op::OpTypeAvcImeResultSingleReferenceStreamoutINTEL: return true;
+		case Op::OpTypeAvcImeResultDualReferenceStreamoutINTEL: return true;
+		case Op::OpTypeAvcImeSingleReferenceStreaminINTEL: return true;
+		case Op::OpTypeAvcImeDualReferenceStreaminINTEL: return true;
+		case Op::OpTypeAvcRefResultINTEL: return true;
+		case Op::OpTypeAvcSicResultINTEL: return true;
+		}
+	}
+	inline constexpr bool IsConstantOp(Op opcode) {
+		switch (opcode) {
+		default: return false; // majority of instructions are not constants
+		case Op::OpConstantTrue: return true;
+		case Op::OpConstantFalse: return true;
+		case Op::OpConstant: return true;
+		case Op::OpConstantComposite: return true;
+		case Op::OpConstantSampler: return true;
+		case Op::OpConstantNull: return true;
+		case Op::OpConstantPipeStorage: return true;
+		}
+	}
+	inline constexpr bool IsSpecConstantOp(Op opcode) {
+		switch (opcode) {
+		default: return false; // majority of instructions are not spec constants
+		case Op::OpSpecConstantTrue: return true;
+		case Op::OpSpecConstantFalse: return true;
+		case Op::OpSpecConstant: return true;
+		case Op::OpSpecConstantComposite: return true;
+		case Op::OpSpecConstantOp: return true;
 		}
 	}
 } // spvgentwo::spv
