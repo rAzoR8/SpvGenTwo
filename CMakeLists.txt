@@ -35,14 +35,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 #this project
 project(SpvGenTwo VERSION 1.0 DESCRIPTION "SPIR-V codegen library")
 
-#dependencies
-find_path(SPIRV-Headers_INCLUDE_DIR
-  NAMES spirv-headers/spirv.hpp11
-  PATHS
-  "$ENV{VULKAN_SDK}/include")
-
-set(SPIRV_INCLUDE_DIR "${SPIRV-Headers_INCLUDE_DIR}/spirv-headers/" CACHE STRING "Path containing spirv.hpp11 and GLSL.std.450.h")
-
 cmake_option(BUILD_SHARED_LIBS "Build spvgentwo as shared library" TRUE)
 cmake_option(SPVGENTWO_LOGGING "Enable Logging" TRUE)
 cmake_option(SPVGENTWO_REPLACE_PLACEMENTNEW "Don't use replacement new from <new>" TRUE)
@@ -58,7 +50,6 @@ add_include_folder("lib/include" "lib_includes")
 #lib project
 add_library(SpvGenTwoLib "${lib_sources}")
 target_include_directories(SpvGenTwoLib PUBLIC "${lib_includes}")
-target_include_directories(SpvGenTwoLib PUBLIC "${SPIRV_INCLUDE_DIR}")
 
 #common sources - shared between examples and tests
 add_sources("common/source/*.cpp" "common_sources")
