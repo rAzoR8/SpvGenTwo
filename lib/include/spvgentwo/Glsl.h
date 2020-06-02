@@ -24,7 +24,7 @@
 // IN THE MATERIALS.
 #pragma once
 
-namespace spvgentwo::glsl
+namespace spvgentwo::glslstd450
 {
 	static constexpr unsigned int Version = 100;
 	static constexpr unsigned int Revision = 2;
@@ -113,4 +113,4 @@ namespace spvgentwo::glsl
 		NClamp = 81,
 		Max = 0x7fffffff
 	};
-} // spvgentwo::glsl
+} // spvgentwo::glslstd450

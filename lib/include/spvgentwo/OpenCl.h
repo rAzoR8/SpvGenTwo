@@ -24,7 +24,7 @@
 // IN THE MATERIALS.
 #pragma once
 
-namespace spvgentwo::opencl
+namespace spvgentwo::opencl100
 {
 	static constexpr unsigned int Version = 100;
 	static constexpr unsigned int Revision = 2;
@@ -194,4 +194,4 @@ namespace spvgentwo::opencl
 		prefetch = 185,
 		Max = 0x7fffffff
 	};
-} // spvgentwo::opencl
+} // spvgentwo::opencl100
