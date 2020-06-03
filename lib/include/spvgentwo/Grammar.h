@@ -9,6 +9,13 @@ namespace spvgentwo
 {
 class Grammar
 {
+	public:
+	enum class Extension : unsigned short
+	{
+		Core = 0,
+		Glsl = 1,
+		OpenCl = 2,
+	};
 	enum class OperandCategory : unsigned short
 	{
 		BitEnum,
@@ -82,16 +89,14 @@ class Grammar
 	struct Instruction
 	{
 		const char* name;
-		spv::Op opcode;
 		Vector<Operand> operands;
 		Vector<spv::Capability> capabilities;
 		Vector<const char*> extensions;
 		unsigned int version;
 	};
-	public:
 		Grammar(IAllocator* _pAllocator);
-		const Instruction* getInfo(spv::Op _opcode) const;
+		const Instruction* getInfo(unsigned int _opcode, Extension _extension = Extension::Core) const;
 	private:
-		HashMap<spv::Op, Instruction> m_instructions;
+		HashMap<Hash64, Instruction> m_instructions;
 };
 } // spvgentwo
