@@ -50,10 +50,16 @@ namespace spvgentwo
 		Node& newNodeUnique(const Hash64& _hash);
 
 		Value* get(const Hash64 _hash) const;
-		Value* get(const Key& _key) const { return get(hash(_key)); }
+
+		// only enable overload of Key type differs from Hash64
+		template <class T = Key, typename = stdrep::enable_if_t<stdrep::is_same_v<T, Key> && !stdrep::is_same_v<T, Hash64>>>
+		Value* get(const T& _key) const { return get(hash(_key)); }
 
 		Range getRange(const Hash64 _hash) const;
-		Range getRange(const Key& _key) const { return getRange(hash(_key)); }
+
+		// only enable overload of Key type differs from Hash64
+		template <class T = Key, typename = stdrep::enable_if_t<stdrep::is_same_v<T, Key> && !stdrep::is_same_v<T, Hash64>>>
+		Range getRange(const T& _key) const { return getRange(hash(_key)); }
 
 		Key* findKey(const Value& _value) const;
 
