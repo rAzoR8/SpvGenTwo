@@ -251,7 +251,15 @@ namespace spvgentwo
 
 		Node& n = pNode->inner();
 
-		n.hash = hash(n.kv.key);
+		if constexpr (stdrep::is_same_v<Key, Hash64>)
+		{
+			n.hash = n.kv.key;
+		}
+		else
+		{
+			n.hash = hash(n.kv.key);
+		}
+
 		const auto index = n.hash % m_Buckets;
 
 		// append to chain
@@ -270,7 +278,15 @@ namespace spvgentwo
 
 		Node& n = pNode->inner();
 
-		n.hash = hash(n.kv.key);
+		if constexpr (stdrep::is_same_v<Key, Hash64>)
+		{
+			n.hash = n.kv.key;
+		}
+		else
+		{
+			n.hash = hash(n.kv.key);
+		}
+
 		const auto index = n.hash % m_Buckets;
 
 		for (Node& existing : m_pBuckets[index])
@@ -293,7 +309,17 @@ namespace spvgentwo
 	template<class ...Args>
 	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplaceUnique(const Key& _key, Args&& ..._args)
 	{
-		const Hash64 h = hash(_key);
+		Hash64 h = 0u;
+
+		if constexpr (stdrep::is_same_v<Key, Hash64>)
+		{
+			h = _key;
+		}
+		else
+		{
+			h = hash(_key);
+		}
+
 		const auto index = h % m_Buckets;
 
 		for (Node& existing : m_pBuckets[index])
