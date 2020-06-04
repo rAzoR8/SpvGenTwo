@@ -122,14 +122,14 @@ unsigned int spvgentwo::Instruction::getOpCode() const
 	return ((unsigned int )m_Operation & spv::OpCodeMask) | (getWordCount() << spv::WordCountShift);
 }
 
-spv::Id spvgentwo::Instruction::getResultId() const
+spvgentwo::spv::Id spvgentwo::Instruction::getResultId() const
 {
 	auto it = getResultIdOperand();
 	if (it == nullptr) return InvalidId;
 	return it->getResultId();
 }
 
-spv::Id spvgentwo::Instruction::resolveId(spv::Id& _previousId)
+spvgentwo::spv::Id spvgentwo::Instruction::resolveId(spv::Id& _previousId)
 {
 	for (Operand& op : *this)
 	{
@@ -224,7 +224,7 @@ spvgentwo::Instruction::Iterator spvgentwo::Instruction::getFirstActualOperand()
 	return it;
 }
 
-spv::StorageClass spvgentwo::Instruction::getStorageClass() const
+spvgentwo::spv::StorageClass spvgentwo::Instruction::getStorageClass() const
 {
 	switch (m_Operation)
 	{
@@ -239,7 +239,7 @@ spv::StorageClass spvgentwo::Instruction::getStorageClass() const
 
 bool spvgentwo::Instruction::isType() const
 {
-	return isTypeOp(m_Operation);
+	return spv::IsTypeOp(m_Operation);
 }
 
 bool spvgentwo::Instruction::isTerminator() const
@@ -249,12 +249,12 @@ bool spvgentwo::Instruction::isTerminator() const
 
 bool spvgentwo::Instruction::isConstant() const
 {
-	return isConstantOp(m_Operation);
+	return spv::IsConstantOp(m_Operation);
 }
 
 bool spvgentwo::Instruction::isSpecConstant() const
 {
-	return isSpecOp(m_Operation);
+	return spv::IsSpecConstantOp(m_Operation);
 }
 
 bool spvgentwo::Instruction::isSpecOrConstant() const

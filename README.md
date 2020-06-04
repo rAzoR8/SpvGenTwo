@@ -1,7 +1,8 @@
 # SpvGenTwo
 
-SpvGenTwo is a [SPIR-V](https://www.khronos.org/registry/spir-v/) building library written in C++17 with only `stddef.h` and `spirv.hpp11` as dependencies. No STL or other 3rd-Party library needed.
-I built this library as a 'slim' **backend** for runtime material/shader-editors to avoid introducing enormous libraries like [DXC](https://github.com/microsoft/DirectXShaderCompiler) (including LLVM and Clang) or [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools) to the codebase.
+SpvGenTwo is a [SPIR-V](https://www.khronos.org/registry/spir-v/) building library written in C++17 with only `stddef.h` as dependencies. No STL or other 3rd-Party library needed. The library comes with its own set of SPIR-V definitions generated from the [machine readable grammar](https://github.com/KhronosGroup/SPIRV-Headers/blob/master/include/spirv/unified1/spirv.core.grammar.json) and therefore does not require any `vulkan` or `spirv-headers` includes. The generator can be found here: [rustspvgen](https://github.com/rAzoR8/rustspvgen).
+
+I built this library as a 'slim' **backend** for runtime material/shader-editors (like [Proto](https://twitter.com/SiNGUL4RiTY/status/1246492443811422208)) to avoid introducing enormous libraries like [DXC](https://github.com/microsoft/DirectXShaderCompiler) (including LLVM and Clang) or [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools) to the codebase.
 
 __SpvGenTwo__ is still under development, many parts are still missing, but all the building blocks are there. SpvGenTwo is designed to be extensible and customizable, it is fairly easy to implement new SPIR-V instructions and extensions, use custom allocators and define own type inference rules. Note that it is still possible to generate invalid SPIR-V modules because not all inputs are checked yet. Use the SPIR-V validator `spirv-val` from the SDK and have the [specification](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.pdf) at hand while using this library.
 
@@ -122,7 +123,7 @@ Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
 
 SpvGenTwo is split into 3 folders:
 
-* `lib` contains the foundation to generate SPIR-V code, it only requires `stddef.h` and `spirv.hpp11` to be built. SpvGenTwo makes excessive use of its abstract Allocator, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those a not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :).
+* `lib` contains the foundation to generate SPIR-V code, it only requires `stddef.h` to be built. SpvGenTwo makes excessive use of its abstract Allocator, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those a not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :).
 * `common` contains some convenience implementations of abstract interfaces: HeapAllocator uses C malloc and free, BindaryFileWriter uses fopen, ConsoleLogger uses vprintf. It also as some additional container classes like Callable (std::function replacement), Graph, ControlFlowGraph, Expression and ExprGraph, they follow the same design principles and might sooner or later be moved to `lib` if needed.
 * `example` contains small, self-contained code snippets that each generate a SPIR-V module to show some of the fundamental mechanics and APIs of SpvGenTwo.
 
@@ -130,7 +131,6 @@ SpvGenTwo is split into 3 folders:
 
 Use the supplied CMakeLists.txt to generate project files for your build system. SpvGenTwo allows the user to use STL headers (`<type_traits>`, `<new>` etc) instead of my hand-made replacements (see `stdreplament.h`).
 
-* `SPIRV_INCLUDE_DIR` need to point to a folder that contains the spirv.hpp11 header. If the Vulkan SDK is present, VULKAN_INCLUDE_DIR/vulkan will be used as a default.
 * `SPVGENTWO_BUILD_EXAMPLES` is set to FALSE by default. If TRUE, an executable with sources from the 'example' will be built.
 * `SPVGENTWO_REPLACE_PLACEMENTNEW` is set to TRUE by default. If FALSE, placement-new will be included from `<new>` header.
 * `SPVGENTWO_REPLACE_TRAITS` is set to TRUE by default. If FALSE, `<type_traits>` and `<utility>` header will be included under `spvgentwo::stdrep` namespace.

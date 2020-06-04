@@ -50,10 +50,16 @@ namespace spvgentwo
 		Node& newNodeUnique(const Hash64& _hash);
 
 		Value* get(const Hash64 _hash) const;
-		Value* get(const Key& _key) const { return get(hash(_key)); }
+
+		// only enable overload of Key type differs from Hash64
+		template <class T = Key, typename = stdrep::enable_if_t<stdrep::is_same_v<T, Key> && !stdrep::is_same_v<T, Hash64>>>
+		Value* get(const T& _key) const { return get(hash(_key)); }
 
 		Range getRange(const Hash64 _hash) const;
-		Range getRange(const Key& _key) const { return getRange(hash(_key)); }
+
+		// only enable overload of Key type differs from Hash64
+		template <class T = Key, typename = stdrep::enable_if_t<stdrep::is_same_v<T, Key> && !stdrep::is_same_v<T, Hash64>>>
+		Range getRange(const T& _key) const { return getRange(hash(_key)); }
 
 		Key* findKey(const Value& _value) const;
 
@@ -245,7 +251,15 @@ namespace spvgentwo
 
 		Node& n = pNode->inner();
 
-		n.hash = hash(n.kv.key);
+		if constexpr (stdrep::is_same_v<Key, Hash64>)
+		{
+			n.hash = n.kv.key;
+		}
+		else
+		{
+			n.hash = hash(n.kv.key);
+		}
+
 		const auto index = n.hash % m_Buckets;
 
 		// append to chain
@@ -264,7 +278,15 @@ namespace spvgentwo
 
 		Node& n = pNode->inner();
 
-		n.hash = hash(n.kv.key);
+		if constexpr (stdrep::is_same_v<Key, Hash64>)
+		{
+			n.hash = n.kv.key;
+		}
+		else
+		{
+			n.hash = hash(n.kv.key);
+		}
+
 		const auto index = n.hash % m_Buckets;
 
 		for (Node& existing : m_pBuckets[index])
@@ -287,7 +309,17 @@ namespace spvgentwo
 	template<class ...Args>
 	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplaceUnique(const Key& _key, Args&& ..._args)
 	{
-		const Hash64 h = hash(_key);
+		Hash64 h = 0u;
+
+		if constexpr (stdrep::is_same_v<Key, Hash64>)
+		{
+			h = _key;
+		}
+		else
+		{
+			h = hash(_key);
+		}
+
 		const auto index = h % m_Buckets;
 
 		for (Node& existing : m_pBuckets[index])
