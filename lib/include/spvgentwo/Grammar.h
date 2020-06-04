@@ -76,8 +76,9 @@ class Grammar
 	};
 	enum class Quantifier
 	{
-		Optional,
-		AnyCount
+		ZeroOrOne, // zero or one
+		ZeroOrAny, // zero or any
+		One, // exactly once
 	};
 	struct Operand
 	{
@@ -91,7 +92,7 @@ class Grammar
 		const char* name;
 		Vector<Operand> operands;
 		Vector<spv::Capability> capabilities;
-		Vector<const char*> extensions;
+		Vector<spv::Extension> extensions;
 		unsigned int version;
 	};
 		Grammar(IAllocator* _pAllocator);

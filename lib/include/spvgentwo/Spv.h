@@ -1572,7 +1572,7 @@ namespace spvgentwo::spv
 		OpRayQueryGetIntersectionWorldToObjectKHR = 6032,
 		Max = 0x7fffffff
 	};
-	enum class Extensions : unsigned
+	enum class Extension : unsigned
 	{
 		SPV_AMD_gpu_shader_half_float_fetch = 0,
 		SPV_AMD_shader_ballot = 1,
