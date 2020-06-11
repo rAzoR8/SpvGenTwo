@@ -209,6 +209,8 @@ namespace spvgentwo
 
 		void opMemberName(Instruction* _pTargetStructType, unsigned int _memberIndex, const char* _pName);
 
+		Instruction* opString(const char* _str);
+
 		template <class ... Decorations>
 		void opDecorate(Instruction* _pTarget, spv::Decoration _decoration, Decorations ... _decorations);
 

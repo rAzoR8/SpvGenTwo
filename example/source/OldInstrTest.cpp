@@ -36,6 +36,8 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 	Instruction* uniImage = module.uniform<dyn_image_t>("u_someImage", img.imageType);
 
+	Instruction* str = module.addSourceStringInstr()->opString("Hallo from SpvGenTwo");
+
 	// void entryPoint();
 	{
 		EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, "main");

@@ -513,6 +513,11 @@ void spvgentwo::Instruction::opMemberName(Instruction* _pTargetStructType, unsig
 	}
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opString(const char* _str)
+{
+	return makeOp(spv::Op::OpString, InvalidId, _str);
+}
+
 void spvgentwo::Instruction::opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control)
 {
 	makeOp(spv::Op::OpSelectionMerge, _pMergeBlock, _control);
