@@ -518,6 +518,23 @@ spvgentwo::Instruction* spvgentwo::Instruction::opString(const char* _str)
 	return makeOp(spv::Op::OpString, InvalidId, _str);
 }
 
+void spvgentwo::Instruction::opLine(Instruction* _pFileString, unsigned int _line, unsigned int _column)
+{
+	if (_pFileString->getOperation() == spv::Op::OpString)
+	{
+		makeOp(spv::Op::OpLine, _pFileString, _line, _column);
+	}
+	else
+	{
+		getModule()->logError("Operand of _pFileString of opLine target must be OpString instruction");
+	}
+}
+
+void spvgentwo::Instruction::opLine(const char* _pFileString, unsigned int _line, unsigned int _column)
+{
+	opLine(getModule()->addSourceStringInstr()->opString(_pFileString), _line, _column);
+}
+
 void spvgentwo::Instruction::opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control)
 {
 	makeOp(spv::Op::OpSelectionMerge, _pMergeBlock, _control);

@@ -211,6 +211,11 @@ namespace spvgentwo
 
 		Instruction* opString(const char* _str);
 
+		void opLine(Instruction* _pFileString, unsigned int _line, unsigned int _column);
+
+		// helper variant the turns _pFileString into opString Instruction*
+		void opLine(const char* _pFileString, unsigned int _line, unsigned int _column);
+
 		template <class ... Decorations>
 		void opDecorate(Instruction* _pTarget, spv::Decoration _decoration, Decorations ... _decorations);
 

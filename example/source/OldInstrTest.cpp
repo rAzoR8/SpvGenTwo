@@ -57,6 +57,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* abs = bb.ext<GLSL>()->opSAbs(signs);
 		Instruction* smin = bb.ext<GLSL>()->opSMin(abs, signs);
 
+		bb->opLine("OldInstrTest.cpp", 60u, 0u); // could use c++20 std::source_location
 		bb->opConvertSToF(smin);
 
 		Instruction* z = bb.Add(x, y);
