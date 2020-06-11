@@ -167,6 +167,8 @@ namespace spvgentwo
 
 		void opSource(spv::SourceLanguage _lang, unsigned int _version, Instruction* _pFileString = nullptr, const char* _pSourceText = nullptr);
 
+		void opSourceExtension(const char* _pExtensionName);
+
 		// instruction generators:
 		// all instructions generating a result id return a pointer to this instruction for reference (passing to other instruction operand)
 		void opCapability(const spv::Capability _capability);

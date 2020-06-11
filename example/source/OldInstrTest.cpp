@@ -54,6 +54,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		"}");
 
 	module.addSourceStringInstr()->opSourceContinued("Some more 'source code'");
+	module.addSourceStringInstr()->opSourceExtension("MySuperAwesomeEXT");
 
 	// void entryPoint();
 	{

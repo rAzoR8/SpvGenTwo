@@ -446,6 +446,11 @@ void spvgentwo::Instruction::opSource(spv::SourceLanguage _lang, unsigned int _v
 	}
 }
 
+void spvgentwo::Instruction::opSourceExtension(const char* _pExtensionName)
+{
+	makeOp(spv::Op::OpSourceExtension, _pExtensionName);
+}
+
 void spvgentwo::Instruction::opCapability(const spv::Capability _capability)
 {
 	makeOp(spv::Op::OpCapability, _capability);
