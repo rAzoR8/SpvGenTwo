@@ -535,6 +535,11 @@ void spvgentwo::Instruction::opLine(const char* _pFileString, unsigned int _line
 	opLine(getModule()->addSourceStringInstr()->opString(_pFileString), _line, _column);
 }
 
+void spvgentwo::Instruction::opNoLine()
+{
+	makeOp(spv::Op::OpNoLine);
+}
+
 void spvgentwo::Instruction::opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control)
 {
 	makeOp(spv::Op::OpSelectionMerge, _pMergeBlock, _control);
