@@ -163,6 +163,10 @@ namespace spvgentwo
 
 		Instruction* opSizeOf(Instruction* _pPointerToVar);
 
+		void opSourceContinued(const char* _pSourceText);
+
+		void opSource(spv::SourceLanguage _lang, unsigned int _version, Instruction* _pFileString = nullptr, const char* _pSourceText = nullptr);
+
 		// instruction generators:
 		// all instructions generating a result id return a pointer to this instruction for reference (passing to other instruction operand)
 		void opCapability(const spv::Capability _capability);

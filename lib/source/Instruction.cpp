@@ -421,6 +421,31 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSizeOf(Instruction* _pPointerT
 	return error();
 }
 
+void spvgentwo::Instruction::opSourceContinued(const char* _pSourceText)
+{
+	makeOp(spv::Op::OpSourceContinued, _pSourceText);
+}
+
+void spvgentwo::Instruction::opSource(spv::SourceLanguage _lang, unsigned int _version, Instruction* _pFileString, const char* _pSourceText)
+{
+	makeOp(spv::Op::OpSource, literal_t{ _lang }, _version);
+	if (_pFileString != nullptr)
+	{
+		if (_pFileString->getOperation() == spv::Op::OpString)
+		{
+			addOperand(_pFileString);
+		}
+		else
+		{
+			getModule()->logError("Operand of _pFileString of opSource target must be OpString instruction");
+		}
+	}
+	if (_pSourceText != nullptr)
+	{
+		appendLiterals(_pSourceText);
+	}
+}
+
 void spvgentwo::Instruction::opCapability(const spv::Capability _capability)
 {
 	makeOp(spv::Op::OpCapability, _capability);
