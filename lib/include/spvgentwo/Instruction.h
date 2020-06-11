@@ -163,6 +163,12 @@ namespace spvgentwo
 
 		Instruction* opSizeOf(Instruction* _pPointerToVar);
 
+		void opSourceContinued(const char* _pSourceText);
+
+		void opSource(spv::SourceLanguage _lang, unsigned int _version, Instruction* _pFileString = nullptr, const char* _pSourceText = nullptr);
+
+		void opSourceExtension(const char* _pExtensionName);
+
 		// instruction generators:
 		// all instructions generating a result id return a pointer to this instruction for reference (passing to other instruction operand)
 		void opCapability(const spv::Capability _capability);
@@ -210,6 +216,13 @@ namespace spvgentwo
 		void opMemberName(Instruction* _pTargetStructType, unsigned int _memberIndex, const char* _pName);
 
 		Instruction* opString(const char* _str);
+
+		void opLine(Instruction* _pFileString, unsigned int _line, unsigned int _column);
+
+		// helper variant the turns _pFileString into opString Instruction*
+		void opLine(const char* _pFileString, unsigned int _line, unsigned int _column);
+
+		void opNoLine();
 
 		template <class ... Decorations>
 		void opDecorate(Instruction* _pTarget, spv::Decoration _decoration, Decorations ... _decorations);

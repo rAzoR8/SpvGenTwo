@@ -38,6 +38,24 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 	Instruction* str = module.addSourceStringInstr()->opString("Hallo from SpvGenTwo");
 
+	module.addSourceStringInstr()->opSource(spv::SourceLanguage::GLSL, 3, str, // some random source code
+		"template<class Key, class Value> "
+		"inline Value * HashMap<Key, Value>::get(const Hash64 _hash) const"
+		"{"
+		"const auto index = _hash % m_Buckets;"
+
+		"for (Node& n : m_pBuckets[index])"
+		"{"
+		"if (n.hash == _hash)"
+		"		return &n.kv.value;"
+		"}"
+
+		"return nullptr;"
+		"}");
+
+	module.addSourceStringInstr()->opSourceContinued("Some more 'source code'");
+	module.addSourceStringInstr()->opSourceExtension("MySuperAwesomeEXT");
+
 	// void entryPoint();
 	{
 		EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, "main");
@@ -57,7 +75,9 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* abs = bb.ext<GLSL>()->opSAbs(signs);
 		Instruction* smin = bb.ext<GLSL>()->opSMin(abs, signs);
 
+		bb->opLine("OldInstrTest.cpp", 60u, 0u); // could use c++20 std::source_location
 		bb->opConvertSToF(smin);
+		bb->opNoLine();
 
 		Instruction* z = bb.Add(x, y);
 		z = bb.ext<GLSL>()->opRound(z);

@@ -421,6 +421,36 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSizeOf(Instruction* _pPointerT
 	return error();
 }
 
+void spvgentwo::Instruction::opSourceContinued(const char* _pSourceText)
+{
+	makeOp(spv::Op::OpSourceContinued, _pSourceText);
+}
+
+void spvgentwo::Instruction::opSource(spv::SourceLanguage _lang, unsigned int _version, Instruction* _pFileString, const char* _pSourceText)
+{
+	makeOp(spv::Op::OpSource, literal_t{ _lang }, _version);
+	if (_pFileString != nullptr)
+	{
+		if (_pFileString->getOperation() == spv::Op::OpString)
+		{
+			addOperand(_pFileString);
+		}
+		else
+		{
+			getModule()->logError("Operand of _pFileString of opSource target must be OpString instruction");
+		}
+	}
+	if (_pSourceText != nullptr)
+	{
+		appendLiterals(_pSourceText);
+	}
+}
+
+void spvgentwo::Instruction::opSourceExtension(const char* _pExtensionName)
+{
+	makeOp(spv::Op::OpSourceExtension, _pExtensionName);
+}
+
 void spvgentwo::Instruction::opCapability(const spv::Capability _capability)
 {
 	makeOp(spv::Op::OpCapability, _capability);
@@ -516,6 +546,28 @@ void spvgentwo::Instruction::opMemberName(Instruction* _pTargetStructType, unsig
 spvgentwo::Instruction* spvgentwo::Instruction::opString(const char* _str)
 {
 	return makeOp(spv::Op::OpString, InvalidId, _str);
+}
+
+void spvgentwo::Instruction::opLine(Instruction* _pFileString, unsigned int _line, unsigned int _column)
+{
+	if (_pFileString->getOperation() == spv::Op::OpString)
+	{
+		makeOp(spv::Op::OpLine, _pFileString, _line, _column);
+	}
+	else
+	{
+		getModule()->logError("Operand of _pFileString of opLine target must be OpString instruction");
+	}
+}
+
+void spvgentwo::Instruction::opLine(const char* _pFileString, unsigned int _line, unsigned int _column)
+{
+	opLine(getModule()->addSourceStringInstr()->opString(_pFileString), _line, _column);
+}
+
+void spvgentwo::Instruction::opNoLine()
+{
+	makeOp(spv::Op::OpNoLine);
 }
 
 void spvgentwo::Instruction::opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control)
