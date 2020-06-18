@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 			examples::parsing(&alloc, &log, &reader).write(&writer);
 			writer.close();
 			system("spirv-dis test_serialized.spv");
-			assert(system("spirv-val test_serialized.spv") == 0);
+			//assert(system("spirv-val test_serialized.spv") == 0);
 		}
 	}
 

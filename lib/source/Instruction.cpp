@@ -2,8 +2,10 @@
 #include "spvgentwo/BasicBlock.h"
 #include "spvgentwo/Type.h"
 #include "spvgentwo/Writer.h"
+#include "spvgentwo/Reader.h"
 #include "spvgentwo/Module.h"
 #include "spvgentwo/TypeInferenceAndValiation.h"
+#include "spvgentwo/Grammar.h"
 
 spvgentwo::Instruction::Instruction(Module* _pModule, Instruction&& _other) noexcept :
 	List(stdrep::move(_other)),
@@ -272,8 +274,57 @@ void spvgentwo::Instruction::write(IWriter* _pWriter)
 	}
 }
 
-bool spvgentwo::Instruction::read(IReader* _pReader)
+bool spvgentwo::Instruction::read(IReader* _pReader, const Grammar& _grammar)
 {
+	reset();
+
+	if (unsigned int word{}; _pReader->get(word))
+	{
+		m_Operation = static_cast<spv::Op>(word & spv::OpCodeMask);
+		unsigned int operands = word >> spv::WordCountShift;
+
+		const Grammar::Instruction* info = _grammar.getInfo(static_cast<unsigned int>(m_Operation));
+
+		if (info == nullptr)
+		{
+			getModule()->logError("Unkown op code %u", m_Operation);
+			return false;
+		}
+
+		auto it = info->operands.begin();
+		const auto end = info->operands.end();
+
+		while (operands != 0u && it != end)
+		{
+			const auto& op = *it;
+			if (_pReader->get(word))
+			{
+				if (op.quantifier == Grammar::Quantifier::One || op.quantifier == Grammar::Quantifier::ZeroOrOne)
+				{
+					++it;
+				}
+
+				if (op.category == Grammar::OperandCategory::Id)
+				{
+					addOperand(static_cast<spv::Op>(word));
+				}
+				else
+				{
+					addOperand(static_cast<literal_t>(word));
+				}
+
+				--operands;
+			}
+		}
+
+		if (operands > 0u)
+		{
+			getModule()->logError("Could not parse all operands");
+			return false;
+		}
+
+		return true;
+	}
 	return false;
 }
 

@@ -11,6 +11,7 @@ namespace spvgentwo
 	class Function;
 	class Module;
 	class IReader;
+	class Grammar;
 
 	class Instruction : public List<Operand>
 	{
@@ -119,7 +120,7 @@ namespace spvgentwo
 		void write(IWriter* _pWriter);
 
 		// deserialize instruction operands from this IReader
-		bool read(IReader* _pReader);
+		bool read(IReader* _pReader, const Grammar& _grammar);
 
 		// transforms _args to operands, calls inferResultTypeOperand and validateOperands()
 		template <class ...Args>
