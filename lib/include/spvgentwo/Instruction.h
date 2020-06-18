@@ -10,6 +10,7 @@ namespace spvgentwo
 	class Type;
 	class Function;
 	class Module;
+	class IReader;
 
 	class Instruction : public List<Operand>
 	{
@@ -114,8 +115,11 @@ namespace spvgentwo
 		// returns the ID assigned to this instrucions
 		spv::Id resolveId(spv::Id& _previousId);
 
-		// serialize instructions of this basic block to the IWriter
+		// serialize instruction operands to the IWriter
 		void write(IWriter* _pWriter);
+
+		// deserialize instruction operands from this IReader
+		bool read(IReader* _pReader);
 
 		// transforms _args to operands, calls inferResultTypeOperand and validateOperands()
 		template <class ...Args>

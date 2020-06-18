@@ -272,6 +272,11 @@ void spvgentwo::Instruction::write(IWriter* _pWriter)
 	}
 }
 
+bool spvgentwo::Instruction::read(IReader* _pReader)
+{
+	return false;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::Mul(Instruction* _pLeft, Instruction* _pRight)
 {
 	const Type* lType = _pLeft->getType();

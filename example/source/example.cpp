@@ -3,6 +3,7 @@
 #include "spvgentwo/Logger.h"
 #include "common/HeapAllocator.h"
 #include "common/BinaryFileWriter.h"
+#include "common/BinaryFileReader.h"
 
 // examples
 #include "OldInstrTest.h"
@@ -12,6 +13,7 @@
 #include "Types.h"
 #include "Constants.h"
 #include "ExpressionGraph.h"
+#include "Parsing.h"
 
 #include <stdarg.h>
 #include <assert.h>
@@ -63,6 +65,17 @@ int main(int argc, char* argv[])
 		writer.close();
 		system("spirv-dis test.spv");
 		assert(system("spirv-val test.spv") == 0);
+	}
+
+	if (BinaryFileReader reader("test.spv"); reader.isOpen())
+	{
+		if (BinaryFileWriter writer("test_serialized.spv"); writer.isOpen())
+		{
+			examples::parsing(&alloc, &log, &reader).write(&writer);
+			writer.close();
+			system("spirv-dis test_serialized.spv");
+			assert(system("spirv-val test_serialized.spv") == 0);
+		}
 	}
 
 	// old cli test
