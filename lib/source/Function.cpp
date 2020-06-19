@@ -1,5 +1,6 @@
 #include "spvgentwo/Function.h"
 #include "spvgentwo/Module.h"
+#include "spvgentwo/Reader.h"
 
 spvgentwo::Function::Function(Module* _pModule) : 
 	List(_pModule->getAllocator()),
@@ -64,6 +65,36 @@ void spvgentwo::Function::write(IWriter* _pWriter)
 	}
 
 	m_FunctionEnd.write(_pWriter);
+}
+
+bool spvgentwo::Function::read(IReader* _pReader, const Grammar& _grammar)
+{
+	// module already consumed first word of OpFunction, OpFunction has 4 Operands
+	if (m_Function.readOperands(_pReader, _grammar, spv::Op::OpFunction, 4u) == false) return false;
+
+	unsigned int word{ 0 };
+
+	while (_pReader->get(word))
+	{
+		const spv::Op op = getOperation(word);
+		const unsigned int operands = getOperandCount(word) - 1u;
+
+		switch (op)
+		{
+		case spv::Op::OpFunctionParameter:
+			if (m_Parameters.emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false) return false;
+			break;
+		case spv::Op::OpLabel:
+			if (addBasicBlock().read(_pReader, _grammar) == false) return false;
+			break;
+		case spv::Op::OpFunctionEnd:
+			return true; // FunctionEnd as no operands
+		default:
+			return false; // unexpected op code
+		}
+	}
+
+	return false;
 }
 
 const char* spvgentwo::Function::getName() const

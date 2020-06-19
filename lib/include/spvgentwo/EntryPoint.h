@@ -23,6 +23,8 @@ namespace spvgentwo
 		
 		~EntryPoint() override;
 
+		// TODO: move constructor & asignment
+
 		// get all the global OpVariables with StorageClass != Function used in this function
 		void getGlobalVariableInterface(List<Operand>& _outVarinstr, const GlobalInterfaceVersion _version) const;
 

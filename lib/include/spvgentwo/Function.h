@@ -50,7 +50,9 @@ namespace spvgentwo
 
 		Instruction* getParameter(unsigned int _index);
 
-		void write(IWriter* _pWriter);		
+		void write(IWriter* _pWriter);
+
+		bool read(IReader* _pReader, const Grammar& _grammar);
 
 		const List<Instruction>& getParameters() const { return m_Parameters; }
 

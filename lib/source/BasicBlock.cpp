@@ -1,6 +1,7 @@
 #include "spvgentwo/BasicBlock.h"
 #include "spvgentwo/Function.h"
 #include "spvgentwo/Module.h"
+#include "spvgentwo/Reader.h"
 
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, const char* _pName) : List(_pFunction->getAllocator()),
 	m_pFunction(_pFunction)
@@ -109,6 +110,32 @@ void spvgentwo::BasicBlock::write(IWriter* _pWriter)
 	{
 		instr.write(_pWriter);
 	}
+}
+
+bool spvgentwo::BasicBlock::read(IReader* _pReader, const Grammar& _grammar)
+{
+	// function alread consumed the first word of OpLabel, OpLabel as one result Id operand
+	if (front().readOperands(_pReader, _grammar, spv::Op::OpLabel, 1u) == false) return false;
+
+	unsigned int word{ 0 };
+
+	while (_pReader->get(word))
+	{
+		const spv::Op op = getOperation(word);
+		const unsigned int operands = getOperandCount(word) - 1u;
+
+		if (emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false)
+		{
+			break;
+		}
+
+		if (isTerminatorOp(op))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 spvgentwo::BasicBlock& spvgentwo::BasicBlock::If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock* _pMergeBlock, const Flag<spv::SelectionControlMask> _mask)
