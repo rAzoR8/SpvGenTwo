@@ -612,6 +612,7 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			if (addLineInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpFunction:
 			// TODO: read function
+			// check if function is an EntryPoint, get the entry point, or else, emplace new function
 			//m_Functions.emplace_back(this).read((_pReader, _grammar, )
 			break;
 		default:
@@ -643,4 +644,23 @@ spvgentwo::Instruction* spvgentwo::Module::addUndefInstr()
 spvgentwo::Instruction* spvgentwo::Module::addLineInstr()
 {
 	return &m_Lines.emplace_back(this);
+}
+
+spvgentwo::Instruction* spvgentwo::Module::findInstructionById(const spv::Id _resultId)
+{
+	Instruction* instr = nullptr;
+
+	auto pred = [&instr, _resultId](Instruction& _instr) -> bool
+	{
+		if (_instr.getResultId() == _resultId)
+		{
+			instr = &_instr;
+			return true; // break
+		}
+		return false;
+	};
+
+	iterateInstructions(pred);
+
+	return instr;
 }
