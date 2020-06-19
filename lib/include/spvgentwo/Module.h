@@ -71,6 +71,12 @@ namespace spvgentwo
 		const List<Instruction>& getGlobalVariables() const { return m_GlobalVariables; }
 		List<Instruction>& getGlobalVariables() { return m_GlobalVariables; }
 
+		const List<Instruction>& getUndefs() const { return m_Undefs; }
+		List<Instruction>& getUndefs() { return m_Undefs; }
+
+		const List<Instruction>& getLines() const { m_Lines; }
+		List<Instruction>& getLines() { return m_Lines; }
+
 		// add empty function
 		Function& addFunction();
 
