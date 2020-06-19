@@ -125,6 +125,8 @@ namespace spvgentwo
 		// automatically assigns IDs and serializes module to IWriter
 		void write(IWriter* _pWriter);
 
+		bool read(IReader* _pReader, const Grammar& _grammar);
+
 		// for use with opString, opSource, opSourceContinued, opSourceExtension
 		Instruction* addSourceStringInstr();
 
@@ -150,6 +152,9 @@ namespace spvgentwo
 
 		// creates new empty constant using this modules allocator
 		Constant newConstant();
+
+		// add empty instruction which must be OpVarible with StorageClass != function
+		Instruction* addGlobalVariableInstr();
 
 		// _pPtrType needs to be in the same StorageClass as _storageClass
 		Instruction* variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, const char* _pName = nullptr, Instruction* _pInitialzer = nullptr);
@@ -194,6 +199,12 @@ namespace spvgentwo
 		Instruction* storageBuffer(const char* _pName, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::StorageBuffer, _pName, _pInitialzer); }
 		template <class T> // image variable
 		Instruction* storageBuffer(const char* _pName, const T& _dynTypeDesc) { return variable<T>(spv::StorageClass::StorageBuffer, _dynTypeDesc, _pName); }
+
+		// add empty instruction which must be OpUndef
+		Instruction* addUndefInstr();
+
+		// add empty instruction which must be OpLine or OpNoLine
+		Instruction* addLineInstr();
 
 		// iterates over all instructions in this module in serialization order, should be called AFTER write() which does some finalization
 		template <class Func> // func takes Instruction& -> func(instr)
@@ -268,6 +279,9 @@ namespace spvgentwo
 		HashMap<Constant, Instruction*> m_ConstantBuilder;
 
 		List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function
+
+		List<Instruction> m_Undefs; // opUndef
+		List<Instruction> m_Lines; // opLine, opNoLine
 
 		Instruction m_errorInstr; // opNop
 	};
@@ -420,6 +434,8 @@ namespace spvgentwo
 		iterateInstructionContainer(_func, m_Decorations);
 		iterateInstructionContainer(_func, m_TypesAndConstants);
 		iterateInstructionContainer(_func, m_GlobalVariables);
+		iterateInstructionContainer(_func, m_Undefs);
+		iterateInstructionContainer(_func, m_Lines);
 
 		auto iterateFuncion = [&_func](Function& f)
 		{

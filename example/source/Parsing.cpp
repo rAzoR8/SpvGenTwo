@@ -1,4 +1,5 @@
 #include "Parsing.h"
+#include "spvgentwo/Grammar.h"
 
 using namespace spvgentwo;
 
@@ -6,7 +7,8 @@ spvgentwo::Module examples::parsing(spvgentwo::IAllocator* _pAllocator, spvgentw
 {
 	Module module(_pAllocator, spv::Version, _pLogger);
 
-	// TODO: module.read(_pReader)
+	Grammar gram(_pAllocator);
+	module.read(_pReader, gram);
 
 	return module;
 }

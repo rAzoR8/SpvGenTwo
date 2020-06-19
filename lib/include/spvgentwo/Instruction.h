@@ -120,7 +120,7 @@ namespace spvgentwo
 		void write(IWriter* _pWriter);
 
 		// deserialize instruction operands from this IReader
-		bool read(IReader* _pReader, const Grammar& _grammar);
+		bool readOperands(IReader* _pReader, const Grammar& _grammar, spv::Op _op, unsigned int _operandCount);
 
 		// transforms _args to operands, calls inferResultTypeOperand and validateOperands()
 		template <class ...Args>

@@ -34,7 +34,10 @@ namespace spvgentwo
 
 		template <class ... Args>
 		Instruction* addExecutionMode(const spv::ExecutionMode _mode, Args ... _args);
+		Instruction* addExecutionModeInstr();
+
 		const List<Instruction>& getExecutionModes() const { return m_ExecutionModes; }
+		List<Instruction>& getExecutionModes() { return m_ExecutionModes; }
 
 		// overrides Functions finalize (used internally), _pEntryPointName is mandatory parameter, returns opFunction
 		Instruction* finalize(const spv::ExecutionModel _model, const Flag<spv::FunctionControlMask> _control, const char* _pEntryPointName);

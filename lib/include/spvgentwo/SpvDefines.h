@@ -28,6 +28,21 @@ namespace spvgentwo
 		return (_byteCount / sizeof(spv::Id)) + (_byteCount % sizeof(spv::Id) != 0u ? 1u : 0u);
 	}
 
+	constexpr spv::Op getOperation(unsigned int _instrWord)
+	{
+		return static_cast<spv::Op>(_instrWord & spv::OpCodeMask);
+	}
+
+	constexpr unsigned int getOperandCount(unsigned int _instrWord)
+	{
+		return _instrWord >> spv::WordCountShift;
+	}
+
+	constexpr unsigned int makeOpCode(spv::Op _op, unsigned int _operandCount)
+	{
+		return (static_cast<unsigned int>(_op) & spv::OpCodeMask) | (_operandCount << spv::WordCountShift);
+	}
+
 	inline bool hasResultAndTypeId(const spv::Op _operation)
 	{
 		bool res = false, type = false;

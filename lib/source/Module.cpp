@@ -1,5 +1,6 @@
 #include "spvgentwo/Module.h"
 #include "spvgentwo/Writer.h"
+#include "spvgentwo/Reader.h"
 #include "spvgentwo/Logger.h"
 
 spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersion, ILogger* _pLogger, ITypeInferenceAndVailation* _pTypeInferenceAndVailation) :
@@ -28,6 +29,8 @@ spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersio
 	m_NameLookup(_pAllocator),
 	m_ConstantBuilder(_pAllocator),
 	m_GlobalVariables(_pAllocator),
+	m_Undefs(_pAllocator),
+	m_Lines(_pAllocator),
 	m_errorInstr(this)
 {
 	setMemoryModel(_addressModel, _memoryModel);
@@ -54,6 +57,8 @@ spvgentwo::Module::Module(Module&& _other) noexcept:
 	m_NameLookup(stdrep::move(_other.m_NameLookup)),
 	m_ConstantBuilder(stdrep::move(_other.m_ConstantBuilder)),
 	m_GlobalVariables(stdrep::move(_other.m_GlobalVariables)),
+	m_Undefs(stdrep::move(_other.m_Undefs)),
+	m_Lines(stdrep::move(_other.m_Lines)),
 	m_errorInstr(this, stdrep::move(_other.m_errorInstr))
 {
 	updateParentPointers();
@@ -82,6 +87,8 @@ spvgentwo::Module& spvgentwo::Module::operator=(Module&& _other) noexcept
 	m_InstrToType = stdrep::move(_other.m_InstrToType);
 	m_ConstantBuilder = stdrep::move(_other.m_ConstantBuilder);
 	m_GlobalVariables = stdrep::move(_other.m_GlobalVariables);
+	m_Undefs = stdrep::move(_other.m_Undefs);
+	m_Lines = stdrep::move(_other.m_Lines);
 
 	updateParentPointers();
 
@@ -122,6 +129,8 @@ void spvgentwo::Module::updateParentPointers()
 	fixList(m_Decorations);
 	fixList(m_TypesAndConstants);
 	fixList(m_GlobalVariables);
+	fixList(m_Undefs);
+	fixList(m_Lines);
 }
 
 spvgentwo::Module::~Module()
@@ -152,6 +161,8 @@ void spvgentwo::Module::reset()
 
 	m_ConstantBuilder.clear();
 	m_GlobalVariables.clear();
+	m_Undefs.clear();
+	m_Lines.clear();
 }
 
 spvgentwo::Function& spvgentwo::Module::addFunction()
@@ -172,6 +183,11 @@ spvgentwo::Type spvgentwo::Module::newType()
 spvgentwo::Constant spvgentwo::Module::newConstant()
 {
 	return Constant(m_pAllocator);
+}
+
+spvgentwo::Instruction* spvgentwo::Module::addGlobalVariableInstr()
+{
+	return &m_GlobalVariables.emplace_back(this);
 }
 
 void spvgentwo::Module::addCapability(const spv::Capability _capability)
@@ -525,6 +541,88 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 	iterateInstructions(writeInstr);
 }
 
+bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
+{
+	unsigned int word{ 0 };
+
+	if (_pReader->get(word) == false || word != spv::MagicNumber)
+	{
+		logError("Failed to parse magic number");
+		return false;
+	}
+
+	if (logError(_pReader->get(m_spvVersion), "Failed to parse version") == false) return false;
+	if (logError(_pReader->get(word), "Failed to parse generator") == false) return false;
+
+	spv::Id maxId = 0u;
+	if (logError(_pReader->get(maxId), "Failed to parse bounds") == false) return false;
+	if (logError(_pReader->get(word), "Failed to parse schema") == false) return false;
+
+	while (_pReader->get(word))
+	{
+		const spv::Op op = getOperation(word);
+		const unsigned int operands = getOperandCount(word) - 1u;
+
+		if (spv::IsTypeOp(op) || isSpecOrConstantOp(op))
+		{
+			if (m_TypesAndConstants.emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false) return false;
+			continue;
+		}
+
+		switch (op)
+		{
+		case spv::Op::OpCapability:
+			if (m_Capabilities.emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		case spv::Op::OpExtension:
+			if (m_Extensions.emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		case spv::Op::OpExtInstImport:
+			if (m_Extensions.emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		case spv::Op::OpMemoryModel:
+			if (m_MemoryModel.readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		case spv::Op::OpEntryPoint:
+			if (m_EntryPoints.emplace_back(this).getEntryPoint()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		case spv::Op::OpExecutionMode:
+			// TODO: look for the EntryPoint in m_EntryPoints which references the same function id, add and parse 
+			//m_EntryPoints.front().addExecutionModeInstr()->readOperands(_pReader, _grammar, op, operands);
+			break;
+		case spv::Op::OpString:
+		case spv::Op::OpSourceExtension:
+		case spv::Op::OpSource:
+		case spv::Op::OpSourceContinued:
+			if (addSourceStringInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		case spv::Op::OpName:
+		case spv::Op::OpMemberName:
+			if (addNameInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		case spv::Op::OpModuleProcessed:
+			if (addModuleProccessedInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		case spv::Op::OpDecorate:
+		case spv::Op::OpMemberDecorate:
+		case spv::Op::OpGroupDecorate:
+		case spv::Op::OpGroupMemberDecorate:
+		case spv::Op::OpDecorationGroup:
+			if (addDecorationInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		case spv::Op::OpVariable:
+			// TODO: check if storage type != function
+			// TODO: add to m_TypeToInstr and m_InstrToType after pointer resolve
+			if (addGlobalVariableInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		case spv::Op::OpUndef:
+			if(addUndefInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		case spv::Op::OpLine:
+		case spv::Op::OpNoLine:
+			if (addLineInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		case spv::Op::OpFunction:
+			// TODO: read function
+			//m_Functions.emplace_back(this).read((_pReader, _grammar, )
+			break;
+		default:
+			logError("Failed to parse operation %u", op);
+			return false;
+		}
+	}
+
+	return true;
+}
+
 spvgentwo::Instruction* spvgentwo::Module::variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, const char* _pName, Instruction* _pInitialzer)
 {
 	Instruction* pVar = m_GlobalVariables.emplace_back(this).opVariable(_pPtrType, _storageClass, _pInitialzer);
@@ -535,4 +633,14 @@ spvgentwo::Instruction* spvgentwo::Module::variable(Instruction* _pPtrType, cons
 	}
 
 	return pVar;
+}
+
+spvgentwo::Instruction* spvgentwo::Module::addUndefInstr()
+{
+	return &m_Undefs.emplace_back(this);
+}
+
+spvgentwo::Instruction* spvgentwo::Module::addLineInstr()
+{
+	return &m_Lines.emplace_back(this);
 }
