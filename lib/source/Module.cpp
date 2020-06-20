@@ -558,6 +558,8 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 	if (logError(_pReader->get(maxId), "Failed to parse bounds") == false) return false;
 	if (logError(_pReader->get(word), "Failed to parse schema") == false) return false;
 
+	HashMap<spv::Id, EntryPoint*> entryPoints(m_pAllocator);
+
 	while (_pReader->get(word))
 	{
 		const spv::Op op = getOperation(word);
@@ -580,10 +582,55 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 		case spv::Op::OpMemoryModel:
 			if (m_MemoryModel.readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpEntryPoint:
-			if (m_EntryPoints.emplace_back(this).getEntryPoint()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		{
+			EntryPoint* ep = &m_EntryPoints.emplace_back(this);
+			if (ep->getEntryPoint()->readOperands(_pReader, _grammar, op, operands) == false)
+			{
+				return false;
+			}
+
+			auto it = ep->getEntryPoint()->getFirstActualOperand();
+			if (it == nullptr || it->isLiteral() == false)
+			{
+				return false;
+			}
+			
+			ep->setExecutionModel(static_cast<spv::ExecutionModel>(it->value.value));
+
+			++it; // EntryPoint <id> is second operand of OpEntryPoint
+			if (it == nullptr || it->isResultId() == false)
+			{
+				return false;
+			}
+
+			const spv::Id id = it->resultId; // function result id
+
+			entryPoints.emplaceUnique(id, ep);
+
+			break;
+		}
 		case spv::Op::OpExecutionMode:
-			// TODO: look for the EntryPoint in m_EntryPoints which references the same function id, add and parse 
-			//m_EntryPoints.front().addExecutionModeInstr()->readOperands(_pReader, _grammar, op, operands);
+		case spv::Op::OpExecutionModeId:
+		{
+			Instruction execMode(this);
+			execMode.readOperands(_pReader, _grammar, op, operands);
+
+			auto it = execMode.getFirstActualOperand();
+			if (it == nullptr || it->isResultId() == false)
+			{
+				return false; // TODO: log
+			}
+
+			const spv::Id id = it->resultId;
+			
+			EntryPoint** epp = entryPoints.get(id);
+			if (epp == nullptr)
+			{
+				return false;
+			}
+			
+			(*epp)->getExecutionModes().emplace_back(*epp, stdrep::move(execMode));
+		}
 			break;
 		case spv::Op::OpString:
 		case spv::Op::OpSourceExtension:
@@ -611,9 +658,36 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 		case spv::Op::OpNoLine:
 			if (addLineInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpFunction:
-			// TODO: read function
-			// check if function is an EntryPoint, get the entry point, or else, emplace new function
-			//m_Functions.emplace_back(this).read((_pReader, _grammar, )
+		{
+			Instruction opFunc(this);
+			opFunc.readOperands(_pReader, _grammar, op, operands);
+
+			const spv::Id id = opFunc.getResultId();
+			if (id == InvalidId)
+			{
+				return false; // TODO: log
+			}
+
+			Function* func = nullptr;
+			if (EntryPoint** epp = entryPoints.get(id); epp != nullptr)
+			{
+				func = *epp;
+			}
+			else
+			{
+				func = &m_Functions.emplace_back(this);
+			}
+
+			if (_pReader->unGet(operands) == false)
+			{
+				return false;			
+			}
+
+			if (func->read(_pReader, _grammar) == false)
+			{
+				return false;
+			}
+		}
 			break;
 		default:
 			logError("Failed to parse operation %u", op);

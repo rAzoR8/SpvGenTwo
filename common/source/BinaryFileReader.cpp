@@ -20,6 +20,18 @@ bool spvgentwo::BinaryFileReader::getAt(unsigned int& _word, const long _offset)
 	return m_pFile != nullptr && fseek(m_pFile, _offset, SEEK_SET) == 0 && get(_word);
 }
 
+bool spvgentwo::BinaryFileReader::unGet(const unsigned int _count)
+{
+	if (m_pFile != nullptr)
+	{
+		const long offset = -static_cast<long>(_count);
+		fseek(m_pFile, offset, SEEK_CUR);
+		return true;
+	}
+
+	return false;
+}
+
 long spvgentwo::BinaryFileReader::total()
 {
 	long l{};

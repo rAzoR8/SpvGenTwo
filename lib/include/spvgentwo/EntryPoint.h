@@ -29,6 +29,7 @@ namespace spvgentwo
 		void getGlobalVariableInterface(List<Operand>& _outVarinstr, const GlobalInterfaceVersion _version) const;
 
 		spv::ExecutionModel getExecutionModel() const { return m_ExecutionModel; }
+		void setExecutionModel(const spv::ExecutionModel _model) { m_ExecutionModel = _model; }
 
 		// OpEntryPoint
 		Instruction* getEntryPoint() { return &m_EntryPoint; }
