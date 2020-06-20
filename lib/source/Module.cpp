@@ -13,6 +13,8 @@ spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersio
 	m_pLogger(_pLogger),
 	m_pTypeInferenceAndVailation(_pTypeInferenceAndVailation),
 	m_spvVersion(_spvVersion),
+	m_spvBound(0u),
+	m_spvSchema(0u),
 	m_Functions(_pAllocator),
 	m_EntryPoints(_pAllocator),
 	m_Capabilities(_pAllocator),
@@ -41,6 +43,8 @@ spvgentwo::Module::Module(Module&& _other) noexcept:
 	m_pLogger(_other.m_pLogger),
 	m_pTypeInferenceAndVailation(_other.m_pTypeInferenceAndVailation),
 	m_spvVersion(_other.m_spvVersion),
+	m_spvBound(_other.m_spvBound),
+	m_spvSchema(_other.m_spvSchema),
 	m_Functions(stdrep::move(_other.m_Functions)),
 	m_EntryPoints(stdrep::move(_other.m_EntryPoints)),
 	m_Capabilities(stdrep::move(_other.m_Capabilities)),
@@ -72,6 +76,8 @@ spvgentwo::Module& spvgentwo::Module::operator=(Module&& _other) noexcept
 	m_pLogger = _other.m_pLogger;
 	m_pTypeInferenceAndVailation = _other.m_pTypeInferenceAndVailation;
 	m_spvVersion = _other.m_spvVersion;
+	m_spvBound = _other.m_spvBound;
+	m_spvSchema = _other.m_spvSchema;
 	m_Functions = stdrep::move(_other.m_Functions);
 	m_EntryPoints = stdrep::move(_other.m_EntryPoints);
 	m_Capabilities = stdrep::move(_other.m_Capabilities);
@@ -509,7 +515,7 @@ spvgentwo::spv::Id spvgentwo::Module::assignIDs()
 	return maxId;
 }
 
-void spvgentwo::Module::write(IWriter* _pWriter)
+void spvgentwo::Module::write(IWriter* _pWriter, const bool _assingIDs)
 {
 	// finalize entry points interfaces
 	for (EntryPoint& ep : m_EntryPoints)
@@ -524,14 +530,17 @@ void spvgentwo::Module::write(IWriter* _pWriter)
 		}
 	}
 
-	const spv::Id maxId = assignIDs();
+	if (_assingIDs)
+	{
+		m_spvBound = assignIDs() + 1u;
+	}
 
 	// write header
 	_pWriter->put(spv::MagicNumber);
 	_pWriter->put(m_spvVersion);
 	_pWriter->put(GeneratorId);
-	_pWriter->put(maxId+1u); 
-	_pWriter->put(0u); // schema
+	_pWriter->put(m_spvBound);
+	_pWriter->put(m_spvSchema);
 
 	auto writeInstr = [_pWriter](Instruction& instr)
 	{
@@ -554,9 +563,8 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 	if (logError(_pReader->get(m_spvVersion), "Failed to parse version") == false) return false;
 	if (logError(_pReader->get(word), "Failed to parse generator") == false) return false;
 
-	spv::Id maxId = 0u;
-	if (logError(_pReader->get(maxId), "Failed to parse bounds") == false) return false;
-	if (logError(_pReader->get(word), "Failed to parse schema") == false) return false;
+	if (logError(_pReader->get(m_spvBound), "Failed to parse bounds") == false) return false;
+	if (logError(_pReader->get(m_spvSchema), "Failed to parse schema") == false) return false;
 
 	HashMap<spv::Id, EntryPoint*> entryPoints(m_pAllocator);
 
@@ -606,9 +614,8 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			const spv::Id id = it->resultId; // function result id
 
 			entryPoints.emplaceUnique(id, ep);
-
-			break;
 		}
+			break;
 		case spv::Op::OpExecutionMode:
 		case spv::Op::OpExecutionModeId:
 		{
@@ -678,12 +685,7 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 				func = &m_Functions.emplace_back(this);
 			}
 
-			if (_pReader->unGet(operands) == false)
-			{
-				return false;			
-			}
-
-			if (func->read(_pReader, _grammar) == false)
+			if (func->read(_pReader, _grammar, stdrep::move(opFunc)) == false)
 			{
 				return false;
 			}

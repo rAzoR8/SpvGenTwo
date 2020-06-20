@@ -280,6 +280,11 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 
 	m_Operation = _op;
 
+	if (_operandCount == 0u)
+	{
+		return true; // nothing left to do
+	}
+
 	const Grammar::Instruction* info = _grammar.getInfo(static_cast<unsigned int>(m_Operation));
 
 	if (info == nullptr)
@@ -305,7 +310,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 				addOperand(static_cast<literal_t>(word));
 			}
 
-			if (op.quantifier == Grammar::Quantifier::One || op.quantifier == Grammar::Quantifier::ZeroOrOne)
+			if(op.kind != Grammar::OperandKind::LiteralString)
 			{
 				++it;
 			}

@@ -128,8 +128,9 @@ namespace spvgentwo
 		// manually assign IDs to all unresolved instructions, returns bounds/max id
 		spv::Id assignIDs();
 
-		// automatically assigns IDs and serializes module to IWriter
-		void write(IWriter* _pWriter);
+		// automatically assigns IDs if _assingIDs (otherwise m_Bounds must be set) and serializes module to IWriter
+		// IDs dont need to be assigned if the module was parsed using read()
+		void write(IWriter* _pWriter, const bool _assingIDs = true);
 
 		bool read(IReader* _pReader, const Grammar& _grammar);
 
@@ -264,6 +265,8 @@ namespace spvgentwo
 		ILogger* m_pLogger = nullptr;
 		ITypeInferenceAndVailation* m_pTypeInferenceAndVailation = nullptr;
 		unsigned int m_spvVersion = spv::Version;
+		unsigned int m_spvBound = InvalidId;
+		unsigned int m_spvSchema = 0u;
 		List<Function> m_Functions;
 		List<EntryPoint> m_EntryPoints;
 

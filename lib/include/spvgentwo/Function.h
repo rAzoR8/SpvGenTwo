@@ -52,7 +52,7 @@ namespace spvgentwo
 
 		void write(IWriter* _pWriter);
 
-		bool read(IReader* _pReader, const Grammar& _grammar);
+		bool read(IReader* _pReader, const Grammar& _grammar, Instruction&& _opFunc);
 
 		const List<Instruction>& getParameters() const { return m_Parameters; }
 

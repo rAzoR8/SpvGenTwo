@@ -67,10 +67,10 @@ void spvgentwo::Function::write(IWriter* _pWriter)
 	m_FunctionEnd.write(_pWriter);
 }
 
-bool spvgentwo::Function::read(IReader* _pReader, const Grammar& _grammar)
+bool spvgentwo::Function::read(IReader* _pReader, const Grammar& _grammar, Instruction&& _opFunc)
 {
-	// module already consumed first word of OpFunction, OpFunction has 4 Operands
-	if (m_Function.readOperands(_pReader, _grammar, spv::Op::OpFunction, 4u) == false) return false;
+	// module already consumed OpFunction
+	m_Function = stdrep::move(_opFunc);
 
 	unsigned int word{ 0 };
 
