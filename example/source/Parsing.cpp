@@ -16,9 +16,9 @@ spvgentwo::Module examples::parsing(spvgentwo::IAllocator* _pAllocator, spvgentw
 
 	auto printOperand = [](const Operand& op)
 	{
-		if (op.isResultId())
+		if (op.isId())
 		{
-			printf("%%%u ", op.resultId);
+			printf("%%%u ", op.id);
 		}
 		else if (op.isLiteral())
 		{

@@ -522,10 +522,10 @@ bool spvgentwo::Module::resolveIDs()
 	auto populate = [&idToPtr](Instruction& _instr)
 	{
 		// this instruction generates a new Id
-		if (auto it = _instr.getResultIdOperand(); it != nullptr && it->isResultId())
+		if (auto it = _instr.getResultIdOperand(); it != nullptr && it->isId())
 		{
-			idToPtr.emplaceUnique(it->resultId, &_instr);
-			it->resultId = InvalidId; // reset resultId for assignIDs()
+			idToPtr.emplaceUnique(it->id, &_instr);
+			it->id = InvalidId; // reset resultId for assignIDs()
 		}
 	};
 
@@ -537,7 +537,7 @@ bool spvgentwo::Module::resolveIDs()
 	{
 		for (auto it = _instr.begin(), end = _instr.end(); it != end; ++it)
 		{
-			if (spv::Id id = it->getResultId(); id != InvalidId)
+			if (spv::Id id = it->getId(); id != InvalidId)
 			{
 				if (Instruction** ppInstr = idToPtr.get(id); ppInstr != nullptr) // lookup pointer for operand
 				{
@@ -663,12 +663,12 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			ep->setExecutionModel(static_cast<spv::ExecutionModel>(it->literal.value));
 
 			++it; // EntryPoint <id> is second operand of OpEntryPoint
-			if (it == nullptr || it->isResultId() == false)
+			if (it == nullptr || it->isId() == false)
 			{
 				return false;
 			}
 
-			const spv::Id id = it->resultId; // function result id
+			const spv::Id id = it->id; // function result id
 
 			entryPoints.emplaceUnique(id, ep);
 		}
@@ -680,12 +680,12 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			execMode.readOperands(_pReader, _grammar, op, operands);
 
 			auto it = execMode.getFirstActualOperand();
-			if (it == nullptr || it->isResultId() == false)
+			if (it == nullptr || it->isId() == false)
 			{
 				return false; // TODO: log
 			}
 
-			const spv::Id id = it->resultId;
+			const spv::Id id = it->id;
 			
 			EntryPoint** epp = entryPoints.get(id);
 			if (epp == nullptr)

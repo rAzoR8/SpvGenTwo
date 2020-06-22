@@ -128,7 +128,7 @@ spvgentwo::spv::Id spvgentwo::Instruction::getResultId() const
 {
 	auto it = getResultIdOperand();
 	if (it == nullptr) return InvalidId;
-	return it->getResultId();
+	return it->getId();
 }
 
 spvgentwo::spv::Id spvgentwo::Instruction::assignID(spv::Id& _previousId)
@@ -159,12 +159,12 @@ spvgentwo::spv::Id spvgentwo::Instruction::assignID(spv::Id& _previousId)
 	auto it = getResultIdOperand();
 	if (it == nullptr) return InvalidId;
 
-	if (it->resultId == InvalidId)
+	if (it->id == InvalidId)
 	{
-		it->resultId = ++_previousId;
+		it->id = ++_previousId;
 	}
 
-	return it->resultId;
+	return it->id;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::getTypeInstr() const
