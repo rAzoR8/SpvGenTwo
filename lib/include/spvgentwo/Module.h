@@ -74,7 +74,7 @@ namespace spvgentwo
 		const List<Instruction>& getUndefs() const { return m_Undefs; }
 		List<Instruction>& getUndefs() { return m_Undefs; }
 
-		const List<Instruction>& getLines() const { m_Lines; }
+		const List<Instruction>& getLines() const { return m_Lines; }
 		List<Instruction>& getLines() { return m_Lines; }
 
 		// add empty function
@@ -416,7 +416,7 @@ namespace spvgentwo
 	inline bool iterateInstructionContainer(Func _func, Container& _container)
 	{
 		static_assert(traits::is_invocable_v<Func, Instruction&>, "Func _func is not invocable: _func(const Instruction& _instr)");
-		using Ret = decltype(stdrep::declval<Func>()(stdrep::declval<Instruction>()));
+		using Ret = decltype(stdrep::declval<Func>()(stdrep::declval<Instruction&>()));
 
 		for (auto& instr : _container)
 		{
@@ -439,7 +439,7 @@ namespace spvgentwo
 	inline void Module::iterateInstructions(Func _func)
 	{
 		static_assert(traits::is_invocable_v<Func, Instruction&>, "Func _func is not invocable: _func(const Instruction& _instr)");
-		using Ret = decltype(stdrep::declval<Func>()(stdrep::declval<Instruction>()));
+		using Ret = decltype(stdrep::declval<Func>()(stdrep::declval<Instruction&>()));
 		
 		if (iterateInstructionContainer(_func, m_Capabilities)) return;
 		if (iterateInstructionContainer(_func, m_Extensions)) return;
