@@ -12,6 +12,7 @@ spvgentwo::Module examples::parsing(spvgentwo::IAllocator* _pAllocator, spvgentw
 
 	module.read(_pReader, gram);
 	module.resolveIDs(); // turn IDs into Instruction pointers
+	//module.assignIDs();
 
 	auto printOperand = [](const Operand& op)
 	{
@@ -21,7 +22,7 @@ spvgentwo::Module examples::parsing(spvgentwo::IAllocator* _pAllocator, spvgentw
 		}
 		else if (op.isLiteral())
 		{
-			printf("%u ", op.value.value);
+			printf("%u ", op.literal.value);
 		}
 		else if (op.isInstruction())
 		{

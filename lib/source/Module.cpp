@@ -550,14 +550,10 @@ bool spvgentwo::Module::resolveIDs()
 						 _instr.getOperation() == spv::Op::OpSwitch))
 					{
 						*it = op->getBasicBlock();
-						//it->branchTarget = op->getBasicBlock();
-						//it->type = Operand::Type::BranchTarget;
 					}
 					else
 					{
-						*it = op; // Bug, does not seem to change the actual value of the operand
-						//it->instruction = op;
-						//it->type = Operand::Type::Instruction;
+						*it = op;
 					}	
 				}
 				else
@@ -664,7 +660,7 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 				return false;
 			}
 			
-			ep->setExecutionModel(static_cast<spv::ExecutionModel>(it->value.value));
+			ep->setExecutionModel(static_cast<spv::ExecutionModel>(it->literal.value));
 
 			++it; // EntryPoint <id> is second operand of OpEntryPoint
 			if (it == nullptr || it->isResultId() == false)
