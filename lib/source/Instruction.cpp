@@ -335,11 +335,11 @@ spvgentwo::Instruction* spvgentwo::Instruction::Mul(Instruction* _pLeft, Instruc
 
 	if (lType == nullptr || rType == nullptr) return error();
 
-	if (lType->isInt() && rType->isInt())
+	if (lType->isScalarOrVectorOfSameLength(spv::Op::OpTypeInt, *rType))
 	{
 		return opIMul(_pLeft, _pRight);
 	}
-	else if (lType->isFloat() && rType->isFloat())
+	else if (lType->isScalarOrVectorOfSameLength(spv::Op::OpTypeFloat, *rType))
 	{
 		return opFMul(_pLeft, _pRight);
 	}
