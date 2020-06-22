@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 	{
 		if (BinaryFileWriter writer("test_serialized.spv"); writer.isOpen())
 		{
-			examples::parsing(&alloc, &log, &reader).write(&writer, false);
+			examples::parsing(&alloc, &log, &reader).write(&writer);
 			writer.close();
 			system("spirv-dis test_serialized.spv");
 			assert(system("spirv-val test_serialized.spv") == 0);

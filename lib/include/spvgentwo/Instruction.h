@@ -114,7 +114,7 @@ namespace spvgentwo
 		unsigned int getOpCode() const;
 
 		// returns the ID assigned to this instrucions
-		spv::Id resolveId(spv::Id& _previousId);
+		spv::Id assignID(spv::Id& _previousId);
 
 		// serialize instruction operands to the IWriter
 		void write(IWriter* _pWriter);

@@ -131,7 +131,7 @@ spvgentwo::spv::Id spvgentwo::Instruction::getResultId() const
 	return it->getResultId();
 }
 
-spvgentwo::spv::Id spvgentwo::Instruction::resolveId(spv::Id& _previousId)
+spvgentwo::spv::Id spvgentwo::Instruction::assignID(spv::Id& _previousId)
 {
 	for (Operand& op : *this)
 	{
@@ -142,14 +142,14 @@ spvgentwo::spv::Id spvgentwo::Instruction::resolveId(spv::Id& _previousId)
 			{	
 				return InvalidId;
 			}
-			op.instruction->resolveId(_previousId);
+			op.instruction->assignID(_previousId);
 			break;
 		case Operand::Type::BranchTarget:
 			if (getModule()->logError(op.branchTarget != nullptr, "Invalid branch target operand (null)") == false)
 			{
 				return InvalidId;
 			}
-			op.branchTarget->front().resolveId(_previousId);
+			op.branchTarget->front().assignID(_previousId);
 			break;
 		default:
 			break;

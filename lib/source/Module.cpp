@@ -509,10 +509,71 @@ spvgentwo::spv::Id spvgentwo::Module::assignIDs()
 
 	iterateInstructions([&maxId](Instruction& instr)
 	{
-		instr.resolveId(maxId);
+		instr.assignID(maxId);
 	});
 
 	return maxId;
+}
+
+bool spvgentwo::Module::resolveIDs()
+{
+	HashMap<spv::Id, Instruction*> idToPtr(m_pAllocator);
+
+	auto populate = [&idToPtr](Instruction& _instr)
+	{
+		// this instruction generates a new Id
+		if (auto it = _instr.getResultIdOperand(); it != nullptr && it->isResultId())
+		{
+			idToPtr.emplaceUnique(it->resultId, &_instr);
+			it->resultId = InvalidId; // reset resultId for assignIDs()
+		}
+	};
+
+	iterateInstructions(populate);
+
+	bool success = true;
+
+	auto lookUp = [&idToPtr, &success, this](Instruction& _instr) -> bool
+	{
+		for (auto it = _instr.begin(), end = _instr.end(); it != end; ++it)
+		{
+			if (spv::Id id = it->getResultId(); id != InvalidId)
+			{
+				if (Instruction** ppInstr = idToPtr.get(id); ppInstr != nullptr) // lookup pointer for operand
+				{
+					Instruction* op = *ppInstr;
+
+					// operand is a branch target
+					if (op->getOperation() == spv::Op::OpLabel &&
+						(_instr.getOperation() == spv::Op::OpBranch ||
+						 _instr.getOperation() == spv::Op::OpBranchConditional ||
+						 _instr.getOperation() == spv::Op::OpSwitch))
+					{
+						*it = op->getBasicBlock();
+						//it->branchTarget = op->getBasicBlock();
+						//it->type = Operand::Type::BranchTarget;
+					}
+					else
+					{
+						*it = op; // Bug, does not seem to change the actual value of the operand
+						//it->instruction = op;
+						//it->type = Operand::Type::Instruction;
+					}	
+				}
+				else
+				{
+					logError("Instruction not found for Id %u", id);
+					success = false;
+					return true; // abort
+				}
+			}
+		}
+		return false; // continue iterating
+	};
+
+	iterateInstructions(lookUp);
+
+	return success;
 }
 
 void spvgentwo::Module::write(IWriter* _pWriter, const bool _assingIDs)

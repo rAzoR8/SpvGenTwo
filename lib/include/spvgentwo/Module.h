@@ -126,7 +126,12 @@ namespace spvgentwo
 		void setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
 
 		// manually assign IDs to all unresolved instructions, returns bounds/max id
+		// converts any Instruction pointer operand to an spv::Id
 		spv::Id assignIDs();
+
+		// converts any spv::Id operand to Instruction pointer operands
+		// resets resultId to InvalidId for new assignment
+		bool resolveIDs();
 
 		// automatically assigns IDs if _assingIDs (otherwise m_Bounds must be set) and serializes module to IWriter
 		// IDs dont need to be assigned if the module was parsed using read()
