@@ -754,12 +754,62 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 		}
 		else if (instr.isSpecOrConstant())
 		{
-			logFatal("Not implemented");
-			return false;
+			Constant c(m_pAllocator);
+
+			c.setOperation(instr.getOperation());
+
+			const Type* t = getTypeInfo(instr.getTypeInstr());
+			if (t == nullptr)
+			{
+				logError("Constant type not found");
+				return false;
+			}
+
+			c.getType() = *t;
+
+			switch (instr.getOperation())
+			{
+			case spv::Op::OpConstantNull:
+			case spv::Op::OpConstantTrue:
+			case spv::Op::OpSpecConstantTrue:
+			case spv::Op::OpConstantFalse:
+			case spv::Op::OpSpecConstantFalse:
+				break; // nothing to do
+			case spv::Op::OpConstant:
+			case spv::Op::OpSpecConstant:
+			case spv::Op::OpConstantSampler:
+				for (auto end = instr.end(); it != end; ++it)
+				{
+					c.getData().emplace_back(it->getLiteral());
+				}
+				break;
+			case spv::Op::OpConstantComposite:
+			case spv::Op::OpSpecConstantComposite:
+				for (auto end = instr.end(); it != end; ++it)
+				{
+					const Constant* sub = getConstantInfo(it->getInstruction());
+					if (sub == nullptr)
+					{
+						logError("Constituent constant not found");
+						return false;
+					}
+
+					c.Component() = *sub;
+				}
+				break;
+			case spv::Op::OpSpecConstantOp:
+				continue; // continue the loop, dont add to lookup
+				//break;
+			default:
+				logFatal("Constant implemented");
+				return false;
+			}
+
+			auto& node = m_ConstantToInstr.emplaceUnique(stdrep::move(c), &instr);
+			m_InstrToConstant.emplaceUnique(&instr, &node.kv.key);
 		}
 	}
 
-	//return m_TypesAndConstants.size() == m_InstrToConstant.elements() + m_InstrToType.elements();
 	return true;
 }
 

@@ -36,6 +36,7 @@ namespace spvgentwo
 		template <class T>
 		Constant& make(const T& _value, const bool _spec = false);
 
+		// adds a new constituent constant
 		Constant& Component();
 
 		void reset();
