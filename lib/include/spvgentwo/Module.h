@@ -138,6 +138,9 @@ namespace spvgentwo
 		// resolveIDs() must have been called before to allow sub type lookup
 		bool reconstructTypeAndConstantInfo();
 
+		// recover the strings from OpName instructions for m_NameLookup
+		bool reconstructNames();
+
 		// automatically assigns IDs if _assingIDs (otherwise m_Bounds must be set) and serializes module to IWriter
 		// IDs dont need to be assigned if the module was parsed using read()
 		void write(IWriter* _pWriter, const bool _assingIDs = true);
@@ -297,7 +300,7 @@ namespace spvgentwo
 		HashMap<Constant, Instruction*> m_ConstantToInstr;
 		HashMap<const Instruction*, const Constant*> m_InstrToConstant;
 
-		// instruction that was decorated with opName -> name
+		// instruction that was decorated with opName (Target) -> name
 		HashMap<const Instruction*, String> m_NameLookup;
 
 		List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function

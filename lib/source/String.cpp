@@ -69,7 +69,12 @@ spvgentwo::String& spvgentwo::String::operator+=(const String& _other)
 
 spvgentwo::String& spvgentwo::String::operator+=(const char* _pStr)
 {
-	const size_t length = stringLength(_pStr);
+	return append(_pStr);
+}
+
+spvgentwo::String& spvgentwo::String::append(const char* _pStr, size_t _length)
+{
+	const size_t length = _length == 0u ? stringLength(_pStr) : _length;
 	if (reserve(m_elements + length))
 	{
 		for (size_t i = 0; i < length; ++i)

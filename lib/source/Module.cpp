@@ -529,10 +529,26 @@ spvgentwo::spv::Id spvgentwo::Module::assignIDs()
 {
 	spv::Id maxId = 0;
 
+	// reset resultId
+	//iterateInstructions([](Instruction& instr)
+	//{
+	//	if (auto it = instr.getResultIdOperand(); it != nullptr)
+	//	{
+	//		it->id = InvalidId;
+	//	}
+	//});
+
 	iterateInstructions([&maxId](Instruction& instr)
 	{
-		instr.assignID(maxId);
+		if (auto it = instr.getResultIdOperand(); it != nullptr)
+		{
+			it->id = ++maxId;
+		}
+
+		//instr.assignID(maxId);
 	});
+
+	m_spvBound = maxId + 1u;
 
 	return maxId;
 }
@@ -547,7 +563,6 @@ bool spvgentwo::Module::resolveIDs()
 		if (auto it = _instr.getResultIdOperand(); it != nullptr && it->isId())
 		{
 			idToPtr.emplaceUnique(it->id, &_instr);
-			it->id = InvalidId; // reset resultId for assignIDs()
 		}
 	};
 
@@ -596,9 +611,6 @@ bool spvgentwo::Module::resolveIDs()
 
 bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 {
-	if (m_TypesAndConstants.empty())
-		return false;
-
 	m_InstrToType.clear();
 	m_TypeToInstr.clear();
 	m_InstrToConstant.clear();
@@ -801,12 +813,49 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 				continue; // continue the loop, dont add to lookup
 				//break;
 			default:
-				logFatal("Constant implemented");
+				logFatal("Constant not implemented");
 				return false;
 			}
 
 			auto& node = m_ConstantToInstr.emplaceUnique(stdrep::move(c), &instr);
 			m_InstrToConstant.emplaceUnique(&instr, &node.kv.key);
+		}
+	}
+
+	return true;
+}
+
+bool spvgentwo::Module::reconstructNames()
+{
+	m_NameLookup.clear();
+
+	for (const Instruction& instr : m_Names)
+	{
+		const Instruction* target = instr.getFirstActualOperand()->getInstruction();
+
+		if (target == nullptr)
+		{
+			logError("Invalid OpName target");
+			return false;
+		}
+
+		String& name = m_NameLookup.emplaceUnique(target, m_pAllocator).kv.value;
+
+		for (auto it = instr.getFirstActualOperand() + 1u, end = instr.end(); it != end && it->isLiteral(); ++it)
+		{
+			const char* str = reinterpret_cast<const char*>(&it->literal.value);
+			for (unsigned int i = 0u; i < sizeof(unsigned int); ++i)
+			{
+				name.emplace_back(str[i]);
+				if (str[i] == '\0')
+					break;
+			}
+		}
+
+		if (name.empty() || name.back() != '\0')
+		{
+			logError("Failed to parse name");
+			return false;
 		}
 	}
 
@@ -830,7 +879,7 @@ void spvgentwo::Module::write(IWriter* _pWriter, const bool _assingIDs)
 
 	if (_assingIDs)
 	{
-		m_spvBound = assignIDs() + 1u;
+		assignIDs(); // overwrites m_spvBound
 	}
 
 	// write header

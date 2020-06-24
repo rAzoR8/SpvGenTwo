@@ -12,7 +12,8 @@ spvgentwo::Module examples::parsing(spvgentwo::IAllocator* _pAllocator, spvgentw
 
 	module.read(_pReader, gram);
 	module.resolveIDs(); // turn IDs into Instruction pointers
-	module.reconstructTypeAndConstantInfo();
+	module.reconstructTypeAndConstantInfo(); // creates Type & Constant infos for lookup
+	module.reconstructNames(); // parses strings for lookup of decorated instructions
 
 	auto printOperand = [](const Operand& op)
 	{
@@ -65,6 +66,7 @@ spvgentwo::Module examples::parsing(spvgentwo::IAllocator* _pAllocator, spvgentw
 		}
 	};
 
+	module.assignIDs();
 	module.iterateInstructions(print);
 
 	return module;

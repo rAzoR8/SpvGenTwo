@@ -50,6 +50,8 @@ namespace spvgentwo
 
 		String& operator+=(const String& _other);
 		String& operator+=(const char* _pStr);
+
+		String& append(const char* _pStr, size_t _length = 0u);
 	};
 
 	template<size_t length>
