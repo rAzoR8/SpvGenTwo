@@ -12,7 +12,7 @@ spvgentwo::Module examples::parsing(spvgentwo::IAllocator* _pAllocator, spvgentw
 
 	module.read(_pReader, gram);
 	module.resolveIDs(); // turn IDs into Instruction pointers
-	//module.assignIDs();
+	module.reconstructTypeAndConstantInfo();
 
 	auto printOperand = [](const Operand& op)
 	{

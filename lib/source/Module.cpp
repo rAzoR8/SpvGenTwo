@@ -28,8 +28,9 @@ spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersio
 	m_TypesAndConstants(_pAllocator),
 	m_TypeToInstr(_pAllocator),
 	m_InstrToType(_pAllocator),
+	m_ConstantToInstr(_pAllocator),
+	m_InstrToConstant(_pAllocator),
 	m_NameLookup(_pAllocator),
-	m_ConstantBuilder(_pAllocator),
 	m_GlobalVariables(_pAllocator),
 	m_Undefs(_pAllocator),
 	m_Lines(_pAllocator),
@@ -58,8 +59,9 @@ spvgentwo::Module::Module(Module&& _other) noexcept:
 	m_TypesAndConstants(stdrep::move(_other.m_TypesAndConstants)),
 	m_TypeToInstr(stdrep::move(_other.m_TypeToInstr)),
 	m_InstrToType(stdrep::move(_other.m_InstrToType)),
+	m_ConstantToInstr(stdrep::move(_other.m_ConstantToInstr)),
+	m_InstrToConstant(stdrep::move(_other.m_InstrToConstant)),
 	m_NameLookup(stdrep::move(_other.m_NameLookup)),
-	m_ConstantBuilder(stdrep::move(_other.m_ConstantBuilder)),
 	m_GlobalVariables(stdrep::move(_other.m_GlobalVariables)),
 	m_Undefs(stdrep::move(_other.m_Undefs)),
 	m_Lines(stdrep::move(_other.m_Lines)),
@@ -91,7 +93,8 @@ spvgentwo::Module& spvgentwo::Module::operator=(Module&& _other) noexcept
 	m_TypesAndConstants = stdrep::move(_other.m_TypesAndConstants);
 	m_TypeToInstr = stdrep::move(_other.m_TypeToInstr);
 	m_InstrToType = stdrep::move(_other.m_InstrToType);
-	m_ConstantBuilder = stdrep::move(_other.m_ConstantBuilder);
+	m_ConstantToInstr = stdrep::move(_other.m_ConstantToInstr);
+	m_InstrToConstant= stdrep::move(_other.m_InstrToConstant);
 	m_GlobalVariables = stdrep::move(_other.m_GlobalVariables);
 	m_Undefs = stdrep::move(_other.m_Undefs);
 	m_Lines = stdrep::move(_other.m_Lines);
@@ -163,9 +166,11 @@ void spvgentwo::Module::reset()
 
 	m_TypeToInstr.clear();
 	m_InstrToType.clear();
+	m_ConstantToInstr.clear();
+	m_InstrToConstant.clear();
+
 	m_NameLookup.clear();
 
-	m_ConstantBuilder.clear();
 	m_GlobalVariables.clear();
 	m_Undefs.clear();
 	m_Lines.clear();
@@ -280,7 +285,7 @@ spvgentwo::Instruction* spvgentwo::Module::addDecorationInstr()
 
 spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, const char* _pName)
 {
-	auto& node = m_ConstantBuilder.emplaceUnique(_const, nullptr);
+	auto& node = m_ConstantToInstr.emplaceUnique(_const, nullptr);
 	if (node.kv.value != nullptr)
 	{
 		return node.kv.value;
@@ -291,6 +296,8 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, c
 	auto entry = Entry<Instruction>::create(m_pAllocator, this);
 
 	Instruction* pInstr = node.kv.value = entry->operator->();
+
+	m_InstrToConstant.emplaceUnique(pInstr, &node.kv.key);
 
 	const spv::Op constantOp = _const.getOperation();
 	pInstr->setOperation(constantOp);
@@ -341,6 +348,20 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, c
 	}
 
 	return pInstr;
+}
+
+const spvgentwo::Constant* spvgentwo::Module::getConstantInfo(const Instruction* _pConstantInstr)
+{
+	if (_pConstantInstr != nullptr && _pConstantInstr->isSpecOrConstant())
+	{
+		const Constant* const* c = m_InstrToConstant.get(_pConstantInstr);
+
+		if (c != nullptr)
+		{
+			return *c;
+		}
+	}
+	return nullptr;
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char* _pName)
@@ -444,7 +465,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char
 
 const spvgentwo::Type* spvgentwo::Module::getTypeInfo(const Instruction* _pTypeInstr) const 
 {
-	if (_pTypeInstr->isType())
+	if (_pTypeInstr != nullptr && _pTypeInstr->isType())
 	{
 		const Type* const* t = m_InstrToType.get(_pTypeInstr);
 
@@ -475,7 +496,8 @@ spvgentwo::Instruction* spvgentwo::Module::addConstantInstr(const Constant* _pCo
 
 	if (_pConstant != nullptr)
 	{
-		m_ConstantBuilder.emplaceUnique(*_pConstant, instr);
+		m_ConstantToInstr.emplaceUnique(*_pConstant, instr);
+		m_InstrToConstant.emplaceUnique(instr, _pConstant);
 	}
 
 	return instr;
@@ -570,6 +592,175 @@ bool spvgentwo::Module::resolveIDs()
 	iterateInstructions(lookUp);
 
 	return success;
+}
+
+bool spvgentwo::Module::reconstructTypeAndConstantInfo()
+{
+	if (m_TypesAndConstants.empty())
+		return false;
+
+	m_InstrToType.clear();
+	m_TypeToInstr.clear();
+	m_InstrToConstant.clear();
+	m_ConstantToInstr.clear();
+
+	for (Instruction& instr : m_TypesAndConstants)
+	{
+		auto it = instr.getFirstActualOperand(); // TODO: validate number of available operands with Grammar in read() (for now just assume the .spv is valid)
+
+		if (instr.isType())
+		{
+			Type t(m_pAllocator);
+			t.setType(instr.getOperation());
+
+			switch (instr.getOperation())
+			{
+			case spv::Op::OpTypeVoid:
+			case spv::Op::OpTypeBool:
+			case spv::Op::OpTypeSampler:
+			case spv::Op::OpTypeEvent:
+			case spv::Op::OpTypeDeviceEvent:
+			case spv::Op::OpTypeReserveId:
+			case spv::Op::OpTypeQueue:
+			case spv::Op::OpTypePipeStorage:
+			case spv::Op::OpTypeNamedBarrier:
+				break; // nothing to do
+			case spv::Op::OpTypeInt:
+				t.setIntWidth(it->getLiteral());
+				t.setIntSign((++it)->getLiteral() == 1u);
+				break;
+			case spv::Op::OpTypeFloat:
+				t.setFloatWidth(it->getLiteral());
+				break;
+			case spv::Op::OpTypeVector:
+			case spv::Op::OpTypeMatrix:
+			{
+				const Type* sub = getTypeInfo(it->getInstruction());
+				if (sub == nullptr)
+				{
+					logError("Component or Column sub type not found");
+					return false;
+				}
+
+				t.Member(sub); // component / column type
+				t.setVectorComponentCount((++it)->getLiteral()); // or MatrixColumnCount
+			}
+			break;
+			case spv::Op::OpTypePointer:
+				t.setStorageClass(static_cast<spv::StorageClass>(it->getLiteral().value));
+				{
+					const Type* sub = getTypeInfo((++it)->getInstruction());
+					if (sub == nullptr)
+					{
+						logError("Pointer base type not found");
+						return false;
+					}
+					t.Member(sub);
+				}
+				break;
+			case spv::Op::OpTypeForwardPointer:
+			{
+				const Type* sub = getTypeInfo(it->getInstruction());
+				if (sub == nullptr)
+				{
+					logError("Pointer type not found");
+					return false;
+				}
+				t.Member(sub);
+				t.setStorageClass(static_cast<spv::StorageClass>((++it)->getLiteral().value));
+			}
+			break;
+			case spv::Op::OpTypeStruct:
+			case spv::Op::OpTypeFunction:
+				for (auto end = instr.end(); it != end; ++it)
+				{
+					const Type* sub = getTypeInfo(it->getInstruction());
+					if (sub == nullptr)
+					{
+						logError("Member or Parameter sub type not found");
+						return false;
+					}
+					t.Member(sub); // member or parameter type
+				}
+				break;
+			case spv::Op::OpTypeRuntimeArray:
+			case spv::Op::OpTypeSampledImage:
+			{
+				const Type* sub = getTypeInfo(it->getInstruction());
+				if (sub == nullptr)
+				{
+					logError("Element or image type not found");
+					return false;
+				}
+				t.Member(sub); // element or image type
+			}
+			break;
+			case spv::Op::OpTypeArray:
+			{
+				const Type* sub = getTypeInfo(it->getInstruction());
+				if (sub == nullptr)
+				{
+					logError("Element type not found");
+					return false;
+				}
+				t.Member(sub); // element type
+
+				const Constant* c = getConstantInfo((++it)->getInstruction());
+				if (c == nullptr)
+				{
+					logError("Array length constant not found");
+					return false;
+				}
+
+				if (c->getType().isInt() == false || c->getData().empty())
+				{
+					logError("Invalid constant data");
+					return false;
+				}
+
+				t.setArrayLength(c->getData().front()); // array length
+			}
+			break;
+			case spv::Op::OpTypeImage:
+			{
+				const Type* sub = getTypeInfo(it->getInstruction());
+				if (sub == nullptr)
+				{
+					logError("Sampled type not found");
+					return false;
+				}
+				t.Member(sub); // sampled type
+
+				t.setImageDimension(static_cast<spv::Dim>((++it)->getLiteral().value));
+				t.setImageDepth((++it)->getLiteral());
+				t.setImageArray((++it)->getLiteral() == 1u);
+				t.setImageMultiSampled((++it)->getLiteral() == 1u);
+				t.setImageSamplerAccess(static_cast<spvgentwo::SamplerImageAccess>((++it)->getLiteral().value));
+				t.setImageFormat(static_cast<spv::ImageFormat>((++it)->getLiteral().value));
+
+				if (++it != nullptr)
+				{
+					t.setAccessQualifier(static_cast<spv::AccessQualifier>((++it)->getLiteral().value));
+				}
+			}
+			break;
+			default:
+				logFatal("Type not implemented");
+				return false;
+			}
+
+			auto& node = m_TypeToInstr.emplaceUnique(stdrep::move(t), &instr);
+			m_InstrToType.emplaceUnique(&instr, &node.kv.key);
+		}
+		else if (instr.isSpecOrConstant())
+		{
+			logFatal("Not implemented");
+			return false;
+		}
+	}
+
+	//return m_TypesAndConstants.size() == m_InstrToConstant.elements() + m_InstrToType.elements();
+	return true;
 }
 
 void spvgentwo::Module::write(IWriter* _pWriter, const bool _assingIDs)

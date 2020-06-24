@@ -116,6 +116,7 @@ namespace spvgentwo
 		Instruction* compositeType(const spv::Op _Type, TypeInstr ... _types);
 		
 		Instruction* addConstant(const Constant& _const, const char* _pName = nullptr);
+		const Constant* getConstantInfo(const Instruction* _pConstantInstr);
 
 		template <class T>
 		Instruction* constant(const T& _value, const bool _spec = false);
@@ -132,6 +133,10 @@ namespace spvgentwo
 		// converts any spv::Id operand to Instruction pointer operands
 		// resets resultId to InvalidId for new assignment
 		bool resolveIDs();
+
+		// create 'Type' and 'Constant' infos from OpType### and OpConstant### instructions in m_TypesAndConstants and add them to m_TypeToInstr and m_InstrToType
+		// resolveIDs() must have been called before to allow sub type lookup
+		bool reconstructTypeAndConstantInfo();
 
 		// automatically assigns IDs if _assingIDs (otherwise m_Bounds must be set) and serializes module to IWriter
 		// IDs dont need to be assigned if the module was parsed using read()
@@ -289,11 +294,11 @@ namespace spvgentwo
 		List<Instruction> m_TypesAndConstants;
 		HashMap<Type, Instruction*> m_TypeToInstr;
 		HashMap<const Instruction*, const Type*> m_InstrToType;
+		HashMap<Constant, Instruction*> m_ConstantToInstr;
+		HashMap<const Instruction*, const Constant*> m_InstrToConstant;
 
 		// instruction that was decorated with opName -> name
 		HashMap<const Instruction*, String> m_NameLookup;
-
-		HashMap<Constant, Instruction*> m_ConstantBuilder;
 
 		List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function
 
