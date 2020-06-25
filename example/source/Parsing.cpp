@@ -53,7 +53,19 @@ spvgentwo::Module examples::parsing(spvgentwo::IAllocator* _pAllocator, spvgentw
 	{
 		auto* info = gram.getInfo(static_cast<unsigned int>(instr.getOperation()));
 
-		printf("\n%%%u = %s ", instr.getResultId(), info->name);
+		if (const char* name = instr.getName(); name != nullptr && stringLength(name) > 1)
+		{
+			printf("%%%s = ", name);
+		}
+		else
+		{
+			if (auto id = instr.getResultId(); id != InvalidId)
+			{
+				printf("%%%u = ", id);
+			}
+		}
+
+		printf("%s ", info->name);
 
 		if (auto it = instr.getResultTypeOperand(); it != nullptr)
 		{
@@ -64,9 +76,11 @@ spvgentwo::Module examples::parsing(spvgentwo::IAllocator* _pAllocator, spvgentw
 		{
 			printOperand(*it);
 		}
+
+		printf("\n");
 	};
 
-	module.assignIDs();
+	//module.assignIDs();
 	module.iterateInstructions(print);
 
 	return module;

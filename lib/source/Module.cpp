@@ -533,7 +533,7 @@ spvgentwo::spv::Id spvgentwo::Module::assignIDs()
 	{
 		if (auto it = instr.getResultIdOperand(); it != nullptr)
 		{
-			it->id = ++maxId;
+			*it = ++maxId;
 		}
 	});
 
@@ -544,25 +544,43 @@ spvgentwo::spv::Id spvgentwo::Module::assignIDs()
 
 bool spvgentwo::Module::resolveIDs()
 {
+	bool success = true;
+
 	HashMap<spv::Id, Instruction*> idToPtr(m_pAllocator);
 
-	auto populate = [&idToPtr](Instruction& _instr)
+	auto populate = [&idToPtr, &success, this](Instruction& _instr) -> bool
 	{
 		// this instruction generates a new Id
-		if (auto it = _instr.getResultIdOperand(); it != nullptr && it->isId())
+		if (auto it = _instr.getResultIdOperand(); it != nullptr)
 		{
+			if (it->isId() == false) // this is just to check if a previous transformation changed the type of operand in error 
+			{
+				logError("Result <id> operand is not a ID operand");
+				success = false;
+				return true; // stop iterating
+			}
+
 			idToPtr.emplaceUnique(it->id, &_instr);
 		}
+		return false;
 	};
 
 	iterateInstructions(populate);
 
-	bool success = true;
+	if (success == false)
+	{
+		return false;
+	}
 
 	auto lookUp = [&idToPtr, &success, this](Instruction& _instr) -> bool
 	{
 		for (auto it = _instr.begin(), end = _instr.end(); it != end; ++it)
 		{
+			if (_instr.hasResult() && it == _instr.getResultIdOperand()) // dont replace the dummy resultID operand
+			{
+				continue;
+			}
+
 			if (spv::Id id = it->getId(); id != InvalidId)
 			{
 				if (Instruction** ppInstr = idToPtr.get(id); ppInstr != nullptr) // lookup pointer for operand
