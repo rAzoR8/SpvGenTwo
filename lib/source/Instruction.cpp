@@ -257,10 +257,10 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 		return false;
 	}
 
-	if (_op == spv::Op::OpDecorate)
-	{
-		int i = 0;
-	}
+	//if (_op == spv::Op::OpDecorate)
+	//{
+	//	int i = 0;
+	//}
 
 	//getModule()->logDebug("Parsing op code %s with %u operands", info->name, _operandCount);
 
@@ -289,6 +289,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 
 		if (op.kind != Grammar::OperandKind::ImageOperands && 
 			op.kind != Grammar::OperandKind::Decoration &&
+			op.kind != Grammar::OperandKind::ExecutionMode &&
 			op.kind != Grammar::OperandKind::LiteralString && 
 			op.quantifier != Grammar::Quantifier::ZeroOrAny)
 		{

@@ -16,6 +16,7 @@ int main(int argc, char* argv[])
 
 	const char* spv = nullptr;
 	bool serialize = false; // for debugging
+	bool reassignIDs = false;
 
 	for (int i = 1u; i < argc; ++i)
 	{
@@ -24,9 +25,13 @@ int main(int argc, char* argv[])
 		{
 			spv = arg;
 		}
-		else if (strcmp(arg, "--serialize"))
+		else if (strcmp(arg, "--serialize") == 0)
 		{
 			serialize = true;
+		}
+		else if (strcmp(arg, "--assignIDs") == 0 || strcmp(arg, "--assignids") == 0)
+		{
+			reassignIDs = true;
 		}
 	}
 
@@ -157,6 +162,7 @@ int main(int argc, char* argv[])
 
 				if (it->kind != Grammar::OperandKind::ImageOperands &&
 					it->kind != Grammar::OperandKind::LiteralString &&
+					it->kind != Grammar::OperandKind::ExecutionMode &&
 					it->kind != Grammar::OperandKind::Decoration &&
 					it->quantifier != Grammar::Quantifier::ZeroOrAny)
 				{
@@ -172,6 +178,12 @@ int main(int argc, char* argv[])
 			return false;
 		};
 
+		if (reassignIDs)
+		{
+			module.assignIDs(); // compact ids
+		}
+
+		// print text
 		module.iterateInstructions(print);
 
 		if (success == false)
