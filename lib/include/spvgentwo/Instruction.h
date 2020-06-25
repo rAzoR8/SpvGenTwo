@@ -113,9 +113,6 @@ namespace spvgentwo
 		// get opcode encoded with instruction word count [16 bit op code, 16 bit number of operand words] 
 		unsigned int getOpCode() const;
 
-		// returns the ID assigned to this instrucions
-		spv::Id assignID(spv::Id& _previousId);
-
 		// serialize instruction operands to the IWriter
 		void write(IWriter* _pWriter);
 

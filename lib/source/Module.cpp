@@ -529,23 +529,12 @@ spvgentwo::spv::Id spvgentwo::Module::assignIDs()
 {
 	spv::Id maxId = 0;
 
-	// reset resultId
-	//iterateInstructions([](Instruction& instr)
-	//{
-	//	if (auto it = instr.getResultIdOperand(); it != nullptr)
-	//	{
-	//		it->id = InvalidId;
-	//	}
-	//});
-
 	iterateInstructions([&maxId](Instruction& instr)
 	{
 		if (auto it = instr.getResultIdOperand(); it != nullptr)
 		{
 			it->id = ++maxId;
 		}
-
-		//instr.assignID(maxId);
 	});
 
 	m_spvBound = maxId + 1u;

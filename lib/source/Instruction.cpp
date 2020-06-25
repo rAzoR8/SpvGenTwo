@@ -131,42 +131,6 @@ spvgentwo::spv::Id spvgentwo::Instruction::getResultId() const
 	return it->getId();
 }
 
-spvgentwo::spv::Id spvgentwo::Instruction::assignID(spv::Id& _previousId)
-{
-	for (Operand& op : *this)
-	{
-		switch (op.type)
-		{
-		case Operand::Type::Instruction:
-			if (getModule()->logError(op.instruction != nullptr, "Invalid instruction operand (null)") == false)
-			{	
-				return InvalidId;
-			}
-			op.instruction->assignID(_previousId);
-			break;
-		case Operand::Type::BranchTarget:
-			if (getModule()->logError(op.branchTarget != nullptr, "Invalid branch target operand (null)") == false)
-			{
-				return InvalidId;
-			}
-			op.branchTarget->front().assignID(_previousId);
-			break;
-		default:
-			break;
-		}
-	}
-
-	auto it = getResultIdOperand();
-	if (it == nullptr) return InvalidId;
-
-	if (it->id == InvalidId)
-	{
-		it->id = ++_previousId;
-	}
-
-	return it->id;
-}
-
 spvgentwo::Instruction* spvgentwo::Instruction::getTypeInstr() const
 {
 	if (hasResultType())
