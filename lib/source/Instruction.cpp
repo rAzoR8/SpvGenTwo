@@ -277,22 +277,26 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 			addOperand(static_cast<literal_t>(word));
 		}
 
+		if (op.kind == Grammar::OperandKind::ImageOperands) // next operands are IDs
+		{
+			imageOperands = true;
+		}
+
 		if (op.kind != Grammar::OperandKind::ImageOperands && 
 			op.kind != Grammar::OperandKind::LiteralString && 
 			op.quantifier != Grammar::Quantifier::ZeroOrAny)
 		{
 			++it;
 		}
-
-		if (op.kind == Grammar::OperandKind::ImageOperands) // next operands are IDs
+		else if (op.kind == Grammar::OperandKind::LiteralString && hasStringTerminator(word)) // reached end of string
 		{
-			imageOperands = true;
+			++it;
 		}
 
 		--_operandCount;
 	}
 
-	if (_operandCount > 0u)
+	if (_operandCount > 0u /*|| it != end*/)
 	{
 		getModule()->logError("Could not parse all operands of %s", info->name);
 		return false;

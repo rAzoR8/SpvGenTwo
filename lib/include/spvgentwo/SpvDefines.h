@@ -207,4 +207,9 @@ namespace spvgentwo
 	}
 
 	constexpr spv::Op getTypeFromOp(const spv::Op _op) { Sign sign = Sign::Any; return getTypeFromOp(_op, sign); }
+
+	constexpr bool hasStringTerminator(unsigned int _word)
+	{
+		return (_word & 0x000000FFu) == 0u || (_word & 0x0000FF00) == 0u || (_word & 0x00FF0000) == 0u || (_word & 0xFF000000) == 0u;
+	}
 } //!spvgentwo
