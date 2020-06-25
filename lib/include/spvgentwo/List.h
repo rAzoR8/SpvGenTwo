@@ -158,6 +158,7 @@ namespace spvgentwo
 		{
 			m_pBegin->destroyList(m_pAllocator);
 			m_pBegin = nullptr;
+			m_pLast = nullptr;
 			m_Elements = 0u;
 		}
 	}
