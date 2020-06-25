@@ -12,9 +12,6 @@ namespace spvgentwo
 		~BinaryFileReader();
 
 		bool get(unsigned int& _word) final;
-		//bool getAt(unsigned int& _word, const long _offset) final;
-		//unsigned int total() final;
-		//bool unGet(const unsigned int _count) final;
 
 		bool open(const char* _path);
 		bool isOpen() const { return m_pFile != nullptr; }
