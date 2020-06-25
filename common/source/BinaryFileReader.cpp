@@ -22,7 +22,7 @@ bool spvgentwo::BinaryFileReader::open(const char* _path)
 		return false;
 	}
 
-	m_pFile = fopen(_path, "r");
+	m_pFile = fopen(_path, "rb");
 
 	return m_pFile != nullptr;
 }

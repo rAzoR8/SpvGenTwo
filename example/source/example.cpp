@@ -67,6 +67,15 @@ int main(int argc, char* argv[])
 		assert(system("spirv-val test.spv") == 0);
 	}
 
+	// old cli test
+	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
+	{
+		examples::oldInstrTest(&alloc, &log).write(&writer);
+		writer.close();
+		system("spirv-dis test.spv");
+		assert(system("spirv-val test.spv") == 0);
+	}
+
 	if (BinaryFileReader reader("test.spv"); reader.isOpen())
 	{
 		if (BinaryFileWriter writer("test_serialized.spv"); writer.isOpen())
@@ -76,15 +85,6 @@ int main(int argc, char* argv[])
 			system("spirv-dis test_serialized.spv");
 			assert(system("spirv-val test_serialized.spv") == 0);
 		}
-	}
-
-	// old cli test
-	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
-	{
-		examples::oldInstrTest(&alloc, &log).write(&writer);
-		writer.close();
-		system("spirv-dis test.spv");
-		assert(system("spirv-val test.spv") == 0);
 	}
 
 	// function call example

@@ -244,6 +244,11 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 
 	m_Operation = _op;
 
+	if (_op == spv::Op::OpTypeMatrix)
+	{
+		int i = 0;
+	}
+
 	if (_operandCount == 0u)
 	{
 		return true; // nothing left to do
@@ -257,35 +262,36 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 		return false;
 	}
 
+	getModule()->logDebug("Parsing op code %s with %u operands", info->name, _operandCount);
+
 	auto it = info->operands.begin();
 	const auto end = info->operands.end();
+	unsigned int word{ 0u };
 
-	while (_operandCount != 0u && it != end)
+	while (_operandCount != 0u && it != end && _pReader->get(word))
 	{
 		const auto& op = *it;
-		if (unsigned int word{0u}; _pReader->get(word))
+
+		if (op.category == Grammar::OperandCategory::Id)
 		{
-			if (op.category == Grammar::OperandCategory::Id)
-			{
-				addOperand(static_cast<spv::Id>(word));
-			}
-			else
-			{
-				addOperand(static_cast<literal_t>(word));
-			}
-
-			if(op.kind != Grammar::OperandKind::LiteralString)
-			{
-				++it;
-			}
-
-			--_operandCount;
+			addOperand(static_cast<spv::Id>(word));
 		}
+		else
+		{
+			addOperand(static_cast<literal_t>(word));
+		}
+
+		if (op.kind != Grammar::OperandKind::LiteralString && op.quantifier != Grammar::Quantifier::ZeroOrAny)
+		{
+			++it;
+		}
+
+		--_operandCount;
 	}
 
 	if (_operandCount > 0u)
 	{
-		getModule()->logError("Could not parse all operands");
+		getModule()->logError("Could not parse all operands of %s", info->name);
 		return false;
 	}
 
