@@ -123,7 +123,8 @@ int main(int argc, char* argv[])
 			}
 		};
 
-		auto print = [&](Instruction& instr)
+		bool success = true;
+		auto print = [&](Instruction& instr) -> bool
 		{
 			auto* info = gram.getInfo(static_cast<unsigned int>(instr.getOperation()));
 
@@ -147,8 +148,9 @@ int main(int argc, char* argv[])
 			{
 				if (it == end)
 				{
-					printf("Invalid instruction");
-					break;
+					printf("\nINVALID INSTRUCTION\n");
+					success = false;
+					return true; // stop iteration
 				}
 
 				printOperand(op, it);
@@ -167,9 +169,15 @@ int main(int argc, char* argv[])
 			}
 
 			printf("\n");
+			return false;
 		};
 
 		module.iterateInstructions(print);
+
+		if (success == false)
+		{
+			return -1;
+		}
 
 		if (serialize)
 		{
