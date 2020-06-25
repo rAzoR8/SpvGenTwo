@@ -66,21 +66,28 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 
-		auto printOperand = [&gram](const Operand& op, const Grammar::Operand& info)
+		auto printOperand = [&gram](const Operand& op, const Grammar::Operand* info)
 		{
 			if (op.isId())
 			{
-				printf("%%%u ", op.id);
+				printf(" %%%u", op.id);
 			}
 			else if (op.isLiteral())
 			{
-				if (info.category == Grammar::OperandCategory::BitEnum || info.category == Grammar::OperandCategory::ValueEnum)
+				if (info->category == Grammar::OperandCategory::BitEnum || info->category == Grammar::OperandCategory::ValueEnum)
 				{
-					const char* name = gram.getOperandName(info.kind, op.literal.value);
-					printf("%s ", name == nullptr ? "UNKNOWN" : name);
+					const char* name = gram.getOperandName(info->kind, op.literal.value);
+					printf(" %s", name == nullptr ? "UNKNOWN" : name);
 				}
-				else if (info.kind == Grammar::OperandKind::LiteralString)
+				else if (info->kind == Grammar::OperandKind::LiteralString)
 				{
+					auto prev = info - 1u;
+
+					if (prev->kind != Grammar::OperandKind::LiteralString) // danger hack
+					{
+						printf(" ");
+					}
+
 					size_t i = 0u;
 					for (const char* str = reinterpret_cast<const char*>(&op.literal.value); i < sizeof(unsigned int) && str[i] != 0; ++i)
 					{
@@ -89,29 +96,29 @@ int main(int argc, char* argv[])
 				}
 				else
 				{
-					printf("%u ", op.literal.value);
+					printf(" %u", op.literal.value);
 				} // check for OpConstant args like floats
 			}
 			else if (op.isInstruction())
 			{
 				if (const char* name = op.instruction->getName(); name != nullptr && stringLength(name) > 1)
 				{
-					printf("%%%s ", name);
+					printf(" %%%s", name);
 				}
 				else
 				{
-					printf("%%%u ", op.instruction->getResultId());
+					printf(" %%%u", op.instruction->getResultId());
 				}
 			}
 			else if (op.isBranchTarget())
 			{
 				if (const char* name = op.branchTarget->getName(); name != nullptr && stringLength(name) > 1)
 				{
-					printf("%%%s ", name);
+					printf(" %%%s", name);
 				}
 				else
 				{
-					printf("%%%u ", op.branchTarget->front().getResultId());
+					printf(" %%%u", op.branchTarget->front().getResultId());
 				}
 			}
 		};
@@ -122,17 +129,17 @@ int main(int argc, char* argv[])
 
 			if (const char* name = instr.getName(); name != nullptr && stringLength(name) > 1)
 			{
-				printf("%%%s = ", name);
+				printf("%%%s =", name);
 			}
 			else
 			{
 				if (auto id = instr.getResultId(); id != InvalidId)
 				{
-					printf("%%%u = ", id);
+					printf("%%%u =", id);
 				}
 			}
 
-			printf("%s ", info->name);
+			printf("\t%s", info->name);
 
 			auto it = info->operands.begin();
 			auto end = info->operands.end();
@@ -144,10 +151,11 @@ int main(int argc, char* argv[])
 					break;
 				}
 
-				printOperand(op, *it);
+				printOperand(op, it);
 
 				if (it->kind != Grammar::OperandKind::ImageOperands &&
 					it->kind != Grammar::OperandKind::LiteralString &&
+					it->kind != Grammar::OperandKind::Decoration &&
 					it->quantifier != Grammar::Quantifier::ZeroOrAny)
 				{
 					++it;
