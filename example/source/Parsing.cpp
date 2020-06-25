@@ -15,7 +15,7 @@ spvgentwo::Module examples::parsing(spvgentwo::IAllocator* _pAllocator, spvgentw
 	module.reconstructTypeAndConstantInfo(); // creates Type & Constant infos for lookup
 	module.reconstructNames(); // parses strings for lookup of decorated instructions
 
-	auto printOperand = [](const Operand& op)
+	auto printOperand = [&gram](const Operand& op, const Grammar::Operand& info)
 	{
 		if (op.isId())
 		{
@@ -23,7 +23,23 @@ spvgentwo::Module examples::parsing(spvgentwo::IAllocator* _pAllocator, spvgentw
 		}
 		else if (op.isLiteral())
 		{
-			printf("%u ", op.literal.value);
+			if (info.category == Grammar::OperandCategory::BitEnum || info.category == Grammar::OperandCategory::ValueEnum)
+			{
+				const char* name = gram.getOperandName(info.kind, op.literal.value);
+				printf("%s ", name == nullptr ? "UNKNOWN" : name);
+			}
+			else if (info.kind == Grammar::OperandKind::LiteralString)
+			{
+				size_t i = 0u;
+				for (const char* str = reinterpret_cast<const char*>(&op.literal.value); i < sizeof(unsigned int) && str[i] != 0; ++i)
+				{
+					printf("%c", str[i]);				
+				}
+			}
+			else
+			{
+				printf("%u ", op.literal.value);			
+			} // check for OpConstant args like floats
 		}
 		else if (op.isInstruction())
 		{
@@ -67,20 +83,33 @@ spvgentwo::Module examples::parsing(spvgentwo::IAllocator* _pAllocator, spvgentw
 
 		printf("%s ", info->name);
 
-		if (auto it = instr.getResultTypeOperand(); it != nullptr)
+		auto it = info->operands.begin();
+		auto end = info->operands.end();
+		for (const Operand& op : instr)
 		{
-			printOperand(*it);
-		}
+			if (it == end)
+			{
+				printf("Invalid instruction");
+				break;
+			}
 
-		for (auto it = instr.getFirstActualOperand(), end = instr.end(); it != end; ++it)
-		{
-			printOperand(*it);
+			printOperand(op, *it);
+
+			if (it->kind != Grammar::OperandKind::ImageOperands &&
+				it->kind != Grammar::OperandKind::LiteralString &&
+				it->quantifier != Grammar::Quantifier::ZeroOrAny)
+			{
+				++it;
+			}
+			else if (it->kind == Grammar::OperandKind::LiteralString && hasStringTerminator(op.literal.value)) // reached end of string
+			{
+				++it;
+			}
 		}
 
 		printf("\n");
 	};
 
-	//module.assignIDs();
 	module.iterateInstructions(print);
 
 	return module;
