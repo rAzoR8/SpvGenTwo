@@ -4,6 +4,8 @@
 
 namespace spvgentwo
 {
+	template<> struct Hasher<const char*> { Hash64 operator()(const char* ptr) const noexcept { FNV1aHasher h(ptr); return h; } };
+
 	template<class T> struct Hasher<T*> { Hash64 operator()(T* ptr) const noexcept { return reinterpret_cast<Hash64>(ptr); } };
 
 	template <class T>
