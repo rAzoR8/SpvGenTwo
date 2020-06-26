@@ -73,3 +73,32 @@ spvgentwo::String& spvgentwo::String::append(const char* _pStr, size_t _length)
 	}
 	return *this;
 }
+
+bool spvgentwo::String::operator==(const String& _other) const
+{
+	if (m_elements == _other.m_elements)
+	{
+		for (size_t i = 0; i < m_elements; ++i)
+		{
+			if (m_pData[i] != _other.m_pData[i])
+				return false;
+		}
+		return true;
+	}
+	return false;
+}
+
+bool spvgentwo::String::operator==(const char* _pStr) const
+{
+	const size_t length = stringLength(_pStr);
+	if (m_elements == length)
+	{
+		for (size_t i = 0; i < m_elements; ++i)
+		{
+			if (m_pData[i] != _pStr[i])
+				return false;
+		}
+		return true;
+	}
+	return false;
+}
