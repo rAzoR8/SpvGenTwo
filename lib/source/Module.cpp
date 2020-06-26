@@ -848,16 +848,7 @@ bool spvgentwo::Module::reconstructNames()
 
 		String& name = m_NameLookup.emplaceUnique(target, m_pAllocator).kv.value;
 
-		for (auto it = instr.getFirstActualOperand() + 1u, end = instr.end(); it != end && it->isLiteral(); ++it)
-		{
-			const char* str = reinterpret_cast<const char*>(&it->literal.value);
-			for (unsigned int i = 0u; i < sizeof(unsigned int); ++i)
-			{
-				name.emplace_back(str[i]);
-				if (str[i] == '\0')
-					break;
-			}
-		}
+		getLiteralString(name, instr.getFirstActualOperand().next(), instr.end());
 
 		if (name.empty() || name.back() != '\0')
 		{
@@ -915,8 +906,7 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 	}
 
 	if (logError(_pReader->get(m_spvVersion), "Failed to parse version") == false) return false;
-	if (logError(_pReader->get(word), "Failed to parse generator") == false) return false;
-
+	if (logError(_pReader->get(m_spvGenerator), "Failed to parse generator") == false) return false;
 	if (logError(_pReader->get(m_spvBound), "Failed to parse bounds") == false) return false;
 	if (logError(_pReader->get(m_spvSchema), "Failed to parse schema") == false) return false;
 

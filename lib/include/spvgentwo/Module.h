@@ -28,6 +28,11 @@ namespace spvgentwo
 		void reset();
 
 		unsigned int getSpvVersion() const { return m_spvVersion; }
+		unsigned int getMajorVersion() const { return spvgentwo::getMajorVersion(m_spvVersion); }
+		unsigned int getMinorVersion() const { return spvgentwo::getMinorVersion(m_spvVersion); }
+		unsigned int getSpvGenerator() const { return m_spvGenerator; }
+		unsigned int getSpvBound() const { return m_spvBound; }
+		unsigned int getSpvSchema() const { return m_spvSchema; }
 
 		IAllocator* getAllocator() const { return m_pAllocator; }
 
@@ -278,6 +283,7 @@ namespace spvgentwo
 		ILogger* m_pLogger = nullptr;
 		ITypeInferenceAndVailation* m_pTypeInferenceAndVailation = nullptr;
 		unsigned int m_spvVersion = spv::Version;
+		unsigned int m_spvGenerator = GeneratorId;
 		unsigned int m_spvBound = InvalidId;
 		unsigned int m_spvSchema = 0u;
 		List<Function> m_Functions;
