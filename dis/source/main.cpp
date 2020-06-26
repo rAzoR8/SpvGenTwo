@@ -8,6 +8,10 @@
 
 #include <cstring>
 
+#ifndef NDEBUG
+#include <cstdlib> // system
+#endif // !_NDEBUG
+
 using namespace spvgentwo;
 
 int main(int argc, char* argv[])
@@ -17,6 +21,7 @@ int main(int argc, char* argv[])
 	const char* spv = nullptr;
 	bool serialize = false; // for debugging
 	bool reassignIDs = false;
+	bool callSPIRVDis = false;
 
 	for (int i = 1u; i < argc; ++i)
 	{
@@ -33,6 +38,10 @@ int main(int argc, char* argv[])
 		{
 			reassignIDs = true;
 		}
+		else if (strcmp(arg, "--calldis") == 0)
+		{
+			callSPIRVDis = true;
+		}
 	}
 
 	if (spv == nullptr)
@@ -41,6 +50,15 @@ int main(int argc, char* argv[])
 	}
 
 	HeapAllocator alloc;
+
+#ifndef NDEBUG
+	if (callSPIRVDis)
+	{
+		String cmd(&alloc, "spirv-dis ");
+		cmd += spv;
+		system(cmd.c_str());
+	}
+#endif
 
 	if (BinaryFileReader reader(spv); reader.isOpen())
 	{
@@ -84,31 +102,16 @@ int main(int argc, char* argv[])
 					const char* name = gram.getOperandName(info->kind, op.literal.value);
 					printf(" %s", name == nullptr ? "UNKNOWN" : name);
 				}
-				else if (info->kind == Grammar::OperandKind::LiteralString)
-				{
-					auto prev = info - 1u;
-
-					if (prev->kind != Grammar::OperandKind::LiteralString) // danger hack
-					{
-						printf(" ");
-					}
-
-					size_t i = 0u;
-					for (const char* str = reinterpret_cast<const char*>(&op.literal.value); i < sizeof(unsigned int) && str[i] != 0; ++i)
-					{
-						printf("%c", str[i]);
-					}
-				}
 				else
 				{
-					printf(" %u", op.literal.value);
+					printf(" \x1B[31m%u\033[0m", op.literal.value);
 				} // check for OpConstant args like floats
 			}
 			else if (op.isInstruction())
 			{
 				if (const char* name = op.instruction->getName(); name != nullptr && stringLength(name) > 1)
 				{
-					printf(" %%%s", name);
+					printf(" \x1B[33m%%%s\033[0m", name);
 				}
 				else
 				{
@@ -119,7 +122,7 @@ int main(int argc, char* argv[])
 			{
 				if (const char* name = op.branchTarget->getName(); name != nullptr && stringLength(name) > 1)
 				{
-					printf(" %%%s", name);
+					printf(" \x1B[33m%%%s\033[0m", name);
 				}
 				else
 				{
@@ -135,43 +138,53 @@ int main(int argc, char* argv[])
 
 			if (const char* name = instr.getName(); name != nullptr && stringLength(name) > 1)
 			{
-				printf("%%%s =", name);
+				printf("\x1B[34m%%%s\033[0m =", name);
 			}
 			else
 			{
 				if (auto id = instr.getResultId(); id != InvalidId)
 				{
-					printf("%%%u =", id);
+					printf("\x1B[34m%%%u\033[0m =", id);
 				}
 			}
 
 			printf("\t%s", info->name);
 
-			auto it = info->operands.begin();
-			auto end = info->operands.end();
-			for (const Operand& op : instr)
+			auto infoIt = info->operands.begin();
+			auto infoEnd = info->operands.end();
+
+			for (auto it = instr.begin(), end = instr.end(); it != end;)
 			{
-				if (it == end)
+				if (infoIt == infoEnd)
 				{
 					printf("\nINVALID INSTRUCTION\n");
 					success = false;
 					return true; // stop iteration
 				}
 
-				printOperand(op, it);
+				if (infoIt->kind == Grammar::OperandKind::LiteralString)
+				{
+					String litString(&alloc);
+					it = getLiteralString(litString, it, end);
 
-				if (it->kind != Grammar::OperandKind::ImageOperands &&
-					it->kind != Grammar::OperandKind::LiteralString &&
-					it->kind != Grammar::OperandKind::ExecutionMode &&
-					it->kind != Grammar::OperandKind::Decoration &&
-					it->quantifier != Grammar::Quantifier::ZeroOrAny)
-				{
-					++it;
+					printf(" \"\x1B[32m%s\033[0m\"", litString.c_str());
+
+					++infoIt;
+					continue;
 				}
-				else if (it->kind == Grammar::OperandKind::LiteralString && hasStringTerminator(op.literal.value)) // reached end of string
+
+				printOperand(*it, infoIt);
+
+				if (infoIt->kind != Grammar::OperandKind::ImageOperands &&
+					infoIt->kind != Grammar::OperandKind::LiteralString &&
+					infoIt->kind != Grammar::OperandKind::ExecutionMode &&
+					infoIt->kind != Grammar::OperandKind::Decoration &&
+					infoIt->quantifier != Grammar::Quantifier::ZeroOrAny)
 				{
-					++it;
+					++infoIt;
 				}
+
+				++it;
 			}
 
 			printf("\n");
@@ -182,6 +195,11 @@ int main(int argc, char* argv[])
 		{
 			module.assignIDs(); // compact ids
 		}
+
+		printf("# SPIR-V Version %u.%u\n", module.getMajorVersion(), module.getMinorVersion());
+		printf("# Generator 0x%X\n", module.getSpvGenerator());
+		printf("# Bound %u\n", module.getSpvBound());
+		printf("# Schema %u\n\n", module.getSpvSchema());
 
 		// print text
 		module.iterateInstructions(print);
