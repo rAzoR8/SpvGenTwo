@@ -89,15 +89,48 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 
-		auto printOperand = [&gram](const Operand& op, const Grammar::Operand* info)
+		auto printOperand = [&gram, &alloc](Instruction& instr, const Operand& op, const Grammar::Operand* info)
 		{
-			if (op.isId())
+			if (op.isId() && info->kind != Grammar::OperandKind::IdResult) // skip result id
 			{
-				printf(" %%%u", op.id);
+				printf(" \x1B[33m%%%u\033[0m", op.id);
 			}
 			else if (op.isLiteral())
 			{
-				if (info->category == Grammar::OperandCategory::BitEnum || info->category == Grammar::OperandCategory::ValueEnum)
+				if (instr.getOperation() == spv::Op::OpExtInst)
+				{
+					bool printedName = false;
+					if (auto set = instr.getFirstActualOperand(); set != nullptr && set->isInstruction() && set->instruction->getOperation() == spv::Op::OpExtInstImport) // extension set
+					{
+						String extName(&alloc);
+						getLiteralString(extName, set->instruction->getFirstActualOperand(), set->instruction->end());
+
+						Grammar::Extension ext = Grammar::Extension::Core;
+						if (extName == "GLSL.std.450")
+						{
+							ext = Grammar::Extension::Glsl;
+						}
+						else if (extName == "OpenCL.std")
+						{
+							ext = Grammar::Extension::OpenCl;
+						}
+
+						if (ext != Grammar::Extension::Core)
+						{
+							if (auto* extInfo = gram.getInfo(static_cast<unsigned int>(op.literal.value), ext); extInfo != nullptr)
+							{
+								printf(" \x1B[35m%s\033[0m", extInfo->name);
+								printedName = true;
+							}
+						}
+					}
+
+					if (printedName == false)
+					{
+						printf(" \x1B[31m%u\033[0m", op.literal.value);
+					}
+				} 
+				else if (info->category == Grammar::OperandCategory::BitEnum || info->category == Grammar::OperandCategory::ValueEnum)
 				{
 					const char* name = gram.getOperandName(info->kind, op.literal.value);
 					printf(" %s", name == nullptr ? "UNKNOWN" : name);
@@ -115,7 +148,7 @@ int main(int argc, char* argv[])
 				}
 				else
 				{
-					printf(" %%%u", op.instruction->getResultId());
+					printf(" \x1B[33m%%%u\033[0m", op.instruction->getResultId());
 				}
 			}
 			else if (op.isBranchTarget())
@@ -173,7 +206,7 @@ int main(int argc, char* argv[])
 					continue;
 				}
 
-				printOperand(*it, infoIt);
+				printOperand(instr, *it, infoIt);
 
 				if (infoIt->kind != Grammar::OperandKind::ImageOperands &&
 					infoIt->kind != Grammar::OperandKind::LiteralString &&
