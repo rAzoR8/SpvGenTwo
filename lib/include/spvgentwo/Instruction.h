@@ -12,6 +12,7 @@ namespace spvgentwo
 	class Module;
 	class IReader;
 	class Grammar;
+	class String;
 
 	class Instruction : public List<Operand>
 	{
@@ -544,6 +545,10 @@ namespace spvgentwo
 		// unsigned & unsinged => unsigned, signed & unsigned => signed, float & float => float
 		Instruction* intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, const char* _pErrorMsg = nullptr);
 	};
+
+	// accumulates literal values to _out, returns iterator to the first operand after the literal containing the string terminator
+	// or null-iterator if some operand was not a literal value
+	Instruction::Iterator getLiteralString(String& _out, Instruction::Iterator _begin, Instruction::Iterator _end);
 
 	template<class ...Args>
 	inline Instruction::Instruction(Module* _pModule, const spv::Op _op, Args&& ..._args) :List(_pModule->getAllocator()),
