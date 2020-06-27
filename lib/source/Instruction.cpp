@@ -257,23 +257,21 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 		return false;
 	}
 
-	//if (_op == spv::Op::OpDecorate)
+	//if (_op == spv::Op::OpSpecConstantOp)
 	//{
 	//	int i = 0;
 	//}
-
-	//getModule()->logDebug("Parsing op code %s with %u operands", info->name, _operandCount);
 
 	auto it = info->operands.begin();
 	const auto end = info->operands.end();
 	unsigned int word{ 0u };
 
-	bool imageOperands = false;
+	bool trailingIDOperands = false;
 	while (_operandCount != 0u && it != end && _pReader->get(word))
 	{
 		const auto& op = *it;
 
-		if (op.category == Grammar::OperandCategory::Id || imageOperands)
+		if (op.category == Grammar::OperandCategory::Id || trailingIDOperands)
 		{
 			addOperand(static_cast<spv::Id>(word));
 		}
@@ -282,12 +280,14 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 			addOperand(static_cast<literal_t>(word));
 		}
 
-		if (op.kind == Grammar::OperandKind::ImageOperands) // next operands are IDs
+		if (op.kind == Grammar::OperandKind::ImageOperands || 
+			op.kind == Grammar::OperandKind::LiteralSpecConstantOpInteger) // next operands are IDs
 		{
-			imageOperands = true;
+			trailingIDOperands = true;
 		}
 
 		if (op.kind != Grammar::OperandKind::ImageOperands && 
+			op.kind != Grammar::OperandKind::LiteralSpecConstantOpInteger &&
 			op.kind != Grammar::OperandKind::Decoration &&
 			op.kind != Grammar::OperandKind::ExecutionMode &&
 			op.kind != Grammar::OperandKind::LiteralString && 
@@ -303,7 +303,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 		--_operandCount;
 	}
 
-	if (_operandCount > 0u /*|| it != end*/)
+	if (_operandCount > 0u)
 	{
 		getModule()->logError("Could not parse all operands of %s", info->name);
 		return false;

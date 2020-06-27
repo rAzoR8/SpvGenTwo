@@ -134,11 +134,22 @@ int main(int argc, char* argv[])
 				{
 					const char* name = gram.getOperandName(info->kind, op.literal.value);
 					printf(" %s", name == nullptr ? "UNKNOWN" : name);
+				} 
+				else if (info->kind == Grammar::OperandKind::LiteralSpecConstantOpInteger)
+				{
+					if (auto* instrInfo = gram.getInfo(op.literal.value); instrInfo != nullptr)
+					{
+						printf(" %s", instrInfo->name);
+					}
+					else
+					{
+						printf(" \x1B[31m%u\033[0m", op.literal.value);
+					}					
 				}
 				else
 				{
 					printf(" \x1B[31m%u\033[0m", op.literal.value);
-				} // check for OpConstant args like floats
+				} // TODO: check for OpConstant args like floats
 			}
 			else if (op.isInstruction())
 			{
@@ -209,9 +220,10 @@ int main(int argc, char* argv[])
 				printOperand(instr, *it, infoIt);
 
 				if (infoIt->kind != Grammar::OperandKind::ImageOperands &&
-					infoIt->kind != Grammar::OperandKind::LiteralString &&
-					infoIt->kind != Grammar::OperandKind::ExecutionMode &&
+					infoIt->kind != Grammar::OperandKind::LiteralSpecConstantOpInteger &&
 					infoIt->kind != Grammar::OperandKind::Decoration &&
+					infoIt->kind != Grammar::OperandKind::ExecutionMode &&
+					infoIt->kind != Grammar::OperandKind::LiteralString &&
 					infoIt->quantifier != Grammar::Quantifier::ZeroOrAny)
 				{
 					++infoIt;
