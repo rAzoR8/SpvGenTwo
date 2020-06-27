@@ -29,33 +29,33 @@ namespace spvgentwo
 			Instruction = 0,
 			BranchTarget,
 			Literal,
-			ResultId
+			Id
 		} type;
 
 		union {
 			BasicBlock* branchTarget = nullptr; 
 			Instruction* instruction; // intermediate or type
-			literal_t value;
-			spv::Id resultId;
+			literal_t literal;
+			spv::Id id;
 		};
 
 		bool isBranchTarget() const { return type == Type::BranchTarget; }
 		bool isInstruction() const { return type == Type::Instruction; }
 		bool isLiteral() const { return type == Type::Literal; }
-		bool isResultId() const { return type == Type::ResultId; }
+		bool isId() const { return type == Type::Id; }
 
 		BasicBlock* getBranchTarget() const { return isBranchTarget() ? branchTarget : nullptr; }
 		Instruction* getInstruction() const { return isInstruction() ? instruction : nullptr; }
-		const literal_t getLiteral() const { return isLiteral() ? value : literal_t{}; }
-		const spv::Id getResultId() const { return isResultId() ? resultId : InvalidId; }
+		const literal_t getLiteral() const { return isLiteral() ? literal : literal_t{}; }
+		const spv::Id getId() const { return isId() ? id : InvalidId; }
 
 		Operand(const Operand& _other);
 		Operand(Operand&& _other) noexcept;
 
 		Operand(BasicBlock* _target) : type(Type::BranchTarget), branchTarget(_target) {}
 		Operand(Instruction* _instr) : type(Type::Instruction), instruction(_instr) {}
-		Operand(const literal_t _value) : type(Type::Literal), instruction(nullptr) { value = _value; }
-		Operand(const spv::Id _resutlId) : type(Type::ResultId), instruction(nullptr) { resultId = _resutlId; }
+		Operand(const literal_t _value) : type(Type::Literal), instruction(nullptr) { literal = _value; }
+		Operand(const spv::Id _resutlId) : type(Type::Id), instruction(nullptr) { id = _resutlId; }
 
 		void write(IWriter* _pWriter) const;
 

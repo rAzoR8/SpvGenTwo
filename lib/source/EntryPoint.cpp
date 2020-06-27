@@ -108,6 +108,11 @@ void spvgentwo::EntryPoint::finalizeGlobalInterface(const GlobalInterfaceVersion
 	}
 }
 
+spvgentwo::Instruction* spvgentwo::EntryPoint::addExecutionModeInstr()
+{
+	return &m_ExecutionModes.emplace_back(this);
+}
+
 spvgentwo::Instruction* spvgentwo::EntryPoint::finalize(const spv::ExecutionModel _model, const Flag<spv::FunctionControlMask> _control, const char* _pEntryPointName)
 {
 	Instruction* pFunc = Function::finalize(_control, _pEntryPointName);

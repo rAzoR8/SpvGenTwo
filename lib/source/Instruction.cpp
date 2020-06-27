@@ -2,8 +2,10 @@
 #include "spvgentwo/BasicBlock.h"
 #include "spvgentwo/Type.h"
 #include "spvgentwo/Writer.h"
+#include "spvgentwo/Reader.h"
 #include "spvgentwo/Module.h"
 #include "spvgentwo/TypeInferenceAndValiation.h"
+#include "spvgentwo/Grammar.h"
 
 spvgentwo::Instruction::Instruction(Module* _pModule, Instruction&& _other) noexcept :
 	List(stdrep::move(_other)),
@@ -126,43 +128,7 @@ spvgentwo::spv::Id spvgentwo::Instruction::getResultId() const
 {
 	auto it = getResultIdOperand();
 	if (it == nullptr) return InvalidId;
-	return it->getResultId();
-}
-
-spvgentwo::spv::Id spvgentwo::Instruction::resolveId(spv::Id& _previousId)
-{
-	for (Operand& op : *this)
-	{
-		switch (op.type)
-		{
-		case Operand::Type::Instruction:
-			if (getModule()->logError(op.instruction != nullptr, "Invalid instruction operand (null)") == false)
-			{	
-				return InvalidId;
-			}
-			op.instruction->resolveId(_previousId);
-			break;
-		case Operand::Type::BranchTarget:
-			if (getModule()->logError(op.branchTarget != nullptr, "Invalid branch target operand (null)") == false)
-			{
-				return InvalidId;
-			}
-			op.branchTarget->front().resolveId(_previousId);
-			break;
-		default:
-			break;
-		}
-	}
-
-	auto it = getResultIdOperand();
-	if (it == nullptr) return InvalidId;
-
-	if (it->resultId == InvalidId)
-	{
-		it->resultId = ++_previousId;
-	}
-
-	return it->resultId;
+	return it->getId();
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::getTypeInstr() const
@@ -270,6 +236,80 @@ void spvgentwo::Instruction::write(IWriter* _pWriter)
 	{
 		operand.write(_pWriter);
 	}
+}
+
+bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _grammar, spv::Op _op, unsigned int _operandCount)
+{
+	reset();
+
+	m_Operation = _op;
+
+	if (_operandCount == 0u)
+	{
+		return true; // nothing left to do
+	}
+
+	const Grammar::Instruction* info = _grammar.getInfo(static_cast<unsigned int>(m_Operation));
+
+	if (info == nullptr)
+	{
+		getModule()->logError("Unkown op code %u", m_Operation);
+		return false;
+	}
+
+	//if (_op == spv::Op::OpSpecConstantOp)
+	//{
+	//	int i = 0;
+	//}
+
+	auto it = info->operands.begin();
+	const auto end = info->operands.end();
+	unsigned int word{ 0u };
+
+	bool trailingIDOperands = false;
+	while (_operandCount != 0u && it != end && _pReader->get(word))
+	{
+		const auto& op = *it;
+
+		if (op.category == Grammar::OperandCategory::Id || trailingIDOperands)
+		{
+			addOperand(static_cast<spv::Id>(word));
+		}
+		else
+		{
+			addOperand(static_cast<literal_t>(word));
+		}
+
+		if (op.kind == Grammar::OperandKind::ImageOperands || 
+			op.kind == Grammar::OperandKind::LiteralSpecConstantOpInteger) // next operands are IDs
+		{
+			trailingIDOperands = true;
+		}
+
+		if (op.kind != Grammar::OperandKind::ImageOperands && 
+			op.kind != Grammar::OperandKind::LiteralSpecConstantOpInteger &&
+			op.kind != Grammar::OperandKind::Decoration &&
+			op.kind != Grammar::OperandKind::ExecutionMode &&
+			op.kind != Grammar::OperandKind::LiteralString && 
+			op.quantifier != Grammar::Quantifier::ZeroOrAny)
+		{
+			++it;
+		}
+		else if (op.kind == Grammar::OperandKind::LiteralString && hasStringTerminator(word)) // reached end of string
+		{
+			++it;
+		}
+
+		--_operandCount;
+	}
+
+	if (_operandCount > 0u)
+	{
+		getModule()->logError("Could not parse all operands of %s", info->name);
+		return false;
+	}
+
+	return true;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::Mul(Instruction* _pLeft, Instruction* _pRight)
@@ -1115,4 +1155,25 @@ bool spvgentwo::Instruction::validateOperands()
 bool spvgentwo::Instruction::isErrorInstr() const
 {
 	return getModule()->getErrorInstr() == this;
+}
+
+spvgentwo::Instruction::Iterator spvgentwo::getLiteralString(String& _out, Instruction::Iterator _it, Instruction::Iterator _end)
+{
+	for (; _it != _end; ++_it)
+	{
+		if (_it->isLiteral() == false)
+		{
+			return nullptr;
+		}
+
+		const char* str = reinterpret_cast<const char*>(&_it->literal.value);
+		for (unsigned int i = 0u; i < sizeof(unsigned int); ++i)
+		{
+			_out.emplace_back(str[i]);
+			if (str[i] == '\0')
+				return _it.next();
+		}
+	}
+
+	return _it;
 }

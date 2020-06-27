@@ -306,7 +306,7 @@ bool spvgentwo::defaultimpl::validateOperands(const spvgentwo::Instruction& _ins
 			return false;
 		}
 
-		if (it->isResultId() == false)
+		if (it->isId() == false)
 		{
 			module->logError("ResultId operand is not a spv::id");
 			return false;

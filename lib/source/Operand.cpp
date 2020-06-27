@@ -14,10 +14,10 @@ void spvgentwo::Operand::write(IWriter* _pWriter) const
 		_pWriter->put(branchTarget->front().getResultId()); // TODO: check if BB is empty?
 		break;
 	case Type::Literal:
-		_pWriter->put(value.value);
+		_pWriter->put(literal.value);
 		break;
-	case Type::ResultId:
-		_pWriter->put(resultId);
+	case Type::Id:
+		_pWriter->put(id);
 	default:
 		break;
 	}
@@ -35,10 +35,10 @@ spvgentwo::Operand::Operand(const Operand& _other) :
 		branchTarget = _other.branchTarget;
 		break;
 	case Type::Literal:
-		value = _other.value;
+		literal = _other.literal;
 		break;
-	case Type::ResultId:
-		resultId = _other.resultId;
+	case Type::Id:
+		id = _other.id;
 		break;
 	default:
 		break;
@@ -56,10 +56,10 @@ spvgentwo::Operand::Operand(Operand&& _other) noexcept : type(_other.type)
 		branchTarget = _other.branchTarget;
 		break;
 	case Type::Literal:
-		value = _other.value;
+		literal = _other.literal;
 		break;
-	case Type::ResultId:
-		resultId = _other.resultId;
+	case Type::Id:
+		id = _other.id;
 		break;
 	default:
 		break;
@@ -80,10 +80,10 @@ spvgentwo::Operand& spvgentwo::Operand::operator=(const Operand& _other)
 		branchTarget = _other.branchTarget;
 		break;
 	case Type::Literal:
-		value = _other.value;
+		literal = _other.literal;
 		break;
-	case Type::ResultId:
-		resultId = _other.resultId;
+	case Type::Id:
+		id = _other.id;
 		break;
 	default:
 		break;
@@ -106,10 +106,10 @@ spvgentwo::Operand& spvgentwo::Operand::operator=(Operand&& _other) noexcept
 		branchTarget = _other.branchTarget;
 		break;
 	case Type::Literal:
-		value = _other.value;
+		literal = _other.literal;
 		break;
-	case Type::ResultId:
-		resultId = _other.resultId;
+	case Type::Id:
+		id = _other.id;
 		break;
 	default:
 		break;
@@ -123,8 +123,8 @@ bool spvgentwo::Operand::operator==(const Operand& _other) const
 	return type == _other.type && 
 		((type == Type::BranchTarget && branchTarget == _other.branchTarget) || 
 		(type == Type::Instruction && instruction == _other.instruction) || 
-		(type == Type::Literal && value == _other.value) || 
-		(type == Type::ResultId && resultId == _other.resultId));
+		(type == Type::Literal && literal == _other.literal) || 
+		(type == Type::Id && id == _other.id));
 }
 
 bool spvgentwo::Operand::operator==(const BasicBlock* _block) const
@@ -139,12 +139,12 @@ bool spvgentwo::Operand::operator==(const Instruction* _instr) const
 
 bool spvgentwo::Operand::operator==(const literal_t& _value) const
 {
-	return type == Type::Literal && value == _value;
+	return type == Type::Literal && literal == _value;
 }
 
 bool spvgentwo::Operand::operator==(const spv::Id& _resultID) const
 {
-	return type == Type::ResultId && resultId == _resultID;
+	return type == Type::Id && id == _resultID;
 }
 
 bool spvgentwo::Operand::operator!=(const BasicBlock* _block) const
@@ -159,10 +159,10 @@ bool spvgentwo::Operand::operator!=(const Instruction* _instr) const
 
 bool spvgentwo::Operand::operator!=(const literal_t& _value) const
 {
-	return type != Type::Literal || value != _value;
+	return type != Type::Literal || literal != _value;
 }
 
 bool spvgentwo::Operand::operator!=(const spv::Id& _resultID) const
 {
-	return type != Type::ResultId || resultId != _resultID;
+	return type != Type::Id || id != _resultID;
 }

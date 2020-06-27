@@ -40,6 +40,7 @@ cmake_option(SPVGENTWO_LOGGING "Enable Logging" TRUE)
 cmake_option(SPVGENTWO_REPLACE_PLACEMENTNEW "Don't use replacement new from <new>" TRUE)
 cmake_option(SPVGENTWO_REPLACE_TRAITS "Use custom traits instead of <type_traits>" TRUE)
 cmake_option(SPVGENTWO_BUILD_EXAMPLES "Build examples" FALSE)
+cmake_option(SPVGENTWO_BUILD_DISASSEMBLER "Build disassembler" FALSE)
 cmake_option(SPVGENTWO_DEBUG_HEAP_ALLOC "Log heap allocations" FALSE)
 
 #lib sources
@@ -63,12 +64,23 @@ target_include_directories(SpvGenTwoCommon PUBLIC "${common_includes}")
 #example project
 if(${SPVGENTWO_BUILD_EXAMPLES})
 	add_sources("example/source/*.cpp" "example_sources")
-	add_sources("example/include/*.h" "example_sources")
+	add_sources("example/include/example/*.h" "example_sources")
 	add_include_folder("example/include" "example_includes")
 
 	add_executable(SpvGenTwoExample "${example_sources}")
 	target_include_directories(SpvGenTwoExample PUBLIC "${example_includes};${common_includes}")
 	target_link_libraries(SpvGenTwoExample PUBLIC SpvGenTwoLib SpvGenTwoCommon)
+endif()
+
+#disassembler project
+if(${SPVGENTWO_BUILD_DISASSEMBLER})
+	add_sources("dis/source/*.cpp" "dis_sources")
+	add_sources("dis/include/dis/*.h" "dis_sources")
+	add_include_folder("dis/include" "dis_includes")
+
+	add_executable(SpvGenTwoDisassembler "${dis_sources}")
+	target_include_directories(SpvGenTwoDisassembler PUBLIC "${dis_includes};${common_includes}")
+	target_link_libraries(SpvGenTwoDisassembler PUBLIC SpvGenTwoLib SpvGenTwoCommon)
 endif()
 
 message(STATUS "")

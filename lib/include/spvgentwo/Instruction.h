@@ -10,6 +10,9 @@ namespace spvgentwo
 	class Type;
 	class Function;
 	class Module;
+	class IReader;
+	class Grammar;
+	class String;
 
 	class Instruction : public List<Operand>
 	{
@@ -111,11 +114,11 @@ namespace spvgentwo
 		// get opcode encoded with instruction word count [16 bit op code, 16 bit number of operand words] 
 		unsigned int getOpCode() const;
 
-		// returns the ID assigned to this instrucions
-		spv::Id resolveId(spv::Id& _previousId);
-
-		// serialize instructions of this basic block to the IWriter
+		// serialize instruction operands to the IWriter
 		void write(IWriter* _pWriter);
+
+		// deserialize instruction operands from this IReader
+		bool readOperands(IReader* _pReader, const Grammar& _grammar, spv::Op _op, unsigned int _operandCount);
 
 		// transforms _args to operands, calls inferResultTypeOperand and validateOperands()
 		template <class ...Args>
@@ -542,6 +545,10 @@ namespace spvgentwo
 		// unsigned & unsinged => unsigned, signed & unsigned => signed, float & float => float
 		Instruction* intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, const char* _pErrorMsg = nullptr);
 	};
+
+	// accumulates literal values to _out, returns iterator to the first operand after the literal containing the string terminator
+	// or null-iterator if some operand was not a literal value
+	Instruction::Iterator getLiteralString(String& _out, Instruction::Iterator _begin, Instruction::Iterator _end);
 
 	template<class ...Args>
 	inline Instruction::Instruction(Module* _pModule, const spv::Op _op, Args&& ..._args) :List(_pModule->getAllocator()),

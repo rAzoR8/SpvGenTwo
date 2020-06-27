@@ -1,4 +1,4 @@
-#include "ExpressionGraph.h"
+#include "example/ExpressionGraph.h"
 #include "common/ExprGraph.h"
 
 using namespace spvgentwo;

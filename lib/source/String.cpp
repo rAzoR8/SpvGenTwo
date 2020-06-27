@@ -25,32 +25,17 @@ spvgentwo::String spvgentwo::String::substr(size_t _offset, size_t _length)
 
 spvgentwo::String spvgentwo::String::operator+(const String& _other) const
 {
-	String both(m_pAllocator);
-	if (both.reserve(m_elements + _other.m_elements))
-	{
-		both = *this; // assign first half
-		for (size_t i = 0; i < _other.m_elements; ++i)
-		{
-			both[m_elements + i] = _other[i];
-		}
-		both.m_elements = m_elements + _other.m_elements;
-	}
+	String both(m_pAllocator, m_elements + _other.m_elements);
+	both = *this; // assign first half
+	both += _other; // assign new part
 	return both;
 }
 
 spvgentwo::String spvgentwo::String::operator+(const char* _pStr) const
 {
 	String both(m_pAllocator);
-	const size_t length = stringLength(_pStr);
-	if (both.reserve(m_elements + length))
-	{
-		both = *this; // assign first half
-		for (size_t i = 0; i < length; ++i)
-		{
-			both[m_elements + i] = _pStr[i];
-		}
-		both.m_elements = m_elements + length;
-	}
+	both = *this; // assign first half
+	both.append(_pStr); // assign new part
 	return both;
 }
 
@@ -58,25 +43,62 @@ spvgentwo::String& spvgentwo::String::operator+=(const String& _other)
 {
 	if (reserve(m_elements + _other.m_elements))
 	{
+		const size_t offset = m_elements > 0 && m_pData[m_elements - 1u] == '\0' ? m_elements - 1u : m_elements;
 		for (size_t i = 0; i < _other.m_elements; ++i)
 		{
-			m_pData[m_elements + i] = _other[i];
+			m_pData[offset + i] = _other[i];
 		}
-		m_elements = m_elements + _other.m_elements;
+		m_elements = offset + _other.m_elements;
 	}
 	return *this;
 }
 
 spvgentwo::String& spvgentwo::String::operator+=(const char* _pStr)
 {
-	const size_t length = stringLength(_pStr);
+	return append(_pStr);
+}
+
+spvgentwo::String& spvgentwo::String::append(const char* _pStr, size_t _length)
+{
+	const size_t length = _length == 0u ? stringLength(_pStr) : _length;
 	if (reserve(m_elements + length))
 	{
+		// we only want one string terminator, overwrite the old one an append
+		const size_t offset = m_elements > 0 && m_pData[m_elements - 1u] == '\0' ? m_elements - 1u : m_elements;
 		for (size_t i = 0; i < length; ++i)
 		{
-			m_pData[m_elements + i] = _pStr[i];
+			m_pData[offset + i] = _pStr[i];
 		}
-		m_elements = m_elements + length;
+		m_elements = offset + length;
 	}
 	return *this;
+}
+
+bool spvgentwo::String::operator==(const String& _other) const
+{
+	if (m_elements == _other.m_elements)
+	{
+		for (size_t i = 0; i < m_elements; ++i)
+		{
+			if (m_pData[i] != _other.m_pData[i])
+				return false;
+		}
+		return true;
+	}
+	return false;
+}
+
+bool spvgentwo::String::operator==(const char* _pStr) const
+{
+	const size_t length = stringLength(_pStr);
+	if (m_elements == length)
+	{
+		for (size_t i = 0; i < m_elements; ++i)
+		{
+			if (m_pData[i] != _pStr[i])
+				return false;
+		}
+		return true;
+	}
+	return false;
 }

@@ -23,10 +23,13 @@ namespace spvgentwo
 		
 		~EntryPoint() override;
 
+		// TODO: move constructor & asignment
+
 		// get all the global OpVariables with StorageClass != Function used in this function
 		void getGlobalVariableInterface(List<Operand>& _outVarinstr, const GlobalInterfaceVersion _version) const;
 
 		spv::ExecutionModel getExecutionModel() const { return m_ExecutionModel; }
+		void setExecutionModel(const spv::ExecutionModel _model) { m_ExecutionModel = _model; }
 
 		// OpEntryPoint
 		Instruction* getEntryPoint() { return &m_EntryPoint; }
@@ -34,7 +37,10 @@ namespace spvgentwo
 
 		template <class ... Args>
 		Instruction* addExecutionMode(const spv::ExecutionMode _mode, Args ... _args);
+		Instruction* addExecutionModeInstr();
+
 		const List<Instruction>& getExecutionModes() const { return m_ExecutionModes; }
+		List<Instruction>& getExecutionModes() { return m_ExecutionModes; }
 
 		// overrides Functions finalize (used internally), _pEntryPointName is mandatory parameter, returns opFunction
 		Instruction* finalize(const spv::ExecutionModel _model, const Flag<spv::FunctionControlMask> _control, const char* _pEntryPointName);

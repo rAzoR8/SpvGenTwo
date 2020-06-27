@@ -39,20 +39,21 @@ namespace spvgentwo
 
 		Module* getModule() const { return m_pModule; }
 
+		// get name assigned by OpName (if any). Calls Module::getName(&m_Function)
 		const char* getName() const;
 
 		BasicBlock& addBasicBlock(const char* _pName = nullptr) { return emplace_back(this, _pName); }
 
 		// return entry bb (avoid confusion when adding a BB to this function and instructions are "magically" added to the last BB if using m_pLast
 		BasicBlock& operator->() { return m_pBegin->inner(); }
-		operator BasicBlock& () {return m_pBegin->inner();}
+		operator BasicBlock& () { return m_pBegin->inner();}
 		BasicBlock& operator*() { return m_pBegin->inner(); }
 
-		Instruction* getParameter(unsigned int _index);
+		// write OpFunction OpFunctionParameters <BasicBlocks> OpFunctionEnd to IWriter
+		void write(IWriter* _pWriter);
 
-		void write(IWriter* _pWriter);		
-
-		const List<Instruction>& getParameters() const { return m_Parameters; }
+		// read function from IReader user _grammer, assuming OpFunction was already parsed/consumed by module::read(Reader* _pReader)
+		bool read(IReader* _pReader, const Grammar& _grammar, Instruction&& _opFunc);
 
 		// storage class is Function
 		Instruction* variable(Instruction* _pPtrType, Instruction* _pInitialzer = nullptr, const char* _pName = nullptr);
@@ -69,6 +70,12 @@ namespace spvgentwo
 		// adds opFunctionParameter(_pParamType) to m_parameters and _pParamType to m_pFunctionType, returns last opFunctionParameter generated
 		template <class ... TypeInstr>
 		Instruction* addParameters(Instruction* _pParamType, TypeInstr* ... _paramTypeInstructions);
+
+		// get opFunctionParameter in order they were added by addParameters
+		Instruction* getParameter(unsigned int _index);
+
+		// get list of all OpFunctionParameter instructions added by addParameters()
+		const List<Instruction>& getParameters() const { return m_Parameters; }
 
 		// creates opFunction, m_pFunctionType must have been completed (all parameters added via addParameters), returns opFunction
 		Instruction* finalize(const Flag<spv::FunctionControlMask> _control, const char* _pName = nullptr);

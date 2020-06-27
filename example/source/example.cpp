@@ -3,15 +3,16 @@
 #include "spvgentwo/Logger.h"
 #include "common/HeapAllocator.h"
 #include "common/BinaryFileWriter.h"
+#include "common/BinaryFileReader.h"
 
 // examples
-#include "OldInstrTest.h"
-#include "FunctionCall.h"
-#include "ControlFlow.h"
-#include "Extensions.h"
-#include "Types.h"
-#include "Constants.h"
-#include "ExpressionGraph.h"
+#include "example/OldInstrTest.h"
+#include "example/FunctionCall.h"
+#include "example/ControlFlow.h"
+#include "example/Extensions.h"
+#include "example/Types.h"
+#include "example/Constants.h"
+#include "example/ExpressionGraph.h"
 
 #include <stdarg.h>
 #include <assert.h>
@@ -57,66 +58,66 @@ int main(int argc, char* argv[])
 	HeapAllocator alloc; // custom user allocator
 
 	// expression graph example
-	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
+	if (BinaryFileWriter writer("expressionGraph.spv"); writer.isOpen())
 	{
 		examples::expressionGraph(&alloc, &log).write(&writer);
 		writer.close();
-		system("spirv-dis test.spv");
-		assert(system("spirv-val test.spv") == 0);
+		system("spirv-dis expressionGraph.spv");
+		assert(system("spirv-val expressionGraph.spv") == 0);
 	}
 
 	// old cli test
-	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
+	if (BinaryFileWriter writer("oldInstrTest.spv"); writer.isOpen())
 	{
 		examples::oldInstrTest(&alloc, &log).write(&writer);
 		writer.close();
-		system("spirv-dis test.spv");
-		assert(system("spirv-val test.spv") == 0);
+		system("spirv-dis oldInstrTest.spv");
+		assert(system("spirv-val oldInstrTest.spv") == 0);
 	}
 
 	// function call example
-	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
+	if (BinaryFileWriter writer("functionCall.spv"); writer.isOpen())
 	{
 		examples::functionCall(&alloc, &log).write(&writer);
 		writer.close();
-		system("spirv-dis test.spv");
-		assert(system("spirv-val test.spv") == 0);
+		system("spirv-dis functionCall.spv");
+		assert(system("spirv-val functionCall.spv") == 0);
 	}
 
 	// control flow example
-	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
+	if (BinaryFileWriter writer("controlFlow.spv"); writer.isOpen())
 	{
 		examples::controlFlow(&alloc, &log).write(&writer);
 		writer.close();
-		system("spirv-dis test.spv");
-		assert(system("spirv-val test.spv") == 0);
+		system("spirv-dis controlFlow.spv");
+		assert(system("spirv-val controlFlow.spv") == 0);
 	}
 
 	// extension example
-	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
+	if (BinaryFileWriter writer("extensions.spv"); writer.isOpen())
 	{
 		examples::extensions(&alloc, &log).write(&writer);
 		writer.close();
-		system("spirv-dis test.spv");
-		assert(system("spirv-val test.spv") == 0);
+		system("spirv-dis extensions.spv");
+		assert(system("spirv-val extensions.spv") == 0);
 	}
 
 	// types example
-	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
+	if (BinaryFileWriter writer("types.spv"); writer.isOpen())
 	{
 		examples::types(&alloc, &log).write(&writer);
 		writer.close();
-		system("spirv-dis test.spv");
-		assert(system("spirv-val test.spv") == 0);
+		system("spirv-dis types.spv");
+		assert(system("spirv-val types.spv") == 0);
 	}
 
 	// constants example
-	if (BinaryFileWriter writer("test.spv"); writer.isOpen())
+	if (BinaryFileWriter writer("constants.spv"); writer.isOpen())
 	{
 		examples::constants(&alloc, &log).write(&writer);
 		writer.close();
-		system("spirv-dis test.spv");
-		assert(system("spirv-val test.spv") == 0);
+		system("spirv-dis constants.spv");
+		assert(system("spirv-val constants.spv") == 0);
 	}
 
 	return 0;

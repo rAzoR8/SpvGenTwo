@@ -97,7 +97,9 @@ class Grammar
 	};
 		Grammar(IAllocator* _pAllocator);
 		const Instruction* getInfo(unsigned int _opcode, Extension _extension = Extension::Core) const;
+		const char* getOperandName(OperandKind _kind, unsigned int _literalValue) const;
 	private:
 		HashMap<Hash64, Instruction> m_instructions;
+		HashMap<Hash64, const char*> m_operandNames;
 };
 } // spvgentwo

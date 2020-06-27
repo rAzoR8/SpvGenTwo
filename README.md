@@ -1,8 +1,8 @@
 # SpvGenTwo
 
-SpvGenTwo is a [SPIR-V](https://www.khronos.org/registry/spir-v/) building library written in C++17 with only `stddef.h` as dependencies. No STL or other 3rd-Party library needed. The library comes with its own set of SPIR-V definitions generated from the [machine readable grammar](https://github.com/KhronosGroup/SPIRV-Headers/blob/master/include/spirv/unified1/spirv.core.grammar.json) and therefore does not require any `vulkan` or `spirv-headers` includes. The generator can be found here: [rustspvgen](https://github.com/rAzoR8/rustspvgen).
+SpvGenTwo is a [SPIR-V](https://www.khronos.org/registry/spir-v/) building and parsing library written in C++17 with only `stddef.h` as dependencies. No STL or other 3rd-Party library needed. The library comes with its own set of SPIR-V definitions generated from the [machine readable grammar](https://github.com/KhronosGroup/SPIRV-Headers/blob/master/include/spirv/unified1/spirv.core.grammar.json) and therefore does not require any `vulkan` or `spirv-headers` includes. The generator can be found here: [rustspvgen](https://github.com/rAzoR8/rustspvgen).
 
-I built this library as a 'slim' **backend** for runtime material/shader-editors (like [Proto](https://twitter.com/SiNGUL4RiTY/status/1246492443811422208)) to avoid introducing enormous libraries like [DXC](https://github.com/microsoft/DirectXShaderCompiler) (including LLVM and Clang) or [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools) to the codebase.
+I built this library as a 'slim' **backend** for runtime material/shader-editors (like [Proto](https://twitter.com/SiNGUL4RiTY/status/1246492443811422208)) to avoid introducing enormous libraries like [DXC](https://github.com/microsoft/DirectXShaderCompiler) (including LLVM and Frontend) or [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools) to the codebase.
 
 __SpvGenTwo__ is still under development, many parts are still missing, but all the building blocks are there. SpvGenTwo is designed to be extensible and customizable, it is fairly easy to implement new SPIR-V instructions and extensions, use custom allocators and define own type inference rules. Note that it is still possible to generate invalid SPIR-V modules because not all inputs are checked yet. Use the SPIR-V validator `spirv-val` from the SDK and have the [specification](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.pdf) at hand while using this library.
 
@@ -12,6 +12,8 @@ I mainly focused on Shader capabilities, so the Kernel and OpenCL side is a bit 
 * [Examples](#Examples)
     * [Example Project](#Example-Project)
 * [Building](#Building)
+* [Tools](#Tools)
+    * [Disassembler](#Disassembler)
 * [Documentation](#Documentation)
 * [Contributing](#Contributing)
 * [Copyright and Licensing](#Copyright-and-Licensing)
@@ -67,7 +69,7 @@ module.write(&writer);
 ```
 
 The resulting SPIR-V binary when disassembled using `spirv-dis`:
-```
+```cpp
 ; SPIR-V
 ; Version: 1.4
 ; Generator: Unknown(250); 0
@@ -121,22 +123,39 @@ Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
 
 # Project Structure
 
-SpvGenTwo is split into 3 folders:
+SpvGenTwo is split into 4 folders:
 
 * `lib` contains the foundation to generate SPIR-V code, it only requires `stddef.h` to be built. SpvGenTwo makes excessive use of its abstract Allocator, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those a not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :).
 * `common` contains some convenience implementations of abstract interfaces: HeapAllocator uses C malloc and free, BindaryFileWriter uses fopen, ConsoleLogger uses vprintf. It also as some additional container classes like Callable (std::function replacement), Graph, ControlFlowGraph, Expression and ExprGraph, they follow the same design principles and might sooner or later be moved to `lib` if needed.
 * `example` contains small, self-contained code snippets that each generate a SPIR-V module to show some of the fundamental mechanics and APIs of SpvGenTwo.
+* `dis` is a [spirv-dis](https://github.com/KhronosGroup/SPIRV-Tools#disassembler-tool)-like tool to print assembly language text.
 
 # Building
 
 Use the supplied CMakeLists.txt to generate project files for your build system. SpvGenTwo allows the user to use STL headers (`<type_traits>`, `<new>` etc) instead of my hand-made replacements (see `stdreplament.h`).
 
 * `SPVGENTWO_BUILD_EXAMPLES` is set to FALSE by default. If TRUE, an executable with sources from the 'example' will be built.
+    * Note that the SpvGenTwoExample executable project requires the Vulkan SDK to be installed as it calls spirv-val and spriv-dis.
+* `SPVGENTWO_BUILD_DISASSEMBLER` is set to FALSE by default. If TRUE, an executable with sources from the 'dis' will be built.
 * `SPVGENTWO_REPLACE_PLACEMENTNEW` is set to TRUE by default. If FALSE, placement-new will be included from `<new>` header.
 * `SPVGENTWO_REPLACE_TRAITS` is set to TRUE by default. If FALSE, `<type_traits>` and `<utility>` header will be included under `spvgentwo::stdrep` namespace.
 * `SPVGENTWO_LOGGING` is set to TRUE by default, calls to module.log() will have not effect if FALSE.
 
-Note that the SpvGenTwoExample executable project requires the Vulkan SDK to be installed as it calls spirv-val and spriv-dis.
+# Tools
+
+SpvGenTwo includes a couple of CLI tools to explore and test the libraries capabilities.
+
+## Disassembler
+
+![SpvGenTwoDisassembler](misc/dis.png)
+
+SpvGenTwoDisassembler source can be found at [dis/source/dis.cpp](dis/source/dis.cpp), it is just a single source file demonstrating the basic parsing and IR walking capabilities of SpvGenTwo.
+
+CLI: ```SpvGenTwoDisassembler [file] <option> <option>```
+
+### Options
+* `--assignids` re-assigns instruction result IDs starting from 1. Some SPIR-V compilers emit IDs in a very high range, making it hard to read and trace data flow in assembly language text, `assignIDs` helps with that.
+* `--serialize` writes the parsed SPIR-V program to a `serialized.spv` file in the working directory (this is a debug feature).
 
 # Documentation
 
@@ -166,4 +185,5 @@ A list of short and long term goals for this library:
 * Implement more Instructions, at least 90% of Shader capabilities
 * Improve validation / logging / error reporting
 * Write unit tests
+* Implement [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools) like helper tools
 * Implement some front-end or DSL like [SPEAR](https://github.com/rAzoR8/SPEAR)

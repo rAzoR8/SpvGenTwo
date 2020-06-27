@@ -56,6 +56,8 @@ namespace spvgentwo
 
 		void write(IWriter* _pWriter);
 
+		bool read(IReader* _pReader, const Grammar& _grammar);
+
 		// structured if: true and false block must NOT have a terminator yet!
 		// returns last instruction of MergeBlock which creats a result
 		BasicBlock& If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::SelectionControlMask> _mask = spv::SelectionControlMask::MaskNone);
