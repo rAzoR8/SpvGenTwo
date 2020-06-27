@@ -22,6 +22,7 @@ namespace spvgentwo
 
 		Module& operator=(Module&& _other) noexcept;
 
+		// 0xFabian's SPIR-V generator
 		static constexpr unsigned int GeneratorId = makeGeneratorId(0xfa, 0);
 
 		// reset module to its initial / empty state - clear all functions and instructions etc (invalidate all pointers)
@@ -150,6 +151,7 @@ namespace spvgentwo
 		// IDs dont need to be assigned if the module was parsed using read()
 		void write(IWriter* _pWriter, const bool _assingIDs = true);
 
+		// parse a binary SPIR-V program from IReader using _grammer generated from SPIR-V machinereadable grammer json
 		bool read(IReader* _pReader, const Grammar& _grammar);
 
 		// for use with opString, opSource, opSourceContinued, opSourceExtension
@@ -160,6 +162,7 @@ namespace spvgentwo
 		void addName(Instruction* _pTarget, const char* _pName);
 		void addMemberName(Instruction* _pMember, const char* _pMemberName, unsigned int _memberIndex);
 
+		// get name string of instruction _pTarget that was decorated with OpName
 		const char* getName(const Instruction* _pTarget) const;
 
 		// for use with opModuleProccessed
