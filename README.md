@@ -147,7 +147,7 @@ SpvGenTwo includes a couple of CLI tools to explore and test the libraries capab
 
 ## Disassembler
 
-![SpvGenTwoDisassembler](misc/dis.png)
+![SpvGenTwoDisassembler](/misc/dis.PNG)
 
 SpvGenTwoDisassembler source can be found at [dis/source/dis.cpp](dis/source/dis.cpp), it is just a single source file demonstrating the basic parsing and IR walking capabilities of SpvGenTwo.
 
