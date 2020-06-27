@@ -64,7 +64,7 @@ target_include_directories(SpvGenTwoCommon PUBLIC "${common_includes}")
 #example project
 if(${SPVGENTWO_BUILD_EXAMPLES})
 	add_sources("example/source/*.cpp" "example_sources")
-	add_sources("example/include/*.h" "example_sources")
+	add_sources("example/include/example/*.h" "example_sources")
 	add_include_folder("example/include" "example_includes")
 
 	add_executable(SpvGenTwoExample "${example_sources}")
@@ -75,7 +75,7 @@ endif()
 #disassembler project
 if(${SPVGENTWO_BUILD_DISASSEMBLER})
 	add_sources("dis/source/*.cpp" "dis_sources")
-	add_sources("dis/include/*.h" "dis_sources")
+	add_sources("dis/include/dis/*.h" "dis_sources")
 	add_include_folder("dis/include" "dis_includes")
 
 	add_executable(SpvGenTwoDisassembler "${dis_sources}")

@@ -6,13 +6,13 @@
 #include "common/BinaryFileReader.h"
 
 // examples
-#include "OldInstrTest.h"
-#include "FunctionCall.h"
-#include "ControlFlow.h"
-#include "Extensions.h"
-#include "Types.h"
-#include "Constants.h"
-#include "ExpressionGraph.h"
+#include "example/OldInstrTest.h"
+#include "example/FunctionCall.h"
+#include "example/ControlFlow.h"
+#include "example/Extensions.h"
+#include "example/Types.h"
+#include "example/Constants.h"
+#include "example/ExpressionGraph.h"
 
 #include <stdarg.h>
 #include <assert.h>

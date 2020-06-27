@@ -1,6 +1,4 @@
-#include "OldInstrTest.h"
-
-#include <cstdio>
+#include "example/OldInstrTest.h"
 
 #include "common/HeapAllocator.h"
 #include "common/ConsoleLogger.h"
