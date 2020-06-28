@@ -205,59 +205,36 @@ namespace spvgentwo
 		template <class ... ExecModeLiteral>
 		void opExecutionMode(Instruction* _pEntryPoint, const spv::ExecutionMode _mode, ExecModeLiteral ... _args);
 
-		// TODO: OpType### instructions
-
 		void opCapability(const spv::Capability _capability);
 
-		Instruction* opLabel();
+		// TODO: OpType### instructions
 
 		Instruction* opFunction(const Flag<spv::FunctionControlMask> _functionControl, Instruction* _pResultType, Instruction* _pFuncType);
-
+		
 		Instruction* opFunctionParameter(Instruction* _pType);
-
-		void opReturn();
-
-		void opReturnValue(Instruction* _pValue);
-
+		
 		void opFunctionEnd();
 
 		template <class ... ArgInstr>
 		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ... _args);
 
+		// generic helper for opFunctionCall using Function class
 		template <class ... ArgInstr>
 		Instruction* call(Function* _pFunction, ArgInstr ... _args);
-
+		
 		// _pResultType must be of OpTypePointer
 		Instruction* opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instruction* _pInitializer = nullptr);
 
-		void opNoLine();
+		// Instruction* opImageTexelPointer(); TODO
 
-		template <class ... Decorations>
-		void opDecorate(Instruction* _pTarget, spv::Decoration _decoration, Decorations ... _decorations);
+		template <class ... Operands>
+		Instruction* opLoad(Instruction* _pPointerToVar, const Flag<spv::MemoryAccessMask> _memOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands);
 
-		template <class ... Decorations>
-		void opMemberDecorate(Instruction* _pTargetStructType, unsigned int _memberIndex, spv::Decoration _decoration, Decorations ... _decorations);
+		template <class ... Operands>
+		void opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<spv::MemoryAccessMask> _memOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands);
 
-		template <class ... Instr>
-		void opMemberId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr*..._ids);
-
-		// deduce parent form input variables
-		template <class ... VarInst>
-		Instruction* opPhi(Instruction* _pVar, VarInst* ... _variables);
-
-		Instruction* opSelect(Instruction* _pCondBool, Instruction* _pTrueObj, Instruction* _pFalseObj);
-
-		template <class ...LoopControlParams>
-		void opLoopMerge(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ... _params);
-
-		void opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control);
-
-		// label is infered from the basic block on serialization
-		void opBranch(BasicBlock* _pTargetBlock);
-
-		// label is infered from the basic block on serialization
-		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock);
-		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight);
+		// Instruction* opCopyMemory(); TODO
+		// Instruction* OpCopyMemorySized(); TODO
 
 		template <class ... Instr>
 		Instruction* opAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ... _pIndices);
@@ -268,71 +245,26 @@ namespace spvgentwo
 		template <class ... Instr>
 		Instruction* opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ... _pIndices);
 
-		template <class ... Operands>
-		Instruction* opLoad(Instruction* _pPointerToVar, const Flag<spv::MemoryAccessMask> _memOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands);
+		// Instruction* opPtrAccessChain(); TODO
+		// Instruction* opArrayLength(); TODO
+		// Instruction* OpGenericPtrMemSemantics(); TODO
+		// Instruction* OpInBoundsPtrAccessChain(); TODO
 
-		template <class ... Operands>
-		void opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<spv::MemoryAccessMask> _memOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands);
+		template <class ... Decorations>
+		void opDecorate(Instruction* _pTarget, spv::Decoration _decoration, Decorations ... _decorations);
 
-		Instruction* opOuterProduct(Instruction* _pLeft, Instruction* _pRight);
+		template <class ... Decorations>
+		void opMemberDecorate(Instruction* _pTargetStructType, unsigned int _memberIndex, spv::Decoration _decoration, Decorations ... _decorations);
 
-		Instruction* opDot(Instruction* _pLeft, Instruction* _pRight);
-
-		Instruction* opAny(Instruction* _pBoolVec);
-
-		Instruction* opAll(Instruction* _pBoolVec);
-
-		Instruction* opNot(Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpNot, _pIntVec, nullptr, "Operand of OpNot is not a scalar or vector of int type"); }
-
-		Instruction* opLogicalNot(Instruction* _pBoolVec) { return scalarVecOp(spv::Op::OpLogicalNot, _pBoolVec, nullptr, "Operand of OpLogicalNot is not a scalar or vector of bool type"); }
-
-		Instruction* opIEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpIEqual, _pLeft, _pRight, "Operand of OpIEqual is not a scalar or vector of int type"); }
-
-		Instruction* opINotEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpINotEqual, _pLeft, _pRight, "Operand of OpINotEqual is not a scalar or vector of int type"); }
-
-		Instruction* opUGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpUGreaterThan, _pLeft, _pRight, "Operand of OpUGreaterThan is not a scalar or vector of int type", false); }
-
-		Instruction* opUGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpUGreaterThanEqual, _pLeft, _pRight, "Operand of OpUGreaterThanEqual is not a scalar or vector of int type", false); }
-
-		Instruction* opSGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSGreaterThan, _pLeft, _pRight, "Operand of OpSGreaterThan is not a scalar or vector of int type", false); }
-
-		Instruction* opSGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSGreaterThanEqual, _pLeft, _pRight, "Operand of OpSGreaterThanEqual is not a scalar or vector of int type", false); }
-
-		Instruction* opULessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpULessThan, _pLeft, _pRight, "Operand of OpULessThan is not a scalar or vector of int type", false); }
-
-		Instruction* opULessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpULessThanEqual, _pLeft, _pRight, "Operand of OpULessThanEqual is not a scalar or vector of int type", false); }
-
-		Instruction* opSLessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSLessThan, _pLeft, _pRight, "Operand of OpSLessThan is not a scalar or vector of int type", false); }
-
-		Instruction* opSLessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSLessThanEqual, _pLeft, _pRight, "Operand of OpSLessThanEqual is not a scalar or vector of int type", false); }
-
-		Instruction* opFOrdEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdEqual, _pLeft, _pRight, "Operand of OpFOrdEqual is not a scalar or vector of float type"); }
-
-		Instruction* opFUnordEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordEqual, _pLeft, _pRight, "Operand of OpFUnordEqual is not a scalar or vector of float type"); }
-
-		Instruction* opFOrdNotEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdNotEqual, _pLeft, _pRight, "Operand of OpFOrdNotEqual is not a scalar or vector of float type"); }
-
-		Instruction* opFUnordNotEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordNotEqual, _pLeft, _pRight, "Operand of OpFUnordNotEqual is not a scalar or vector of float type"); }
-
-		Instruction* opFOrdLessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdLessThan, _pLeft, _pRight, "Operand of OpFOrdLessThan is not a scalar or vector of float type"); }
-
-		Instruction* opFUnordLessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordLessThan, _pLeft, _pRight, "Operand of OpFUnordLessThan is not a scalar or vector of float type"); }
-
-		Instruction* opFOrdGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdGreaterThan, _pLeft, _pRight, "Operand of OpFOrdGreaterThan is not a scalar or vector of float type"); }
-
-		Instruction* opFUnordGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordGreaterThan, _pLeft, _pRight, "Operand of OpFUnordGreaterThan is not a scalar or vector of float type"); }
-
-		Instruction* opFOrdLessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdLessThanEqual, _pLeft, _pRight, "Operand of OpFOrdLessThanEqual is not a scalar or vector of float type"); }
-
-		Instruction* opFUnordLessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordLessThanEqual, _pLeft, _pRight, "Operand of OpFUnordLessThanEqual is not a scalar or vector of float type"); }
-
-		Instruction* opFOrdGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdGreaterThanEqual, _pLeft, _pRight, "Operand of OpFOrdGreaterThanEqual is not a scalar or vector of float type"); }
-
-		Instruction* opFUnordGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordGreaterThanEqual, _pLeft, _pRight, "Operand of OpFUnordGreaterThanEqual is not a scalar or vector of float type"); }
+		// Instruction* OpDecorationGroup(); TODO
+		// Instruction* OpGroupDecorate(); TODO
+		// Instruction* OpGroupMemberDecorate(); TODO
 
 		Instruction* opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt);
 
 		Instruction* opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt);
+
+		// Instruction* OpVectorShuffle(); TODO
 
 		template <class ... ConstituentInstr>
 		Instruction* opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituents, ConstituentInstr* ... _constituents);
@@ -341,53 +273,11 @@ namespace spvgentwo
 		Instruction* opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ... _indices);
 
 		template <class ... IntIndices>
-		Instruction* opCompositeInsert(Instruction* _pComposite,  Instruction* _pValue, const unsigned int _firstIndex, IntIndices ... _indices);
+		Instruction* opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, const unsigned int _firstIndex, IntIndices ... _indices);
 
 		Instruction* opCopyObject(Instruction* _pObject);
 
 		Instruction* opTranspose(Instruction* _pMatrix);
-
-		Instruction* opSNegate(Instruction* _pSignedInt) { return scalarVecOp(spv::Op::OpSNegate, _pSignedInt, nullptr, "Operand of OpSNegate is not a scalar or vector of int type"); }
-
-		Instruction* opFNegate(Instruction* _pFloat) { return scalarVecOp(spv::Op::OpFNegate, _pFloat, nullptr, "Operand of OpFNegate is not a scalar or vector of float type"); }
-
-		Instruction* opIAdd(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpIAdd, _pLeft, _pRight, "Operand of opIAdd is not a scalar or vector of int type"); }
-
-		Instruction* opFAdd(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFAdd, _pLeft, _pRight, "Operand of OpFAdd is not a scalar or vector of float type"); }
-
-		Instruction* opISub(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpISub, _pLeft, _pRight, "Operand of OpISub is not a scalar or vector of int type"); }
-
-		Instruction* opFSub(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFSub, _pLeft, _pRight, "Operand of OpFSub is not a scalar or vector of float type"); }
-
-		Instruction* opIMul(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpIMul, _pLeft, _pRight, "Operand of OpIMul is not a scalar or vector of int type"); }
-
-		Instruction* opFMul(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFMul, _pLeft, _pRight, "Operand of OpFMul is not a scalar or vector of float type"); }
-		
-		Instruction* opUDiv(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpUDiv, _pLeft, _pRight, "Operand of OpUDiv is not a scalar or vector of unsigned int type"); }
-
-		Instruction* opSDiv(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSDiv, _pLeft, _pRight, "Operand of OpSDiv is not a scalar or vector of signed int type", false); }
-
-		Instruction* opFDiv(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFDiv, _pLeft, _pRight, "Operand of OpFDiv is not a scalar or vector of float type"); }
-		
-		Instruction* opUMod(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpUMod, _pLeft, _pRight, "Operand of OpUMod is not a scalar or vector of unsigned int type"); }
-
-		Instruction* opSMod(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSMod, _pLeft, _pRight, "Operand of OpSMod is not a scalar or vector of int type", false); }
-
-		Instruction* opFMod(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFMod, _pLeft, _pRight, "Operand of OpFMod is not a scalar or vector of float type"); }
-
-		Instruction* opSRem(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSRem, _pLeft, _pRight, "Operand of OpSRem is not a scalar or vector of int type", false); }
-		
-		Instruction* opFRem(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFRem, _pLeft, _pRight, "Operand of OpFRem is not a scalar or vector of float type"); }
-		
-		Instruction* opVectorTimesScalar(Instruction* _pVector, Instruction* _pScalar);
-
-		Instruction* opMatrixTimesScalar(Instruction* _pMatrix, Instruction* _pScalar);
-
-		Instruction* opVectorTimesMatrix(Instruction* _pVector, Instruction* _pMatrix);
-
-		Instruction* opMatrixTimesVector(Instruction* _pMatrix, Instruction* _pVector);
-
-		Instruction* opMatrixTimesMatrix(Instruction* _pLeft, Instruction* _pRight);
 
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
@@ -499,6 +389,24 @@ namespace spvgentwo
 
 #pragma endregion
 
+		// Just need alias func to opImageSample
+		// Instruction* OpImageFetch(); TODO
+		// Instruction* OpImageGather(); TODO
+		// Instruction* OpImageDrefGather(); TODO
+
+		// Instruction* OpImageRead(); TODO
+		// Instruction* OpImageWrite(); TODO
+		// Instruction* OpImage(); TODO
+		// Instruction* OpImageQueryFormat(); TODO
+
+		// Instruction* OpImageQueryFormat(); TODO
+		// Instruction* OpImageQueryOrder(); TODO
+		// Instruction* OpImageQuerySizeLod(); TODO
+		// Instruction* OpImageQuerySize(); TODO
+		// Instruction* OpImageQueryLod(); TODO
+		// Instruction* OpImageQueryLevels(); TODO
+		// Instruction* OpImageQuerySamples(); TODO
+
 		Instruction* opConvertFToU(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpConvertFToU, _pFloatVec, nullptr, "Operand of OpConvertFToU is not a scalar or vector of float type", false); }
 
 		Instruction* opConvertFToS(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpConvertFToS, _pFloatVec, nullptr, "Operand of OpConvertFToS is not a scalar or vector of float type", false); }
@@ -518,10 +426,144 @@ namespace spvgentwo
 
 		Instruction* opConvertPtrToU(Instruction* _pPhysPtr, unsigned int _bitWidth);
 
+		// Instruction* OpSatConvertSToU(); TODO
+		// Instruction* OpSatConvertUToS(); TODO
+		// Instruction* OpConvertUToPtr(); TODO
+		// Instruction* OpPtrCastToGeneric(); TODO
+		// Instruction* OpGenericCastToPtr(); TODO
+		// Instruction* OpGenericCastToPtrExplicit(); TODO
+
 		Instruction* opBitcast(Instruction* _pResultType, Instruction* _pOperand);
 
 		template<class T> // generic version of opBitcast, generates spv type from T
 		Instruction* bitcast(Instruction* _pOperand);
+
+		Instruction* opSNegate(Instruction* _pSignedInt) { return scalarVecOp(spv::Op::OpSNegate, _pSignedInt, nullptr, "Operand of OpSNegate is not a scalar or vector of int type"); }
+
+		Instruction* opFNegate(Instruction* _pFloat) { return scalarVecOp(spv::Op::OpFNegate, _pFloat, nullptr, "Operand of OpFNegate is not a scalar or vector of float type"); }
+
+		Instruction* opIAdd(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpIAdd, _pLeft, _pRight, "Operand of opIAdd is not a scalar or vector of int type"); }
+
+		Instruction* opFAdd(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFAdd, _pLeft, _pRight, "Operand of OpFAdd is not a scalar or vector of float type"); }
+
+		Instruction* opISub(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpISub, _pLeft, _pRight, "Operand of OpISub is not a scalar or vector of int type"); }
+
+		Instruction* opFSub(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFSub, _pLeft, _pRight, "Operand of OpFSub is not a scalar or vector of float type"); }
+
+		Instruction* opIMul(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpIMul, _pLeft, _pRight, "Operand of OpIMul is not a scalar or vector of int type"); }
+
+		Instruction* opFMul(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFMul, _pLeft, _pRight, "Operand of OpFMul is not a scalar or vector of float type"); }
+
+		Instruction* opUDiv(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpUDiv, _pLeft, _pRight, "Operand of OpUDiv is not a scalar or vector of unsigned int type"); }
+
+		Instruction* opSDiv(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSDiv, _pLeft, _pRight, "Operand of OpSDiv is not a scalar or vector of signed int type", false); }
+
+		Instruction* opFDiv(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFDiv, _pLeft, _pRight, "Operand of OpFDiv is not a scalar or vector of float type"); }
+
+		Instruction* opUMod(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpUMod, _pLeft, _pRight, "Operand of OpUMod is not a scalar or vector of unsigned int type"); }
+
+		Instruction* opSRem(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSRem, _pLeft, _pRight, "Operand of OpSRem is not a scalar or vector of int type", false); }
+
+		Instruction* opSMod(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSMod, _pLeft, _pRight, "Operand of OpSMod is not a scalar or vector of int type", false); }
+
+		Instruction* opFRem(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFRem, _pLeft, _pRight, "Operand of OpFRem is not a scalar or vector of float type"); }
+
+		Instruction* opFMod(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFMod, _pLeft, _pRight, "Operand of OpFMod is not a scalar or vector of float type"); }
+
+		Instruction* opLabel();
+
+		void opReturn();
+
+		void opReturnValue(Instruction* _pValue);
+
+		void opNoLine();
+
+		template <class ... Instr>
+		void opDecorateId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr*..._ids);
+
+		// deduce parent form input variables
+		template <class ... VarInst>
+		Instruction* opPhi(Instruction* _pVar, VarInst* ... _variables);
+
+		Instruction* opSelect(Instruction* _pCondBool, Instruction* _pTrueObj, Instruction* _pFalseObj);
+
+		template <class ...LoopControlParams>
+		void opLoopMerge(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ... _params);
+
+		void opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control);
+
+		// label is infered from the basic block on serialization
+		void opBranch(BasicBlock* _pTargetBlock);
+
+		// label is infered from the basic block on serialization
+		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock);
+		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight);
+
+		Instruction* opOuterProduct(Instruction* _pLeft, Instruction* _pRight);
+
+		Instruction* opDot(Instruction* _pLeft, Instruction* _pRight);
+
+		Instruction* opAny(Instruction* _pBoolVec);
+
+		Instruction* opAll(Instruction* _pBoolVec);
+
+		Instruction* opNot(Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpNot, _pIntVec, nullptr, "Operand of OpNot is not a scalar or vector of int type"); }
+
+		Instruction* opLogicalNot(Instruction* _pBoolVec) { return scalarVecOp(spv::Op::OpLogicalNot, _pBoolVec, nullptr, "Operand of OpLogicalNot is not a scalar or vector of bool type"); }
+
+		Instruction* opIEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpIEqual, _pLeft, _pRight, "Operand of OpIEqual is not a scalar or vector of int type"); }
+
+		Instruction* opINotEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpINotEqual, _pLeft, _pRight, "Operand of OpINotEqual is not a scalar or vector of int type"); }
+
+		Instruction* opUGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpUGreaterThan, _pLeft, _pRight, "Operand of OpUGreaterThan is not a scalar or vector of int type", false); }
+
+		Instruction* opUGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpUGreaterThanEqual, _pLeft, _pRight, "Operand of OpUGreaterThanEqual is not a scalar or vector of int type", false); }
+
+		Instruction* opSGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSGreaterThan, _pLeft, _pRight, "Operand of OpSGreaterThan is not a scalar or vector of int type", false); }
+
+		Instruction* opSGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSGreaterThanEqual, _pLeft, _pRight, "Operand of OpSGreaterThanEqual is not a scalar or vector of int type", false); }
+
+		Instruction* opULessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpULessThan, _pLeft, _pRight, "Operand of OpULessThan is not a scalar or vector of int type", false); }
+
+		Instruction* opULessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpULessThanEqual, _pLeft, _pRight, "Operand of OpULessThanEqual is not a scalar or vector of int type", false); }
+
+		Instruction* opSLessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSLessThan, _pLeft, _pRight, "Operand of OpSLessThan is not a scalar or vector of int type", false); }
+
+		Instruction* opSLessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpSLessThanEqual, _pLeft, _pRight, "Operand of OpSLessThanEqual is not a scalar or vector of int type", false); }
+
+		Instruction* opFOrdEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdEqual, _pLeft, _pRight, "Operand of OpFOrdEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordEqual, _pLeft, _pRight, "Operand of OpFUnordEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdNotEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdNotEqual, _pLeft, _pRight, "Operand of OpFOrdNotEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordNotEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordNotEqual, _pLeft, _pRight, "Operand of OpFUnordNotEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdLessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdLessThan, _pLeft, _pRight, "Operand of OpFOrdLessThan is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordLessThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordLessThan, _pLeft, _pRight, "Operand of OpFUnordLessThan is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdGreaterThan, _pLeft, _pRight, "Operand of OpFOrdGreaterThan is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordGreaterThan(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordGreaterThan, _pLeft, _pRight, "Operand of OpFUnordGreaterThan is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdLessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdLessThanEqual, _pLeft, _pRight, "Operand of OpFOrdLessThanEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordLessThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordLessThanEqual, _pLeft, _pRight, "Operand of OpFUnordLessThanEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFOrdGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdGreaterThanEqual, _pLeft, _pRight, "Operand of OpFOrdGreaterThanEqual is not a scalar or vector of float type"); }
+
+		Instruction* opFUnordGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordGreaterThanEqual, _pLeft, _pRight, "Operand of OpFUnordGreaterThanEqual is not a scalar or vector of float type"); }
+	
+		Instruction* opVectorTimesScalar(Instruction* _pVector, Instruction* _pScalar);
+
+		Instruction* opMatrixTimesScalar(Instruction* _pMatrix, Instruction* _pScalar);
+
+		Instruction* opVectorTimesMatrix(Instruction* _pVector, Instruction* _pMatrix);
+
+		Instruction* opMatrixTimesVector(Instruction* _pMatrix, Instruction* _pVector);
+
+		Instruction* opMatrixTimesMatrix(Instruction* _pLeft, Instruction* _pRight);
 
 		template <class ...Args>
 		Instruction* opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, Args&& ..._instrOperands);
@@ -688,7 +730,7 @@ namespace spvgentwo
 	}
 
 	template<class ...Instr>
-	inline void Instruction::opMemberId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr* ..._ids)
+	inline void Instruction::opDecorateId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr* ..._ids)
 	{
 		makeOp(spv::Op::OpDecorateId, _pTarget, _decoration, _ids...);
 	}
