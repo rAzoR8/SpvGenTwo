@@ -400,8 +400,23 @@ Core SPIR-V IR generation progress, parsing is independent and auto generated. T
 | OpKill | &#9744; |
 | OpReturn | &#10004; |
 | OpReturnValue | &#10004; |
+| OpUnreachable | &#9744; |
+| OpNoLine | &#10004; |
+| OpAtomicFlagTestAndSet | &#9744; |
+| OpAtomicFlagClear | &#9744; |
+| OpImageSparseRead | &#9744; |
+| OpSizeOf | &#10004; |
+| OpTypePipeStorage | &#9744; |
+| OpConstantPipeStorage | via `Module::addConstant()` |
+| OpCreatePipeFromPipeStorage | &#9744; |
+| OpGetKernelLocalSizeForSubgroupCount | &#9744; |
+| OpGetKernelMaxNumSubgroups | &#9744; |
+| OpTypeNamedBarrier | via `Module::addType()` |
+| OpNamedBarrierInitialize | &#9744; |
+| OpModuleProcessed | &#9744; |
+| OpExecutionModeId | &#9744; |
+| OpDecorateId | &#10004; |
 | ... | ... |
-
 GLSL.450 Progress:
 
 | Instruction | Implemented  |
