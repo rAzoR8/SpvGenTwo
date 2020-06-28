@@ -298,6 +298,25 @@ Core SPIR-V IR generation progress, parsing is independent and auto generated. T
 | OpSMod | [x] |
 | OpFRem | [x] |
 | OpFMod | [x] |
+| OpVectorTimesScalar | [x] |
+| OpMatrixTimesScalar | [x] |
+| OpVectorTimesMatrix | [x] |
+| OpMatrixTimesVector | [x] |
+| OpMatrixTimesMatrix | [x] |
+| OpOuterProduct | [x] |
+| OpDot | [x] |
+| OpIAddCarry | [ ] |
+| OpISubBorrow | [ ] |
+| OpUMulExtended | [ ] |
+| OpSMulExtended | [ ] |
+| OpAny | [x] |
+| OpAll | [x] |
+| OpIsNan | [ ] |
+| OpIsInf | [ ] |
+| OpIsFinite | [ ] |
+| OpIsNormal | [ ] |
+| OpSignBitSet | [ ] |
+| OpLessOrGreater | [ ] |
 | ... | ... |
 
 

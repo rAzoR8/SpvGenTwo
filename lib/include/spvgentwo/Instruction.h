@@ -209,6 +209,12 @@ namespace spvgentwo
 
 		// TODO: OpType### instructions
 
+		template <class ...Args>
+		Instruction* opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, Args&& ..._instrOperands);
+
+		// convert this instruction to its OpSpecConstantOp variant
+		Instruction* toSpecOp();
+
 		Instruction* opFunction(const Flag<spv::FunctionControlMask> _functionControl, Instruction* _pResultType, Instruction* _pFuncType);
 		
 		Instruction* opFunctionParameter(Instruction* _pType);
@@ -470,6 +476,36 @@ namespace spvgentwo
 
 		Instruction* opFMod(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFMod, _pLeft, _pRight, "Operand of OpFMod is not a scalar or vector of float type"); }
 
+		Instruction* opVectorTimesScalar(Instruction* _pVector, Instruction* _pScalar);
+
+		Instruction* opMatrixTimesScalar(Instruction* _pMatrix, Instruction* _pScalar);
+
+		Instruction* opVectorTimesMatrix(Instruction* _pVector, Instruction* _pMatrix);
+
+		Instruction* opMatrixTimesVector(Instruction* _pMatrix, Instruction* _pVector);
+
+		Instruction* opMatrixTimesMatrix(Instruction* _pLeft, Instruction* _pRight);
+
+		Instruction* opOuterProduct(Instruction* _pLeft, Instruction* _pRight);
+
+		Instruction* opDot(Instruction* _pLeft, Instruction* _pRight);
+
+		// Instruction* OpIAddCarry(); TODO
+		// Instruction* OpISubBorrow(); TODO
+		// Instruction* OpUMulExtended(); TODO
+		// Instruction* OpSMulExtended(); TODO
+
+		Instruction* opAny(Instruction* _pBoolVec);
+
+		Instruction* opAll(Instruction* _pBoolVec);
+
+		// Instruction* OpIsNan(); TODO
+		// Instruction* OpIsInf(); TODO
+		// Instruction* OpIsFinite(); TODO
+		// Instruction* OpIsNormal(); TODO
+		// Instruction* OpSignBitSet(); TODO
+		// Instruction* OpLessOrGreater(); TODO
+
 		Instruction* opLabel();
 
 		void opReturn();
@@ -498,14 +534,6 @@ namespace spvgentwo
 		// label is infered from the basic block on serialization
 		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock);
 		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight);
-
-		Instruction* opOuterProduct(Instruction* _pLeft, Instruction* _pRight);
-
-		Instruction* opDot(Instruction* _pLeft, Instruction* _pRight);
-
-		Instruction* opAny(Instruction* _pBoolVec);
-
-		Instruction* opAll(Instruction* _pBoolVec);
 
 		Instruction* opNot(Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpNot, _pIntVec, nullptr, "Operand of OpNot is not a scalar or vector of int type"); }
 
@@ -555,22 +583,6 @@ namespace spvgentwo
 
 		Instruction* opFUnordGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordGreaterThanEqual, _pLeft, _pRight, "Operand of OpFUnordGreaterThanEqual is not a scalar or vector of float type"); }
 	
-		Instruction* opVectorTimesScalar(Instruction* _pVector, Instruction* _pScalar);
-
-		Instruction* opMatrixTimesScalar(Instruction* _pMatrix, Instruction* _pScalar);
-
-		Instruction* opVectorTimesMatrix(Instruction* _pVector, Instruction* _pMatrix);
-
-		Instruction* opMatrixTimesVector(Instruction* _pMatrix, Instruction* _pVector);
-
-		Instruction* opMatrixTimesMatrix(Instruction* _pLeft, Instruction* _pRight);
-
-		template <class ...Args>
-		Instruction* opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, Args&& ..._instrOperands);
-
-		// convert this instruction to its OpSpecConstantOp variant
-		Instruction* toSpecOp();
-
 	private:
 		// return error instr
 		Instruction* error() const;
