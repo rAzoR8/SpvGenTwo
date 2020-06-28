@@ -159,12 +159,13 @@ namespace spvgentwo
 		//
 		// SPIR-V OPERATIONS
 		//
+		// all instructions generating a result id return a pointer to this instruction for reference (passing to other instruction operand)
 
 		void opNop();
 
 		Instruction* opUndef(Instruction* _pResultType);
 
-		Instruction* opSizeOf(Instruction* _pPointerToVar);
+		Instruction* opSizeOf(Instruction* _pPointerToVar);  // Move down
 
 		void opSourceContinued(const char* _pSourceText);
 
@@ -172,11 +173,16 @@ namespace spvgentwo
 
 		void opSourceExtension(const char* _pExtensionName);
 
-		// instruction generators:
-		// all instructions generating a result id return a pointer to this instruction for reference (passing to other instruction operand)
-		void opCapability(const spv::Capability _capability);
+		void opName(Instruction* _pTarget, const char* _pName);
 
-		void opMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
+		void opMemberName(Instruction* _pTargetStructType, unsigned int _memberIndex, const char* _pName);
+
+		Instruction* opString(const char* _str);
+
+		void opLine(Instruction* _pFileString, unsigned int _line, unsigned int _column);
+
+		// helper variant the turns _pFileString into opString Instruction*
+		void opLine(const char* _pFileString, unsigned int _line, unsigned int _column);
 
 		void opExtension(const char* _pExtName);
 
@@ -188,6 +194,20 @@ namespace spvgentwo
 
 		template <class ...Operands>
 		Instruction* opExtInst(Instruction* _pResultType, const char* _pExtName, unsigned int _instOpCode, Operands ... _operands);
+
+		void opMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
+
+		//  _pFunction is result of opFunction
+		template <class ... Instr>
+		void opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr ... _instr);
+
+		// _pEntryPoint is result of opFunction (_pFunction operand of opEntryPoint)
+		template <class ... ExecModeLiteral>
+		void opExecutionMode(Instruction* _pEntryPoint, const spv::ExecutionMode _mode, ExecModeLiteral ... _args);
+
+		// TODO: OpType### instructions
+
+		void opCapability(const spv::Capability _capability);
 
 		Instruction* opLabel();
 
@@ -207,23 +227,8 @@ namespace spvgentwo
 		template <class ... ArgInstr>
 		Instruction* call(Function* _pFunction, ArgInstr ... _args);
 
-		//  _pFunction is result of opFunction
-		template <class ... Instr>
-		void opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr ... _instr);
-
 		// _pResultType must be of OpTypePointer
 		Instruction* opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instruction* _pInitializer = nullptr);
-
-		void opName(Instruction* _pTarget, const char* _pName);
-
-		void opMemberName(Instruction* _pTargetStructType, unsigned int _memberIndex, const char* _pName);
-
-		Instruction* opString(const char* _str);
-
-		void opLine(Instruction* _pFileString, unsigned int _line, unsigned int _column);
-
-		// helper variant the turns _pFileString into opString Instruction*
-		void opLine(const char* _pFileString, unsigned int _line, unsigned int _column);
 
 		void opNoLine();
 
@@ -662,6 +667,12 @@ namespace spvgentwo
 	inline void Instruction::opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr ..._instr)
 	{
 		makeOp(spv::Op::OpEntryPoint, _model, _pFunction, _pName, _instr...);
+	}
+
+	template<class ...ExecModeLiteral>
+	inline void Instruction::opExecutionMode(Instruction* _pEntryPoint, const spv::ExecutionMode _mode, ExecModeLiteral ..._args)
+	{
+		makeOp(spv::Op::OpExecutionMode, _pEntryPoint, _mode, _args...);
 	}
 
 	template<class ...Decorations>

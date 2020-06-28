@@ -18,6 +18,7 @@ I mainly focused on Shader capabilities, so the Kernel and OpenCL side is a bit 
 * [Contributing](#Contributing)
 * [Copyright and Licensing](#Copyright-and-Licensing)
 * [Roadmap](#Roadmap)
+* [Coverage](#Coverage)
 
 # Examples
 
@@ -187,3 +188,32 @@ A list of short and long term goals for this library:
 * Write unit tests
 * Implement [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools) like helper tools
 * Implement some front-end or DSL like [SPEAR](https://github.com/rAzoR8/SPEAR)
+
+# Coverage
+
+Core SPIR-V progress:
+
+| Instruction | Implemented  |
+|---|---|
+| OpNop | [x] |
+| OpUndef | [x] |
+| OpSourceContinued | [x] |
+| OpSource | [x] |
+| OpSourceExtension | [x] |
+| OpName | [x] |
+| OpMemberName | [x] |
+| OpString | [x] |
+| OpLine | [x] |
+| OpExtension | [x] |
+| OpExtInstImport | [x] |
+| OpExtInst | [x] |
+| OpMemoryModel | [x] |
+| OpEntryPoint | [x] |
+| opExecutionMode | [x] |
+| OpCapability | [x] |
+| ... | ... |
+
+GLSL.450 Progress:
+
+| Instruction | Implemented  |
+|---|---|
