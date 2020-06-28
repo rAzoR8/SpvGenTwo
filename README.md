@@ -19,6 +19,9 @@ I mainly focused on Shader capabilities, so the Kernel and OpenCL side is a bit 
 * [Copyright and Licensing](#Copyright-and-Licensing)
 * [Roadmap](#Roadmap)
 * [Coverage](#Coverage)
+    * [Core](#Core)
+    * [GLSL.std.450](#GLSL.std.450)
+    * [OpenCl.std.100](#OpenCl.std.100)
 
 # Examples
 
