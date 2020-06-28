@@ -195,213 +195,212 @@ Core SPIR-V IR generation progress, parsing is independent and auto generated. T
 
 | Instruction | Implemented  |
 |---|---|
-| OpNop | [x] |
-| OpUndef | [x] |
-| OpSourceContinued | [x] |
-| OpSource | [x] |
-| OpSourceExtension | [x] |
-| OpName | [x] |
-| OpMemberName | [x] |
-| OpString | [x] |
-| OpLine | [x] |
-| OpExtension | [x] |
-| OpExtInstImport | [x] |
-| OpExtInst | [x] |
-| OpMemoryModel | [x] |
-| OpEntryPoint | [x] |
-| opExecutionMode | [x] |
-| OpCapability | [x] |
+| OpNop | &#10004;  |
+| OpUndef | &#10004; |
+| OpSourceContinued | &#10004; |
+| OpSource | &#10004; |
+| OpSourceExtension | &#10004; |
+| OpName | &#10004; |
+| OpMemberName | &#10004; |
+| OpString | &#10004; |
+| OpLine | &#10004; |
+| OpExtension | &#10004; |
+| OpExtInstImport | &#10004; |
+| OpExtInst | &#10004; |
+| OpMemoryModel | &#10004; |
+| OpEntryPoint | &#10004; |
+| opExecutionMode | &#10004; |
+| OpCapability | &#10004; |
 | OpTypeXXX | via `Module::addType()` |
 | OpConstantXXX | via `Module::addConstant()` |
 | OpSpecConstantXXX | via `Module::addConstant()` |
-| OpSpecConstantOp | [x] |
-| OpFunction | [x] |
-| OpFunctionParameter | [x] |
-| OpFunctionEnd | [x] |
-| OpFunctionCall | [x] |
-| OpVariable | [x] |
-| OpImageTexelPointer | [ ] |
-| OpLoad | [x] |
-| OpStore | [x] |
-| OpCopyMemory | [ ] |
-| OpCopyMemorySized | [ ] |
-| OpAccessChain | [x] |
-| OpInBoundsAccessChain | [x] |
-| OpPtrAccessChain | [ ] |
-| OpArrayLength | [ ] |
-| OpGenericPtrMemSemantics | [ ] |
-| OpInBoundsPtrAccessChain | [ ] |
-| OpDecorate | [x] |
-| OpMemberDecorate | [x] |
-| OpDecorationGroup | [ ] |
-| OpGroupDecorate | [ ] |
-| OpGroupMemberDecorate | [ ] |
-| OpVectorExtractDynamic | [x] |
-| OpVectorInsertDynamic | [x] |
-| OpVectorShuffle | [ ] |
-| OpCompositeConstruct | [x] |
-| OpCompositeExtract | [x] |
-| OpCompositeInsert | [x] |
-| OpCopyObject | [x] |
-| OpTranspose | [x] |
-| OpSampledImage | [x] |
-| OpImageSampleImplicitLod | [x] |
-| OpImageSampleExplicitLod | [x] |
-| OpImageSampleDrefImplicitLod | [x] |
-| OpImageSampleDrefExplicitLod | [x] |
-| OpImageSampleProjImplicitLod | [x] |
-| OpImageSampleProjExplicitLod | [x] |
-| OpImageSampleProjDrefImplicitLod | [x] |
-| OpImageSampleProjDrefExplicitLod | [x] |
+| OpSpecConstantOp | &#10004; |
+| OpFunction | &#10004; |
+| OpFunctionParameter | &#10004; |
+| OpFunctionEnd | &#10004; |
+| OpFunctionCall | &#10004; |
+| OpVariable | &#10004; |
+| OpImageTexelPointer | &#9744; |
+| OpLoad | &#10004; |
+| OpStore | &#10004; |
+| OpCopyMemory | &#9744; |
+| OpCopyMemorySized | &#9744; |
+| OpAccessChain | &#10004; |
+| OpInBoundsAccessChain | &#10004; |
+| OpPtrAccessChain | &#9744; |
+| OpArrayLength | &#9744; |
+| OpGenericPtrMemSemantics | &#9744; |
+| OpInBoundsPtrAccessChain | &#9744; |
+| OpDecorate | &#10004; |
+| OpMemberDecorate | &#10004; |
+| OpDecorationGroup | &#9744; |
+| OpGroupDecorate | &#9744; |
+| OpGroupMemberDecorate | &#9744; |
+| OpVectorExtractDynamic | &#10004; |
+| OpVectorInsertDynamic | &#10004; |
+| OpVectorShuffle | &#9744; |
+| OpCompositeConstruct | &#10004; |
+| OpCompositeExtract | &#10004; |
+| OpCompositeInsert | &#10004; |
+| OpCopyObject | &#10004; |
+| OpTranspose | &#10004; |
+| OpSampledImage | &#10004; |
+| OpImageSampleImplicitLod | &#10004; |
+| OpImageSampleExplicitLod | &#10004; |
+| OpImageSampleDrefImplicitLod | &#10004; |
+| OpImageSampleDrefExplicitLod | &#10004; |
+| OpImageSampleProjImplicitLod | &#10004; |
+| OpImageSampleProjExplicitLod | &#10004; |
+| OpImageSampleProjDrefImplicitLod | &#10004; |
+| OpImageSampleProjDrefExplicitLod | &#10004; |
 | OpImageFetch | via generic `opImageSample` |
 | OpImageGather | via generic `opImageSample` |
 | OpImageDrefGather | via generic `opImageSample` |
-| OpImageRead | [ ] |
-| OpImageWrite | [ ] |
-| OpImage | [ ] |
-| OpImageQueryFormat | [ ] |
-| OpImageQueryOrder | [ ] |
-| OpImageQuerySizeLod | [ ] |
-| OpImageQuerySize | [ ] |
-| OpImageQueryLod | [ ] |
-| OpImageQueryLevels | [ ] |
-| OpImageQuerySamples | [ ] |
-| OpConvertFToU | [x] |
-| OpConvertFToS | [x] |
-| OpConvertSToF | [x] |
-| OpConvertUToF | [x] |
-| OpUConvert | [x] |
-| OpSConvert | [x] |
-| OpFConvert | [x] |
-| OpQuantizeToF16 | [x] |
-| OpConvertPtrToU | [x] |
-| OpSatConvertSToU | [ ] |
-| OpSatConvertUToS | [ ] |
-| OpConvertUToPtr | [ ] |
-| OpPtrCastToGeneric | [ ] |
-| OpGenericCastToPtr | [ ] |
-| OpGenericCastToPtrExplicit | [ ] |
-| OpBitcast | [x] |
-| OpSNegate | [x] |
-| OpFNegate | [x] |
-| OpIAdd | [x] |
-| OpFAdd | [x] |
-| OpISub | [x] |
-| OpFSub | [x] |
-| OpIMul | [x] |
-| OpFMul | [x] |
-| OpUDiv | [x] |
-| OpSDiv | [x] |
-| OpFDiv | [x] |
-| OpUMod | [x] |
-| OpSRem | [x] |
-| OpSMod | [x] |
-| OpFRem | [x] |
-| OpFMod | [x] |
-| OpVectorTimesScalar | [x] |
-| OpMatrixTimesScalar | [x] |
-| OpVectorTimesMatrix | [x] |
-| OpMatrixTimesVector | [x] |
-| OpMatrixTimesMatrix | [x] |
-| OpOuterProduct | [x] |
-| OpDot | [x] |
-| OpIAddCarry | [ ] |
-| OpISubBorrow | [ ] |
-| OpUMulExtended | [ ] |
-| OpSMulExtended | [ ] |
-| OpAny | [x] |
-| OpAll | [x] |
-| OpIsNan | [ ] |
-| OpIsInf | [ ] |
-| OpIsFinite | [ ] |
-| OpIsNormal | [ ] |
-| OpSignBitSet | [ ] |
-| OpLessOrGreater | [ ] |
-| OpOrdered | [ ] |
-| OpUnordered | [ ] |
-| OpLogicalEqual | [ ] |
-| OpLogicalNotEqual | [ ] |
-| OpLogicalOr | [ ] |
-| OpLogicalAnd | [ ] |
-| OpLogicalNot | [x] |
-| OpSelect | [x] |
-| OpIEqual | [x] |
-| OpINotEqual | [x] |
-| OpUGreaterThan | [x] |
-| OpSGreaterThan | [x] |
-| OpUGreaterThanEqual | [x] |
-| OpSGreaterThanEqual | [x] |
-| OpULessThan | [x] |
-| OpSLessThan | [x] |
-| OpULessThanEqual | [x] |
-| OpSLessThanEqual | [x] |
-| OpFOrdEqual | [x] |
-| OpFUnordEqual | [x] |
-| OpFOrdNotEqual | [x] |
-| OpFUnordNotEqual | [x] |
-| OpFOrdLessThan | [x] |
-| OpFUnordLessThan | [x] |
-| OpFOrdGreaterThan | [x] |
-| OpFUnordGreaterThan | [x] |
-| OpFOrdLessThanEqual | [x] |
-| OpFUnordLessThanEqual | [x] |
-| OpFOrdGreaterThanEqual | [x] |
-| OpFUnordGreaterThanEqual | [x] |
-| OpShiftRightLogical | [ ] |
-| OpShiftRightArithmetic | [ ] |
-| OpShiftLeftLogical | [ ] |
-| OpBitwiseOr | [ ] |
-| OpBitwiseXor | [ ] |
-| OpBitwiseAnd | [ ] |
-| OpNot | [x] |
-| OpBitFieldInsert | [ ] |
-| OpBitFieldSExtract | [ ] |
-| OpBitFieldUExtract | [ ] |
-| OpBitReverse | [ ] |
-| OpBitCount | [ ] |
-| OpDPdx | [ ] |
-| OpDPdy | [ ] |
-| OpFwidth | [ ] |
-| OpDPdxFine | [ ] |
-| OpDPdyFine | [ ] |
-| OpFwidthFine | [ ] |
-| OpDPdxCoarse | [ ] |
-| OpDPdyCoarse | [ ] |
-| OpFwidthCoarse | [ ] |
-| OpEmitVertex | [ ] |
-| OpEndPrimitive | [ ] |
-| OpEmitStreamVertex | [ ] |
-| OpEndStreamPrimitive | [ ] |
-| OpControlBarrier | [ ] |
-| OpMemoryBarrier | [ ] |
-| OpAtomicLoad | [ ] |
-| OpAtomicStore | [ ] |
-| OpAtomicExchange | [ ] |
-| OpAtomicCompareExchange | [ ] |
-| OpAtomicCompareExchangeWeak | [ ] |
-| OpAtomicIIncrement | [ ] |
-| OpAtomicIDecrement | [ ] |
-| OpAtomicIAdd | [ ] |
-| OpAtomicISub | [ ] |
-| OpAtomicSMin | [ ] |
-| OpAtomicUMin | [ ] |
-| OpAtomicSMax | [ ] |
-| OpAtomicUMax | [ ] |
-| OpAtomicAnd | [ ] |
-| OpAtomicOr | [ ] |
-| OpAtomicXor | [ ] |
-| OpPhi | [x] |
-| OpLoopMerge | [x] |
-| OpSelectionMerge | [x] |
-| OpLabel | [x] |
-| OpBranch | [x] |
-| OpBranchConditional | [x] |
-| OpSwitch | [ ] |
-| OpKill | [ ] |
-| OpReturn | [x] |
-| OpReturnValue | [x] |
+| OpImageRead | &#9744; |
+| OpImageWrite | &#9744; |
+| OpImage | &#9744; |
+| OpImageQueryFormat | &#9744; |
+| OpImageQueryOrder | &#9744; |
+| OpImageQuerySizeLod | &#9744; |
+| OpImageQuerySize | &#9744; |
+| OpImageQueryLod | &#9744; |
+| OpImageQueryLevels | &#9744; |
+| OpImageQuerySamples | &#9744; |
+| OpConvertFToU | &#10004; |
+| OpConvertFToS | &#10004; |
+| OpConvertSToF | &#10004; |
+| OpConvertUToF | &#10004; |
+| OpUConvert | &#10004; |
+| OpSConvert | &#10004; |
+| OpFConvert | &#10004; |
+| OpQuantizeToF16 | &#10004; |
+| OpConvertPtrToU | &#10004; |
+| OpSatConvertSToU | &#9744; |
+| OpSatConvertUToS | &#9744; |
+| OpConvertUToPtr | &#9744; |
+| OpPtrCastToGeneric | &#9744; |
+| OpGenericCastToPtr | &#9744; |
+| OpGenericCastToPtrExplicit | &#9744; |
+| OpBitcast | &#10004; |
+| OpSNegate | &#10004; |
+| OpFNegate | &#10004; |
+| OpIAdd | &#10004; |
+| OpFAdd | &#10004; |
+| OpISub | &#10004; |
+| OpFSub | &#10004; |
+| OpIMul | &#10004; |
+| OpFMul | &#10004; |
+| OpUDiv | &#10004; |
+| OpSDiv | &#10004; |
+| OpFDiv | &#10004; |
+| OpUMod | &#10004; |
+| OpSRem | &#10004; |
+| OpSMod | &#10004; |
+| OpFRem | &#10004; |
+| OpFMod | &#10004; |
+| OpVectorTimesScalar | &#10004; |
+| OpMatrixTimesScalar | &#10004; |
+| OpVectorTimesMatrix | &#10004; |
+| OpMatrixTimesVector | &#10004; |
+| OpMatrixTimesMatrix | &#10004; |
+| OpOuterProduct | &#10004; |
+| OpDot | &#10004; |
+| OpIAddCarry | &#9744; |
+| OpISubBorrow | &#9744; |
+| OpUMulExtended | &#9744; |
+| OpSMulExtended | &#9744; |
+| OpAny | &#10004; |
+| OpAll | &#10004; |
+| OpIsNan | &#9744; |
+| OpIsInf | &#9744; |
+| OpIsFinite | &#9744; |
+| OpIsNormal | &#9744; |
+| OpSignBitSet | &#9744; |
+| OpLessOrGreater | &#9744; |
+| OpOrdered | &#9744; |
+| OpUnordered | &#9744; |
+| OpLogicalEqual | &#9744; |
+| OpLogicalNotEqual | &#9744; |
+| OpLogicalOr | &#9744; |
+| OpLogicalAnd | &#9744; |
+| OpLogicalNot | &#10004; |
+| OpSelect | &#10004; |
+| OpIEqual | &#10004; |
+| OpINotEqual | &#10004; |
+| OpUGreaterThan | &#10004; |
+| OpSGreaterThan | &#10004; |
+| OpUGreaterThanEqual | &#10004; |
+| OpSGreaterThanEqual | &#10004; |
+| OpULessThan | &#10004; |
+| OpSLessThan | &#10004; |
+| OpULessThanEqual | &#10004; |
+| OpSLessThanEqual | &#10004; |
+| OpFOrdEqual | &#10004; |
+| OpFUnordEqual | &#10004; |
+| OpFOrdNotEqual | &#10004; |
+| OpFUnordNotEqual | &#10004; |
+| OpFOrdLessThan | &#10004; |
+| OpFUnordLessThan | &#10004; |
+| OpFOrdGreaterThan | &#10004; |
+| OpFUnordGreaterThan | &#10004; |
+| OpFOrdLessThanEqual | &#10004; |
+| OpFUnordLessThanEqual | &#10004; |
+| OpFOrdGreaterThanEqual | &#10004; |
+| OpFUnordGreaterThanEqual | &#10004; |
+| OpShiftRightLogical | &#9744; |
+| OpShiftRightArithmetic | &#9744; |
+| OpShiftLeftLogical | &#9744; |
+| OpBitwiseOr | &#9744; |
+| OpBitwiseXor | &#9744; |
+| OpBitwiseAnd | &#9744; |
+| OpNot | &#10004; |
+| OpBitFieldInsert | &#9744; |
+| OpBitFieldSExtract | &#9744; |
+| OpBitFieldUExtract | &#9744; |
+| OpBitReverse | &#9744; |
+| OpBitCount | &#9744; |
+| OpDPdx | &#9744; |
+| OpDPdy | &#9744; |
+| OpFwidth | &#9744; |
+| OpDPdxFine | &#9744; |
+| OpDPdyFine | &#9744; |
+| OpFwidthFine | &#9744; |
+| OpDPdxCoarse | &#9744; |
+| OpDPdyCoarse | &#9744; |
+| OpFwidthCoarse | &#9744; |
+| OpEmitVertex | &#9744; |
+| OpEndPrimitive | &#9744; |
+| OpEmitStreamVertex | &#9744; |
+| OpEndStreamPrimitive | &#9744; |
+| OpControlBarrier | &#9744; |
+| OpMemoryBarrier | &#9744; |
+| OpAtomicLoad | &#9744; |
+| OpAtomicStore | &#9744; |
+| OpAtomicExchange | &#9744; |
+| OpAtomicCompareExchange | &#9744; |
+| OpAtomicCompareExchangeWeak | &#9744; |
+| OpAtomicIIncrement | &#9744; |
+| OpAtomicIDecrement | &#9744; |
+| OpAtomicIAdd | &#9744; |
+| OpAtomicISub | &#9744; |
+| OpAtomicSMin | &#9744; |
+| OpAtomicUMin | &#9744; |
+| OpAtomicSMax | &#9744; |
+| OpAtomicUMax | &#9744; |
+| OpAtomicAnd | &#9744; |
+| OpAtomicOr | &#9744; |
+| OpAtomicXor | &#9744; |
+| OpPhi | &#10004; |
+| OpLoopMerge | &#10004; |
+| OpSelectionMerge | &#10004; |
+| OpLabel | &#10004; |
+| OpBranch | &#10004; |
+| OpBranchConditional | &#10004; |
+| OpSwitch | &#9744; |
+| OpKill | &#9744; |
+| OpReturn | &#10004; |
+| OpReturnValue | &#10004; |
 | ... | ... |
-
 
 GLSL.450 Progress:
 
