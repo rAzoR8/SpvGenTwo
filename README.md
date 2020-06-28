@@ -317,6 +317,89 @@ Core SPIR-V IR generation progress, parsing is independent and auto generated. T
 | OpIsNormal | [ ] |
 | OpSignBitSet | [ ] |
 | OpLessOrGreater | [ ] |
+| OpOrdered | [ ] |
+| OpUnordered | [ ] |
+| OpLogicalEqual | [ ] |
+| OpLogicalNotEqual | [ ] |
+| OpLogicalOr | [ ] |
+| OpLogicalAnd | [ ] |
+| OpLogicalNot | [x] |
+| OpSelect | [x] |
+| OpIEqual | [x] |
+| OpINotEqual | [x] |
+| OpUGreaterThan | [x] |
+| OpSGreaterThan | [x] |
+| OpUGreaterThanEqual | [x] |
+| OpSGreaterThanEqual | [x] |
+| OpULessThan | [x] |
+| OpSLessThan | [x] |
+| OpULessThanEqual | [x] |
+| OpSLessThanEqual | [x] |
+| OpFOrdEqual | [x] |
+| OpFUnordEqual | [x] |
+| OpFOrdNotEqual | [x] |
+| OpFUnordNotEqual | [x] |
+| OpFOrdLessThan | [x] |
+| OpFUnordLessThan | [x] |
+| OpFOrdGreaterThan | [x] |
+| OpFUnordGreaterThan | [x] |
+| OpFOrdLessThanEqual | [x] |
+| OpFUnordLessThanEqual | [x] |
+| OpFOrdGreaterThanEqual | [x] |
+| OpFUnordGreaterThanEqual | [x] |
+| OpShiftRightLogical | [ ] |
+| OpShiftRightArithmetic | [ ] |
+| OpShiftLeftLogical | [ ] |
+| OpBitwiseOr | [ ] |
+| OpBitwiseXor | [ ] |
+| OpBitwiseAnd | [ ] |
+| OpNot | [x] |
+| OpBitFieldInsert | [ ] |
+| OpBitFieldSExtract | [ ] |
+| OpBitFieldUExtract | [ ] |
+| OpBitReverse | [ ] |
+| OpBitCount | [ ] |
+| OpDPdx | [ ] |
+| OpDPdy | [ ] |
+| OpFwidth | [ ] |
+| OpDPdxFine | [ ] |
+| OpDPdyFine | [ ] |
+| OpFwidthFine | [ ] |
+| OpDPdxCoarse | [ ] |
+| OpDPdyCoarse | [ ] |
+| OpFwidthCoarse | [ ] |
+| OpEmitVertex | [ ] |
+| OpEndPrimitive | [ ] |
+| OpEmitStreamVertex | [ ] |
+| OpEndStreamPrimitive | [ ] |
+| OpControlBarrier | [ ] |
+| OpMemoryBarrier | [ ] |
+| OpAtomicLoad | [ ] |
+| OpAtomicStore | [ ] |
+| OpAtomicExchange | [ ] |
+| OpAtomicCompareExchange | [ ] |
+| OpAtomicCompareExchangeWeak | [ ] |
+| OpAtomicIIncrement | [ ] |
+| OpAtomicIDecrement | [ ] |
+| OpAtomicIAdd | [ ] |
+| OpAtomicISub | [ ] |
+| OpAtomicSMin | [ ] |
+| OpAtomicUMin | [ ] |
+| OpAtomicSMax | [ ] |
+| OpAtomicUMax | [ ] |
+| OpAtomicAnd | [ ] |
+| OpAtomicOr | [ ] |
+| OpAtomicXor | [ ] |
+| OpPhi | [x] |
+| OpLoopMerge | [x] |
+| OpSelectionMerge | [x] |
+| OpLabel | [x] |
+| OpBranch | [x] |
+| OpBranchConditional | [x] |
+| OpSwitch | [ ] |
+| OpKill | [ ] |
+| OpReturn | [x] |
+| OpReturnValue | [x] |
 | ... | ... |
 
 

@@ -165,8 +165,6 @@ namespace spvgentwo
 
 		Instruction* opUndef(Instruction* _pResultType);
 
-		Instruction* opSizeOf(Instruction* _pPointerToVar);  // Move down
-
 		void opSourceContinued(const char* _pSourceText);
 
 		void opSource(spv::SourceLanguage _lang, unsigned int _version, Instruction* _pFileString = nullptr, const char* _pSourceText = nullptr);
@@ -208,6 +206,8 @@ namespace spvgentwo
 		void opCapability(const spv::Capability _capability);
 
 		// TODO: OpType### instructions
+		// TODO: OpConstant### instructions
+		// TODO: OpSpecConstant### instructions
 
 		template <class ...Args>
 		Instruction* opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, Args&& ..._instrOperands);
@@ -504,41 +504,20 @@ namespace spvgentwo
 		// Instruction* OpIsFinite(); TODO
 		// Instruction* OpIsNormal(); TODO
 		// Instruction* OpSignBitSet(); TODO
+
 		// Instruction* OpLessOrGreater(); TODO
+		// Instruction* OpOrdered(); TODO
+		// Instruction* OpUnordered(); TODO
 
-		Instruction* opLabel();
-
-		void opReturn();
-
-		void opReturnValue(Instruction* _pValue);
-
-		void opNoLine();
-
-		template <class ... Instr>
-		void opDecorateId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr*..._ids);
-
-		// deduce parent form input variables
-		template <class ... VarInst>
-		Instruction* opPhi(Instruction* _pVar, VarInst* ... _variables);
-
-		Instruction* opSelect(Instruction* _pCondBool, Instruction* _pTrueObj, Instruction* _pFalseObj);
-
-		template <class ...LoopControlParams>
-		void opLoopMerge(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ... _params);
-
-		void opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control);
-
-		// label is infered from the basic block on serialization
-		void opBranch(BasicBlock* _pTargetBlock);
-
-		// label is infered from the basic block on serialization
-		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock);
-		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight);
-
-		Instruction* opNot(Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpNot, _pIntVec, nullptr, "Operand of OpNot is not a scalar or vector of int type"); }
+		// Instruction* OpLogicalEqual(); TODO
+		// Instruction* OpLogicalNotEqual(); TODO
+		// Instruction* OpLogicalOr(); TODO
+		// Instruction* OpLogicalAnd(); TODO
 
 		Instruction* opLogicalNot(Instruction* _pBoolVec) { return scalarVecOp(spv::Op::OpLogicalNot, _pBoolVec, nullptr, "Operand of OpLogicalNot is not a scalar or vector of bool type"); }
 
+		Instruction* opSelect(Instruction* _pCondBool, Instruction* _pTrueObj, Instruction* _pFalseObj);
+		
 		Instruction* opIEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpIEqual, _pLeft, _pRight, "Operand of OpIEqual is not a scalar or vector of int type"); }
 
 		Instruction* opINotEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpINotEqual, _pLeft, _pRight, "Operand of OpINotEqual is not a scalar or vector of int type"); }
@@ -582,7 +561,107 @@ namespace spvgentwo
 		Instruction* opFOrdGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFOrdGreaterThanEqual, _pLeft, _pRight, "Operand of OpFOrdGreaterThanEqual is not a scalar or vector of float type"); }
 
 		Instruction* opFUnordGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordGreaterThanEqual, _pLeft, _pRight, "Operand of OpFUnordGreaterThanEqual is not a scalar or vector of float type"); }
-	
+		
+		// Instruction* OpShiftRightLogical(); TODO
+		// Instruction* OpShiftRightArithmetic(); TODO
+		// Instruction* OpShiftLeftLogical(); TODO
+
+		// Instruction* OpBitwiseOr(); TODO
+		// Instruction* OpBitwiseXor(); TODO
+		// Instruction* OpBitwiseAnd(); TODO
+
+		Instruction* opNot(Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpNot, _pIntVec, nullptr, "Operand of OpNot is not a scalar or vector of int type"); }
+
+		// Instruction* OpBitFieldInsert(); TODO
+		// Instruction* OpBitFieldSExtract(); TODO
+		// Instruction* OpBitFieldUExtract(); TODO
+		// Instruction* OpBitReverse(); TODO
+
+		// Instruction* OpDPdx(); TODO
+		// Instruction* OpDPdy(); TODO
+		// Instruction* OpFwidth(); TODO
+		// Instruction* OpDPdxFine(); TODO
+		// Instruction* OpDPdyFine(); TODO
+		// Instruction* OpFwidthFine(); TODO
+		// Instruction* OpDPdxCoarse(); TODO
+		// Instruction* OpDPdyCoarse(); TODO
+		// Instruction* OpFwidthCoarse(); TODO
+
+		// Instruction* OpEmitVertex(); TODO
+		// Instruction* OpEndPrimitive(); TODO
+		// Instruction* OpEmitStreamVertex(); TODO
+		// Instruction* OpEndStreamPrimitive(); TODO
+
+		// Instruction* OpControlBarrier(); TODO
+		// Instruction* OpMemoryBarrier(); TODO
+
+		// Instruction* OpAtomicLoad(); TODO
+		// Instruction* OpAtomicStore(); TODO
+		// Instruction* OpAtomicExchange(); TODO
+		// Instruction* OpAtomicCompareExchange(); TODO
+		// Instruction* OpAtomicCompareExchangeWeak(); TODO
+		// Instruction* OpAtomicIIncrement(); TODO
+		// Instruction* OpAtomicIDecrement(); TODO
+		// Instruction* OpAtomicIAdd(); TODO
+		// Instruction* OpAtomicISub(); TODO
+		// Instruction* OpAtomicSMin(); TODO
+		// Instruction* OpAtomicUMin(); TODO
+		// Instruction* OpAtomicSMax(); TODO
+		// Instruction* OpAtomicUMax(); TODO
+		// Instruction* OpAtomicAnd(); TODO
+		// Instruction* OpAtomicOr(); TODO
+		// Instruction* OpAtomicXor(); TODO
+
+		// deduce parent form input variables
+		template <class ... VarInst>
+		Instruction* opPhi(Instruction* _pVar, VarInst* ... _variables);
+
+		template <class ...LoopControlParams>
+		void opLoopMerge(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ... _params);
+
+		void opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control);
+
+		Instruction* opLabel();
+
+		// label is infered from the basic block on serialization
+		void opBranch(BasicBlock* _pTargetBlock);
+
+		// label is infered from the basic block on serialization
+		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock);
+		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight);
+
+		// Instruction* OpSwitch(); TODO
+		// Instruction* OpKill(); TODO
+
+		void opReturn();
+
+		void opReturnValue(Instruction* _pValue);
+
+		// Instruction* OpUnreachable() till opNoLine; TODO
+
+		void opNoLine();
+
+		// Instruction* OpAtomicFlagTestAndSet(); TODO
+		// Instruction* OpAtomicFlagClear(); TODO
+		// Instruction* OpImageSparseRead(); TODO
+
+		Instruction* opSizeOf(Instruction* _pPointerToVar);
+
+		// Instruction* OpTypePipeStorage(); TODO
+		// Instruction* OpConstantPipeStorage(); TODO CONSTANT <<<<<<<
+		// Instruction* OpCreatePipeFromPipeStorage(); TODO
+		// Instruction* OpGetKernelLocalSizeForSubgroupCount(); TODO
+		// Instruction* OpGetKernelMaxNumSubgroups(); TODO
+		// Instruction* OpTypeNamedBarrier(); TODO TYPE <<<<<<<
+		// Instruction* OpNamedBarrierInitialize(); TODO
+		// Instruction* OpModuleProcessed(); TODO
+		// Instruction* OpExecutionModeId(); TODO
+
+		template <class ... Instr>
+		void opDecorateId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr*..._ids);
+
+		// TODO: All the rest to at least maybe OpDecorateString without the INTEL extension instructions?
+
 	private:
 		// return error instr
 		Instruction* error() const;
