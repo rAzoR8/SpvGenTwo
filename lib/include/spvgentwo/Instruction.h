@@ -270,7 +270,9 @@ namespace spvgentwo
 
 		Instruction* opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt);
 
-		// Instruction* OpVectorShuffle(); TODO
+		// components must be unint32_ts
+		template <class ... Components>
+		Instruction* opVectorShuffle(Instruction* _pVector1, Instruction* _pVector2, Components ... _components);
 
 		template <class ... ConstituentInstr>
 		Instruction* opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituents, ConstituentInstr* ... _constituents);
@@ -861,7 +863,7 @@ namespace spvgentwo
 		// Base must be a pointer, pointing to the base of a composite object.
 
 		const Type* pBaseType = _pBase->getType();
-		if (pBaseType == nullptr) return this;
+		if (pBaseType == nullptr) return error();
 
 		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...); // base is a pointer type, so 0 is used to get the inner type
 		Module* pModule = _pBase->getModule();
@@ -890,7 +892,7 @@ namespace spvgentwo
 	inline Instruction* Instruction::opLoad(Instruction* _pPointerToVar, const Flag<spv::MemoryAccessMask> _memOperands, Operands ..._operands)
 	{
 		const Type* ptrType = _pPointerToVar->getType();
-		if (ptrType == nullptr) return this;
+		if (ptrType == nullptr) return error();
 
 		// Result Type is the type of the loaded object.It must be a type with ﬁxed size; i.e., it cannot be, nor include, any OpTypeRuntimeArray types.
 		// Pointer is the pointer to load through.Its type must be an OpTypePointer whose Type operand is the same as Result Type.
@@ -904,16 +906,39 @@ namespace spvgentwo
 		makeOp(spv::Op::OpStore, _pPointerToVar, _valueToStore, _memOperands.mask, _operands...);
 	}
 
+	template<class ...Components>
+	inline Instruction* Instruction::opVectorShuffle(Instruction* _pVector1, Instruction* _pVector2, Components ..._components)
+	{
+		constexpr size_t componentCount = sizeof...(_components);
+
+		static_assert(componentCount > 1u && componentCount < 5u, "Invalid number of component indices [2..4]");
+
+		const Type* lType = _pVector1->getType();
+		const Type* rType = _pVector2->getType();
+
+		if (lType == nullptr || rType == nullptr) return error();
+
+		if (lType->isVector() && rType->isVector() && lType->getBaseType() == rType->getBaseType())
+		{
+			Instruction* resultType = getModule()->addType(lType->getBaseType().wrapVector(componentCount));
+			return makeOp(spv::Op::OpVectorShuffle, resultType, InvalidId, _pVector1, _pVector2, literal_t{ _components }...);
+		}
+
+		getModule()->logError("Argument of opVectorShuffle is not a matching vector type or opUndef");
+
+		return error();
+	}
+
 	template<class ...ConstituentInstr>
 	inline Instruction* Instruction::opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituent, ConstituentInstr* ..._constituents)
 	{
 		const Type* type =  _pResultType->getType();
-		if (type == nullptr) return this;
+		if (type == nullptr) return error();
 
 		if (type->isComposite() == false)
 		{
 			getModule()->logError("Result type of opCompositeConstruct is not a composite type");
-			return this;
+			return error();
 		}
 
 		return makeOp(spv::Op::OpCompositeConstruct, _pResultType, InvalidId, _pFirstConstituent, _constituents...);
@@ -923,14 +948,14 @@ namespace spvgentwo
 	inline Instruction* Instruction::opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ..._indices)
 	{
 		const Type* pBaseType = _pComposite->getType();
-		if (pBaseType == nullptr) return this;
+		if (pBaseType == nullptr) return error();
 
 		Module* pModule = _pComposite->getModule();
 
 		if (pBaseType->isComposite() == false)
 		{
 			pModule->logError("Argument of opCompositeExtract is not a composite type");
-			return this;
+			return error();
 		}
 
 		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...);
@@ -943,21 +968,21 @@ namespace spvgentwo
 
 		pModule->logError("Invalid index sequence specified for composite type extraction");
 
-		return this;
+		return error();
 	}
 
 	template<class ...IntIndices>
 	inline Instruction* Instruction::opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, const unsigned int _firstIndex, IntIndices ..._indices)
 	{
 		const Type* pBaseType = _pComposite->getType();
-		if (pBaseType == nullptr) return this;
+		if (pBaseType == nullptr) return error();
 
 		Module* pModule = _pComposite->getModule();
 
 		if (pBaseType->isComposite() == false)
 		{
 			pModule->logError("Argument of opCompositeInsert is not a composite type");
-			return this;
+			return error();
 		}
 
 		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...);
@@ -965,7 +990,7 @@ namespace spvgentwo
 		if (it != nullptr)
 		{
 			const Type* pValueType = _pValue->getType();
-			if (pValueType == nullptr) return this;
+			if (pValueType == nullptr) return error();
 
 			if (*it == *pValueType)
 			{
@@ -973,12 +998,12 @@ namespace spvgentwo
 			}
 
 			pModule->logError("Value type does not match composite insertion type");
-			return this;
+			return error();
 		}
 
 		pModule->logError("Invalid index sequence specified for composite insertion");
 
-		return this;
+		return error();
 	}
 
 	template<class ...ImageOperands>
@@ -989,7 +1014,7 @@ namespace spvgentwo
 		const Type* imageType = type->isSampledImage() ? &type->front() : type;
 		const Type* coordType = _pCoordinate->getType();
 
-		if (type == nullptr || imageType == nullptr || coordType == nullptr) return this;
+		if (type == nullptr || imageType == nullptr || coordType == nullptr) return error();
 
 		bool isDref = false;
 		bool isProj = false;
@@ -1091,7 +1116,7 @@ namespace spvgentwo
 			if (type->isImage() == false || (imageType->getImageSamplerAccess() != SamplerImageAccess::Sampled) || (imageType->getImageDimension() == spv::Dim::Cube))
 			{
 				module.logError("OpImageFetch requires _pSampledImage of type opImage. Its Dim operand cannot be Cube, and its Sampled operand must be 1.");
-				return this;
+				return error();
 			}
 			checkCoords = true; coordCanBeInt = true;
 			break;
@@ -1103,7 +1128,7 @@ namespace spvgentwo
 			if (imageType->getImageDimension() != spv::Dim::Dim2D && imageType->getImageDimension() != spv::Dim::Cube && imageType->getImageDimension() != spv::Dim::Rect)
 			{
 				module.logError("OpImageGather requres Dim of sampled image to be 2D, Cube or Rect");
-				return this;
+				return error();
 			}
 			break;
 		case spv::Op::OpImageSampleImplicitLod: checkCoords = true; break;
@@ -1118,12 +1143,12 @@ namespace spvgentwo
 			break;
 		default:
 			module.logError("_imageSampleOp is not supported / implemented");
-			return this;
+			return error();
 		}
 
 		if (!checkDrefComponent() || !checkCoordinateType())
 		{
-			return this;
+			return error();
 		}
 
 		if (_pDrefOrCompnent == nullptr)
@@ -1149,6 +1174,6 @@ namespace spvgentwo
 			}
 		}
 
-		return this;
+		return error();
 	}
 } // !spvgentwo

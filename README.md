@@ -1,6 +1,6 @@
 # SpvGenTwo
 
-SpvGenTwo is a [SPIR-V](https://www.khronos.org/registry/spir-v/) building and parsing library written in C++17 with only `stddef.h` as dependencies. No STL or other 3rd-Party library needed. The library comes with its own set of SPIR-V definitions generated from the [machine readable grammar](https://github.com/KhronosGroup/SPIRV-Headers/blob/master/include/spirv/unified1/spirv.core.grammar.json) and therefore does not require any `vulkan` or `spirv-headers` includes. The generator can be found here: [rustspvgen](https://github.com/rAzoR8/rustspvgen).
+SpvGenTwo is a [SPIR-V](https://www.khronos.org/registry/spir-v/) building and parsing library written in C++17 with only `stddef.h` as dependency. No STL or other 3rd-Party library needed. The library comes with its own set of SPIR-V definitions generated from the [machine readable grammar](https://github.com/KhronosGroup/SPIRV-Headers/blob/master/include/spirv/unified1/spirv.core.grammar.json) and therefore does not require any `vulkan` or `spirv-headers` includes. The generator can be found here: [rustspvgen](https://github.com/rAzoR8/rustspvgen).
 
 I built this library as a 'slim' **backend** for runtime material/shader-editors (like [Proto](https://twitter.com/SiNGUL4RiTY/status/1246492443811422208)) to avoid introducing enormous libraries like [DXC](https://github.com/microsoft/DirectXShaderCompiler) (including LLVM and Frontend) or [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools) to the codebase.
 
@@ -129,8 +129,8 @@ Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
 
 SpvGenTwo is split into 4 folders:
 
-* `lib` contains the foundation to generate SPIR-V code, it only requires `stddef.h` to be built. SpvGenTwo makes excessive use of its abstract Allocator, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those a not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :).
-* `common` contains some convenience implementations of abstract interfaces: HeapAllocator uses C malloc and free, BindaryFileWriter uses fopen, ConsoleLogger uses vprintf. It also as some additional container classes like Callable (std::function replacement), Graph, ControlFlowGraph, Expression and ExprGraph, they follow the same design principles and might sooner or later be moved to `lib` if needed.
+* `lib` contains the foundation to generate SPIR-V code, it only requires `stddef.h` to be built. SpvGenTwo makes excessive use of its abstract Allocator, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those are not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :).
+* `common` contains some convenience implementations of abstract interfaces: HeapAllocator uses C malloc and free, BindaryFileWriter uses fopen, ConsoleLogger uses vprintf. It also has some additional container classes like Callable (std::function replacement), Graph, ControlFlowGraph, Expression and ExprGraph, they follow the same design principles and might sooner or later be moved to `lib` if needed.
 * `example` contains small, self-contained code snippets that each generate a SPIR-V module to show some of the fundamental mechanics and APIs of SpvGenTwo.
 * `dis` is a [spirv-dis](https://github.com/KhronosGroup/SPIRV-Tools#disassembler-tool)-like tool to print assembly language text.
 
