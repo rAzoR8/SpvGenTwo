@@ -243,7 +243,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpGroupMemberDecorate | &#9744; |
 | OpVectorExtractDynamic | &#10004; |
 | OpVectorInsertDynamic | &#10004; |
-| OpVectorShuffle | &#9744; |
+| OpVectorShuffle | &#10004; |
 | OpCompositeConstruct | &#10004; |
 | OpCompositeExtract | &#10004; |
 | OpCompositeInsert | &#10004; |
@@ -324,10 +324,10 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpLessOrGreater | &#9744; |
 | OpOrdered | &#9744; |
 | OpUnordered | &#9744; |
-| OpLogicalEqual | &#9744; |
-| OpLogicalNotEqual | &#9744; |
-| OpLogicalOr | &#9744; |
-| OpLogicalAnd | &#9744; |
+| OpLogicalEqual | &#10004; |
+| OpLogicalNotEqual | &#10004; |
+| OpLogicalOr | &#10004; |
+| OpLogicalAnd | &#10004; |
 | OpLogicalNot | &#10004; |
 | OpSelect | &#10004; |
 | OpIEqual | &#10004; |

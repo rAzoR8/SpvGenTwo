@@ -171,7 +171,12 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* const boolVec = bb->GreaterEqual(cross, uniVec); // float vec
 
 		bb->Not(uInt);// int scalar
-		bb->Not(boolVec);
+		Instruction* notBoolVec = bb->Not(boolVec);
+
+		bb->opLogicalEqual(notBoolVec, boolVec);
+		bb->opLogicalNotEqual(notBoolVec, boolVec);
+		bb->opLogicalOr(notBoolVec, boolVec);
+		bb->opLogicalAnd(notBoolVec, boolVec);
 
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
 

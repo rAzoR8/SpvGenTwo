@@ -149,6 +149,8 @@ namespace spvgentwo
 		Instruction* Div(Instruction* _pLeft, Instruction* _pRight, bool _allowVecDividedByScalar = true);
 
 		Instruction* Not(Instruction* _pIntOrBool); // lowecase not is a c++ keywork, hence generic functions need to be upper case
+
+		// TODO: handle logical comparisons / bool vecs
 		Instruction* Equal(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opIEqual, &Instruction::opFOrdEqual, "Failed to match Equals's operand types for this instruction"); }
 		Instruction* NotEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opINotEqual, &Instruction::opFOrdNotEqual, "Failed to match NotEqual's operand types for this instruction"); }
 		Instruction* Greater(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSGreaterThan, &Instruction::opUGreaterThan, &Instruction::opFOrdGreaterThan, "Failed to match Greater's operand types for this instruction"); }
@@ -511,10 +513,13 @@ namespace spvgentwo
 		// Instruction* OpOrdered(); TODO
 		// Instruction* OpUnordered(); TODO
 
-		// Instruction* OpLogicalEqual(); TODO
-		// Instruction* OpLogicalNotEqual(); TODO
-		// Instruction* OpLogicalOr(); TODO
-		// Instruction* OpLogicalAnd(); TODO
+		Instruction* opLogicalEqual(Instruction* _pBoolVec1, Instruction* _pBoolVec2) { return scalarVecOp(spv::Op::OpLogicalEqual, _pBoolVec1, _pBoolVec2, "Operand of OpLogicalEqual is not a scalar or vector of bool type"); }
+
+		Instruction* opLogicalNotEqual(Instruction* _pBoolVec1, Instruction* _pBoolVec2) { return scalarVecOp(spv::Op::OpLogicalNotEqual, _pBoolVec1, _pBoolVec2, "Operand of OpLogicalNotEqual is not a scalar or vector of bool type"); }
+
+		Instruction* opLogicalOr(Instruction* _pBoolVec1, Instruction* _pBoolVec2) { return scalarVecOp(spv::Op::OpLogicalOr, _pBoolVec1, _pBoolVec2, "Operand of OpLogicalOr is not a scalar or vector of bool type"); }
+
+		Instruction* opLogicalAnd(Instruction* _pBoolVec1, Instruction* _pBoolVec2) { return scalarVecOp(spv::Op::OpLogicalAnd, _pBoolVec1, _pBoolVec2, "Operand of OpLogicalAnd is not a scalar or vector of bool type"); }
 
 		Instruction* opLogicalNot(Instruction* _pBoolVec) { return scalarVecOp(spv::Op::OpLogicalNot, _pBoolVec, nullptr, "Operand of OpLogicalNot is not a scalar or vector of bool type"); }
 
