@@ -131,6 +131,10 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* s64 = bb->opSConvert(sNeg, 64u);
 		Instruction* s16 = bb->opSConvert(sNeg, 16u);
 
+		bb->opShiftLeftLogical(s64, uInt);
+		bb->opShiftRightArithmetic(intvec, uniVec);
+		bb->opShiftRightLogical(uInt, index);
+
 		// generic
 		bb->Add(sNeg, uInt);
 		bb->Add(fNeg, x);

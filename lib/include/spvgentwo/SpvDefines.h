@@ -166,6 +166,9 @@ namespace spvgentwo
 		case spv::Op::OpISubBorrow:
 		case spv::Op::OpISubSatINTEL:
 		case spv::Op::OpNot:
+		case spv::Op::OpShiftRightLogical:
+		case spv::Op::OpShiftRightArithmetic:
+		case spv::Op::OpShiftLeftLogical:
 			_sign = Sign::Any;
 			return spv::Op::OpTypeInt;
 

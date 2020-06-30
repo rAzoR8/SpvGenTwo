@@ -45,6 +45,9 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpFRem:
 	case spv::Op::OpFMod:
 	case spv::Op::OpNot:
+	case spv::Op::OpShiftRightLogical:
+	case spv::Op::OpShiftRightArithmetic:
+	case spv::Op::OpShiftLeftLogical:
 		return typeInstr1;
 	case spv::Op::OpIAddCarry:
 	case spv::Op::OpISubBorrow:

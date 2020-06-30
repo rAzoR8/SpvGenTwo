@@ -240,7 +240,7 @@ namespace spvgentwo
 		template <class ... Operands>
 		void opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<spv::MemoryAccessMask> _memOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands);
 
-		// Instruction* opCopyMemory(); TODO
+		// Instruction* OpCopyMemory(); TODO
 		// Instruction* OpCopyMemorySized(); TODO
 
 		template <class ... Instr>
@@ -252,8 +252,8 @@ namespace spvgentwo
 		template <class ... Instr>
 		Instruction* opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ... _pIndices);
 
-		// Instruction* opPtrAccessChain(); TODO
-		// Instruction* opArrayLength(); TODO
+		// Instruction* OpPtrAccessChain(); TODO
+		// Instruction* OpArrayLength(); TODO
 		// Instruction* OpGenericPtrMemSemantics(); TODO
 		// Instruction* OpInBoundsPtrAccessChain(); TODO
 
@@ -568,9 +568,11 @@ namespace spvgentwo
 
 		Instruction* opFUnordGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordGreaterThanEqual, _pLeft, _pRight, "Operand of OpFUnordGreaterThanEqual is not a scalar or vector of float type"); }
 		
-		// Instruction* OpShiftRightLogical(); TODO
-		// Instruction* OpShiftRightArithmetic(); TODO
-		// Instruction* OpShiftLeftLogical(); TODO
+		Instruction* opShiftRightLogical(Instruction* _pBaseIntVec, Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpShiftRightLogical, _pBaseIntVec, _pBaseIntVec, "Operand of OpShiftRightLogical is not a scalar or vector of int"); }
+		
+		Instruction* opShiftRightArithmetic(Instruction* _pBaseIntVec, Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpShiftRightArithmetic, _pBaseIntVec, _pBaseIntVec, "Operand of OpShiftRightArithmetic is not a scalar or vector of int"); }
+		
+		Instruction* opShiftLeftLogical(Instruction* _pBaseIntVec, Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpShiftLeftLogical, _pBaseIntVec, _pBaseIntVec, "Operand of OpShiftLeftLogical is not a scalar or vector of int"); }
 
 		// Instruction* OpBitwiseOr(); TODO
 		// Instruction* OpBitwiseXor(); TODO
