@@ -150,9 +150,8 @@ namespace spvgentwo
 
 		Instruction* Not(Instruction* _pIntOrBool); // lowecase not is a c++ keywork, hence generic functions need to be upper case
 
-		// TODO: handle logical comparisons / bool vecs
-		Instruction* Equal(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opIEqual, &Instruction::opFOrdEqual, "Failed to match Equals's operand types for this instruction"); }
-		Instruction* NotEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opINotEqual, &Instruction::opFOrdNotEqual, "Failed to match NotEqual's operand types for this instruction"); }
+		Instruction* Equal(Instruction* _pLeft, Instruction* _pRight) { return intFloatBoolOp(_pLeft, _pRight, &Instruction::opIEqual, &Instruction::opFOrdEqual, &Instruction::opLogicalEqual, "Failed to match Equals's operand types for this instruction"); }
+		Instruction* NotEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatBoolOp(_pLeft, _pRight, &Instruction::opINotEqual, &Instruction::opFOrdNotEqual, &Instruction::opLogicalNotEqual, "Failed to match NotEqual's operand types for this instruction"); }
 		Instruction* Greater(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSGreaterThan, &Instruction::opUGreaterThan, &Instruction::opFOrdGreaterThan, "Failed to match Greater's operand types for this instruction"); }
 		Instruction* GreaterEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSGreaterThanEqual, &Instruction::opUGreaterThanEqual, &Instruction::opFOrdGreaterThanEqual, "Failed to match GreaterEqual's operand types for this instruction"); }
 		Instruction* Less(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSLessThan, &Instruction::opULessThan, &Instruction::opFOrdLessThan, "Failed to match Less's operand types for this instruction"); }
@@ -685,10 +684,17 @@ namespace spvgentwo
 
 		// decides based on type of _pLeft and _pRight if _intFun or _floatFun should be called
 		Instruction* intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _intFun, DualOpMemberFun _floatFun, const char* _pErrorMsg = nullptr);
+
+		// decides based on type of _pLeft and _pRight if _intFun or _floatFun or _boolFun should be called
+		Instruction* intFloatBoolOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _intFun, DualOpMemberFun _floatFun, DualOpMemberFun _boolFun, const char* _pErrorMsg = nullptr);
 		
 		// decides based on type of _pLeft and _pRight if signed _sIntFun, unsigned _uIntFund or float _floatFun should be called
 		// unsigned & unsinged => unsigned, signed & unsigned => signed, float & float => float
 		Instruction* intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, const char* _pErrorMsg = nullptr);
+
+		// decides based on type of _pLeft and _pRight if signed _sIntFun, unsigned _uIntFund or float _floatFun or _boolFun should be called
+		// unsigned & unsinged => unsigned, signed & unsigned => signed, float & float => float
+		Instruction* intFloatBoolOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, DualOpMemberFun _boolFun, const char* _pErrorMsg = nullptr);
 	};
 
 	// accumulates literal values to _out, returns iterator to the first operand after the literal containing the string terminator

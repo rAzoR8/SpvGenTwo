@@ -173,8 +173,8 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		bb->Not(uInt);// int scalar
 		Instruction* notBoolVec = bb->Not(boolVec);
 
-		bb->opLogicalEqual(notBoolVec, boolVec);
-		bb->opLogicalNotEqual(notBoolVec, boolVec);
+		bb->Equal(notBoolVec, boolVec);
+		bb->NotEqual(notBoolVec, boolVec);
 		bb->opLogicalOr(notBoolVec, boolVec);
 		bb->opLogicalAnd(notBoolVec, boolVec);
 

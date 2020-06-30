@@ -1086,6 +1086,34 @@ spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, 
 	return error();
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::intFloatBoolOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _intFun, DualOpMemberFun _floatFun, DualOpMemberFun _boolFun, const char* _pErrorMsg)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType == nullptr || rType == nullptr) return error();
+
+	if (_intFun != nullptr && lType->getBaseType().isInt() && rType->getBaseType().isInt())
+	{
+		return (this->*_intFun)(_pLeft, _pRight);
+	}
+	else if (_floatFun != nullptr && lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
+	{
+		return (this->*_floatFun)(_pLeft, _pRight);
+	}
+	else if (_boolFun != nullptr && lType->getBaseType().isBool() && rType->getBaseType().isBool())
+	{
+		return (this->*_boolFun)(_pLeft, _pRight);
+	}
+
+	if (_pErrorMsg != nullptr)
+	{
+		getModule()->logError(_pErrorMsg);
+	}
+
+	return error();
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, const char* _pErrorMsg)
 {
 	const Type* lType = _pLeft->getType();
@@ -1093,17 +1121,49 @@ spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, 
 
 	if (lType == nullptr || rType == nullptr) return error();
 
-	if (lType->getBaseType().isUInt() && rType->getBaseType().isUInt())
+	if (_uIntFun != nullptr && lType->getBaseType().isUInt() && rType->getBaseType().isUInt())
 	{
 		return (this->*_uIntFun)(_pLeft, _pRight);
 	}
-	else if (lType->getBaseType().isInt() && rType->getBaseType().isInt()) // if l or r is unsinged call signed func
+	else if (_sIntFun != nullptr && lType->getBaseType().isInt() && rType->getBaseType().isInt()) // if l or r is unsinged call signed func
 	{
 		return (this->*_sIntFun)(_pLeft, _pRight);
 	}
-	else if (lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
+	else if (_floatFun != nullptr && lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
 	{
 		return (this->*_floatFun)(_pLeft, _pRight);
+	}
+
+	if (_pErrorMsg != nullptr)
+	{
+		getModule()->logError(_pErrorMsg);
+	}
+
+	return error();
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::intFloatBoolOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, DualOpMemberFun _boolFun, const char* _pErrorMsg)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType == nullptr || rType == nullptr) return error();
+
+	if (_uIntFun != nullptr && lType->getBaseType().isUInt() && rType->getBaseType().isUInt())
+	{
+		return (this->*_uIntFun)(_pLeft, _pRight);
+	}
+	else if (_sIntFun != nullptr && lType->getBaseType().isInt() && rType->getBaseType().isInt()) // if l or r is unsinged call signed func
+	{
+		return (this->*_sIntFun)(_pLeft, _pRight);
+	}
+	else if (_floatFun != nullptr && lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
+	{
+		return (this->*_floatFun)(_pLeft, _pRight);
+	}
+	else if (_boolFun != nullptr && lType->getBaseType().isBool() && rType->getBaseType().isBool())
+	{
+		return (this->*_boolFun)(_pLeft, _pRight);
 	}
 
 	if (_pErrorMsg != nullptr)
