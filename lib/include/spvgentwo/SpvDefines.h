@@ -169,6 +169,9 @@ namespace spvgentwo
 		case spv::Op::OpShiftRightLogical:
 		case spv::Op::OpShiftRightArithmetic:
 		case spv::Op::OpShiftLeftLogical:
+		case spv::Op::OpBitwiseOr:
+		case spv::Op::OpBitwiseXor:
+		case spv::Op::OpBitwiseAnd:
 			_sign = Sign::Any;
 			return spv::Op::OpTypeInt;
 

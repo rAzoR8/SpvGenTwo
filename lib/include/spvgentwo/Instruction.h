@@ -568,15 +568,17 @@ namespace spvgentwo
 
 		Instruction* opFUnordGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordGreaterThanEqual, _pLeft, _pRight, "Operand of OpFUnordGreaterThanEqual is not a scalar or vector of float type"); }
 		
-		Instruction* opShiftRightLogical(Instruction* _pBaseIntVec, Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpShiftRightLogical, _pBaseIntVec, _pBaseIntVec, "Operand of OpShiftRightLogical is not a scalar or vector of int"); }
+		Instruction* opShiftRightLogical(Instruction* _pBaseIntVec, Instruction* _pShiftIntVec) { return scalarVecOp(spv::Op::OpShiftRightLogical, _pBaseIntVec, _pShiftIntVec, "Operand of OpShiftRightLogical is not a scalar or vector of int", false); }
 		
-		Instruction* opShiftRightArithmetic(Instruction* _pBaseIntVec, Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpShiftRightArithmetic, _pBaseIntVec, _pBaseIntVec, "Operand of OpShiftRightArithmetic is not a scalar or vector of int"); }
+		Instruction* opShiftRightArithmetic(Instruction* _pBaseIntVec, Instruction* _pShiftIntVec) { return scalarVecOp(spv::Op::OpShiftRightArithmetic, _pBaseIntVec, _pShiftIntVec, "Operand of OpShiftRightArithmetic is not a scalar or vector of int", false); }
 		
-		Instruction* opShiftLeftLogical(Instruction* _pBaseIntVec, Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpShiftLeftLogical, _pBaseIntVec, _pBaseIntVec, "Operand of OpShiftLeftLogical is not a scalar or vector of int"); }
+		Instruction* opShiftLeftLogical(Instruction* _pBaseIntVec, Instruction* _pShiftIntVec) { return scalarVecOp(spv::Op::OpShiftLeftLogical, _pBaseIntVec, _pShiftIntVec, "Operand of OpShiftLeftLogical is not a scalar or vector of int", false); }
 
-		// Instruction* OpBitwiseOr(); TODO
-		// Instruction* OpBitwiseXor(); TODO
-		// Instruction* OpBitwiseAnd(); TODO
+		Instruction* opBitwiseOr(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpBitwiseOr, _pLeft, _pRight, "Operand of OpBitwiseOr is not a scalar or vector of int", false); }
+
+		Instruction* opBitwiseXor(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpBitwiseXor, _pLeft, _pRight, "Operand of OpBitwiseXor is not a scalar or vector of int", false); }
+
+		Instruction* opBitwiseAnd(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpBitwiseAnd, _pLeft, _pRight, "Operand of OpBitwiseAnd is not a scalar or vector of int", false); }
 
 		Instruction* opNot(Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpNot, _pIntVec, nullptr, "Operand of OpNot is not a scalar or vector of int type"); }
 
