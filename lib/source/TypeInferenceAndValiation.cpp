@@ -51,6 +51,15 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpBitwiseOr:
 	case spv::Op::OpBitwiseXor:
 	case spv::Op::OpBitwiseAnd:
+	case spv::Op::OpFwidth:
+	case spv::Op::OpFwidthCoarse:
+	case spv::Op::OpFwidthFine:
+	case spv::Op::OpDPdx:
+	case spv::Op::OpDPdy:
+	case spv::Op::OpDPdxFine:
+	case spv::Op::OpDPdyFine:
+	case spv::Op::OpDPdxCoarse:
+	case spv::Op::OpDPdyCoarse:
 		return typeInstr1;
 	case spv::Op::OpIAddCarry:
 	case spv::Op::OpISubBorrow:

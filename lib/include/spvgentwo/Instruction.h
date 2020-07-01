@@ -587,15 +587,17 @@ namespace spvgentwo
 		// Instruction* OpBitFieldUExtract(); TODO
 		// Instruction* OpBitReverse(); TODO
 
-		// Instruction* OpDPdx(); TODO
-		// Instruction* OpDPdy(); TODO
-		// Instruction* OpFwidth(); TODO
-		// Instruction* OpDPdxFine(); TODO
-		// Instruction* OpDPdyFine(); TODO
-		// Instruction* OpFwidthFine(); TODO
-		// Instruction* OpDPdxCoarse(); TODO
-		// Instruction* OpDPdyCoarse(); TODO
-		// Instruction* OpFwidthCoarse(); TODO
+		Instruction* opDPdx(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdx, _pFloatVec, nullptr, "Operand of OpDPdx is not a scalar or vector of float type"); }
+		Instruction* opDPdy(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdy, _pFloatVec, nullptr, "Operand of OpDPdy is not a scalar or vector of float type"); }
+		Instruction* opFwidth(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpFwidth, _pFloatVec, nullptr, "Operand of OpFwidth is not a scalar or vector of float type"); }
+
+		Instruction* opDPdxFine(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdxFine, _pFloatVec, nullptr, "Operand of OpDPdxFine is not a scalar or vector of float type"); }
+		Instruction* opDPdyFine(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdyFine, _pFloatVec, nullptr, "Operand of OpDPdyFine is not a scalar or vector of float type"); }
+		Instruction* opFwidthFine(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpFwidthFine, _pFloatVec, nullptr, "Operand of OpFwidthFine is not a scalar or vector of float type"); }
+
+		Instruction* opDPdxCoarse(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdxCoarse, _pFloatVec, nullptr, "Operand of OpDPdxCoarse is not a scalar or vector of float type"); }
+		Instruction* opDPdyCoarse(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdyCoarse, _pFloatVec, nullptr, "Operand of OpDPdyCoarse is not a scalar or vector of float type"); }
+		Instruction* opFwidthCoarse(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpFwidthCoarse, _pFloatVec, nullptr, "Operand of OpFwidthCoarse is not a scalar or vector of float type"); }
 
 		// Instruction* OpEmitVertex(); TODO
 		// Instruction* OpEndPrimitive(); TODO

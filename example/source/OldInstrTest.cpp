@@ -19,6 +19,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 	module.addCapability(spv::Capability::Float64);
 	module.addCapability(spv::Capability::Int16);
 	module.addCapability(spv::Capability::Int64);
+	module.addCapability(spv::Capability::DerivativeControl);
 
 	module.addExtension("SPV_KHR_vulkan_memory_model");
 	Instruction* ext = module.getExtensionInstructionImport("GLSL.std.450");
@@ -185,6 +186,18 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		bb->NotEqual(notBoolVec, boolVec);
 		bb->opLogicalOr(notBoolVec, boolVec);
 		bb->opLogicalAnd(notBoolVec, boolVec);
+
+		bb->opDPdx(fNeg);
+		bb->opDPdxCoarse(cross);
+		bb->opDPdxFine(cross);
+
+		bb->opDPdy(cross);
+		bb->opDPdyCoarse(cross);
+		bb->opDPdyFine(fNeg);
+
+		bb->opFwidth(fNeg);
+		bb->opFwidthFine(fNeg);
+		bb->opFwidthCoarse(cross);
 
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
 
