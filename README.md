@@ -373,10 +373,10 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpDPdxCoarse | &#10004; |
 | OpDPdyCoarse | &#10004; |
 | OpFwidthCoarse | &#10004; |
-| OpEmitVertex | &#9744; |
-| OpEndPrimitive | &#9744; |
-| OpEmitStreamVertex | &#9744; |
-| OpEndStreamPrimitive | &#9744; |
+| OpEmitVertex | &#10004; |
+| OpEndPrimitive | &#10004; |
+| OpEmitStreamVertex | &#10004; |
+| OpEndStreamPrimitive | &#10004; |
 | OpControlBarrier | &#9744; |
 | OpMemoryBarrier | &#9744; |
 | OpAtomicLoad | &#9744; |

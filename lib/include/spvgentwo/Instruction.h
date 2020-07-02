@@ -599,10 +599,10 @@ namespace spvgentwo
 		Instruction* opDPdyCoarse(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdyCoarse, _pFloatVec, nullptr, "Operand of OpDPdyCoarse is not a scalar or vector of float type"); }
 		Instruction* opFwidthCoarse(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpFwidthCoarse, _pFloatVec, nullptr, "Operand of OpFwidthCoarse is not a scalar or vector of float type"); }
 
-		// Instruction* OpEmitVertex(); TODO
-		// Instruction* OpEndPrimitive(); TODO
-		// Instruction* OpEmitStreamVertex(); TODO
-		// Instruction* OpEndStreamPrimitive(); TODO
+		Instruction* opEmitVertex();
+		Instruction* opEndPrimitive();
+		Instruction* opEmitStreamVertex(Instruction* _pConstIntId);
+		Instruction* opEndStreamPrimitive(Instruction* _pConstIntId);
 
 		// Instruction* OpControlBarrier(); TODO
 		// Instruction* OpMemoryBarrier(); TODO

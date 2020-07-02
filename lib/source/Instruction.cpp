@@ -596,7 +596,7 @@ void spvgentwo::Instruction::opLine(Instruction* _pFileString, unsigned int _lin
 	}
 	else
 	{
-		getModule()->logError("Operand of _pFileString of opLine target must be OpString instruction");
+		getModule()->logError("Operand _pFileString of opLine must be OpString instruction");
 	}
 }
 
@@ -608,6 +608,48 @@ void spvgentwo::Instruction::opLine(const char* _pFileString, unsigned int _line
 void spvgentwo::Instruction::opNoLine()
 {
 	makeOp(spv::Op::OpNoLine);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opEmitVertex()
+{
+	return makeOp(spv::Op::OpEmitVertex);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opEndPrimitive()
+{
+	return makeOp(spv::Op::OpEndPrimitive);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opEmitStreamVertex(Instruction* _pConstIntId)
+{
+	const Type* type = _pConstIntId->getType();
+
+	if (type == nullptr) return error();
+
+	if (_pConstIntId->isSpecOrConstant() && type->isInt())
+	{
+		return makeOp(spv::Op::OpEmitStreamVertex, _pConstIntId);
+	}
+
+	getModule()->logError("Operand _pConstIntId of opEmitStreamVertex must be constant instruction of type int");
+
+	return error();
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opEndStreamPrimitive(Instruction* _pConstIntId)
+{
+	const Type* type = _pConstIntId->getType();
+
+	if (type == nullptr) return error();
+
+	if (_pConstIntId->isSpecOrConstant() && type->isInt())
+	{
+		return makeOp(spv::Op::OpEndStreamPrimitive, _pConstIntId);
+	}
+
+	getModule()->logError("Operand _pConstIntId of opEndStreamPrimitive must be constant instruction of type int");
+
+	return error();
 }
 
 void spvgentwo::Instruction::opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control)
