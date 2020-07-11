@@ -108,7 +108,7 @@ spvgentwo::Instruction* spvgentwo::Function::getParameter(unsigned int _index)
 	return it == nullptr ? nullptr : it.operator->();
 }
 
-spvgentwo::Instruction* spvgentwo::Function::variable(Instruction* _pPtrType, Instruction* _pInitialzer, const char* _pName)
+spvgentwo::Instruction* spvgentwo::Function::variable(Instruction* _pPtrType, const char* _pName, Instruction* _pInitialzer)
 {
 	if (empty())
 	{
@@ -129,6 +129,13 @@ spvgentwo::Instruction* spvgentwo::Function::variable(Instruction* _pPtrType, In
 	}
 
 	return pVar;
+}
+
+spvgentwo::Instruction* spvgentwo::Function::variable(const Type& _ptrType, const char* _pName, Instruction* _pInitialzer)
+{
+	Instruction* type = _ptrType.isPointer() ? getModule()->addType(_ptrType) : getModule()->addType(_ptrType.wrapPointer(spv::StorageClass::Function));
+
+	return variable(type, _pName, _pInitialzer);
 }
 
 spvgentwo::Instruction* spvgentwo::Function::setReturnType(Instruction* _pReturnType)

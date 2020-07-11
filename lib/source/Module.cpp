@@ -1056,6 +1056,13 @@ spvgentwo::Instruction* spvgentwo::Module::variable(Instruction* _pPtrType, cons
 	return pVar;
 }
 
+spvgentwo::Instruction* spvgentwo::Module::variable(const Type& _ptrType, const spv::StorageClass _storageClass, const char* _pName, Instruction* _pInitialzer)
+{
+	Instruction* type = _ptrType.isPointer() ? addType(_ptrType) : addType(_ptrType.wrapPointer(_storageClass));
+
+	return variable(type, _storageClass, _pName, _pInitialzer);
+}
+
 spvgentwo::Instruction* spvgentwo::Module::addUndefInstr()
 {
 	return &m_Undefs.emplace_back(this);

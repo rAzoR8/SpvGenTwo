@@ -187,45 +187,55 @@ namespace spvgentwo
 		// _pPtrType needs to be in the same StorageClass as _storageClass
 		Instruction* variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, const char* _pName = nullptr, Instruction* _pInitialzer = nullptr);
 
+		// if ptrType is not a pointer, it will be wrapped by a pointer with _storageClass
+		Instruction* variable(const Type& _ptrType, const spv::StorageClass _storageClass, const char* _pName = nullptr, Instruction* _pInitialzer = nullptr);
+
 		template <class T> // adds Pointer to type T
 		Instruction* variable(const spv::StorageClass _storageClass, const char* _pName = nullptr, Instruction* _pInitialzer = nullptr);
 
 		template <class T>
 		Instruction* variable(const spv::StorageClass _storageClass, const T& _initialValue, const char* _pName = nullptr);
 
+		Instruction* uniformConstant(const Type& _ptrType, const char* _pName, Instruction* _pInitialzer = nullptr) { return variable(_ptrType, spv::StorageClass::UniformConstant, _pName, _pInitialzer); }
 		template <class T> // constant uniform variable
 		Instruction* uniformConstant(const char* _pName, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::UniformConstant, _pName, _pInitialzer); }
 		template <class T> // constant uniform variable
 		Instruction* uniformConstant(const char* _pName, const T& _dynTypeDesc) { return variable<T>(spv::StorageClass::UniformConstant, _dynTypeDesc, _pName); }
 
+		Instruction* uniform(const Type& _ptrType, const char* _pName, Instruction* _pInitialzer = nullptr) { return variable(_ptrType, spv::StorageClass::Uniform, _pName, _pInitialzer); }
 		template <class T> // uniform variable
 		Instruction* uniform(const char* _pName, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Uniform, _pName, _pInitialzer); }
 		template <class T> // uniform variable
 		Instruction* uniform(const char* _pName, const T& _dynTypeDesc) { return variable<T>(spv::StorageClass::Uniform, _dynTypeDesc, _pName); }
 
+		Instruction* input(const Type& _ptrType, const char* _pName, Instruction* _pInitialzer = nullptr) { return variable(_ptrType, spv::StorageClass::Input, _pName, _pInitialzer); }
 		template <class T> // input variable
 		Instruction* input(const char* _pName, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Input, _pName, _pInitialzer); }
 		template <class T> // input variable
 		Instruction* input(const char* _pName, const T& _dynTypeDesc) { return variable<T>(spv::StorageClass::Input, _dynTypeDesc, _pName); }
 
+		Instruction* output(const Type& _ptrType, const char* _pName, Instruction* _pInitialzer = nullptr) { return variable(_ptrType, spv::StorageClass::Output, _pName, _pInitialzer); }
 		template <class T> // output variable
 		Instruction* output(const char* _pName, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Output, _pName, _pInitialzer); }
 		template <class T> // output variable
 		Instruction* output(const char* _pName, const T& _dynTypeDesc) { return variable<T>(spv::StorageClass::Output, _dynTypeDesc, _pName); }
 
+		Instruction* pushConstant(const Type& _ptrType, const char* _pName, Instruction* _pInitialzer = nullptr) { return variable(_ptrType, spv::StorageClass::PushConstant, _pName, _pInitialzer); }
 		template <class T> // push constant variable
 		Instruction* pushConstant(const char* _pName, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::PushConstant, _pName, _pInitialzer); }
 		template <class T> // push constant variable
 		Instruction* pushConstant(const char* _pName, const T& _dynTypeDesc) { return variable<T>(spv::StorageClass::PushConstant, _dynTypeDesc, _pName); }
 
-		template <class T> // (strage )image variable
+		Instruction* image(const Type& _ptrType, const char* _pName, Instruction* _pInitialzer = nullptr) { return variable(_ptrType, spv::StorageClass::Image, _pName, _pInitialzer); }
+		template <class T> // image variable
 		Instruction* image(const char* _pName, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::Image, _pName, _pInitialzer); }
-		template <class T> // (strage )image variable
+		template <class T> // image variable
 		Instruction* image(const char* _pName, const T& _dynTypeDesc) { return variable<T>(spv::StorageClass::Image, _dynTypeDesc, _pName); }
 
-		template <class T> // image variable
+		Instruction* storageBuffer(const Type& _ptrType, const char* _pName, Instruction* _pInitialzer = nullptr) { return variable(_ptrType, spv::StorageClass::StorageBuffer, _pName, _pInitialzer); }
+		template <class T> // buffer variable
 		Instruction* storageBuffer(const char* _pName, Instruction* _pInitialzer = nullptr) { return variable<T>(spv::StorageClass::StorageBuffer, _pName, _pInitialzer); }
-		template <class T> // image variable
+		template <class T> // buffer variable
 		Instruction* storageBuffer(const char* _pName, const T& _dynTypeDesc) { return variable<T>(spv::StorageClass::StorageBuffer, _dynTypeDesc, _pName); }
 
 		// add empty instruction which must be OpUndef
