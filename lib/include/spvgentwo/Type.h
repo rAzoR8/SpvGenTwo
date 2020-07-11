@@ -228,6 +228,7 @@ namespace spvgentwo
 		Type& NamedBarrier();
 
 		Type& Vector(unsigned int _elements = 0u, const Type* _elementType = nullptr);
+		Type& VectorM(unsigned int _elements = 0u, const Type* _elementType = nullptr) { Member().Vector(_elements, _elementType); return *this; }
 		Type& Vector(const dyn_vector_t& _vectorType);
 
 		// makes this a vector type, returns element type
