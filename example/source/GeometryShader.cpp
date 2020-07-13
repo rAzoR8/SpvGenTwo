@@ -28,7 +28,7 @@ Module examples::geometryShader(IAllocator* _pAllocator, ILogger* _pLogger)
     {
       vec4 gl_Position;
       float gl_PointSize;
-      float gl_ClipDistance[];
+      float gl_ClipDistance[1];
     };
 
     type.Struct();
@@ -36,7 +36,16 @@ Module examples::geometryShader(IAllocator* _pAllocator, ILogger* _pLogger)
     type.FloatM(); // float gl_PointSize
     type.Member().ArrayElement(1u).Float(); // float gl_ClipDistance[];
     
-    module.addType(type, "gl_PerVertex"); // just to assign the name
+    Instruction* glPerVertexType = module.addType(type, "gl_PerVertex"); // just to assign the name
+    module.addDecorationInstr()->opDecorate(glPerVertexType, spv::Decoration::Block);
+    module.addDecorationInstr()->opMemberDecorate(glPerVertexType, 0, spv::Decoration::BuiltIn, spv::BuiltIn::Position);
+    module.addDecorationInstr()->opMemberDecorate(glPerVertexType, 1, spv::Decoration::BuiltIn, spv::BuiltIn::PointSize);
+    module.addDecorationInstr()->opMemberDecorate(glPerVertexType, 2, spv::Decoration::BuiltIn, spv::BuiltIn::ClipDistance);
+    module.addMemberName(glPerVertexType, "gl_Position", 0u);
+    module.addMemberName(glPerVertexType, "gl_PointSize", 1u);
+    module.addMemberName(glPerVertexType, "gl_ClipDistance", 2u);
+
+    const char* memberName = glPerVertexType->getName(1u);
 
     Instruction* outPerVertex = module.output(type, "gl_out");
     Instruction* inPerVertex = module.input(type.wrapArray(1u), "gl_in");

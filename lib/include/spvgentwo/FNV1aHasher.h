@@ -4,12 +4,22 @@
 
 namespace spvgentwo
 {
-	using Hash64 = unsigned long long;
+	struct Hash64
+	{
+		using u32 = unsigned long;
+		using u64 = unsigned long long;
+		u64 value;
+		constexpr Hash64(u64 _val = 0ull) : value(_val) {}
+		constexpr Hash64(u32 _low, u32 _high) : value(_low | static_cast<u64>(_high) << 32u) {}
+		constexpr operator u64() const { return value; }
+		inline constexpr Hash64 operator^=(unsigned char _byte) { value ^= _byte; return *this; }
+		inline constexpr Hash64 operator*=(const Hash64 _prime) { value *= _prime.value; return *this; }
+	};
 	
 	namespace detail
 	{
-		constexpr Hash64 Offset = 0xcbf29ce484222325ui64;
-		constexpr Hash64 Prime = 0x100000001b3ui64;
+		constexpr Hash64 Offset{ 0xcbf29ce484222325ui64 };
+		constexpr Hash64 Prime{ 0x100000001b3ui64 };
 	}
 
 	template <class Key>
@@ -32,7 +42,7 @@ namespace spvgentwo
 	class FNV1aHasher
 	{
 	public:
-		FNV1aHasher() = default;
+		explicit FNV1aHasher(Hash64 _seed = detail::Offset);
 
 		template<class T>
 		FNV1aHasher(const T& _data);
@@ -48,6 +58,9 @@ namespace spvgentwo
 
 		FNV1aHasher& operator<<(const char* _str);
 
+		template <class T>
+		FNV1aHasher& operator<<(const T* _ptr);
+
 		Hash64 get() const { return m_Hash; }
 		operator Hash64() const { return m_Hash; }
 
@@ -59,9 +72,17 @@ namespace spvgentwo
 
 		Hash64 operator()(const char* _str);
 
+		template <class T>
+		Hash64 operator()(const T* _ptr);
+
 	private:
-		unsigned long long m_Hash = detail::Offset;
+		Hash64 m_Hash = detail::Offset;
 	};
+
+	inline FNV1aHasher::FNV1aHasher(Hash64 _seed) :
+		m_Hash(_seed)
+	{
+	}
 
 	inline FNV1aHasher::FNV1aHasher(const char* _str)
 	{
@@ -118,6 +139,13 @@ namespace spvgentwo
 	}
 
 	template<class T>
+	inline FNV1aHasher& FNV1aHasher::operator<<(const T* _ptr)
+	{
+		add(&_ptr, sizeof(const T*));
+		return *this;
+	}
+
+	template<class T>
 	inline Hash64 FNV1aHasher::operator()(const T& _data)
 	{
 		Hasher<T> func;
@@ -136,5 +164,11 @@ namespace spvgentwo
 		}
 
 		return m_Hash;
+	}
+
+	template<class T>
+	inline Hash64 FNV1aHasher::operator()(const T* _ptr)
+	{
+		return add(&_ptr, sizeof(const T*));
 	}
 } // !spvgentwo

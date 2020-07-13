@@ -14,6 +14,8 @@ namespace spvgentwo
 	class Module
 	{
 	public:
+		struct NameInstrKey { const Instruction* target = nullptr; unsigned int member = 0u; };
+
 		Module(IAllocator* _pAllocator, const unsigned int _spvVersion = spv::Version,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
 		Module(IAllocator* _pAllocator, const unsigned int _spvVersion, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
 
@@ -160,10 +162,10 @@ namespace spvgentwo
 		// for use with opName and opMemberName
 		Instruction* addNameInstr();
 		void addName(Instruction* _pTarget, const char* _pName);
-		void addMemberName(Instruction* _pMember, const char* _pMemberName, unsigned int _memberIndex);
+		void addMemberName(Instruction* _pTargetBase, const char* _pMemberName, unsigned int _memberIndex);
 
 		// get name string of instruction _pTarget that was decorated with OpName
-		const char* getName(const Instruction* _pTarget) const;
+		const char* getName(const Instruction* _pTarget, const unsigned int _memberIndex = ~0u) const;
 
 		// for use with opModuleProccessed
 		Instruction* addModuleProccessedInstr();
@@ -319,8 +321,8 @@ namespace spvgentwo
 		HashMap<Constant, Instruction*> m_ConstantToInstr;
 		HashMap<const Instruction*, const Constant*> m_InstrToConstant;
 
-		// instruction that was decorated with opName (Target) -> name
-		HashMap<const Instruction*, String> m_NameLookup;
+		// instruction that was decorated with opName or OpMemberName(Target) -> name
+		HashMap<NameInstrKey, String> m_NameLookup;
 
 		List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function
 
@@ -328,6 +330,18 @@ namespace spvgentwo
 		List<Instruction> m_Lines; // opLine, opNoLine
 
 		Instruction m_errorInstr; // opNop
+	};
+
+	template <>
+	struct Hasher<Module::NameInstrKey>
+	{
+		Hash64 operator()(const Module::NameInstrKey& _key) const
+		{
+			FNV1aHasher h;
+			h << _key.target;
+			h << _key.member;
+			return h;
+		}
 	};
 
 	template<typename ...Args>

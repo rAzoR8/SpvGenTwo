@@ -801,4 +801,4 @@ namespace spvgentwo
 
 	template <>
 	inline Type& Type::fundamental<double>(const double*) { return Double(); }
-} // !spvgentwI
+} // !spvgentwo

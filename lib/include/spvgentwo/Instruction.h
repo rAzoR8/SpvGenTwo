@@ -67,7 +67,7 @@ namespace spvgentwo
 		BasicBlock* getBasicBlock() const;
 
 		// get name that was assigned via opName
-		const char* getName() const;
+		const char* getName(const unsigned int _memberIndex = ~0u) const;
 
 		// not so sure this is a good idea
 		operator BasicBlock& () { return *getBasicBlock(); }

@@ -79,9 +79,9 @@ spvgentwo::Module* spvgentwo::Instruction::getModule() const
 	}
 }
 
-const char* spvgentwo::Instruction::getName() const
+const char* spvgentwo::Instruction::getName(const unsigned int _memberIndex) const
 {
-	return getModule()->getName(this);
+	return getModule()->getName(this, _memberIndex);
 }
 
 bool spvgentwo::Instruction::getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const
