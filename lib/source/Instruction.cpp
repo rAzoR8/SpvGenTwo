@@ -536,6 +536,11 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFunctionParameter(Instruction*
 	return error();
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opKill()
+{
+	return makeOp(spv::Op::OpKill);
+}
+
 void spvgentwo::Instruction::opReturn()
 {
 	makeOp(spv::Op::OpReturn);

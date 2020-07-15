@@ -643,7 +643,7 @@ namespace spvgentwo
 		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight);
 
 		// Instruction* OpSwitch(); TODO
-		// Instruction* OpKill(); TODO
+		Instruction* opKill();
 
 		void opReturn();
 
@@ -1191,6 +1191,6 @@ namespace spvgentwo
 			}
 		}
 
-		return error();
+		return this; // success
 	}
 } // !spvgentwo

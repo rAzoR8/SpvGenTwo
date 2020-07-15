@@ -402,7 +402,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpBranch | &#10004; |
 | OpBranchConditional | &#10004; |
 | OpSwitch | &#9744; |
-| OpKill | &#9744; |
+| OpKill | &#10004; |
 | OpReturn | &#10004; |
 | OpReturnValue | &#10004; |
 | OpUnreachable | &#9744; |

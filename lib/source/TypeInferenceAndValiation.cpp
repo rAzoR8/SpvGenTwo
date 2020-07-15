@@ -218,7 +218,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpImageDrefGather:
 	case spv::Op::OpImageRead:
 	{
-		if (type1 == nullptr) return module->getErrorInstr();
+		if (type1 == nullptr) break;
 
 		const Type* image = type1->isSampledImage() ? &type1->front() : (type1->isImage() ? type1 : nullptr); // _pType1 is SampleImage or Image
 		if (image == nullptr) break;
