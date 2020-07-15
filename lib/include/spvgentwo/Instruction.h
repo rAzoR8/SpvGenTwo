@@ -278,10 +278,14 @@ namespace spvgentwo
 		Instruction* opVectorShuffle(Instruction* _pVector1, Instruction* _pVector2, Components ... _components);
 
 		template <class ... ConstituentInstr>
-		Instruction* opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituents, ConstituentInstr* ... _constituents);
+		Instruction* opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituent, ConstituentInstr* ... _constituents);
+
+		Instruction* opCompositeConstruct(Instruction* _pResultType, const List<Instruction*>& _constituents);
 
 		template <class ... IntIndices>
 		Instruction* opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ... _indices);
+
+		Instruction* opCompositeExtract(Instruction* _pComposite, const List<unsigned int>& _indices);
 
 		template <class ... IntIndices>
 		Instruction* opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, const unsigned int _firstIndex, IntIndices ... _indices);

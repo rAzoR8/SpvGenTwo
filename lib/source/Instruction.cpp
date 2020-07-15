@@ -717,6 +717,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAccessChain(Instruction* _pBas
 		{
 			addOperand(pModule->constant(i));
 		}
+
+		return this;
 	}
 
 	getModule()->logError("Failed to deduct composite type of base operand for OpAccessChain");
@@ -785,6 +787,65 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAll(Instruction* _pBoolVec)
 	}
 
 	getModule()->logError("Operands of opAll is not a vector of bool");
+
+	return error();
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opCompositeConstruct(Instruction* _pResultType, const List<Instruction*>& _constituents)
+{
+	const Type* type = _pResultType->getType();
+	if (type == nullptr) return error();
+
+	if (type->isComposite() == false)
+	{
+		getModule()->logError("Result type of opCompositeConstruct is not a composite type");
+		return error();
+	}
+
+	makeOp(spv::Op::OpCompositeConstruct, _pResultType, InvalidId);
+
+	for (Instruction* constituent : _constituents)
+	{
+		addOperand(constituent);
+	}
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opCompositeExtract(Instruction* _pComposite, const List<unsigned int>& _indices)
+{
+	const Type* pBaseType = _pComposite->getType();
+	if (pBaseType == nullptr) return error();
+
+	Module* pModule = _pComposite->getModule();
+
+	if (pBaseType->isComposite() == false)
+	{
+		pModule->logError("Argument of opCompositeExtract is not a composite type");
+		return error();
+	}
+
+	auto it = pBaseType->getSubType(0u);
+
+	if (it != nullptr)
+	{
+		it = it->getSubType(_indices);
+	}
+
+	if (it != nullptr)
+	{
+		Instruction* pResultType = pModule->addType(*it);
+		makeOp(spv::Op::OpCompositeExtract, pResultType, InvalidId, _pComposite);
+
+		for (auto i : _indices)
+		{
+			addOperand(literal_t{ i });
+		}
+
+		return this;
+	}
+
+	pModule->logError("Invalid index sequence specified for composite type extraction");
 
 	return error();
 }
