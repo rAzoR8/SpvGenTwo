@@ -894,9 +894,13 @@ namespace spvgentwo
 			Type&& ptrType(it->wrap(spv::Op::OpTypePointer));
 			ptrType.setStorageClass(pBaseType->getStorageClass());
 			pResultType = pModule->addType(ptrType);
+
+			return makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->constant(_firstIndex), pModule->constant<unsigned int>(_indices)...);
 		}
 
-		return makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->constant(_firstIndex), pModule->constant<unsigned int>(_indices)...);
+		getModule()->logError("Failed to deduct composite type of base operand for OpAccessChain");
+
+		return error();
 	}
 
 	template<class ...Instr>
