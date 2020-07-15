@@ -689,6 +689,41 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResult
 	}
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opAccessChain(Instruction* _pBase, const List<unsigned int>& _indices)
+{
+	// Base must be a pointer, pointing to the base of a composite object.
+	const Type* pBaseType = _pBase->getType();
+	if (pBaseType == nullptr) return error();
+
+	auto it = pBaseType->getSubType(0u); // base is a pointer type, so 0 is used to get the inner type
+
+	if (it != nullptr)
+	{
+		it = it->getSubType(_indices);
+	}
+
+	if (it != nullptr)
+	{
+		Module* pModule = _pBase->getModule();
+
+		// Result Type must be an OpTypePointer.
+		// Its Type operand must be the type reached by walking the Base’s type hierarchy down to the last provided index in Indexes, and its Storage Class operand must be the same as the Storage Class of Base.
+
+		Instruction* pResultType = pModule->addType(it->wrapPointer(pBaseType->getStorageClass()));
+
+		makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase);
+		
+		for (auto i : _indices) 
+		{
+			addOperand(pModule->constant(i));
+		}
+	}
+
+	getModule()->logError("Failed to deduct composite type of base operand for OpAccessChain");
+
+	return error();
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLeft, Instruction* _pRight)
 {
 	const Type* pLeftType = _pLeft->getType();

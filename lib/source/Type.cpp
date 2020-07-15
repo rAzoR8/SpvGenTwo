@@ -510,6 +510,22 @@ spvgentwo::Type& spvgentwo::Type::Member(const Type* _pSubType)
 	}
 }
 
+spvgentwo::List<spvgentwo::Type>::Iterator spvgentwo::Type::getSubType(const List<unsigned int>& _indices) const
+{
+	auto it = m_subTypes.begin();
+
+	for (auto i : _indices)
+	{
+		it = it + i;
+		if (it != nullptr)
+		{
+			it = it->getSubTypes().begin();
+		}
+	}
+
+	return it;
+}
+
 spvgentwo::Type spvgentwo::Type::New() const
 {
 	return Type(m_subTypes.getAllocator());

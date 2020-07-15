@@ -249,6 +249,8 @@ namespace spvgentwo
 		template <class ... IntIndices>
 		Instruction* opAccessChain(Instruction* _pBase, const unsigned int _firstIndex, IntIndices... _indices);
 
+		Instruction* opAccessChain(Instruction* _pBase, const List<unsigned int>& _indices);
+
 		template <class ... Instr>
 		Instruction* opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ... _pIndices);
 
@@ -878,22 +880,19 @@ namespace spvgentwo
 	inline Instruction* Instruction::opAccessChain(Instruction* _pBase, const unsigned int _firstIndex, IntIndices ..._indices)
 	{
 		// Base must be a pointer, pointing to the base of a composite object.
-
 		const Type* pBaseType = _pBase->getType();
 		if (pBaseType == nullptr) return error();
 
 		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...); // base is a pointer type, so 0 is used to get the inner type
-		Module* pModule = _pBase->getModule();
-		Instruction* pResultType = nullptr;
 
 		if (it != nullptr)
 		{
+			Module* pModule = _pBase->getModule();
+
 			// Result Type must be an OpTypePointer.
 			// Its Type operand must be the type reached by walking the Base’s type hierarchy down to the last provided index in Indexes, and its Storage Class operand must be the same as the Storage Class of Base.
 	
-			Type&& ptrType(it->wrap(spv::Op::OpTypePointer));
-			ptrType.setStorageClass(pBaseType->getStorageClass());
-			pResultType = pModule->addType(ptrType);
+			Instruction* pResultType = pModule->addType(it->wrapPointer(pBaseType->getStorageClass()));
 
 			return makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->constant(_firstIndex), pModule->constant<unsigned int>(_indices)...);
 		}
