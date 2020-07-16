@@ -564,6 +564,25 @@ void spvgentwo::Instruction::opFunctionEnd()
 	makeOp(spv::Op::OpFunctionEnd);
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, const List<Instruction*>& _args)
+{
+	if (_pResultType->isType() && _pFunction->getOperation() == spv::Op::OpFunction)
+	{
+		makeOp(spv::Op::OpFunctionCall, _pResultType, InvalidId, _pFunction);
+
+		for (Instruction* arg : _args)
+		{
+			addOperand(arg);
+		}
+
+		return this;
+	}
+
+	getModule()->logError("_pResultType is not a type instruction or _pFunction is not OpFunction");
+
+	return error();
+}
+
 void spvgentwo::Instruction::opName(Instruction* _pTarget, const char* _pName)
 {
 	if (_pTarget->hasResult())
@@ -675,6 +694,11 @@ void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, Basic
 void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight)
 {
 	makeOp(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock, _trueWeight, _falseWeight);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::call(Function* _pFunction, const List<Instruction*>& _args)
+{
+	return opFunctionCall(_pFunction->getReturnType(), _pFunction->getFunction(), _args);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instruction* _pInitializer)

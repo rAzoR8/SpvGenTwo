@@ -225,9 +225,13 @@ namespace spvgentwo
 		template <class ... ArgInstr>
 		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ... _args);
 
+		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, const List<Instruction*>& _args);
+
 		// generic helper for opFunctionCall using Function class
 		template <class ... ArgInstr>
 		Instruction* call(Function* _pFunction, ArgInstr ... _args);
+
+		Instruction* call(Function* _pFunction, const List<Instruction*>& _args);
 		
 		// _pResultType must be of OpTypePointer
 		Instruction* opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instruction* _pInitializer = nullptr);
@@ -812,7 +816,14 @@ namespace spvgentwo
 	template<class ...ArgInstr>
 	inline Instruction* Instruction::opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ..._args)
 	{
-		return makeOp(spv::Op::OpFunctionCall, _pResultType, InvalidId, _pFunction, _args...);
+		if (_pResultType->isType() && _pFunction->getOperation() == spv::Op::OpFunction)
+		{
+			return makeOp(spv::Op::OpFunctionCall, _pResultType, InvalidId, _pFunction, _args...);
+		}
+
+		getModule()->logError("_pResultType is not a type instruction or _pFunction is not OpFunction");
+
+		return error();
 	}
 
 	template<class ...ArgInstr>
