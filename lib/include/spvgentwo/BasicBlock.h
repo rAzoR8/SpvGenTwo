@@ -121,8 +121,15 @@ namespace spvgentwo
 		_true(trueBB);
 		_false(falseBB);
 
-		trueBB->opBranch(&mergeBB);
-		falseBB->opBranch(&mergeBB);
+		// check if user didnt exit controlflow via kill or similar
+		if (trueBB.empty() == false && trueBB.back().isTerminator() == false)
+		{
+			trueBB->opBranch(&mergeBB);
+		}
+		if (falseBB.empty() == false && falseBB.back().isTerminator() == false)
+		{
+			falseBB->opBranch(&mergeBB);
+		}
 
 		return mergeBB;
 	}
@@ -140,7 +147,11 @@ namespace spvgentwo
 
 		_true(trueBB);
 
-		trueBB->opBranch(&mergeBB);
+		// check if user didnt exit controlflow via kill or similar
+		if (trueBB.empty() == false && trueBB.back().isTerminator() == false)
+		{
+			trueBB->opBranch(&mergeBB);		
+		}
 
 		return mergeBB;
 	}
