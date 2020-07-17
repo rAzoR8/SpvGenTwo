@@ -94,15 +94,14 @@ namespace spvgentwo
 		// UnpackUnorm4x8 TODO
 		// UnpackDouble2x32 TODO
 
-		// Length TODO
-		// Distance TODO
-
-		Instruction* opCross(Instruction* _pLeft, Instruction* _pRight);
-
-		// Normalize TODO
-		// FaceForward TODO
-		// Reflect TODO
-		// Refract TODO
+		Instruction* opLength(Instruction* _pX);
+		Instruction* opDistance(Instruction* _pP1, Instruction* _pP2);
+		Instruction* opCross(Instruction* _pX, Instruction* _pY);
+		Instruction* opNormalize(Instruction* _pX) { return scalarOrFloatVec1(glslstd450::Op::Normalize, _pX); }
+		Instruction* opFaceForward(Instruction* _pN, Instruction* _pI, Instruction* _pNref) { return scalarOrFloatVec3(glslstd450::Op::FaceForward, _pN, _pI, _pNref); }
+		Instruction* opReflect(Instruction* _pI, Instruction* _pN) { return scalarOrFloatVec2(glslstd450::Op::Reflect, _pN, _pI); }
+		Instruction* opRefract(Instruction* _pIvec, Instruction* _pNvec, Instruction* _pEtaFloat);
+		
 		// FindILsb TODO
 		// FindSMsb TODO
 		// FindUMsb TODO

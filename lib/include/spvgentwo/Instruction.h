@@ -684,9 +684,12 @@ namespace spvgentwo
 
 		// TODO: All the rest to at least maybe OpDecorateString without the INTEL extension instructions?
 
-	private:
+
+	protected:
 		// return error instr
 		Instruction* error() const;
+
+	private:
 
 		// creates literals
 		template <class T, class ...Args>
