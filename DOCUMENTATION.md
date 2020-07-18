@@ -1,6 +1,6 @@
 # Documentation
 
-SpvGenTwo is build around building-blocks that are somewhat similar to SPIR-V's structure. From afar the resemble a layer-model: `Operand >> Instruction >> BasicBlock >> Function >> Module`, meaning that each Instruction is a list of operands, each BasicBlock is a list of Instructions and so on.
+SpvGenTwo is build around building-blocks that are somewhat similar to SPIR-V's structure. From afar they resemble a layer-model: `Operand >> Instruction >> BasicBlock >> Function >> Module`, meaning that each Instruction is a list of operands, each BasicBlock is a list of Instructions and so on.
 
 **Overview:**
 * [Operands](#Operands)

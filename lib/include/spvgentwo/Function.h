@@ -56,10 +56,13 @@ namespace spvgentwo
 		bool read(IReader* _pReader, const Grammar& _grammar, Instruction&& _opFunc);
 
 		// storage class is Function
-		Instruction* variable(Instruction* _pPtrType, Instruction* _pInitialzer = nullptr, const char* _pName = nullptr);
+		Instruction* variable(Instruction* _pPtrType, const char* _pName = nullptr, Instruction* _pInitialzer = nullptr);
+
+		// if ptrType is not a pointer, it will be wrapped by a pointer with _storageClass
+		Instruction* variable(const Type& _ptrType, const char* _pName = nullptr, Instruction* _pInitialzer = nullptr);
 
 		template <class T> // adds Pointer to type T
-		Instruction* variable(Instruction* _pInitialzer = nullptr, const char* _pName = nullptr);
+		Instruction* variable(const char* _pName = nullptr, Instruction* _pInitialzer = nullptr);
 
 		template <class T>
 		Instruction* variable(const T& _initialValue, const char* _pName = nullptr);
@@ -127,14 +130,14 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	inline Instruction* Function::variable(Instruction* _pInitialzer, const char* _pName)
+	inline Instruction* Function::variable(const char* _pName, Instruction* _pInitialzer)
 	{
-		return variable(getModule()->type<T*>(spv::StorageClass::Function), _pInitialzer, _pName);
+		return variable(getModule()->type<T*>(spv::StorageClass::Function), _pName, _pInitialzer);
 	}
 
 	template<class T>
 	inline Instruction* Function::variable(const T& _initialValue, const char* _pName)
 	{
-		return variable(getModule()->type<T*>(spv::StorageClass::Function, _initialValue), getModule()->constant(_initialValue), _pName);
+		return variable(getModule()->type<T*>(spv::StorageClass::Function, _initialValue), _pName, getModule()->constant(_initialValue));
 	}
 } // !spvgentwo

@@ -13,6 +13,8 @@
 #include "example/Types.h"
 #include "example/Constants.h"
 #include "example/ExpressionGraph.h"
+#include "example/GeometryShader.h"
+#include "example/FragmentShader.h"
 
 #include <stdarg.h>
 #include <assert.h>
@@ -118,6 +120,24 @@ int main(int argc, char* argv[])
 		writer.close();
 		system("spirv-dis constants.spv");
 		assert(system("spirv-val constants.spv") == 0);
+	}
+
+	// geo shader example
+	if (BinaryFileWriter writer("geometry.spv"); writer.isOpen())
+	{
+		examples::geometryShader(&alloc, &log).write(&writer);
+		writer.close();
+		system("spirv-dis geometry.spv");
+		assert(system("spirv-val geometry.spv") == 0);
+	}
+
+	// geo shader example
+	if (BinaryFileWriter writer("fragment.spv"); writer.isOpen())
+	{
+		examples::fragmentShader(&alloc, &log).write(&writer);
+		writer.close();
+		system("spirv-dis fragment.spv");
+		assert(system("spirv-val fragment.spv") == 0);
 	}
 
 	return 0;

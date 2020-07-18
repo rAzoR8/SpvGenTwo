@@ -66,6 +66,20 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
         // this works as long as T does not add any data members and just functionally extends the Instruction class
         Instruction* cross = bb.ext<GLSL>()->opCross(vec3, vec3); // use GLSL.std.450 extension
        
+        Instruction* norm = bb.ext<GLSL>()->opNormalize(cross);
+
+        Instruction* ff = bb.ext<GLSL>()->opFaceForward(vec3, norm, cross);
+
+        Instruction* refl = bb.ext<GLSL>()->opReflect(vec3, norm);
+
+        Instruction* eta = bb->opDot(refl, ff);
+
+        Instruction* refr = bb.ext<GLSL>()->opRefract(refl, ff, eta);
+
+        Instruction* len = bb.ext<GLSL>()->opLength(refr);
+
+        Instruction* dist = bb.ext<GLSL>()->opDistance(refl, refr);
+
         entry->opReturn();
     }
 

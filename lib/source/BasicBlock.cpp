@@ -145,8 +145,15 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::If(Instruction* _pCondition, Basic
 
 	addInstruction()->opSelectionMerge(&mergeBB, _mask);
 	addInstruction()->opBranchConditional(_pCondition, &_trueBlock, &_falseBlock);
-	_trueBlock->opBranch(&mergeBB);
-	_falseBlock->opBranch(&mergeBB);
+
+	if (_trueBlock.empty() == false && _trueBlock.back().isTerminator() == false)
+	{
+		_trueBlock->opBranch(&mergeBB);
+	}
+	if (_falseBlock.empty() == false && _falseBlock.back().isTerminator() == false)
+	{
+		_falseBlock->opBranch(&mergeBB);
+	}
 
 	return mergeBB;
 }
@@ -158,7 +165,11 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::If(Instruction* _pCondition, Basic
 
 	addInstruction()->opSelectionMerge(&mergeBB, _mask);
 	addInstruction()->opBranchConditional(_pCondition, &_trueBlock, &mergeBB);
-	_trueBlock->opBranch(&mergeBB);
+
+	if (_trueBlock.empty() == false && _trueBlock.back().isTerminator() == false)
+	{
+		_trueBlock->opBranch(&mergeBB);
+	}
 
 	return mergeBB;
 }

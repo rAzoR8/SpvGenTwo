@@ -19,6 +19,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 	module.addCapability(spv::Capability::Float64);
 	module.addCapability(spv::Capability::Int16);
 	module.addCapability(spv::Capability::Int64);
+	module.addCapability(spv::Capability::DerivativeControl);
 
 	module.addExtension("SPV_KHR_vulkan_memory_model");
 	Instruction* ext = module.getExtensionInstructionImport("GLSL.std.450");
@@ -131,6 +132,14 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* s64 = bb->opSConvert(sNeg, 64u);
 		Instruction* s16 = bb->opSConvert(sNeg, 16u);
 
+		bb->opShiftLeftLogical(sNeg, uInt);
+		bb->opShiftRightArithmetic(intvec, intvec);
+		bb->opShiftRightLogical(uInt, index);
+
+		bb->opBitwiseOr(index, sNeg);
+		bb->opBitwiseXor(intvec, intvec);
+		bb->opBitwiseAnd(uInt, index);
+
 		// generic
 		bb->Add(sNeg, uInt);
 		bb->Add(fNeg, x);
@@ -141,6 +150,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		bb->Mul(fNeg, fNeg);
 		bb->Mul(fNeg, cross);
 		bb->Mul(mat3, mat3);
+		bb->Mul(cross, cross); // vec * vec
 
 		bb->Div(sNeg, uInt); // sdiv
 		bb->Div(uInt, uInt); // udiv
@@ -170,7 +180,24 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* const boolVec = bb->GreaterEqual(cross, uniVec); // float vec
 
 		bb->Not(uInt);// int scalar
-		bb->Not(boolVec);
+		Instruction* notBoolVec = bb->Not(boolVec);
+
+		bb->Equal(notBoolVec, boolVec);
+		bb->NotEqual(notBoolVec, boolVec);
+		bb->opLogicalOr(notBoolVec, boolVec);
+		bb->opLogicalAnd(notBoolVec, boolVec);
+
+		bb->opDPdx(fNeg);
+		bb->opDPdxCoarse(cross);
+		bb->opDPdxFine(cross);
+
+		bb->opDPdy(cross);
+		bb->opDPdyCoarse(cross);
+		bb->opDPdyFine(fNeg);
+
+		bb->opFwidth(fNeg);
+		bb->opFwidthFine(fNeg);
+		bb->opFwidthCoarse(cross);
 
 		Instruction* extracted = bb->opVectorExtractDynamic(cross, index);
 
@@ -186,8 +213,11 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		bb->Mul(mat, mat3);
 
 		Instruction* vecType = module.type<vector_t<float, 3>>();
-		Instruction* newVec = bb->opCompositeConstruct(vecType, x, y, z);
-		newVec = bb->opVectorInsertDynamic(newVec, extracted, index);
+		Instruction* newVec3 = bb->opCompositeConstruct(vecType, x, y, z);
+		Instruction* updatedVec3 = bb->opVectorInsertDynamic(newVec3, extracted, index);
+		Instruction* shuffledVec4 = bb->opVectorShuffle(newVec3, updatedVec3, 0, 1, 1, 2);
+		Instruction* undefVec3 = bb->opUndef(vecType);
+		shuffledVec4 = bb->opVectorShuffle(undefVec3, updatedVec3, 1, 2, 3, 0);
 
 		Instruction* coord = module.constant(make_vector(0.5f, 0.5f));
 		Instruction* normal = bb->opLoad(uniNormal);

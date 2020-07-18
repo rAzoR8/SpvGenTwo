@@ -79,9 +79,9 @@ spvgentwo::Module* spvgentwo::Instruction::getModule() const
 	}
 }
 
-const char* spvgentwo::Instruction::getName() const
+const char* spvgentwo::Instruction::getName(const unsigned int _memberIndex) const
 {
-	return getModule()->getName(this);
+	return getModule()->getName(this, _memberIndex);
 }
 
 bool spvgentwo::Instruction::getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const
@@ -536,6 +536,11 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFunctionParameter(Instruction*
 	return error();
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opKill()
+{
+	return makeOp(spv::Op::OpKill);
+}
+
 void spvgentwo::Instruction::opReturn()
 {
 	makeOp(spv::Op::OpReturn);
@@ -557,6 +562,25 @@ void spvgentwo::Instruction::opReturnValue(Instruction* _pValue)
 void spvgentwo::Instruction::opFunctionEnd()
 {
 	makeOp(spv::Op::OpFunctionEnd);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, const List<Instruction*>& _args)
+{
+	if (_pResultType->isType() && _pFunction->getOperation() == spv::Op::OpFunction)
+	{
+		makeOp(spv::Op::OpFunctionCall, _pResultType, InvalidId, _pFunction);
+
+		for (Instruction* arg : _args)
+		{
+			addOperand(arg);
+		}
+
+		return this;
+	}
+
+	getModule()->logError("_pResultType is not a type instruction or _pFunction is not OpFunction");
+
+	return error();
 }
 
 void spvgentwo::Instruction::opName(Instruction* _pTarget, const char* _pName)
@@ -596,7 +620,7 @@ void spvgentwo::Instruction::opLine(Instruction* _pFileString, unsigned int _lin
 	}
 	else
 	{
-		getModule()->logError("Operand of _pFileString of opLine target must be OpString instruction");
+		getModule()->logError("Operand _pFileString of opLine must be OpString instruction");
 	}
 }
 
@@ -608,6 +632,48 @@ void spvgentwo::Instruction::opLine(const char* _pFileString, unsigned int _line
 void spvgentwo::Instruction::opNoLine()
 {
 	makeOp(spv::Op::OpNoLine);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opEmitVertex()
+{
+	return makeOp(spv::Op::OpEmitVertex);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opEndPrimitive()
+{
+	return makeOp(spv::Op::OpEndPrimitive);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opEmitStreamVertex(Instruction* _pConstIntId)
+{
+	const Type* type = _pConstIntId->getType();
+
+	if (type == nullptr) return error();
+
+	if (_pConstIntId->isSpecOrConstant() && type->isInt())
+	{
+		return makeOp(spv::Op::OpEmitStreamVertex, _pConstIntId);
+	}
+
+	getModule()->logError("Operand _pConstIntId of opEmitStreamVertex must be constant instruction of type int");
+
+	return error();
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opEndStreamPrimitive(Instruction* _pConstIntId)
+{
+	const Type* type = _pConstIntId->getType();
+
+	if (type == nullptr) return error();
+
+	if (_pConstIntId->isSpecOrConstant() && type->isInt())
+	{
+		return makeOp(spv::Op::OpEndStreamPrimitive, _pConstIntId);
+	}
+
+	getModule()->logError("Operand _pConstIntId of opEndStreamPrimitive must be constant instruction of type int");
+
+	return error();
 }
 
 void spvgentwo::Instruction::opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control)
@@ -630,6 +696,11 @@ void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, Basic
 	makeOp(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock, _trueWeight, _falseWeight);
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::call(Function* _pFunction, const List<Instruction*>& _args)
+{
+	return opFunctionCall(_pFunction->getReturnType(), _pFunction->getFunction(), _args);
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instruction* _pInitializer)
 {
 	if (_pInitializer == nullptr)
@@ -640,6 +711,43 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResult
 	{
 		return makeOp(spv::Op::OpVariable, _pResultType, InvalidId, _storageClass, _pInitializer);
 	}
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opAccessChain(Instruction* _pBase, const List<unsigned int>& _indices)
+{
+	// Base must be a pointer, pointing to the base of a composite object.
+	const Type* pBaseType = _pBase->getType();
+	if (pBaseType == nullptr) return error();
+
+	auto it = pBaseType->getSubType(0u); // base is a pointer type, so 0 is used to get the inner type
+
+	if (it != nullptr)
+	{
+		it = it->getSubType(_indices);
+	}
+
+	if (it != nullptr)
+	{
+		Module* pModule = _pBase->getModule();
+
+		// Result Type must be an OpTypePointer.
+		// Its Type operand must be the type reached by walking the Base’s type hierarchy down to the last provided index in Indexes, and its Storage Class operand must be the same as the Storage Class of Base.
+
+		Instruction* pResultType = pModule->addType(it->wrapPointer(pBaseType->getStorageClass()));
+
+		makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase);
+		
+		for (auto i : _indices) 
+		{
+			addOperand(pModule->constant(i));
+		}
+
+		return this;
+	}
+
+	getModule()->logError("Failed to deduct composite type of base operand for OpAccessChain");
+
+	return error();
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLeft, Instruction* _pRight)
@@ -703,6 +811,65 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAll(Instruction* _pBoolVec)
 	}
 
 	getModule()->logError("Operands of opAll is not a vector of bool");
+
+	return error();
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opCompositeConstruct(Instruction* _pResultType, const List<Instruction*>& _constituents)
+{
+	const Type* type = _pResultType->getType();
+	if (type == nullptr) return error();
+
+	if (type->isComposite() == false)
+	{
+		getModule()->logError("Result type of opCompositeConstruct is not a composite type");
+		return error();
+	}
+
+	makeOp(spv::Op::OpCompositeConstruct, _pResultType, InvalidId);
+
+	for (Instruction* constituent : _constituents)
+	{
+		addOperand(constituent);
+	}
+
+	return this;
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opCompositeExtract(Instruction* _pComposite, const List<unsigned int>& _indices)
+{
+	const Type* pBaseType = _pComposite->getType();
+	if (pBaseType == nullptr) return error();
+
+	Module* pModule = _pComposite->getModule();
+
+	if (pBaseType->isComposite() == false)
+	{
+		pModule->logError("Argument of opCompositeExtract is not a composite type");
+		return error();
+	}
+
+	auto it = pBaseType->getSubType(0u);
+
+	if (it != nullptr)
+	{
+		it = it->getSubType(_indices);
+	}
+
+	if (it != nullptr)
+	{
+		Instruction* pResultType = pModule->addType(*it);
+		makeOp(spv::Op::OpCompositeExtract, pResultType, InvalidId, _pComposite);
+
+		for (auto i : _indices)
+		{
+			addOperand(literal_t{ i });
+		}
+
+		return this;
+	}
+
+	pModule->logError("Invalid index sequence specified for composite type extraction");
 
 	return error();
 }
@@ -1086,6 +1253,34 @@ spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, 
 	return error();
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::intFloatBoolOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _intFun, DualOpMemberFun _floatFun, DualOpMemberFun _boolFun, const char* _pErrorMsg)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType == nullptr || rType == nullptr) return error();
+
+	if (_intFun != nullptr && lType->getBaseType().isInt() && rType->getBaseType().isInt())
+	{
+		return (this->*_intFun)(_pLeft, _pRight);
+	}
+	else if (_floatFun != nullptr && lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
+	{
+		return (this->*_floatFun)(_pLeft, _pRight);
+	}
+	else if (_boolFun != nullptr && lType->getBaseType().isBool() && rType->getBaseType().isBool())
+	{
+		return (this->*_boolFun)(_pLeft, _pRight);
+	}
+
+	if (_pErrorMsg != nullptr)
+	{
+		getModule()->logError(_pErrorMsg);
+	}
+
+	return error();
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, const char* _pErrorMsg)
 {
 	const Type* lType = _pLeft->getType();
@@ -1093,17 +1288,49 @@ spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, 
 
 	if (lType == nullptr || rType == nullptr) return error();
 
-	if (lType->getBaseType().isUInt() && rType->getBaseType().isUInt())
+	if (_uIntFun != nullptr && lType->getBaseType().isUInt() && rType->getBaseType().isUInt())
 	{
 		return (this->*_uIntFun)(_pLeft, _pRight);
 	}
-	else if (lType->getBaseType().isInt() && rType->getBaseType().isInt()) // if l or r is unsinged call signed func
+	else if (_sIntFun != nullptr && lType->getBaseType().isInt() && rType->getBaseType().isInt()) // if l or r is unsinged call signed func
 	{
 		return (this->*_sIntFun)(_pLeft, _pRight);
 	}
-	else if (lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
+	else if (_floatFun != nullptr && lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
 	{
 		return (this->*_floatFun)(_pLeft, _pRight);
+	}
+
+	if (_pErrorMsg != nullptr)
+	{
+		getModule()->logError(_pErrorMsg);
+	}
+
+	return error();
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::intFloatBoolOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, DualOpMemberFun _boolFun, const char* _pErrorMsg)
+{
+	const Type* lType = _pLeft->getType();
+	const Type* rType = _pRight->getType();
+
+	if (lType == nullptr || rType == nullptr) return error();
+
+	if (_uIntFun != nullptr && lType->getBaseType().isUInt() && rType->getBaseType().isUInt())
+	{
+		return (this->*_uIntFun)(_pLeft, _pRight);
+	}
+	else if (_sIntFun != nullptr && lType->getBaseType().isInt() && rType->getBaseType().isInt()) // if l or r is unsinged call signed func
+	{
+		return (this->*_sIntFun)(_pLeft, _pRight);
+	}
+	else if (_floatFun != nullptr && lType->getBaseType().isFloat() && rType->getBaseType().isFloat())
+	{
+		return (this->*_floatFun)(_pLeft, _pRight);
+	}
+	else if (_boolFun != nullptr && lType->getBaseType().isBool() && rType->getBaseType().isBool())
+	{
+		return (this->*_boolFun)(_pLeft, _pRight);
 	}
 
 	if (_pErrorMsg != nullptr)

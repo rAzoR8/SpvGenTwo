@@ -124,6 +124,12 @@ namespace spvgentwo
 		case spv::Op::OpFwidth:
 		case spv::Op::OpFwidthCoarse:
 		case spv::Op::OpFwidthFine:
+		case spv::Op::OpDPdx:
+		case spv::Op::OpDPdy:
+		case spv::Op::OpDPdxFine:
+		case spv::Op::OpDPdyFine:
+		case spv::Op::OpDPdxCoarse:
+		case spv::Op::OpDPdyCoarse:
 
 		case spv::Op::OpIsNan:
 		case spv::Op::OpIsInf:
@@ -135,6 +141,7 @@ namespace spvgentwo
 		case spv::Op::OpUnordered:
 		case spv::Op::OpConvertFToS:
 		case spv::Op::OpConvertFToU:
+
 			_sign = Sign::Any;
 			return spv::Op::OpTypeFloat;
 
@@ -166,6 +173,12 @@ namespace spvgentwo
 		case spv::Op::OpISubBorrow:
 		case spv::Op::OpISubSatINTEL:
 		case spv::Op::OpNot:
+		case spv::Op::OpShiftRightLogical:
+		case spv::Op::OpShiftRightArithmetic:
+		case spv::Op::OpShiftLeftLogical:
+		case spv::Op::OpBitwiseOr:
+		case spv::Op::OpBitwiseXor:
+		case spv::Op::OpBitwiseAnd:
 			_sign = Sign::Any;
 			return spv::Op::OpTypeInt;
 

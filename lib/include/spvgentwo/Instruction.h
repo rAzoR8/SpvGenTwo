@@ -67,7 +67,7 @@ namespace spvgentwo
 		BasicBlock* getBasicBlock() const;
 
 		// get name that was assigned via opName
-		const char* getName() const;
+		const char* getName(const unsigned int _memberIndex = ~0u) const;
 
 		// not so sure this is a good idea
 		operator BasicBlock& () { return *getBasicBlock(); }
@@ -149,8 +149,9 @@ namespace spvgentwo
 		Instruction* Div(Instruction* _pLeft, Instruction* _pRight, bool _allowVecDividedByScalar = true);
 
 		Instruction* Not(Instruction* _pIntOrBool); // lowecase not is a c++ keywork, hence generic functions need to be upper case
-		Instruction* Equal(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opIEqual, &Instruction::opFOrdEqual, "Failed to match Equals's operand types for this instruction"); }
-		Instruction* NotEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opINotEqual, &Instruction::opFOrdNotEqual, "Failed to match NotEqual's operand types for this instruction"); }
+
+		Instruction* Equal(Instruction* _pLeft, Instruction* _pRight) { return intFloatBoolOp(_pLeft, _pRight, &Instruction::opIEqual, &Instruction::opFOrdEqual, &Instruction::opLogicalEqual, "Failed to match Equals's operand types for this instruction"); }
+		Instruction* NotEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatBoolOp(_pLeft, _pRight, &Instruction::opINotEqual, &Instruction::opFOrdNotEqual, &Instruction::opLogicalNotEqual, "Failed to match NotEqual's operand types for this instruction"); }
 		Instruction* Greater(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSGreaterThan, &Instruction::opUGreaterThan, &Instruction::opFOrdGreaterThan, "Failed to match Greater's operand types for this instruction"); }
 		Instruction* GreaterEqual(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSGreaterThanEqual, &Instruction::opUGreaterThanEqual, &Instruction::opFOrdGreaterThanEqual, "Failed to match GreaterEqual's operand types for this instruction"); }
 		Instruction* Less(Instruction* _pLeft, Instruction* _pRight) { return intFloatOp(_pLeft, _pRight, &Instruction::opSLessThan, &Instruction::opULessThan, &Instruction::opFOrdLessThan, "Failed to match Less's operand types for this instruction"); }
@@ -224,9 +225,13 @@ namespace spvgentwo
 		template <class ... ArgInstr>
 		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ... _args);
 
+		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, const List<Instruction*>& _args);
+
 		// generic helper for opFunctionCall using Function class
 		template <class ... ArgInstr>
 		Instruction* call(Function* _pFunction, ArgInstr ... _args);
+
+		Instruction* call(Function* _pFunction, const List<Instruction*>& _args);
 		
 		// _pResultType must be of OpTypePointer
 		Instruction* opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instruction* _pInitializer = nullptr);
@@ -239,7 +244,7 @@ namespace spvgentwo
 		template <class ... Operands>
 		void opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<spv::MemoryAccessMask> _memOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands);
 
-		// Instruction* opCopyMemory(); TODO
+		// Instruction* OpCopyMemory(); TODO
 		// Instruction* OpCopyMemorySized(); TODO
 
 		template <class ... Instr>
@@ -248,11 +253,13 @@ namespace spvgentwo
 		template <class ... IntIndices>
 		Instruction* opAccessChain(Instruction* _pBase, const unsigned int _firstIndex, IntIndices... _indices);
 
+		Instruction* opAccessChain(Instruction* _pBase, const List<unsigned int>& _indices);
+
 		template <class ... Instr>
 		Instruction* opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ... _pIndices);
 
-		// Instruction* opPtrAccessChain(); TODO
-		// Instruction* opArrayLength(); TODO
+		// Instruction* OpPtrAccessChain(); TODO
+		// Instruction* OpArrayLength(); TODO
 		// Instruction* OpGenericPtrMemSemantics(); TODO
 		// Instruction* OpInBoundsPtrAccessChain(); TODO
 
@@ -270,13 +277,19 @@ namespace spvgentwo
 
 		Instruction* opVectorInsertDynamic(Instruction* _pVector, Instruction* _pComponent, Instruction* _pIndexInt);
 
-		// Instruction* OpVectorShuffle(); TODO
+		// components must be unint32_ts
+		template <class ... Components>
+		Instruction* opVectorShuffle(Instruction* _pVector1, Instruction* _pVector2, Components ... _components);
 
 		template <class ... ConstituentInstr>
-		Instruction* opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituents, ConstituentInstr* ... _constituents);
+		Instruction* opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituent, ConstituentInstr* ... _constituents);
+
+		Instruction* opCompositeConstruct(Instruction* _pResultType, const List<Instruction*>& _constituents);
 
 		template <class ... IntIndices>
 		Instruction* opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ... _indices);
+
+		Instruction* opCompositeExtract(Instruction* _pComposite, const List<unsigned int>& _indices);
 
 		template <class ... IntIndices>
 		Instruction* opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, const unsigned int _firstIndex, IntIndices ... _indices);
@@ -509,10 +522,13 @@ namespace spvgentwo
 		// Instruction* OpOrdered(); TODO
 		// Instruction* OpUnordered(); TODO
 
-		// Instruction* OpLogicalEqual(); TODO
-		// Instruction* OpLogicalNotEqual(); TODO
-		// Instruction* OpLogicalOr(); TODO
-		// Instruction* OpLogicalAnd(); TODO
+		Instruction* opLogicalEqual(Instruction* _pBoolVec1, Instruction* _pBoolVec2) { return scalarVecOp(spv::Op::OpLogicalEqual, _pBoolVec1, _pBoolVec2, "Operand of OpLogicalEqual is not a scalar or vector of bool type"); }
+
+		Instruction* opLogicalNotEqual(Instruction* _pBoolVec1, Instruction* _pBoolVec2) { return scalarVecOp(spv::Op::OpLogicalNotEqual, _pBoolVec1, _pBoolVec2, "Operand of OpLogicalNotEqual is not a scalar or vector of bool type"); }
+
+		Instruction* opLogicalOr(Instruction* _pBoolVec1, Instruction* _pBoolVec2) { return scalarVecOp(spv::Op::OpLogicalOr, _pBoolVec1, _pBoolVec2, "Operand of OpLogicalOr is not a scalar or vector of bool type"); }
+
+		Instruction* opLogicalAnd(Instruction* _pBoolVec1, Instruction* _pBoolVec2) { return scalarVecOp(spv::Op::OpLogicalAnd, _pBoolVec1, _pBoolVec2, "Operand of OpLogicalAnd is not a scalar or vector of bool type"); }
 
 		Instruction* opLogicalNot(Instruction* _pBoolVec) { return scalarVecOp(spv::Op::OpLogicalNot, _pBoolVec, nullptr, "Operand of OpLogicalNot is not a scalar or vector of bool type"); }
 
@@ -562,13 +578,17 @@ namespace spvgentwo
 
 		Instruction* opFUnordGreaterThanEqual(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpFUnordGreaterThanEqual, _pLeft, _pRight, "Operand of OpFUnordGreaterThanEqual is not a scalar or vector of float type"); }
 		
-		// Instruction* OpShiftRightLogical(); TODO
-		// Instruction* OpShiftRightArithmetic(); TODO
-		// Instruction* OpShiftLeftLogical(); TODO
+		Instruction* opShiftRightLogical(Instruction* _pBaseIntVec, Instruction* _pShiftIntVec) { return scalarVecOp(spv::Op::OpShiftRightLogical, _pBaseIntVec, _pShiftIntVec, "Operand of OpShiftRightLogical is not a scalar or vector of int", false); }
+		
+		Instruction* opShiftRightArithmetic(Instruction* _pBaseIntVec, Instruction* _pShiftIntVec) { return scalarVecOp(spv::Op::OpShiftRightArithmetic, _pBaseIntVec, _pShiftIntVec, "Operand of OpShiftRightArithmetic is not a scalar or vector of int", false); }
+		
+		Instruction* opShiftLeftLogical(Instruction* _pBaseIntVec, Instruction* _pShiftIntVec) { return scalarVecOp(spv::Op::OpShiftLeftLogical, _pBaseIntVec, _pShiftIntVec, "Operand of OpShiftLeftLogical is not a scalar or vector of int", false); }
 
-		// Instruction* OpBitwiseOr(); TODO
-		// Instruction* OpBitwiseXor(); TODO
-		// Instruction* OpBitwiseAnd(); TODO
+		Instruction* opBitwiseOr(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpBitwiseOr, _pLeft, _pRight, "Operand of OpBitwiseOr is not a scalar or vector of int", false); }
+
+		Instruction* opBitwiseXor(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpBitwiseXor, _pLeft, _pRight, "Operand of OpBitwiseXor is not a scalar or vector of int", false); }
+
+		Instruction* opBitwiseAnd(Instruction* _pLeft, Instruction* _pRight) { return scalarVecOp(spv::Op::OpBitwiseAnd, _pLeft, _pRight, "Operand of OpBitwiseAnd is not a scalar or vector of int", false); }
 
 		Instruction* opNot(Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpNot, _pIntVec, nullptr, "Operand of OpNot is not a scalar or vector of int type"); }
 
@@ -577,20 +597,22 @@ namespace spvgentwo
 		// Instruction* OpBitFieldUExtract(); TODO
 		// Instruction* OpBitReverse(); TODO
 
-		// Instruction* OpDPdx(); TODO
-		// Instruction* OpDPdy(); TODO
-		// Instruction* OpFwidth(); TODO
-		// Instruction* OpDPdxFine(); TODO
-		// Instruction* OpDPdyFine(); TODO
-		// Instruction* OpFwidthFine(); TODO
-		// Instruction* OpDPdxCoarse(); TODO
-		// Instruction* OpDPdyCoarse(); TODO
-		// Instruction* OpFwidthCoarse(); TODO
+		Instruction* opDPdx(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdx, _pFloatVec, nullptr, "Operand of OpDPdx is not a scalar or vector of float type"); }
+		Instruction* opDPdy(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdy, _pFloatVec, nullptr, "Operand of OpDPdy is not a scalar or vector of float type"); }
+		Instruction* opFwidth(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpFwidth, _pFloatVec, nullptr, "Operand of OpFwidth is not a scalar or vector of float type"); }
 
-		// Instruction* OpEmitVertex(); TODO
-		// Instruction* OpEndPrimitive(); TODO
-		// Instruction* OpEmitStreamVertex(); TODO
-		// Instruction* OpEndStreamPrimitive(); TODO
+		Instruction* opDPdxFine(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdxFine, _pFloatVec, nullptr, "Operand of OpDPdxFine is not a scalar or vector of float type"); }
+		Instruction* opDPdyFine(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdyFine, _pFloatVec, nullptr, "Operand of OpDPdyFine is not a scalar or vector of float type"); }
+		Instruction* opFwidthFine(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpFwidthFine, _pFloatVec, nullptr, "Operand of OpFwidthFine is not a scalar or vector of float type"); }
+
+		Instruction* opDPdxCoarse(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdxCoarse, _pFloatVec, nullptr, "Operand of OpDPdxCoarse is not a scalar or vector of float type"); }
+		Instruction* opDPdyCoarse(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdyCoarse, _pFloatVec, nullptr, "Operand of OpDPdyCoarse is not a scalar or vector of float type"); }
+		Instruction* opFwidthCoarse(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpFwidthCoarse, _pFloatVec, nullptr, "Operand of OpFwidthCoarse is not a scalar or vector of float type"); }
+
+		Instruction* opEmitVertex();
+		Instruction* opEndPrimitive();
+		Instruction* opEmitStreamVertex(Instruction* _pConstIntId);
+		Instruction* opEndStreamPrimitive(Instruction* _pConstIntId);
 
 		// Instruction* OpControlBarrier(); TODO
 		// Instruction* OpMemoryBarrier(); TODO
@@ -631,7 +653,7 @@ namespace spvgentwo
 		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight);
 
 		// Instruction* OpSwitch(); TODO
-		// Instruction* OpKill(); TODO
+		Instruction* opKill();
 
 		void opReturn();
 
@@ -662,9 +684,12 @@ namespace spvgentwo
 
 		// TODO: All the rest to at least maybe OpDecorateString without the INTEL extension instructions?
 
-	private:
+
+	protected:
 		// return error instr
 		Instruction* error() const;
+
+	private:
 
 		// creates literals
 		template <class T, class ...Args>
@@ -678,10 +703,17 @@ namespace spvgentwo
 
 		// decides based on type of _pLeft and _pRight if _intFun or _floatFun should be called
 		Instruction* intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _intFun, DualOpMemberFun _floatFun, const char* _pErrorMsg = nullptr);
+
+		// decides based on type of _pLeft and _pRight if _intFun or _floatFun or _boolFun should be called
+		Instruction* intFloatBoolOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _intFun, DualOpMemberFun _floatFun, DualOpMemberFun _boolFun, const char* _pErrorMsg = nullptr);
 		
 		// decides based on type of _pLeft and _pRight if signed _sIntFun, unsigned _uIntFund or float _floatFun should be called
 		// unsigned & unsinged => unsigned, signed & unsigned => signed, float & float => float
 		Instruction* intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, const char* _pErrorMsg = nullptr);
+
+		// decides based on type of _pLeft and _pRight if signed _sIntFun, unsigned _uIntFund or float _floatFun or _boolFun should be called
+		// unsigned & unsinged => unsigned, signed & unsigned => signed, float & float => float
+		Instruction* intFloatBoolOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, DualOpMemberFun _boolFun, const char* _pErrorMsg = nullptr);
 	};
 
 	// accumulates literal values to _out, returns iterator to the first operand after the literal containing the string terminator
@@ -787,7 +819,14 @@ namespace spvgentwo
 	template<class ...ArgInstr>
 	inline Instruction* Instruction::opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ..._args)
 	{
-		return makeOp(spv::Op::OpFunctionCall, _pResultType, InvalidId, _pFunction, _args...);
+		if (_pResultType->isType() && _pFunction->getOperation() == spv::Op::OpFunction)
+		{
+			return makeOp(spv::Op::OpFunctionCall, _pResultType, InvalidId, _pFunction, _args...);
+		}
+
+		getModule()->logError("_pResultType is not a type instruction or _pFunction is not OpFunction");
+
+		return error();
 	}
 
 	template<class ...ArgInstr>
@@ -859,25 +898,26 @@ namespace spvgentwo
 	inline Instruction* Instruction::opAccessChain(Instruction* _pBase, const unsigned int _firstIndex, IntIndices ..._indices)
 	{
 		// Base must be a pointer, pointing to the base of a composite object.
-
 		const Type* pBaseType = _pBase->getType();
-		if (pBaseType == nullptr) return this;
+		if (pBaseType == nullptr) return error();
 
 		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...); // base is a pointer type, so 0 is used to get the inner type
-		Module* pModule = _pBase->getModule();
-		Instruction* pResultType = nullptr;
 
 		if (it != nullptr)
 		{
+			Module* pModule = _pBase->getModule();
+
 			// Result Type must be an OpTypePointer.
 			// Its Type operand must be the type reached by walking the Base’s type hierarchy down to the last provided index in Indexes, and its Storage Class operand must be the same as the Storage Class of Base.
 	
-			Type&& ptrType(it->wrap(spv::Op::OpTypePointer));
-			ptrType.setStorageClass(pBaseType->getStorageClass());
-			pResultType = pModule->addType(ptrType);
+			Instruction* pResultType = pModule->addType(it->wrapPointer(pBaseType->getStorageClass()));
+
+			return makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->constant(_firstIndex), pModule->constant<unsigned int>(_indices)...);
 		}
 
-		return makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->constant(_firstIndex), pModule->constant<unsigned int>(_indices)...);
+		getModule()->logError("Failed to deduct composite type of base operand for OpAccessChain");
+
+		return error();
 	}
 
 	template<class ...Instr>
@@ -890,7 +930,7 @@ namespace spvgentwo
 	inline Instruction* Instruction::opLoad(Instruction* _pPointerToVar, const Flag<spv::MemoryAccessMask> _memOperands, Operands ..._operands)
 	{
 		const Type* ptrType = _pPointerToVar->getType();
-		if (ptrType == nullptr) return this;
+		if (ptrType == nullptr) return error();
 
 		// Result Type is the type of the loaded object.It must be a type with ﬁxed size; i.e., it cannot be, nor include, any OpTypeRuntimeArray types.
 		// Pointer is the pointer to load through.Its type must be an OpTypePointer whose Type operand is the same as Result Type.
@@ -904,16 +944,39 @@ namespace spvgentwo
 		makeOp(spv::Op::OpStore, _pPointerToVar, _valueToStore, _memOperands.mask, _operands...);
 	}
 
+	template<class ...Components>
+	inline Instruction* Instruction::opVectorShuffle(Instruction* _pVector1, Instruction* _pVector2, Components ..._components)
+	{
+		constexpr size_t componentCount = sizeof...(_components);
+
+		static_assert(componentCount > 1u && componentCount < 5u, "Invalid number of component indices [2..4]");
+
+		const Type* lType = _pVector1->getType();
+		const Type* rType = _pVector2->getType();
+
+		if (lType == nullptr || rType == nullptr) return error();
+
+		if (lType->isVector() && rType->isVector() && lType->getBaseType() == rType->getBaseType())
+		{
+			Instruction* resultType = getModule()->addType(lType->getBaseType().wrapVector(componentCount));
+			return makeOp(spv::Op::OpVectorShuffle, resultType, InvalidId, _pVector1, _pVector2, literal_t{ _components }...);
+		}
+
+		getModule()->logError("Argument of opVectorShuffle is not a matching vector type or opUndef");
+
+		return error();
+	}
+
 	template<class ...ConstituentInstr>
 	inline Instruction* Instruction::opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituent, ConstituentInstr* ..._constituents)
 	{
 		const Type* type =  _pResultType->getType();
-		if (type == nullptr) return this;
+		if (type == nullptr) return error();
 
 		if (type->isComposite() == false)
 		{
 			getModule()->logError("Result type of opCompositeConstruct is not a composite type");
-			return this;
+			return error();
 		}
 
 		return makeOp(spv::Op::OpCompositeConstruct, _pResultType, InvalidId, _pFirstConstituent, _constituents...);
@@ -923,14 +986,14 @@ namespace spvgentwo
 	inline Instruction* Instruction::opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ..._indices)
 	{
 		const Type* pBaseType = _pComposite->getType();
-		if (pBaseType == nullptr) return this;
+		if (pBaseType == nullptr) return error();
 
 		Module* pModule = _pComposite->getModule();
 
 		if (pBaseType->isComposite() == false)
 		{
 			pModule->logError("Argument of opCompositeExtract is not a composite type");
-			return this;
+			return error();
 		}
 
 		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...);
@@ -943,21 +1006,21 @@ namespace spvgentwo
 
 		pModule->logError("Invalid index sequence specified for composite type extraction");
 
-		return this;
+		return error();
 	}
 
 	template<class ...IntIndices>
 	inline Instruction* Instruction::opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, const unsigned int _firstIndex, IntIndices ..._indices)
 	{
 		const Type* pBaseType = _pComposite->getType();
-		if (pBaseType == nullptr) return this;
+		if (pBaseType == nullptr) return error();
 
 		Module* pModule = _pComposite->getModule();
 
 		if (pBaseType->isComposite() == false)
 		{
 			pModule->logError("Argument of opCompositeInsert is not a composite type");
-			return this;
+			return error();
 		}
 
 		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...);
@@ -965,7 +1028,7 @@ namespace spvgentwo
 		if (it != nullptr)
 		{
 			const Type* pValueType = _pValue->getType();
-			if (pValueType == nullptr) return this;
+			if (pValueType == nullptr) return error();
 
 			if (*it == *pValueType)
 			{
@@ -973,12 +1036,12 @@ namespace spvgentwo
 			}
 
 			pModule->logError("Value type does not match composite insertion type");
-			return this;
+			return error();
 		}
 
 		pModule->logError("Invalid index sequence specified for composite insertion");
 
-		return this;
+		return error();
 	}
 
 	template<class ...ImageOperands>
@@ -989,7 +1052,7 @@ namespace spvgentwo
 		const Type* imageType = type->isSampledImage() ? &type->front() : type;
 		const Type* coordType = _pCoordinate->getType();
 
-		if (type == nullptr || imageType == nullptr || coordType == nullptr) return this;
+		if (type == nullptr || imageType == nullptr || coordType == nullptr) return error();
 
 		bool isDref = false;
 		bool isProj = false;
@@ -1091,7 +1154,7 @@ namespace spvgentwo
 			if (type->isImage() == false || (imageType->getImageSamplerAccess() != SamplerImageAccess::Sampled) || (imageType->getImageDimension() == spv::Dim::Cube))
 			{
 				module.logError("OpImageFetch requires _pSampledImage of type opImage. Its Dim operand cannot be Cube, and its Sampled operand must be 1.");
-				return this;
+				return error();
 			}
 			checkCoords = true; coordCanBeInt = true;
 			break;
@@ -1103,7 +1166,7 @@ namespace spvgentwo
 			if (imageType->getImageDimension() != spv::Dim::Dim2D && imageType->getImageDimension() != spv::Dim::Cube && imageType->getImageDimension() != spv::Dim::Rect)
 			{
 				module.logError("OpImageGather requres Dim of sampled image to be 2D, Cube or Rect");
-				return this;
+				return error();
 			}
 			break;
 		case spv::Op::OpImageSampleImplicitLod: checkCoords = true; break;
@@ -1118,12 +1181,12 @@ namespace spvgentwo
 			break;
 		default:
 			module.logError("_imageSampleOp is not supported / implemented");
-			return this;
+			return error();
 		}
 
 		if (!checkDrefComponent() || !checkCoordinateType())
 		{
-			return this;
+			return error();
 		}
 
 		if (_pDrefOrCompnent == nullptr)
@@ -1149,6 +1212,6 @@ namespace spvgentwo
 			}
 		}
 
-		return this;
+		return this; // success
 	}
 } // !spvgentwo

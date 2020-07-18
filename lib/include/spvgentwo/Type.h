@@ -228,6 +228,7 @@ namespace spvgentwo
 		Type& NamedBarrier();
 
 		Type& Vector(unsigned int _elements = 0u, const Type* _elementType = nullptr);
+		Type& VectorM(unsigned int _elements = 0u, const Type* _elementType = nullptr) { Member().Vector(_elements, _elementType); return *this; }
 		Type& Vector(const dyn_vector_t& _vectorType);
 
 		// makes this a vector type, returns element type
@@ -337,8 +338,12 @@ namespace spvgentwo
 		// return 1 if type is a scalar, return component count if type is vector, 0 otherwise
 		unsigned int getScalarOrVectorLength() const { return isScalar() ? 1u : isVector() ? getVectorComponentCount() : 0u; }
 
+		// depth first traversal of type hierarchy using integer indices (static variant)
 		template<class... Indices>
 		List<Type>::Iterator getSubType(const unsigned int _i, Indices... _indices) const;
+
+		// depth first traversal of type hierarchy using integer indices (dynamic variant)
+		List<Type>::Iterator getSubType(const List<unsigned int>& _indices) const;
 
 		// creates a new empty type from this types allocator
 		Type New() const;
@@ -800,4 +805,4 @@ namespace spvgentwo
 
 	template <>
 	inline Type& Type::fundamental<double>(const double*) { return Double(); }
-} // !spvgentwI
+} // !spvgentwo

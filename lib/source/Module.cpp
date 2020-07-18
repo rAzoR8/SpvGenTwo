@@ -258,18 +258,18 @@ spvgentwo::Instruction* spvgentwo::Module::addNameInstr()
 void spvgentwo::Module::addName(Instruction* _pTarget, const char* _pName)
 {
 	addNameInstr()->opName(_pTarget, _pName);
-	m_NameLookup.emplaceUnique(_pTarget, m_pAllocator).kv.value = _pName;
+	m_NameLookup.emplaceUnique(NameInstrKey{ _pTarget, ~0u }, m_pAllocator).kv.value = _pName;
 }
 
-void spvgentwo::Module::addMemberName(Instruction* _pMember, const char* _pMemberName, unsigned int _memberIndex)
+void spvgentwo::Module::addMemberName(Instruction* _pTargetBase, const char* _pMemberName, unsigned int _memberIndex)
 {
-	addNameInstr()->opMemberName(_pMember, _memberIndex, _pMemberName);
-	m_NameLookup.emplaceUnique(_pMember, m_pAllocator).kv.value = _pMemberName;
+	addNameInstr()->opMemberName(_pTargetBase, _memberIndex, _pMemberName);
+	m_NameLookup.emplaceUnique(NameInstrKey{ _pTargetBase, _memberIndex }, m_pAllocator).kv.value = _pMemberName;
 }
 
-const char* spvgentwo::Module::getName(const Instruction* _pTarget) const
+const char* spvgentwo::Module::getName(const Instruction* _pTarget, const unsigned int _memberIndex) const
 {
-	const String* pStr = m_NameLookup.get(_pTarget);
+	const String* pStr = m_NameLookup.get(NameInstrKey{ _pTarget, _memberIndex });
 	return pStr != nullptr ? pStr->c_str() : "";
 }
 
@@ -838,17 +838,35 @@ bool spvgentwo::Module::reconstructNames()
 
 	for (const Instruction& instr : m_Names)
 	{
-		const Instruction* target = instr.getFirstActualOperand()->getInstruction();
+		auto it = instr.getFirstActualOperand();
+		const Instruction* target = it != nullptr ? it->getInstruction() : nullptr;
 
 		if (target == nullptr)
 		{
-			logError("Invalid OpName target");
+			logError("Invalid OpName / OpMemberName target");
 			return false;
 		}
 
-		String& name = m_NameLookup.emplaceUnique(target, m_pAllocator).kv.value;
+		unsigned int memberIndex = ~0u;
 
-		getLiteralString(name, instr.getFirstActualOperand().next(), instr.end());
+		if (instr.getOperation() == spv::Op::OpMemberName)
+		{
+			if (++it == nullptr || it->isLiteral() == false)
+			{
+				logError("Invalid member index operand for OpMemberName");
+				return false;
+			}
+			memberIndex = it->literal.value;
+		}
+		else if (instr.getOperation() != spv::Op::OpName)
+		{
+			logError("Invalid name instructions");
+			return false;
+		}
+
+		String& name = m_NameLookup.emplaceUnique(NameInstrKey{ target, memberIndex }, m_pAllocator).kv.value;
+
+		getLiteralString(name, it.next(), instr.end());
 
 		if (name.empty() || name.back() != '\0')
 		{
@@ -1054,6 +1072,13 @@ spvgentwo::Instruction* spvgentwo::Module::variable(Instruction* _pPtrType, cons
 	}
 
 	return pVar;
+}
+
+spvgentwo::Instruction* spvgentwo::Module::variable(const Type& _ptrType, const spv::StorageClass _storageClass, const char* _pName, Instruction* _pInitialzer)
+{
+	Instruction* type = _ptrType.isPointer() ? addType(_ptrType) : addType(_ptrType.wrapPointer(_storageClass));
+
+	return variable(type, _storageClass, _pName, _pInitialzer);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addUndefInstr()

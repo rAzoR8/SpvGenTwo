@@ -45,6 +45,21 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpFRem:
 	case spv::Op::OpFMod:
 	case spv::Op::OpNot:
+	case spv::Op::OpShiftRightLogical:
+	case spv::Op::OpShiftRightArithmetic:
+	case spv::Op::OpShiftLeftLogical:
+	case spv::Op::OpBitwiseOr:
+	case spv::Op::OpBitwiseXor:
+	case spv::Op::OpBitwiseAnd:
+	case spv::Op::OpFwidth:
+	case spv::Op::OpFwidthCoarse:
+	case spv::Op::OpFwidthFine:
+	case spv::Op::OpDPdx:
+	case spv::Op::OpDPdy:
+	case spv::Op::OpDPdxFine:
+	case spv::Op::OpDPdyFine:
+	case spv::Op::OpDPdxCoarse:
+	case spv::Op::OpDPdyCoarse:
 		return typeInstr1;
 	case spv::Op::OpIAddCarry:
 	case spv::Op::OpISubBorrow:
@@ -203,7 +218,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpImageDrefGather:
 	case spv::Op::OpImageRead:
 	{
-		if (type1 == nullptr) return module->getErrorInstr();
+		if (type1 == nullptr) break;
 
 		const Type* image = type1->isSampledImage() ? &type1->front() : (type1->isImage() ? type1 : nullptr); // _pType1 is SampleImage or Image
 		if (image == nullptr) break;

@@ -1,10 +1,10 @@
 # SpvGenTwo
 
-SpvGenTwo is a [SPIR-V](https://www.khronos.org/registry/spir-v/) building and parsing library written in C++17 with only `stddef.h` as dependencies. No STL or other 3rd-Party library needed. The library comes with its own set of SPIR-V definitions generated from the [machine readable grammar](https://github.com/KhronosGroup/SPIRV-Headers/blob/master/include/spirv/unified1/spirv.core.grammar.json) and therefore does not require any `vulkan` or `spirv-headers` includes. The generator can be found here: [rustspvgen](https://github.com/rAzoR8/rustspvgen).
+SpvGenTwo is a [SPIR-V](https://www.khronos.org/registry/spir-v/) building and parsing library written in C++17 with only `stddef.h` as dependency. No STL or other 3rd-Party library needed. The library comes with its own set of SPIR-V definitions generated from the [machine readable grammar](https://github.com/KhronosGroup/SPIRV-Headers/blob/master/include/spirv/unified1/spirv.core.grammar.json) and therefore does not require any `vulkan` or `spirv-headers` includes. The generator can be found here: [rustspvgen](https://github.com/rAzoR8/rustspvgen).
 
 I built this library as a 'slim' **backend** for runtime material/shader-editors (like [Proto](https://twitter.com/SiNGUL4RiTY/status/1246492443811422208)) to avoid introducing enormous libraries like [DXC](https://github.com/microsoft/DirectXShaderCompiler) (including LLVM and Frontend) or [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools) to the codebase.
 
-__SpvGenTwo__ is still under development, many parts are still missing, but all the building blocks are there. SpvGenTwo is designed to be extensible and customizable, it is fairly easy to implement new SPIR-V instructions and extensions, use custom allocators and define own type inference rules. Note that it is still possible to generate invalid SPIR-V modules because not all inputs are checked yet. Use the SPIR-V validator `spirv-val` from the SDK and have the [specification](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.pdf) at hand while using this library.
+__SpvGenTwo__ is still under development, many parts are still missing, but all the building blocks are there. SpvGenTwo is designed to be extensible and customizable, it is fairly easy to implement new SPIR-V instructions and extensions, use custom allocators and define own type inference rules. Note that it is still possible to generate invalid SPIR-V modules because not all inputs are checked yet. Use the SPIR-V validator [spirv-val](https://github.com/KhronosGroup/SPIRV-Tools#validator-tool) from the SDK and have the [specification](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.pdf) at hand while using this library.
 
 I mainly focused on Shader capabilities, so the Kernel and OpenCL side is a bit under-developed. Any community contributions in that regard are very welcome!
 
@@ -129,8 +129,8 @@ Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
 
 SpvGenTwo is split into 4 folders:
 
-* `lib` contains the foundation to generate SPIR-V code, it only requires `stddef.h` to be built. SpvGenTwo makes excessive use of its abstract Allocator, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those a not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :).
-* `common` contains some convenience implementations of abstract interfaces: HeapAllocator uses C malloc and free, BindaryFileWriter uses fopen, ConsoleLogger uses vprintf. It also as some additional container classes like Callable (std::function replacement), Graph, ControlFlowGraph, Expression and ExprGraph, they follow the same design principles and might sooner or later be moved to `lib` if needed.
+* `lib` contains the foundation to generate SPIR-V code, it only requires `stddef.h` to be built. SpvGenTwo makes excessive use of its abstract Allocator, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those are not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :).
+* `common` contains some convenience implementations of abstract interfaces: HeapAllocator uses C malloc and free, BindaryFileWriter uses fopen, ConsoleLogger uses vprintf. It also has some additional container classes like Callable (std::function replacement), Graph, ControlFlowGraph, Expression and ExprGraph, they follow the same design principles and might sooner or later be moved to `lib` if needed.
 * `example` contains small, self-contained code snippets that each generate a SPIR-V module to show some of the fundamental mechanics and APIs of SpvGenTwo.
 * `dis` is a [spirv-dis](https://github.com/KhronosGroup/SPIRV-Tools#disassembler-tool)-like tool to print assembly language text.
 
@@ -243,7 +243,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpGroupMemberDecorate | &#9744; |
 | OpVectorExtractDynamic | &#10004; |
 | OpVectorInsertDynamic | &#10004; |
-| OpVectorShuffle | &#9744; |
+| OpVectorShuffle | &#10004; |
 | OpCompositeConstruct | &#10004; |
 | OpCompositeExtract | &#10004; |
 | OpCompositeInsert | &#10004; |
@@ -324,10 +324,10 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpLessOrGreater | &#9744; |
 | OpOrdered | &#9744; |
 | OpUnordered | &#9744; |
-| OpLogicalEqual | &#9744; |
-| OpLogicalNotEqual | &#9744; |
-| OpLogicalOr | &#9744; |
-| OpLogicalAnd | &#9744; |
+| OpLogicalEqual | &#10004; |
+| OpLogicalNotEqual | &#10004; |
+| OpLogicalOr | &#10004; |
+| OpLogicalAnd | &#10004; |
 | OpLogicalNot | &#10004; |
 | OpSelect | &#10004; |
 | OpIEqual | &#10004; |
@@ -352,31 +352,31 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpFUnordLessThanEqual | &#10004; |
 | OpFOrdGreaterThanEqual | &#10004; |
 | OpFUnordGreaterThanEqual | &#10004; |
-| OpShiftRightLogical | &#9744; |
-| OpShiftRightArithmetic | &#9744; |
-| OpShiftLeftLogical | &#9744; |
-| OpBitwiseOr | &#9744; |
-| OpBitwiseXor | &#9744; |
-| OpBitwiseAnd | &#9744; |
+| OpShiftRightLogical | &#10004; |
+| OpShiftRightArithmetic | &#10004; |
+| OpShiftLeftLogical | &#10004; |
+| OpBitwiseOr | &#10004; |
+| OpBitwiseXor | &#10004; |
+| OpBitwiseAnd | &#10004; |
 | OpNot | &#10004; |
 | OpBitFieldInsert | &#9744; |
 | OpBitFieldSExtract | &#9744; |
 | OpBitFieldUExtract | &#9744; |
 | OpBitReverse | &#9744; |
 | OpBitCount | &#9744; |
-| OpDPdx | &#9744; |
-| OpDPdy | &#9744; |
-| OpFwidth | &#9744; |
-| OpDPdxFine | &#9744; |
-| OpDPdyFine | &#9744; |
-| OpFwidthFine | &#9744; |
-| OpDPdxCoarse | &#9744; |
-| OpDPdyCoarse | &#9744; |
-| OpFwidthCoarse | &#9744; |
-| OpEmitVertex | &#9744; |
-| OpEndPrimitive | &#9744; |
-| OpEmitStreamVertex | &#9744; |
-| OpEndStreamPrimitive | &#9744; |
+| OpDPdx | &#10004; |
+| OpDPdy | &#10004; |
+| OpFwidth | &#10004; |
+| OpDPdxFine | &#10004; |
+| OpDPdyFine | &#10004; |
+| OpFwidthFine | &#10004; |
+| OpDPdxCoarse | &#10004; |
+| OpDPdyCoarse | &#10004; |
+| OpFwidthCoarse | &#10004; |
+| OpEmitVertex | &#10004; |
+| OpEndPrimitive | &#10004; |
+| OpEmitStreamVertex | &#10004; |
+| OpEndStreamPrimitive | &#10004; |
 | OpControlBarrier | &#9744; |
 | OpMemoryBarrier | &#9744; |
 | OpAtomicLoad | &#9744; |
@@ -402,7 +402,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpBranch | &#10004; |
 | OpBranchConditional | &#10004; |
 | OpSwitch | &#9744; |
-| OpKill | &#9744; |
+| OpKill | &#10004; |
 | OpReturn | &#10004; |
 | OpReturnValue | &#10004; |
 | OpUnreachable | &#9744; |
@@ -492,13 +492,13 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | UnpackSnorm4x8 | &#9744; |
 | UnpackUnorm4x8 | &#9744; |
 | UnpackDouble2x32 | &#9744; |
-| Length | &#9744; |
-| Distance | &#9744; |
+| Length | &#10004; |
+| Distance | &#10004; |
 | Cross | &#10004; |
-| Normalize | &#9744; |
-| FaceForward | &#9744; |
-| Reflect | &#9744; |
-| Refract | &#9744; |
+| Normalize | &#10004; |
+| FaceForward | &#10004; |
+| Reflect | &#10004; |
+| Refract | &#10004; |
 | FindILsb | &#9744; |
 | FindSMsb | &#9744; |
 | FindUMsb | &#9744; |
