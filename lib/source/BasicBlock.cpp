@@ -4,28 +4,23 @@
 #include "spvgentwo/Reader.h"
 
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, const char* _pName) : List(_pFunction->getAllocator()),
-	m_pFunction(_pFunction)
+	m_pFunction(_pFunction),
+	m_Label(this, spv::Op::OpLabel, InvalidId)
 {
-	Instruction* label = addInstruction()->opLabel();
-
 	if (_pName != nullptr)
 	{
-		getModule()->addName(label, _pName);
+		getModule()->addName(&m_Label, _pName);
 	}
 }
 
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, BasicBlock&& _other) noexcept :
 	List(stdrep::move(_other)),
-	m_pFunction(_pFunction)
+	m_pFunction(_pFunction),
+	m_Label(this, spv::Op::OpLabel, InvalidId)
 {
 	for (Instruction& instr : *this)
 	{
 		instr.m_parent.pBasicBlock = this;
-	}
-
-	if (empty())
-	{
-		addInstruction()->opLabel();
 	}
 }
 
@@ -42,11 +37,6 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::operator=(BasicBlock&& _other) noe
 	for (Instruction& instr : *this)
 	{
 		instr.m_parent.pBasicBlock = this;
-	}
-
-	if (empty())
-	{
-		addInstruction()->opLabel();
 	}
 
 	return *this;
@@ -106,6 +96,8 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::returnValue(Instruction* _pValue)
 
 void spvgentwo::BasicBlock::write(IWriter* _pWriter)
 {
+	m_Label.write(_pWriter);
+
 	for (Instruction& instr : *this)
 	{
 		instr.write(_pWriter);
@@ -115,7 +107,7 @@ void spvgentwo::BasicBlock::write(IWriter* _pWriter)
 bool spvgentwo::BasicBlock::read(IReader* _pReader, const Grammar& _grammar)
 {
 	// function alread consumed the first word of OpLabel, OpLabel as one result Id operand
-	if (front().readOperands(_pReader, _grammar, spv::Op::OpLabel, 1u) == false) return false;
+	if (m_Label.readOperands(_pReader, _grammar, spv::Op::OpLabel, 1u) == false || m_Label.getOperation() != spv::Op::OpLabel) return false;
 
 	unsigned int word{ 0 };
 

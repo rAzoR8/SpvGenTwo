@@ -63,7 +63,6 @@ spvgentwo::Function* spvgentwo::Instruction::getFunction() const
 	}
 }
 
-
 spvgentwo::Module* spvgentwo::Instruction::getModule() const
 {
 	switch (m_parentType)

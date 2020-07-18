@@ -16,6 +16,8 @@ namespace spvgentwo
 	private:
 
 		Function* m_pFunction = nullptr; // parent
+		Instruction m_Label;
+
 	public:
 
 		BasicBlock(Function* _pFunction, const char* _pName = nullptr);
@@ -33,6 +35,9 @@ namespace spvgentwo
 		const char* getName() const;
 
 		IAllocator* getAllocator();
+
+		Instruction* getLabel() { return &m_Label;	}
+		const Instruction* getLabel() const { return &m_Label; }
 
 		// get last instruction
 		Iterator getTerminator();

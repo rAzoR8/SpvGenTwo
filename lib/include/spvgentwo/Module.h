@@ -530,6 +530,7 @@ namespace spvgentwo
 			if (iterateInstructionContainer(_func, f.getParameters())) return true;
 			for (BasicBlock& bb : f)
 			{
+				if (pred(*bb.getLabel())) return true;
 				if (iterateInstructionContainer(_func, bb)) return true;
 			}
 			if (pred(*f.getFunctionEnd())) return true;

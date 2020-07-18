@@ -118,10 +118,8 @@ spvgentwo::Instruction* spvgentwo::Function::variable(Instruction* _pPtrType, co
 
 	BasicBlock& funcEntry = **m_pBegin;
 
-	// insert var instruction after first lable
-	Instruction* pVar = funcEntry.insert_after(funcEntry.begin(), &funcEntry)->operator->();
-
-	pVar->opVariable(_pPtrType, spv::StorageClass::Function, _pInitialzer);
+	// insert var instruction after label
+	Instruction* pVar = funcEntry.emplace_front(&funcEntry).opVariable(_pPtrType, spv::StorageClass::Function, _pInitialzer);
 
 	if (_pName != nullptr)
 	{

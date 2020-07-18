@@ -11,7 +11,7 @@ void spvgentwo::Operand::write(IWriter* _pWriter) const
 		_pWriter->put(instruction->getResultId());
 		break;
 	case Type::BranchTarget:
-		_pWriter->put(branchTarget->front().getResultId()); // TODO: check if BB is empty?
+		_pWriter->put(branchTarget->getLabel()->getResultId());
 		break;
 	case Type::Literal:
 		_pWriter->put(literal.value);
