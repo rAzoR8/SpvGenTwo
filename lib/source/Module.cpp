@@ -838,17 +838,35 @@ bool spvgentwo::Module::reconstructNames()
 
 	for (const Instruction& instr : m_Names)
 	{
-		const Instruction* target = instr.getFirstActualOperand()->getInstruction();
+		auto it = instr.getFirstActualOperand();
+		const Instruction* target = it != nullptr ? it->getInstruction() : nullptr;
 
 		if (target == nullptr)
 		{
-			logError("Invalid OpName target");
+			logError("Invalid OpName / OpMemberName target");
 			return false;
 		}
 
-		String& name = m_NameLookup.emplaceUnique(NameInstrKey{ target, 0u }, m_pAllocator).kv.value;
+		unsigned int memberIndex = ~0u;
 
-		getLiteralString(name, instr.getFirstActualOperand().next(), instr.end());
+		if (instr.getOperation() == spv::Op::OpMemberName)
+		{
+			if (++it == nullptr || it->isLiteral() == false)
+			{
+				logError("Invalid member index operand for OpMemberName");
+				return false;
+			}
+			memberIndex = it->literal.value;
+		}
+		else if (instr.getOperation() != spv::Op::OpName)
+		{
+			logError("Invalid name instructions");
+			return false;
+		}
+
+		String& name = m_NameLookup.emplaceUnique(NameInstrKey{ target, memberIndex }, m_pAllocator).kv.value;
+
+		getLiteralString(name, it.next(), instr.end());
 
 		if (name.empty() || name.back() != '\0')
 		{
