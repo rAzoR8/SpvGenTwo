@@ -62,6 +62,9 @@ namespace spvgentwo
 		Instruction& operator=(Instruction&& _other) noexcept;
 		Instruction& operator=(const Instruction& _other) = delete;
 
+		bool operator==(const spv::Op _op) const { return m_Operation == _op; }
+		bool operator!=(const spv::Op _op) const { return m_Operation != _op; }
+
 		Module* getModule() const;
 		Function* getFunction() const;
 		BasicBlock* getBasicBlock() const;
