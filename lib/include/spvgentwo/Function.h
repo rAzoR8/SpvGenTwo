@@ -79,6 +79,7 @@ namespace spvgentwo
 
 		// get list of all OpFunctionParameter instructions added by addParameters()
 		const List<Instruction>& getParameters() const { return m_Parameters; }
+		List<Instruction>& getParameters() { return m_Parameters; }
 
 		// creates opFunction, m_pFunctionType must have been completed (all parameters added via addParameters), returns opFunction
 		Instruction* finalize(const Flag<spv::FunctionControlMask> _control, const char* _pName = nullptr);

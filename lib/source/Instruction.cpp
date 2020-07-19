@@ -565,6 +565,8 @@ void spvgentwo::Instruction::opFunctionEnd()
 
 spvgentwo::Instruction* spvgentwo::Instruction::opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, const List<Instruction*>& _args)
 {
+	if (_pResultType == nullptr || _pFunction == nullptr) return error();
+
 	if (_pResultType->isType() && _pFunction->getOperation() == spv::Op::OpFunction)
 	{
 		makeOp(spv::Op::OpFunctionCall, _pResultType, InvalidId, _pFunction);
