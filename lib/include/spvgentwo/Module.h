@@ -524,7 +524,7 @@ namespace spvgentwo
 		if (iterateInstructionContainer(_func, m_Undefs)) return;
 		if (iterateInstructionContainer(_func, m_Lines)) return;
 
-		auto iterateFuncion = [&pred, &_func](Function& f) -> bool
+		auto iterateFuncion = [&pred, &_func, this](Function& f) -> bool
 		{
 			if (pred(*f.getFunction())) return true;
 			if (iterateInstructionContainer(_func, f.getParameters())) return true;
@@ -532,6 +532,11 @@ namespace spvgentwo
 			{
 				if (pred(*bb.getLabel())) return true;
 				if (iterateInstructionContainer(_func, bb)) return true;
+				if (bb.getTerminator() == nullptr)
+				{
+					logError("BasicBlock %s has no terminator instruction, missing opReturn?", bb.getName());
+					return true;
+				}
 			}
 			if (pred(*f.getFunctionEnd())) return true;
 			return false;

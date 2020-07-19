@@ -57,14 +57,24 @@ spvgentwo::IAllocator* spvgentwo::BasicBlock::getAllocator()
 	return getModule()->getAllocator();;
 }
 
-spvgentwo::BasicBlock::Iterator spvgentwo::BasicBlock::getTerminator()
+spvgentwo::Instruction* spvgentwo::BasicBlock::getTerminator()
 {
 	if (m_pLast != nullptr && (*m_pLast)->isTerminator())
 	{
-		return Iterator(m_pLast);
+		return &back();
 	}
 
-	return Iterator(nullptr);
+	return nullptr;
+}
+
+const spvgentwo::Instruction* spvgentwo::BasicBlock::getTerminator() const
+{
+	if (m_pLast != nullptr && (*m_pLast)->isTerminator())
+	{
+		return &back();
+	}
+
+	return nullptr;
 }
 
 bool spvgentwo::BasicBlock::getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const

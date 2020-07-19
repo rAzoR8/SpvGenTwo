@@ -40,7 +40,8 @@ namespace spvgentwo
 		const Instruction* getLabel() const { return &m_Label; }
 
 		// get last instruction
-		Iterator getTerminator();
+		Instruction* getTerminator();
+		const Instruction* getTerminator() const;
 
 		// returns a list of BasicBlock branch targets of this blocks terminator
 		bool getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const;
