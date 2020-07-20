@@ -5,8 +5,10 @@
 
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, const char* _pName) : List(_pFunction->getAllocator()),
 	m_pFunction(_pFunction),
-	m_Label(this, spv::Op::OpLabel, InvalidId)
+	m_Label(this)
 {
+	m_Label.opLabel();
+
 	if (_pName != nullptr)
 	{
 		getModule()->addName(&m_Label, _pName);
@@ -16,8 +18,10 @@ spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, const char* _pName) : Li
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, BasicBlock&& _other) noexcept :
 	List(stdrep::move(_other)),
 	m_pFunction(_pFunction),
-	m_Label(this, spv::Op::OpLabel, InvalidId)
+	m_Label(this)
 {
+	m_Label.opLabel();
+
 	for (Instruction& instr : *this)
 	{
 		instr.m_parent.pBasicBlock = this;
