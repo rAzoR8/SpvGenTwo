@@ -563,7 +563,7 @@ void spvgentwo::Instruction::opFunctionEnd()
 	makeOp(spv::Op::OpFunctionEnd);
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, const List<Instruction*>& _args)
+spvgentwo::Instruction* spvgentwo::Instruction::opFunctionCallDynamic(Instruction* _pResultType, Instruction* _pFunction, const List<Instruction*>& _args)
 {
 	if (_pResultType == nullptr || _pFunction == nullptr) return error();
 
@@ -677,6 +677,36 @@ spvgentwo::Instruction* spvgentwo::Instruction::opEndStreamPrimitive(Instruction
 	return error();
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opPhiDynamic(const List<Instruction*>& _variables)
+{
+	if (_variables.size() < 2u)
+	{
+		getModule()->logError("Not enough variables passed to opPhiDynamic");
+		return error();
+	}
+
+	Instruction* type = _variables.front()->getTypeInstr();
+
+	if (type == nullptr) return error();
+
+	makeOp(spv::Op::OpPhi, type, InvalidId);
+
+	for (auto it = _variables.begin().next(); it != _variables.end(); ++it)
+	{
+		Instruction* var = *it;
+		if (var == nullptr || (var->getTypeInstr() != type) || (var->getBasicBlock() == nullptr))
+		{
+			getModule()->logError("Invalid variable (type or null) passed to opPhiDynamic");
+			return error();
+		}
+
+		addOperand(var);
+		addOperand(var->getBasicBlock());
+	}
+
+	return this;
+}
+
 void spvgentwo::Instruction::opSelectionMerge(BasicBlock* _pMergeBlock, const spv::SelectionControlMask _control)
 {
 	makeOp(spv::Op::OpSelectionMerge, _pMergeBlock, _control);
@@ -697,7 +727,7 @@ void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, Basic
 	makeOp(spv::Op::OpBranchConditional, _pCondition, _pTrueBlock, _pFalseBlock, _trueWeight, _falseWeight);
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::call(Function* _pFunction, const List<Instruction*>& _args)
+spvgentwo::Instruction* spvgentwo::Instruction::callDynamic(Function* _pFunction, const List<Instruction*>& _args)
 {
 	return opFunctionCall(_pFunction->getReturnType(), _pFunction->getFunction(), _args);
 }
@@ -816,7 +846,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAll(Instruction* _pBoolVec)
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opCompositeConstruct(Instruction* _pResultType, const List<Instruction*>& _constituents)
+spvgentwo::Instruction* spvgentwo::Instruction::opCompositeConstructDynamic(Instruction* _pResultType, const List<Instruction*>& _constituents)
 {
 	const Type* type = _pResultType->getType();
 	if (type == nullptr) return error();
@@ -837,7 +867,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opCompositeConstruct(Instruction
 	return this;
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opCompositeExtract(Instruction* _pComposite, const List<unsigned int>& _indices)
+spvgentwo::Instruction* spvgentwo::Instruction::opCompositeExtractDynamic(Instruction* _pComposite, const List<unsigned int>& _indices)
 {
 	const Type* pBaseType = _pComposite->getType();
 	if (pBaseType == nullptr) return error();

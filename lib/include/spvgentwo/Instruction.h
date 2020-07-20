@@ -228,13 +228,13 @@ namespace spvgentwo
 		template <class ... ArgInstr>
 		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ... _args);
 
-		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, const List<Instruction*>& _args);
+		Instruction* opFunctionCallDynamic(Instruction* _pResultType, Instruction* _pFunction, const List<Instruction*>& _args);
 
 		// generic helper for opFunctionCall using Function class
 		template <class ... ArgInstr>
 		Instruction* call(Function* _pFunction, ArgInstr ... _args);
 
-		Instruction* call(Function* _pFunction, const List<Instruction*>& _args);
+		Instruction* callDynamic(Function* _pFunction, const List<Instruction*>& _args);
 		
 		// _pResultType must be of OpTypePointer
 		Instruction* opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instruction* _pInitializer = nullptr);
@@ -287,12 +287,12 @@ namespace spvgentwo
 		template <class ... ConstituentInstr>
 		Instruction* opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituent, ConstituentInstr* ... _constituents);
 
-		Instruction* opCompositeConstruct(Instruction* _pResultType, const List<Instruction*>& _constituents);
+		Instruction* opCompositeConstructDynamic(Instruction* _pResultType, const List<Instruction*>& _constituents);
 
 		template <class ... IntIndices>
 		Instruction* opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ... _indices);
 
-		Instruction* opCompositeExtract(Instruction* _pComposite, const List<unsigned int>& _indices);
+		Instruction* opCompositeExtractDynamic(Instruction* _pComposite, const List<unsigned int>& _indices);
 
 		template <class ... IntIndices>
 		Instruction* opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, const unsigned int _firstIndex, IntIndices ... _indices);
@@ -640,6 +640,8 @@ namespace spvgentwo
 		// deduce parent form input variables
 		template <class ... VarInst>
 		Instruction* opPhi(Instruction* _pVar, VarInst* ... _variables);
+
+		Instruction* opPhiDynamic(const List<Instruction*>& _variables);
 
 		template <class ...LoopControlParams>
 		void opLoopMerge(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ... _params);
