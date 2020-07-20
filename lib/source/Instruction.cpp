@@ -729,7 +729,7 @@ void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, Basic
 
 spvgentwo::Instruction* spvgentwo::Instruction::callDynamic(Function* _pFunction, const List<Instruction*>& _args)
 {
-	return opFunctionCall(_pFunction->getReturnType(), _pFunction->getFunction(), _args);
+	return opFunctionCallDynamic(_pFunction->getReturnType(), _pFunction->getFunction(), _args);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instruction* _pInitializer)
