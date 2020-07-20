@@ -125,11 +125,11 @@ namespace spvgentwo
 
 		// transforms _args to operands, calls inferResultTypeOperand and validateOperands()
 		template <class ...Args>
-		Instruction* makeOp(const spv::Op _op, Args ... _args);
+		Instruction* makeOp(const spv::Op _op, Args&& ... _args);
 
 		// convert and add the raw data passed via _args as literal_t operands
 		template <class ...Args>
-		void appendLiterals(Args ... _args);
+		void appendLiterals(Args&& ... _args);
 
 		// infer result type from operands, RestulType operand must be set to InvalidInstr
 		// this function assigns the infered OpType instruction to the first operand of this instruction
@@ -698,7 +698,7 @@ namespace spvgentwo
 
 		// creates literals
 		template <class T, class ...Args>
-		void makeOpInternal(T first, Args ... _args);
+		void makeOpInternal(T&& first, Args&& ... _args);
 
 		// checks types based on passed _type and_sign
 		Instruction* scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign);
@@ -750,7 +750,7 @@ namespace spvgentwo
 	}
 
 	template<class ...Args>
-	inline Instruction* Instruction::makeOp(const spv::Op _op, Args ..._args)
+	inline Instruction* Instruction::makeOp(const spv::Op _op, Args&& ..._args)
 	{
 		reset();
 
@@ -758,7 +758,7 @@ namespace spvgentwo
 
 		if constexpr (sizeof...(_args) > 0u)
 		{
-			makeOpInternal(_args...);
+			makeOpInternal(stdrep::forward<Args>(_args)...);
 		}
 
 		inferResultTypeOperand();
@@ -781,31 +781,31 @@ namespace spvgentwo
 	}
 
 	template<class T, class ...Args>
-	inline void Instruction::makeOpInternal(T _first, Args ..._args)
+	inline void Instruction::makeOpInternal(T&& _first, Args&& ..._args)
 	{
 		if constexpr (traits::is_same_base_type_v<T, Instruction*> || traits::is_same_base_type_v<T, BasicBlock*> || traits::is_same_base_type_v<T, spv::Id> || traits::is_same_base_type_v<T, literal_t>)
 		{
-			addOperand(_first);
+			addOperand(stdrep::forward<T>(_first));
 		}
 		else if constexpr (stdrep::is_same_v<traits::remove_cvref_t<T>, int> || stdrep::is_same_v<traits::remove_cvref_t<T>, unsigned int>) // bitcast to 32 bit literal
 		{
-			addOperand(literal_t{_first});
+			addOperand(literal_t{ stdrep::forward<T>(_first)});
 		}
 		else
 		{
-			appendLiterals(_first);
+			appendLiterals(stdrep::forward<T>(_first));
 		}
 
 		if constexpr (sizeof...(_args) > 0u)
 		{
-			makeOpInternal(_args...);
+			makeOpInternal(stdrep::forward<Args>(_args)...);
 		}
 	}
 
 	template<class ...Args>
-	inline void Instruction::appendLiterals(Args ..._args)
+	inline void Instruction::appendLiterals(Args&& ..._args)
 	{
-		appendLiteralsToContainer(*this, _args...);
+		appendLiteralsToContainer(*this, stdrep::forward<Args>(_args)...);
 	}
 
 	template<class ...Operands>
