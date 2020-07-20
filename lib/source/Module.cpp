@@ -181,6 +181,69 @@ spvgentwo::Function& spvgentwo::Module::addFunction()
 	return m_Functions.emplace_back(this);
 }
 
+spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Module::remove(const Function* _pFunction, Function* _pReplacementToCall)
+{
+	List<Instruction*> uses(getAllocator());
+
+	if (_pFunction == nullptr)
+	{
+		return uses;
+	}
+
+	const Instruction* opFunction = _pFunction->getFunction();
+	Instruction* opFunctionReplacement = _pReplacementToCall != nullptr ? _pReplacementToCall->getFunction() : nullptr;
+
+	// remove from functions if its not an entry point
+	bool found = false;
+	for (auto it = m_Functions.begin(), end = m_Functions.end(); it != end; ++it)
+	{
+		if (it.operator->() == _pFunction)
+		{
+			m_Functions.erase(it);
+			found = true;
+			break;
+		}
+	}
+
+	// function seems to be an entry point
+	if (found == false)
+	{
+		for (auto it = m_EntryPoints.begin(), end = m_EntryPoints.end(); it != end; ++it)
+		{
+			if (it.operator->() == _pFunction)
+			{
+				m_EntryPoints.erase(it);
+				found = true;
+				break;
+			}
+		}
+	}
+
+	if (found)
+	{
+		auto gatherUse = [opFunction, opFunctionReplacement, &uses](Instruction& instr)
+		{
+			for (auto it = instr.getFirstActualOperand(), end = instr.end(); it != end; ++it)
+			{
+				if (*it == opFunction) // need to check use of OpFunctionparameter?
+				{
+					*it = opFunctionReplacement;
+					uses.emplace_back(&instr);
+					break;
+				}
+			}
+		};
+
+		iterateInstructions(gatherUse);
+	}
+	else
+	{
+		logError("Could not remove function, not found in module");
+	}
+
+	return uses;
+}
+
 spvgentwo::EntryPoint& spvgentwo::Module::addEntryPoint()
 {
 	return m_EntryPoints.emplace_back(this);

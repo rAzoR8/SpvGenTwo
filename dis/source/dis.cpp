@@ -153,6 +153,12 @@ int main(int argc, char* argv[])
 			}
 			else if (op.isInstruction())
 			{
+				if (op.instruction == nullptr)
+				{
+					printf(" \x1B[33m%%INVALIDINSTRPTR\033[0m");
+					return;
+				}
+
 				if (const char* name = op.instruction->getName(); name != nullptr && stringLength(name) > 1)
 				{
 					printf(" \x1B[33m%%%s\033[0m", name);
@@ -164,6 +170,12 @@ int main(int argc, char* argv[])
 			}
 			else if (op.isBranchTarget())
 			{
+				if (op.branchTarget == nullptr)
+				{
+					printf(" \x1B[33m%%INVALIDBASICBLOCKPTR\033[0m");
+					return;
+				}
+
 				if (const char* name = op.branchTarget->getName(); name != nullptr && stringLength(name) > 1)
 				{
 					printf(" \x1B[33m%%%s\033[0m", name);
@@ -248,6 +260,17 @@ int main(int argc, char* argv[])
 
 		// print text
 		module.iterateInstructions(print);
+
+		auto uses = module.remove(&module.getFunctions().front());
+
+		for (Instruction* use : uses) 
+		{
+			print(*use);
+		}
+
+		// TODO: cleanup uses
+
+		//module.iterateInstructions(print);
 
 		if (success == false)
 		{

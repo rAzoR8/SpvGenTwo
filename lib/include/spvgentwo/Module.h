@@ -91,6 +91,9 @@ namespace spvgentwo
 		template <class ReturnType = void, class ... ParameterTypes>
 		Function& addFunction(const char* _pFunctionName = nullptr, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
 
+		// remove Function or EntryPoint, returns list of Instructions which consumed the function (calls outside the function itself)
+		List<Instruction*> remove(const Function* _pFunction, Function* _pReplacementToCall = nullptr);
+
 		// add empty entry point
 		EntryPoint& addEntryPoint();
 
