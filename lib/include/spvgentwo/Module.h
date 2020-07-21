@@ -263,6 +263,9 @@ namespace spvgentwo
 		// collect all instructions which consume _pInstr (needs to generate result id) and replase its reference with _pReplacement if not nullptr
 		void gatherUses(const Instruction* _pInstr, List<Instruction*>& _outUses, Instruction* _pReplacement = nullptr);
 
+		// replace any use of _pInstr as an operand with _pReplacement
+		void replaceUses(const Instruction* _pInstr, Instruction* _pReplacement);
+
 		// ILogger proxy calls
 		template <typename ...Args>
 		bool log(bool _pred, const LogLevel _level, const char* _pFormat, Args... _args) const;

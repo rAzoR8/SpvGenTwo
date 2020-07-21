@@ -102,7 +102,7 @@ const char* spvgentwo::Function::getName() const
 	return m_pModule->getName(&m_Function);
 }
 
-spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::remove(const BasicBlock* _pBB, BasicBlock* _pReplacement, bool _gatherReferencedInstructions)
+spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::remove(const BasicBlock* _pBB, BasicBlock* _pReplacement)
 {
 	List<Instruction*> uses(getAllocator());
 
@@ -120,14 +120,6 @@ spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::remove(const Basic
 	{
 		if (it.operator->() == _pBB)
 		{
-			if (_gatherReferencedInstructions)
-			{
-				for (Instruction& instr : *_pBB)
-				{
-					module->gatherUses(&instr, uses, module->getErrorInstr()); // replace with error instr
-				}
-			}
-
 			erase(it);
 			found = true;
 			break;

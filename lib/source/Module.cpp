@@ -1227,3 +1227,24 @@ void spvgentwo::Module::gatherUses(const Instruction* _pInstr, List<Instruction*
 
 	iterateInstructions(gather);
 }
+
+void spvgentwo::Module::replaceUses(const Instruction* _pInstr, Instruction* _pReplacement)
+{
+	if (_pInstr == nullptr) 
+	{
+		return;
+	}
+
+	auto replace = [_pInstr, _pReplacement](Instruction& _instr)
+	{
+		for (auto it = _instr.getFirstActualOperand(), end = _instr.end(); it != end; ++it)
+		{
+			if (*it == _pInstr)
+			{
+				*it = _pReplacement;
+			}
+		}
+	};
+
+	iterateInstructions(replace);
+}
