@@ -102,6 +102,61 @@ const char* spvgentwo::Function::getName() const
 	return m_pModule->getName(&m_Function);
 }
 
+spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::remove(const BasicBlock* _pBB, BasicBlock* _pReplacement, bool _gatherReferencedInstructions)
+{
+	List<Instruction*> uses(getAllocator());
+
+	if(_pBB == nullptr)
+	{
+		return uses;
+	}
+
+	Module* module = getModule();
+
+	const Instruction* opLabel = _pBB->getLabel();
+
+	bool found = false;
+	for (auto it = begin(); it != end(); ++it) 
+	{
+		if (it.operator->() == _pBB)
+		{
+			if (_gatherReferencedInstructions)
+			{
+				for (Instruction& instr : *_pBB)
+				{
+					module->gatherUses(&instr, uses, module->getErrorInstr()); // replace with error instr
+				}
+			}
+
+			erase(it);
+			found = true;
+			break;
+		}
+	}
+
+	if (found == false)
+	{
+		module->logError("BasicBlock not found in function");
+		return uses;
+	}
+
+	auto gatherUse = [opLabel, _pBB, _pReplacement, &uses](Instruction& instr)
+	{
+		for (auto it = instr.getFirstActualOperand(), end = instr.end(); it != end; ++it)
+		{
+			if (*it == _pBB || *it == opLabel)
+			{
+				uses.emplace_back(&instr);
+				*it = _pReplacement;
+			}
+		}
+	};
+
+	module->iterateInstructions(gatherUse);
+
+	return uses;
+}
+
 spvgentwo::Instruction* spvgentwo::Function::getParameter(unsigned int _index)
 {
 	auto it = m_Parameters.begin() + _index;

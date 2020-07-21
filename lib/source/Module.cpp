@@ -1207,3 +1207,23 @@ spvgentwo::Instruction* spvgentwo::Module::findInstructionById(const spv::Id _re
 
 	return instr;
 }
+
+void spvgentwo::Module::gatherUses(const Instruction* _pInstr, List<Instruction*>& _outUses, Instruction* _pReplacement)
+{
+	auto gather = [_pInstr, _pReplacement, &_outUses](Instruction& _instr)
+	{
+		for (auto it = _instr.getFirstActualOperand(), end = _instr.end(); it != end; ++it)
+		{
+			if (*it == _pInstr)
+			{
+				_outUses.emplace_back(&_instr);
+				if (_pReplacement != nullptr)
+				{
+					*it = _pReplacement;				
+				}
+			}
+		}
+	};
+
+	iterateInstructions(gather);
+}
