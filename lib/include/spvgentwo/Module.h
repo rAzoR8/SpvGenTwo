@@ -41,6 +41,7 @@ namespace spvgentwo
 
 		ILogger* getLogger() const { return m_pLogger; }
 		void setLogger(ILogger* _pLogger) { m_pLogger = _pLogger; }
+
 		ITypeInferenceAndVailation* getTypeInferenceAndVailation() const { return m_pTypeInferenceAndVailation; }
 		void setITypeInferenceAndVailation(ITypeInferenceAndVailation* _pTypeInferenceAndVailation) { m_pTypeInferenceAndVailation = _pTypeInferenceAndVailation; }
 
@@ -84,6 +85,9 @@ namespace spvgentwo
 
 		const List<Instruction>& getLines() const { return m_Lines; }
 		List<Instruction>& getLines() { return m_Lines; }
+
+		const HashMap<NameInstrKey, String>& getNameLookupMap() const { return m_NameLookup; }
+		HashMap<NameInstrKey, String>& getNameLookupMap() { return m_NameLookup; }
 
 		// add empty function
 		Function& addFunction();
