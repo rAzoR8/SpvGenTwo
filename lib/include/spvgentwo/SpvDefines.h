@@ -23,7 +23,7 @@ namespace spvgentwo
 		Normalized = 1
 	};
 
-	constexpr size_t wordCount(const size_t _byteCount)
+	constexpr size_t wordCount(const decltype(sizeof(spv::Id)) _byteCount)
 	{
 		return (_byteCount / sizeof(spv::Id)) + (_byteCount % sizeof(spv::Id) != 0u ? 1u : 0u);
 	}
