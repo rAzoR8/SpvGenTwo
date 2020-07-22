@@ -321,19 +321,41 @@ spvgentwo::Instruction* spvgentwo::Module::addNameInstr()
 void spvgentwo::Module::addName(Instruction* _pTarget, const char* _pName)
 {
 	addNameInstr()->opName(_pTarget, _pName);
-	m_NameLookup.emplaceUnique(NameInstrKey{ _pTarget, ~0u }, m_pAllocator).kv.value = _pName;
+	m_NameLookup.emplace(_pTarget, MemberName{ String(m_pAllocator, _pName), ~0u });
 }
 
 void spvgentwo::Module::addMemberName(Instruction* _pTargetBase, const char* _pMemberName, unsigned int _memberIndex)
 {
 	addNameInstr()->opMemberName(_pTargetBase, _memberIndex, _pMemberName);
-	m_NameLookup.emplaceUnique(NameInstrKey{ _pTargetBase, _memberIndex }, m_pAllocator).kv.value = _pMemberName;
+	m_NameLookup.emplace(_pTargetBase, MemberName{ String(m_pAllocator, _pMemberName), _memberIndex });
 }
 
 const char* spvgentwo::Module::getName(const Instruction* _pTarget, const unsigned int _memberIndex) const
 {
-	const String* pStr = m_NameLookup.get(NameInstrKey{ _pTarget, _memberIndex });
-	return pStr != nullptr ? pStr->c_str() : "";
+	for (auto& name : m_NameLookup.getRange(_pTarget))
+	{
+		if (name.kv.value.member == _memberIndex)
+		{
+			return name.kv.value.name.c_str();
+		}
+	}
+
+	return nullptr;
+}
+
+spvgentwo::Vector<spvgentwo::Module::MemberNameCStr> spvgentwo::Module::getNames(const Instruction* _pTarget) const
+{
+	Vector<MemberNameCStr> names(getAllocator());
+
+	for (auto& name : m_NameLookup.getRange(_pTarget))
+	{
+		if (name.kv.key == _pTarget) 
+		{		
+			names.emplace_back(name.kv.value.name.c_str(), name.kv.value.member);
+		}
+	}
+
+	return names;
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addModuleProccessedInstr()
@@ -962,7 +984,7 @@ bool spvgentwo::Module::reconstructNames()
 			return false;
 		}
 
-		String& name = m_NameLookup.emplaceUnique(NameInstrKey{ target, memberIndex }, m_pAllocator).kv.value;
+		String& name = m_NameLookup.emplace(target, MemberName{ m_pAllocator, memberIndex }).kv.value.name;
 
 		getLiteralString(name, it.next(), instr.end());
 
@@ -1247,4 +1269,8 @@ void spvgentwo::Module::replaceUses(const Instruction* _pInstr, Instruction* _pR
 	};
 
 	iterateInstructions(replace);
+}
+
+void spvgentwo::Module::removeFromLookupMaps(const Instruction* _pInstr)
+{
 }

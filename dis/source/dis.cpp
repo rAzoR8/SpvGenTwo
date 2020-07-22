@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 
-		auto printOperand = [&gram, &alloc](Instruction& instr, const Operand& op, const Grammar::Operand* info)
+		auto printOperand = [&gram, &alloc](const Instruction& instr, const Operand& op, const Grammar::Operand* info)
 		{
 			if (op.isId() && info->kind != Grammar::OperandKind::IdResult) // skip result id
 			{
@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
 		};
 
 		bool success = true;
-		auto print = [&](Instruction& instr) -> bool
+		auto print = [&](const Instruction& instr) -> bool
 		{
 			auto* info = gram.getInfo(static_cast<unsigned int>(instr.getOperation()));
 
@@ -261,16 +261,58 @@ int main(int argc, char* argv[])
 		// print text
 		module.iterateInstructions(print);
 
-		auto uses = module.remove(&module.getFunctions().front());
+		//for(auto& [instr, name] : module.getNameLookupMap())
+		//{
+		//	printf("%s %u: ", name.c_str(), instr.member);
+		//	print(*instr.target);
+		//}
 
-		for (Instruction* use : uses) 
-		{
-			print(*use);
-		}
+		//auto& ep = module.getEntryPoints().front();
+
+		//auto iter = [&module](Instruction& instr)-> bool
+		//{
+		//	const Type* t = instr.getType();
+		//	if (t != nullptr && t->isStruct())
+		//	{
+		//		for (auto& [name, index] : module.getNames(&instr))
+		//		{
+		//			printf("%s %u\n", name, index);
+		//		}
+		//		return true;
+		//	}
+		//	return false;
+		//};
+
+		//module.iterateInstructions(iter);
+
+		//for (auto& [name, index] : module.getNames(&ep.front().front()))
+		//{
+		//	printf("%s %u\n", name, index);
+		//}
+
+		// first cleanup instructions from the BB that is going to be removed
+		//for (Instruction& i : ep.front())
+		//{
+		//	module.replaceUses(&i, nullptr);
+		//}
+
+		//BasicBlock& newBB = ep.addBasicBlock("newBlock");
+		//newBB->opReturn();
+
+		//auto uses = ep.remove(&ep.front(), &newBB);
+
+		//for (auto use : uses) print(*use);
+
+		//auto uses = module.remove(&module.getFunctions().front());
+
+		//for (Instruction* use : uses) 
+		//{
+		//	print(*use);
+		//}
 
 		// TODO: cleanup uses
 
-		//module.iterateInstructions(print);
+		module.iterateInstructions(print);
 
 		if (success == false)
 		{

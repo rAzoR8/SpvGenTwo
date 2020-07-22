@@ -14,7 +14,7 @@ namespace spvgentwo
 	class Module
 	{
 	public:
-		struct NameInstrKey { const Instruction* target = nullptr; unsigned int member = 0u; };
+		struct MemberName { String name; unsigned int member = 0u; };
 
 		Module(IAllocator* _pAllocator, const unsigned int _spvVersion = spv::Version,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
 		Module(IAllocator* _pAllocator, const unsigned int _spvVersion, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
@@ -86,8 +86,8 @@ namespace spvgentwo
 		const List<Instruction>& getLines() const { return m_Lines; }
 		List<Instruction>& getLines() { return m_Lines; }
 
-		const HashMap<NameInstrKey, String>& getNameLookupMap() const { return m_NameLookup; }
-		HashMap<NameInstrKey, String>& getNameLookupMap() { return m_NameLookup; }
+		const HashMap<const Instruction*, MemberName>& getNameLookupMap() const { return m_NameLookup; }
+		HashMap<const Instruction*, MemberName>& getNameLookupMap() { return m_NameLookup; }
 
 		// add empty function
 		Function& addFunction();
@@ -173,6 +173,10 @@ namespace spvgentwo
 
 		// get name string of instruction _pTarget that was decorated with OpName
 		const char* getName(const Instruction* _pTarget, const unsigned int _memberIndex = ~0u) const;
+
+		struct MemberNameCStr { const char* name; unsigned int memberIndex; };
+		// get all names associated to theis instruction
+		Vector<MemberNameCStr> getNames(const Instruction* _pTarget) const;
 
 		// for use with opModuleProccessed
 		Instruction* addModuleProccessedInstr();
@@ -266,6 +270,9 @@ namespace spvgentwo
 		// replace any use of _pInstr as an operand with _pReplacement
 		void replaceUses(const Instruction* _pInstr, Instruction* _pReplacement);
 
+		// remove _pInstr from type/constant and name lookup maps
+		void removeFromLookupMaps(const Instruction* _pInstr);
+
 		// ILogger proxy calls
 		template <typename ...Args>
 		bool log(bool _pred, const LogLevel _level, const char* _pFormat, Args... _args) const;
@@ -335,7 +342,7 @@ namespace spvgentwo
 		HashMap<const Instruction*, const Constant*> m_InstrToConstant;
 
 		// instruction that was decorated with opName or OpMemberName(Target) -> name
-		HashMap<NameInstrKey, String> m_NameLookup;
+		HashMap<const Instruction*, MemberName> m_NameLookup;
 
 		List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function
 
@@ -343,18 +350,6 @@ namespace spvgentwo
 		List<Instruction> m_Lines; // opLine, opNoLine
 
 		Instruction m_errorInstr; // opNop
-	};
-
-	template <>
-	struct Hasher<Module::NameInstrKey>
-	{
-		Hash64 operator()(const Module::NameInstrKey& _key) const
-		{
-			FNV1aHasher h;
-			h << _key.target;
-			h << _key.member;
-			return h;
-		}
 	};
 
 	template<typename ...Args>
