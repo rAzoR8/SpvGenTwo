@@ -27,13 +27,16 @@ namespace spvgentwo
 	template <class Key, class Value>
 	class HashMapIterator
 	{
+		template <class K, class V>
+		friend class HashMap;
+
 	public:
 		using Node = NodeT<Key, Value>;
 		using KeyValue = typename Node::KV;
 		using Bucket = List<Node>;
 
 		HashMapIterator(Bucket* _pBucket = nullptr, Bucket* _pEnd = nullptr, typename Bucket::Iterator _element = nullptr) : m_element(_element), m_pBucket(_pBucket), m_pEnd(_pEnd){}
-		HashMapIterator(const HashMapIterator& _other) : m_element(_other._element), m_pBucket(_other._pBucket), m_pEnd(_pEnd) {}
+		HashMapIterator(const HashMapIterator& _other) : m_element(_other.m_element), m_pBucket(_other.m_pBucket), m_pEnd(_other.m_pEnd) {}
 
 		bool operator==(const HashMapIterator& _other) const;
 		bool operator!=(const HashMapIterator& _other) const;
@@ -52,6 +55,9 @@ namespace spvgentwo
 
 		KeyValue* operator->() { return &m_element->kv; }
 		const KeyValue* operator->() const { return &m_element->kv; }
+
+		// check if iterator is valid, can be derefed. Might still be at end!
+		operator bool() const { return m_pBucket != nullptr || m_element == nullptr; }
 
 	private:
 		typename Bucket::Iterator m_element = nullptr;

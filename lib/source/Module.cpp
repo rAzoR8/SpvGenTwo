@@ -1273,4 +1273,23 @@ void spvgentwo::Module::replaceUses(const Instruction* _pInstr, Instruction* _pR
 
 void spvgentwo::Module::removeFromLookupMaps(const Instruction* _pInstr)
 {
+	if (auto itt = m_InstrToType.find(_pInstr); itt != m_InstrToType.end())
+	{
+		if(auto tti = m_TypeToInstr.find(*itt->value); tti != m_TypeToInstr.end())
+		{
+			m_TypeToInstr.erase(tti);
+		}
+		m_InstrToType.erase(itt);
+	}
+
+	if (auto itc = m_InstrToConstant.find(_pInstr); itc != m_InstrToConstant.end())
+	{
+		if (auto cti = m_ConstantToInstr.find(*itc->value); cti != m_ConstantToInstr.end())
+		{
+			m_ConstantToInstr.erase(cti);
+		}
+		m_InstrToConstant.erase(itc);
+	}
+
+	m_NameLookup.eraseRange(_pInstr);
 }

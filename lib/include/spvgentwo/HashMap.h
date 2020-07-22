@@ -61,10 +61,18 @@ namespace spvgentwo
 		template <class T = Key, typename = stdrep::enable_if_t<stdrep::is_same_v<T, Key> && !stdrep::is_same_v<T, Hash64>>>
 		Range getRange(const T& _key) const { return getRange(hash(_key)); }
 
+		Iterator find(const Key& _key) const;
+
 		Key* findKey(const Value& _value) const;
 
-		const unsigned int count(const Hash64 _hash) const;
-		const unsigned int count(const Key& _key) const { return count(hash(_key)); }
+		// remove value pointed to by pos, returns the next elements iterator or end
+		Iterator erase(Iterator pos);
+
+		// remove all elements with Key _key
+		unsigned int eraseRange(const Key& _key);
+
+		unsigned int count(const Hash64 _hash) const;
+		unsigned int count(const Key& _key) const { return count(hash(_key)); }
 
 		const Bucket& getBucket(const unsigned int _index) const { return m_pBuckets[_index]; }
 		unsigned int getBucketCount() const { return m_Buckets; }
@@ -207,7 +215,53 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline const unsigned int HashMap<Key, Value>::count(const Hash64 _hash) const
+	inline typename HashMap<Key, Value>::Iterator HashMap<Key, Value>::erase(Iterator pos)
+	{
+		if(pos && pos != end())
+		{
+			pos.m_pBucket->erase(pos.m_element);
+			return ++pos;
+		}
+		return end();
+	}
+
+	template<class Key, class Value>
+	inline unsigned int HashMap<Key, Value>::eraseRange(const Key& _key)
+	{
+		Hash64 h = 0u;
+
+		if constexpr (stdrep::is_same_v<Key, Hash64>)
+		{
+			h = _key;
+		}
+		else
+		{
+			h = hash(_key);
+		}
+
+		unsigned int keys = 0u;
+		const auto index = h % m_Buckets;
+
+		Bucket& bucket = m_pBuckets[index];
+
+		for (auto it = bucket.begin(), e = bucket.end(); it != e;)
+		{
+			if (it->hash == h)
+			{
+				it = bucket.erase(it);
+				++keys;
+			}
+			else 
+			{
+				++it;
+			}
+		}
+
+		return keys;
+	}
+
+	template<class Key, class Value>
+	inline unsigned int HashMap<Key, Value>::count(const Hash64 _hash) const
 	{
 		unsigned int keys = 0u;
 		const auto index = _hash % m_Buckets;
@@ -221,6 +275,35 @@ namespace spvgentwo
 		}
 
 		return keys;
+	}
+
+	template<class Key, class Value>
+	inline typename HashMap<Key, Value>::Iterator HashMap<Key, Value>::find(const Key& _key) const
+	{
+		Hash64 h = 0u;
+
+		if constexpr (stdrep::is_same_v<Key, Hash64>)
+		{
+			h = _key;
+		}
+		else
+		{
+			h = hash(_key);
+		}
+
+		const auto index = h % m_Buckets;
+
+		const Bucket& bucket = m_pBuckets[index];
+
+		for (auto it = bucket.begin(), e = bucket.end(); it != e; ++it)
+		{
+			if (it->hash == h)
+			{
+				return Iterator(m_pBuckets + index, m_pBuckets + m_Buckets, it);
+			}
+		}
+
+		return end();
 	}
 
 	template<class Key, class Value>
