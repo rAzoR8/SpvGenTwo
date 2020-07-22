@@ -770,7 +770,7 @@ namespace spvgentwo
 	template<class T>
 	inline Instruction* Instruction::bitcast(Instruction* _pOperand)
 	{
-		return opBitcast(getModule()->type<T>(), _pOperand);
+		return opBitcast(getModule()->template type<T>(), _pOperand);
 	}
 
 	template<class ...Args>
@@ -917,7 +917,7 @@ namespace spvgentwo
 	
 			Instruction* pResultType = pModule->addType(it->wrapPointer(pBaseType->getStorageClass()));
 
-			return makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->constant(_firstIndex), pModule->constant<unsigned int>(_indices)...);
+			return makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->constant(_firstIndex), pModule->template constant<unsigned int>(_indices)...);
 		}
 
 		getModule()->logError("Failed to deduct composite type of base operand for OpAccessChain");

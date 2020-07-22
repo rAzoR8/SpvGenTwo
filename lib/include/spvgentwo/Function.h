@@ -137,12 +137,12 @@ namespace spvgentwo
 	template<class T>
 	inline Instruction* Function::variable(const char* _pName, Instruction* _pInitialzer)
 	{
-		return variable(getModule()->type<T*>(spv::StorageClass::Function), _pName, _pInitialzer);
+		return variable(getModule()->template type<T*>(spv::StorageClass::Function), _pName, _pInitialzer);
 	}
 
 	template<class T>
 	inline Instruction* Function::variable(const T& _initialValue, const char* _pName)
 	{
-		return variable(getModule()->type<T*>(spv::StorageClass::Function, _initialValue), _pName, getModule()->constant(_initialValue));
+		return variable(getModule()->template type<T*>(spv::StorageClass::Function, _initialValue), _pName, getModule()->constant(_initialValue));
 	}
 } // !spvgentwo

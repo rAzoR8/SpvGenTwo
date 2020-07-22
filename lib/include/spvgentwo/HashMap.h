@@ -428,7 +428,7 @@ namespace spvgentwo
 
 		for (Node& existing : m_pBuckets[index])
 		{
-			if (existing.hash == n.hash)
+			if (existing.hash == _hash)
 			{
 				return existing;
 			}

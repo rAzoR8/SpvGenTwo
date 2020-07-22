@@ -18,8 +18,8 @@ namespace spvgentwo
 	
 	namespace detail
 	{
-		constexpr Hash64 Offset{ 0xcbf29ce484222325ui64 };
-		constexpr Hash64 Prime{ 0x100000001b3ui64 };
+		constexpr Hash64 Offset{ 0xcbf29ce484222325ull };
+		constexpr Hash64 Prime{ 0x100000001b3ull };
 	}
 
 	template <class Key>
