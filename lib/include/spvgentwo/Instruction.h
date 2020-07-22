@@ -387,7 +387,7 @@ namespace spvgentwo
 		template <class ...ImageOperands>
 		Instruction* opImageSampleProjDrefExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pGrad)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference spv::ImageOperandsMask::Grad, _pGrad);
+			return opImageSample(spv::Op::OpImageSampleProjDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::Grad, _pGrad);
 		}
 
 		template <class ...ImageOperands>
@@ -726,7 +726,7 @@ namespace spvgentwo
 	Instruction::Iterator getLiteralString(String& _out, Instruction::Iterator _begin, Instruction::Iterator _end);
 
 	template<class ...Args>
-	inline Instruction::Instruction(Module* _pModule, const spv::Op _op, Args&& ..._args) :List(_pModule->getAllocator()),
+	inline Instruction::Instruction(Module* _pModule, const spv::Op _op, Args&& ..._args) : List(_pModule->getAllocator()),
 		m_parentType(ParentType::Module)
 	{
 		m_parent.pModule = _pModule;
