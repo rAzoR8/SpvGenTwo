@@ -1,6 +1,6 @@
 #include "common/HeapAllocator.h"
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <cassert>
 
 #ifdef SPVGENTWO_DEBUG_HEAP_ALLOC
