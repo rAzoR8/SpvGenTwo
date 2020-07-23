@@ -41,8 +41,8 @@ namespace spvgentwo
 		bool operator==(const HashMapIterator& _other) const;
 		bool operator!=(const HashMapIterator& _other) const;
 
-		bool operator==(nullptr_t) const;
-		bool operator!=(nullptr_t) const;
+		bool operator==(sgt_nullptr_t) const;
+		bool operator!=(sgt_nullptr_t) const;
 
 		// pre
 		HashMapIterator<Key, Value>& operator++();
@@ -78,13 +78,13 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline bool HashMapIterator<Key, Value>::operator==(nullptr_t) const
+	inline bool HashMapIterator<Key, Value>::operator==(sgt_nullptr_t) const
 	{
 		return m_pBucket == nullptr || m_element == nullptr;
 	}
 
 	template<class Key, class Value>
-	inline bool HashMapIterator<Key, Value>::operator!=(nullptr_t) const
+	inline bool HashMapIterator<Key, Value>::operator!=(sgt_nullptr_t) const
 	{
 		return m_pBucket != nullptr && m_element != nullptr;
 	}

@@ -10,12 +10,12 @@ namespace spvgentwo
 	public:
 		using T = typename stdrep::remove_cv_t<U>;
 
-		Vector(IAllocator* _pAllocator = nullptr, size_t _size = 0u);
+		Vector(IAllocator* _pAllocator = nullptr, sgt_size_t _size = 0u);
 
 		// copy from array
-		Vector(IAllocator* _pAllocator, const T* _pData, size_t _size = 0u);
+		Vector(IAllocator* _pAllocator, const T* _pData, sgt_size_t _size = 0u);
 
-		template <size_t Size>
+		template <sgt_size_t Size>
 		Vector(IAllocator* _pAllocator, const T(&_array)[Size]);
 
 		Vector(Vector<U>&& _other) noexcept;
@@ -33,24 +33,24 @@ namespace spvgentwo
 
 		IAllocator* getAllocator() const { return m_pAllocator; }
 
-		T& operator[](size_t _idx);
-		const T& operator[](size_t _idx) const;
+		T& operator[](sgt_size_t _idx);
+		const T& operator[](sgt_size_t _idx) const;
 
 		// reserve can only grow
-		bool reserve(size_t _size);
+		bool reserve(sgt_size_t _size);
 
 		// resize calls {} constructor on new elements
-		bool resize(size_t _size, const T* _pInitValue = nullptr);
+		bool resize(sgt_size_t _size, const T* _pInitValue = nullptr);
 
 		// only destructs, does not deallocate
 		void clear(bool _resetCount = true);
 
 		// only resets elements counter, no destructor or deallocation invoked, only use with primitive types
-		void reset(size_t _elements = 0u);
+		void reset(sgt_size_t _elements = 0u);
 
 		T* data() const noexcept{ return m_pData; }
-		size_t size() const noexcept { return m_elements; }
-		size_t capacity() const noexcept { return m_capacity; }
+		sgt_size_t size() const noexcept { return m_elements; }
+		sgt_size_t capacity() const noexcept { return m_capacity; }
 		bool empty() const { return m_elements == 0; }
 		
 		T* begin() const noexcept { return m_pData; }
@@ -69,7 +69,7 @@ namespace spvgentwo
 		void emplace_back_args(const T& _first, Args&& ..._tail);
 
 		// assign _data to elements, _count == max means all
-		void assign(const T& _data, size_t _offset = 0u, size_t _count = ~0ull);
+		void assign(const T& _data, sgt_size_t _offset = 0u, sgt_size_t _count = ~0ull);
 	protected:
 		void deallocate();
 
@@ -77,25 +77,25 @@ namespace spvgentwo
 		IAllocator* m_pAllocator = nullptr;
 
 		T* m_pData = nullptr;
-		size_t m_elements = 0u;
-		size_t m_capacity = 0u;
+		sgt_size_t m_elements = 0u;
+		sgt_size_t m_capacity = 0u;
 	};
 
 	template<class U>
-	inline Vector<U>::Vector(IAllocator* _pAllocator, size_t _size) :
+	inline Vector<U>::Vector(IAllocator* _pAllocator, sgt_size_t _size) :
 		m_pAllocator(_pAllocator)
 	{
 		reserve(_size);
 	}
 
 	template<class U>
-	inline Vector<U>::Vector(IAllocator* _pAllocator, const T* _pData, size_t _size) :
+	inline Vector<U>::Vector(IAllocator* _pAllocator, const T* _pData, sgt_size_t _size) :
 		m_pAllocator(_pAllocator)
 	{
 		if (reserve(_size))
 		{
 			// copy construct
-			for (size_t i = 0u; i < _size; ++i)
+			for (sgt_size_t i = 0u; i < _size; ++i)
 			{
 				traits::constructWithArgs(m_pData + i, _pData[i]);
 			}
@@ -170,7 +170,7 @@ namespace spvgentwo
 
 		if (resize(_other.m_elements))
 		{
-			for (size_t i = 0u; i < _other.m_elements; ++i)
+			for (sgt_size_t i = 0u; i < _other.m_elements; ++i)
 			{
 				m_pData[i] = _other.m_pData[i];
 			}
@@ -182,19 +182,19 @@ namespace spvgentwo
 	}
 
 	template<class U>
-	inline typename Vector<U>::T& Vector<U>::operator[](size_t _idx)
+	inline typename Vector<U>::T& Vector<U>::operator[](sgt_size_t _idx)
 	{
 		return m_pData[_idx];
 	}
 
 	template<class U>
-	inline const typename Vector<U>::T& Vector<U>::operator[](size_t _idx) const
+	inline const typename Vector<U>::T& Vector<U>::operator[](sgt_size_t _idx) const
 	{
 		return m_pData[_idx];
 	}
 
 	template<class U>
-	inline bool Vector<U>::reserve(size_t _size)
+	inline bool Vector<U>::reserve(sgt_size_t _size)
 	{
 		if (m_capacity >= _size)
 		{
@@ -214,7 +214,7 @@ namespace spvgentwo
 		}
 
 		//  move or copy old to new data (if any)
-		for (size_t i = 0u; i < m_elements; ++i)
+		for (sgt_size_t i = 0u; i < m_elements; ++i)
 		{
 			if constexpr (stdrep::is_constructible_v<T, stdrep::remove_reference_t<T>&&>) // move constructible
 			{
@@ -244,7 +244,7 @@ namespace spvgentwo
 	}
 
 	template<class U>
-	inline bool Vector<U>::resize(size_t _size, const T* _pInitValue)
+	inline bool Vector<U>::resize(sgt_size_t _size, const T* _pInitValue)
 	{
 		if (_size > m_capacity)
 		{
@@ -255,14 +255,14 @@ namespace spvgentwo
 
 			if (_pInitValue == nullptr)
 			{
-				for (size_t i = m_elements; i < m_capacity; ++i)
+				for (sgt_size_t i = m_elements; i < m_capacity; ++i)
 				{
 					new(m_pData + i) T{};
 				}
 			}
 			else if constexpr(stdrep::is_constructible_v<T, const T&>)
 			{
-				for (size_t i = m_elements; i < m_capacity; ++i)
+				for (sgt_size_t i = m_elements; i < m_capacity; ++i)
 				{
 					new(m_pData + i) T{*_pInitValue };
 				}
@@ -271,7 +271,7 @@ namespace spvgentwo
 		else if (_size < m_elements) // shrink
 		{
 			// destruct shrinke elements
-			for (size_t i = _size; i < m_elements; ++i)
+			for (sgt_size_t i = _size; i < m_elements; ++i)
 			{
 				m_pData[i].~T();
 			}
@@ -286,7 +286,7 @@ namespace spvgentwo
 	inline void Vector<U>::clear(bool _resetCount)
 	{
 		// call destructor (TODO: if there is one)
-		for (size_t i = 0; i < m_elements; ++i)
+		for (sgt_size_t i = 0; i < m_elements; ++i)
 		{
 			m_pData[i].~T();
 		}
@@ -298,20 +298,20 @@ namespace spvgentwo
 	}
 
 	template<class U>
-	inline void Vector<U>::reset(size_t _elements)
+	inline void Vector<U>::reset(sgt_size_t _elements)
 	{
 		m_elements = _elements;
 	}
 
 	template<class U>
-	inline void Vector<U>::assign(const T& _data, size_t _offset, size_t _count)
+	inline void Vector<U>::assign(const T& _data, sgt_size_t _offset, sgt_size_t _count)
 	{
 		if (_offset + _count > m_elements)
 		{
 			_count = m_elements - _offset;
 		}
 
-		for (size_t i = _offset; i < _offset + _count; ++i)
+		for (sgt_size_t i = _offset; i < _offset + _count; ++i)
 		{
 			m_pData[i] = _data;
 		}
@@ -329,7 +329,7 @@ namespace spvgentwo
 	}
 
 	template<class U>
-	template<size_t Size>
+	template<sgt_size_t Size>
 	inline Vector<U>::Vector(IAllocator* _pAllocator, const T(&_array)[Size]) : Vector(_pAllocator, _array, Size){}
 
 	template<class U>

@@ -2,12 +2,16 @@
 
 // replacement header for some std functions and traits
 
-#include <cstddef>
+namespace spvgentwo 
+{
+	using sgt_size_t = decltype(sizeof(int));
+	using sgt_nullptr_t = decltype(nullptr);
+}
 
 #ifdef SPVGENTWO_REPLACE_PLACEMENTNEW
 #pragma warning(disable: 4291)
 template <class T>
-inline void* operator new(size_t size, T* ptr) noexcept { (void)size; return ptr; }
+inline void* operator new(spvgentwo::sgt_size_t size, T* ptr) noexcept { (void)size; return ptr; }
 #else
 #include <new>
 #endif

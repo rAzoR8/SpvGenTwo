@@ -86,7 +86,7 @@ namespace spvgentwo
 
 		bool empty() const { return m_pBegin == nullptr; }
 
-		size_t size() const { return m_Elements; }
+		sgt_size_t size() const { return m_Elements; }
 
 		template <class Comparable>
 		Iterator find(const Comparable& _val) const;
@@ -100,7 +100,7 @@ namespace spvgentwo
 	protected:
 		Entry<T>* m_pBegin = nullptr;
 		Entry<T>* m_pLast = nullptr;
-		size_t m_Elements = 0u;
+		sgt_size_t m_Elements = 0u;
 		IAllocator* m_pAllocator = nullptr;
 	};
 

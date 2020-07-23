@@ -952,7 +952,7 @@ namespace spvgentwo
 	template<class ...Components>
 	inline Instruction* Instruction::opVectorShuffle(Instruction* _pVector1, Instruction* _pVector2, Components ..._components)
 	{
-		constexpr size_t componentCount = sizeof...(_components);
+		constexpr auto componentCount = sizeof...(_components);
 
 		static_assert(componentCount > 1u && componentCount < 5u, "Invalid number of component indices [2..4]");
 

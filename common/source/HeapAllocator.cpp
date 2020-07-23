@@ -7,7 +7,7 @@
 	#include <stdio.h>
 #endif
 
-void* spvgentwo::HeapAllocator::allocate(const size_t _bytes, const unsigned int _aligment)
+void* spvgentwo::HeapAllocator::allocate(const sgt_size_t _bytes, const unsigned int _aligment)
 {
 	(void)_aligment;
 	m_Allocated += _bytes;
@@ -26,7 +26,7 @@ void* spvgentwo::HeapAllocator::allocate(const size_t _bytes, const unsigned int
 	return ptr;
 }
 
-void spvgentwo::HeapAllocator::deallocate(void* _ptr, const size_t _bytes)
+void spvgentwo::HeapAllocator::deallocate(void* _ptr, const sgt_size_t _bytes)
 {
 	m_Deallocated += _bytes;
 

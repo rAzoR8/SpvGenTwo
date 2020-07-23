@@ -14,11 +14,11 @@ namespace spvgentwo
 		bool operator==(const EntryIterator<T>& _other) const;
 		bool operator!=(const EntryIterator<T>& _other) const;
 
-		bool operator==(nullptr_t) const;
-		bool operator!=(nullptr_t) const;
+		bool operator==(sgt_nullptr_t) const;
+		bool operator!=(sgt_nullptr_t) const;
 
-		EntryIterator<T> operator+(const size_t n) const;
-		EntryIterator<T> operator-(const size_t n) const;
+		EntryIterator<T> operator+(const sgt_size_t n) const;
+		EntryIterator<T> operator-(const sgt_size_t n) const;
 
 		EntryIterator<T> prev() const;
 		EntryIterator<T> next() const;
@@ -62,13 +62,13 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	inline bool EntryIterator<T>::operator==(nullptr_t) const
+	inline bool EntryIterator<T>::operator==(sgt_nullptr_t) const
 	{
 		return m_pEntry == nullptr;
 	}
 
 	template<class T>
-	inline bool EntryIterator<T>::operator!=(nullptr_t) const
+	inline bool EntryIterator<T>::operator!=(sgt_nullptr_t) const
 	{
 		return m_pEntry != nullptr;
 	}
@@ -102,18 +102,18 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	EntryIterator<T> EntryIterator<T>::operator+(const size_t n) const
+	EntryIterator<T> EntryIterator<T>::operator+(const sgt_size_t n) const
 	{
 		EntryIterator<T> ret(m_pEntry);
-		for (size_t i = 0; i < n && ret != nullptr; i++, ++ret) {}
+		for (sgt_size_t i = 0; i < n && ret != nullptr; i++, ++ret) {}
 		return ret;
 	}
 
 	template<class T>
-	EntryIterator<T> EntryIterator<T>::operator-(const size_t n) const
+	EntryIterator<T> EntryIterator<T>::operator-(const sgt_size_t n) const
 	{
 		EntryIterator<T> ret(m_pEntry);
-		for (size_t i = 0; i < n && ret != nullptr; i++, --ret) {}
+		for (sgt_size_t i = 0; i < n && ret != nullptr; i++, --ret) {}
 		return ret;
 	}
 	template<class T>
