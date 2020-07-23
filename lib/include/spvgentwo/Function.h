@@ -13,6 +13,8 @@ namespace spvgentwo
 		friend class Module;
 
 	public:
+		Function() = default;
+
 		// empty function, call setReturnType() first, then use addParameters() and then finalize() to create the function
 		Function(Module* _pModule);
 

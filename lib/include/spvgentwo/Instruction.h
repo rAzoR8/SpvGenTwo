@@ -44,6 +44,8 @@ namespace spvgentwo
 	public:
 		using Iterator = EntryIterator<Operand>;
 
+		Instruction() = default;
+
 		template <class ...Args>
 		Instruction(Module* _pModule, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
 		template <class ...Args>

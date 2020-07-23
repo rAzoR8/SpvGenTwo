@@ -19,6 +19,7 @@ namespace spvgentwo
 		Instruction m_Label;
 
 	public:
+		BasicBlock() = default;
 
 		BasicBlock(Function* _pFunction, const char* _pName = nullptr);
 		BasicBlock(Function* _pFunction, BasicBlock&& _other) noexcept;
