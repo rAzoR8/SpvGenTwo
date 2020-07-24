@@ -18,6 +18,7 @@ I mainly focused on Shader capabilities, so the Kernel and OpenCL side is a bit 
 * [Contributing](#Contributing)
 * [Copyright and Licensing](#Copyright-and-Licensing)
 * [Roadmap](#Roadmap)
+* [Gallery](#Gallery)
 * [Coverage](#Coverage)
     * [Core](#Core)
     * [GLSL.std.450](#GLSL.std.450)
@@ -191,6 +192,15 @@ A list of short and long term goals for this library:
 * Write unit tests
 * Implement [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools) like helper tools
 * Implement some front-end or DSL like [SPEAR](https://github.com/rAzoR8/SPEAR)
+
+# Gallery
+
+SpvGenTwo is used in:
+
+* [SHADERed](https://github.com/dfranx/SHADERed)
+![SHADERed](https://raw.githubusercontent.com/dfranx/SHADERed/master/Misc/Screenshots/IMG2.png)
+
+Leave PR with your software if you want it to be added here :)
 
 # Coverage
 
