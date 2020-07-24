@@ -275,6 +275,9 @@ namespace spvgentwo
 		// remove _pInstr from type/constant and name lookup maps
 		void removeFromLookupMaps(const Instruction* _pInstr);
 
+		// remove _pInstr if it is homed in this module, its functions and basic blocks, returns true if it was removed
+		bool remove(const Instruction* _pInstr);
+
 		// ILogger proxy calls
 		template <typename ...Args>
 		bool log(bool _pred, const LogLevel _level, const char* _pFormat, Args... _args) const;

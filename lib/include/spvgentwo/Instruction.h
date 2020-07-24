@@ -67,6 +67,8 @@ namespace spvgentwo
 		bool operator==(const spv::Op _op) const { return m_Operation == _op; }
 		bool operator!=(const spv::Op _op) const { return m_Operation != _op; }
 
+		ParentType getParentType() const { return m_parentType; }
+
 		Module* getModule() const;
 		Function* getFunction() const;
 		BasicBlock* getBasicBlock() const;

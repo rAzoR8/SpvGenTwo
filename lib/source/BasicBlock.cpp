@@ -144,6 +144,23 @@ bool spvgentwo::BasicBlock::read(IReader* _pReader, const Grammar& _grammar)
 	return false;
 }
 
+bool spvgentwo::BasicBlock::remove(const Instruction* _pInstr)
+{
+	if(_pInstr != nullptr && this == _pInstr->getBasicBlock())
+	{
+		for(auto it = begin(), e = end(); it != e; ++it)
+		{
+			if(it.operator->() == _pInstr)
+			{
+				erase(it);
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 spvgentwo::BasicBlock& spvgentwo::BasicBlock::If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock* _pMergeBlock, const Flag<spv::SelectionControlMask> _mask)
 {
 	// this block has not been terminated yet

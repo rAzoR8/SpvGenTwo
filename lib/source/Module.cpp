@@ -1293,3 +1293,59 @@ void spvgentwo::Module::removeFromLookupMaps(const Instruction* _pInstr)
 
 	m_NameLookup.eraseRange(_pInstr);
 }
+
+bool spvgentwo::Module::remove(const Instruction* _pInstr)
+{
+	if (_pInstr == nullptr || _pInstr->getModule() != this)
+	{
+		return false;
+	}
+
+	auto erase = [_pInstr](List<Instruction>& container) -> bool
+	{
+		auto it = container.find_if([_pInstr](const Instruction& _instr) {return &_instr == _pInstr; });
+		if (it != container.end())
+		{
+			container.erase(it);
+			return true;
+		}
+		return false;
+	};
+
+	if(_pInstr->getParentType() == Instruction::ParentType::Module)
+	{
+		if (erase(m_Capabilities)) return true;
+		if (erase(m_Extensions)) return true;
+
+		for (const auto& [key, value] : m_ExtInstrImport)
+		{
+			if (&value == _pInstr) 
+			{
+				m_ExtInstrImport.erase(m_ExtInstrImport.find(key));
+				return true;
+			}
+		}
+
+		if (&m_MemoryModel == _pInstr) return false;
+
+		if (erase(m_SourceStrings)) return true;
+		if (erase(m_Names)) return true;
+		if (erase(m_ModuleProccessed)) return true;
+		if (erase(m_Decorations)) return true;
+		if (erase(m_TypesAndConstants)) return true;
+		if (erase(m_GlobalVariables)) return true;
+		if (erase(m_Undefs)) return true;
+		if (erase(m_Lines)) return true;
+	}
+	else if (_pInstr->getParentType() == Instruction::ParentType::Function && _pInstr->getFunction() != nullptr)
+	{
+		// opFunction and opFunctionEnd cant be removed, only opFunctionParameters
+		return erase(_pInstr->getFunction()->getParameters());
+	}
+	else if (_pInstr->getParentType() == Instruction::ParentType::BasicBlock && _pInstr->getBasicBlock() != nullptr)
+	{
+		_pInstr->getBasicBlock()->remove(_pInstr);
+	}
+
+	return false;
+}
