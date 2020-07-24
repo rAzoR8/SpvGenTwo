@@ -44,6 +44,8 @@ namespace spvgentwo
 	public:
 		using Iterator = EntryIterator<Operand>;
 
+		Instruction() = default;
+
 		template <class ...Args>
 		Instruction(Module* _pModule, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
 		template <class ...Args>
@@ -61,6 +63,11 @@ namespace spvgentwo
 
 		Instruction& operator=(Instruction&& _other) noexcept;
 		Instruction& operator=(const Instruction& _other) = delete;
+
+		bool operator==(const spv::Op _op) const { return m_Operation == _op; }
+		bool operator!=(const spv::Op _op) const { return m_Operation != _op; }
+
+		ParentType getParentType() const { return m_parentType; }
 
 		Module* getModule() const;
 		Function* getFunction() const;
@@ -122,11 +129,11 @@ namespace spvgentwo
 
 		// transforms _args to operands, calls inferResultTypeOperand and validateOperands()
 		template <class ...Args>
-		Instruction* makeOp(const spv::Op _op, Args ... _args);
+		Instruction* makeOp(const spv::Op _op, Args&& ... _args);
 
 		// convert and add the raw data passed via _args as literal_t operands
 		template <class ...Args>
-		void appendLiterals(Args ... _args);
+		void appendLiterals(Args&& ... _args);
 
 		// infer result type from operands, RestulType operand must be set to InvalidInstr
 		// this function assigns the infered OpType instruction to the first operand of this instruction
@@ -225,13 +232,13 @@ namespace spvgentwo
 		template <class ... ArgInstr>
 		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ... _args);
 
-		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, const List<Instruction*>& _args);
+		Instruction* opFunctionCallDynamic(Instruction* _pResultType, Instruction* _pFunction, const List<Instruction*>& _args);
 
 		// generic helper for opFunctionCall using Function class
 		template <class ... ArgInstr>
 		Instruction* call(Function* _pFunction, ArgInstr ... _args);
 
-		Instruction* call(Function* _pFunction, const List<Instruction*>& _args);
+		Instruction* callDynamic(Function* _pFunction, const List<Instruction*>& _args);
 		
 		// _pResultType must be of OpTypePointer
 		Instruction* opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instruction* _pInitializer = nullptr);
@@ -284,12 +291,12 @@ namespace spvgentwo
 		template <class ... ConstituentInstr>
 		Instruction* opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituent, ConstituentInstr* ... _constituents);
 
-		Instruction* opCompositeConstruct(Instruction* _pResultType, const List<Instruction*>& _constituents);
+		Instruction* opCompositeConstructDynamic(Instruction* _pResultType, const List<Instruction*>& _constituents);
 
 		template <class ... IntIndices>
 		Instruction* opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ... _indices);
 
-		Instruction* opCompositeExtract(Instruction* _pComposite, const List<unsigned int>& _indices);
+		Instruction* opCompositeExtractDynamic(Instruction* _pComposite, const List<unsigned int>& _indices);
 
 		template <class ... IntIndices>
 		Instruction* opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, const unsigned int _firstIndex, IntIndices ... _indices);
@@ -384,7 +391,7 @@ namespace spvgentwo
 		template <class ...ImageOperands>
 		Instruction* opImageSampleProjDrefExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pGrad)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference spv::ImageOperandsMask::Grad, _pGrad);
+			return opImageSample(spv::Op::OpImageSampleProjDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::Grad, _pGrad);
 		}
 
 		template <class ...ImageOperands>
@@ -638,6 +645,8 @@ namespace spvgentwo
 		template <class ... VarInst>
 		Instruction* opPhi(Instruction* _pVar, VarInst* ... _variables);
 
+		Instruction* opPhiDynamic(const List<Instruction*>& _variables);
+
 		template <class ...LoopControlParams>
 		void opLoopMerge(BasicBlock* _pMergeBlock, BasicBlock* _pContinueBlock, const Flag<spv::LoopControlMask> _loopControl, LoopControlParams ... _params);
 
@@ -693,7 +702,7 @@ namespace spvgentwo
 
 		// creates literals
 		template <class T, class ...Args>
-		void makeOpInternal(T first, Args ... _args);
+		void makeOpInternal(T&& first, Args&& ... _args);
 
 		// checks types based on passed _type and_sign
 		Instruction* scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign);
@@ -721,7 +730,7 @@ namespace spvgentwo
 	Instruction::Iterator getLiteralString(String& _out, Instruction::Iterator _begin, Instruction::Iterator _end);
 
 	template<class ...Args>
-	inline Instruction::Instruction(Module* _pModule, const spv::Op _op, Args&& ..._args) :List(_pModule->getAllocator()),
+	inline Instruction::Instruction(Module* _pModule, const spv::Op _op, Args&& ..._args) : List(_pModule->getAllocator()),
 		m_parentType(ParentType::Module)
 	{
 		m_parent.pModule = _pModule;
@@ -745,7 +754,7 @@ namespace spvgentwo
 	}
 
 	template<class ...Args>
-	inline Instruction* Instruction::makeOp(const spv::Op _op, Args ..._args)
+	inline Instruction* Instruction::makeOp(const spv::Op _op, Args&& ..._args)
 	{
 		reset();
 
@@ -753,7 +762,7 @@ namespace spvgentwo
 
 		if constexpr (sizeof...(_args) > 0u)
 		{
-			makeOpInternal(_args...);
+			makeOpInternal(stdrep::forward<Args>(_args)...);
 		}
 
 		inferResultTypeOperand();
@@ -765,7 +774,7 @@ namespace spvgentwo
 	template<class T>
 	inline Instruction* Instruction::bitcast(Instruction* _pOperand)
 	{
-		return opBitcast(getModule()->type<T>(), _pOperand);
+		return opBitcast(getModule()->template type<T>(), _pOperand);
 	}
 
 	template<class ...Args>
@@ -776,31 +785,31 @@ namespace spvgentwo
 	}
 
 	template<class T, class ...Args>
-	inline void Instruction::makeOpInternal(T _first, Args ..._args)
+	inline void Instruction::makeOpInternal(T&& _first, Args&& ..._args)
 	{
 		if constexpr (traits::is_same_base_type_v<T, Instruction*> || traits::is_same_base_type_v<T, BasicBlock*> || traits::is_same_base_type_v<T, spv::Id> || traits::is_same_base_type_v<T, literal_t>)
 		{
-			addOperand(_first);
+			addOperand(stdrep::forward<T>(_first));
 		}
 		else if constexpr (stdrep::is_same_v<traits::remove_cvref_t<T>, int> || stdrep::is_same_v<traits::remove_cvref_t<T>, unsigned int>) // bitcast to 32 bit literal
 		{
-			addOperand(literal_t{_first});
+			addOperand(literal_t{ stdrep::forward<T>(_first)});
 		}
 		else
 		{
-			appendLiterals(_first);
+			appendLiterals(stdrep::forward<T>(_first));
 		}
 
 		if constexpr (sizeof...(_args) > 0u)
 		{
-			makeOpInternal(_args...);
+			makeOpInternal(stdrep::forward<Args>(_args)...);
 		}
 	}
 
 	template<class ...Args>
-	inline void Instruction::appendLiterals(Args ..._args)
+	inline void Instruction::appendLiterals(Args&& ..._args)
 	{
-		appendLiteralsToContainer(*this, _args...);
+		appendLiteralsToContainer(*this, stdrep::forward<Args>(_args)...);
 	}
 
 	template<class ...Operands>
@@ -912,7 +921,7 @@ namespace spvgentwo
 	
 			Instruction* pResultType = pModule->addType(it->wrapPointer(pBaseType->getStorageClass()));
 
-			return makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->constant(_firstIndex), pModule->constant<unsigned int>(_indices)...);
+			return makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->constant(_firstIndex), pModule->template constant<unsigned int>(_indices)...);
 		}
 
 		getModule()->logError("Failed to deduct composite type of base operand for OpAccessChain");
@@ -947,7 +956,7 @@ namespace spvgentwo
 	template<class ...Components>
 	inline Instruction* Instruction::opVectorShuffle(Instruction* _pVector1, Instruction* _pVector2, Components ..._components)
 	{
-		constexpr size_t componentCount = sizeof...(_components);
+		constexpr auto componentCount = sizeof...(_components);
 
 		static_assert(componentCount > 1u && componentCount < 5u, "Invalid number of component indices [2..4]");
 

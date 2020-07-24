@@ -36,7 +36,7 @@ namespace spvgentwo
 
 		bool empty() const { return m_nodes.empty(); }
 
-		size_t size() const { return m_nodes.size(); }
+		sgt_size_t size() const { return m_nodes.size(); }
 
 		NodeType& front() { return m_nodes.front(); }
 		const NodeType& front() const { return m_nodes.front(); }

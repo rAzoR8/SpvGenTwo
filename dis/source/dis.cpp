@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 
-		auto printOperand = [&gram, &alloc](Instruction& instr, const Operand& op, const Grammar::Operand* info)
+		auto printOperand = [&gram, &alloc](const Instruction& instr, const Operand& op, const Grammar::Operand* info)
 		{
 			if (op.isId() && info->kind != Grammar::OperandKind::IdResult) // skip result id
 			{
@@ -153,6 +153,12 @@ int main(int argc, char* argv[])
 			}
 			else if (op.isInstruction())
 			{
+				if (op.instruction == nullptr)
+				{
+					printf(" \x1B[33m%%INVALIDINSTRPTR\033[0m");
+					return;
+				}
+
 				if (const char* name = op.instruction->getName(); name != nullptr && stringLength(name) > 1)
 				{
 					printf(" \x1B[33m%%%s\033[0m", name);
@@ -164,6 +170,12 @@ int main(int argc, char* argv[])
 			}
 			else if (op.isBranchTarget())
 			{
+				if (op.branchTarget == nullptr)
+				{
+					printf(" \x1B[33m%%INVALIDBASICBLOCKPTR\033[0m");
+					return;
+				}
+
 				if (const char* name = op.branchTarget->getName(); name != nullptr && stringLength(name) > 1)
 				{
 					printf(" \x1B[33m%%%s\033[0m", name);
@@ -176,7 +188,7 @@ int main(int argc, char* argv[])
 		};
 
 		bool success = true;
-		auto print = [&](Instruction& instr) -> bool
+		auto print = [&](const Instruction& instr) -> bool
 		{
 			auto* info = gram.getInfo(static_cast<unsigned int>(instr.getOperation()));
 
@@ -247,6 +259,59 @@ int main(int argc, char* argv[])
 		printf("# Schema %u\n\n", module.getSpvSchema());
 
 		// print text
+		module.iterateInstructions(print);
+
+		//for(auto& [instr, name] : module.getNameLookupMap())
+		//{
+		//	printf("%s %u: ", name.c_str(), instr.member);
+		//	print(*instr.target);
+		//}
+
+		//auto& ep = module.getEntryPoints().front();
+
+		//auto iter = [&module](Instruction& instr)-> bool
+		//{
+		//	const Type* t = instr.getType();
+		//	if (t != nullptr && t->isStruct())
+		//	{
+		//		for (auto& [name, index] : module.getNames(&instr))
+		//		{
+		//			printf("%s %u\n", name, index);
+		//		}
+		//		return true;
+		//	}
+		//	return false;
+		//};
+
+		//module.iterateInstructions(iter);
+
+		//for (auto& [name, index] : module.getNames(&ep.front().front()))
+		//{
+		//	printf("%s %u\n", name, index);
+		//}
+
+		// first cleanup instructions from the BB that is going to be removed
+		//for (Instruction& i : ep.front())
+		//{
+		//	module.replaceUses(&i, nullptr);
+		//}
+
+		//BasicBlock& newBB = ep.addBasicBlock("newBlock");
+		//newBB->opReturn();
+
+		//auto uses = ep.remove(&ep.front(), &newBB);
+
+		//for (auto use : uses) print(*use);
+
+		//auto uses = module.remove(&module.getFunctions().front());
+
+		//for (Instruction* use : uses) 
+		//{
+		//	print(*use);
+		//}
+
+		// TODO: cleanup uses
+
 		module.iterateInstructions(print);
 
 		if (success == false)

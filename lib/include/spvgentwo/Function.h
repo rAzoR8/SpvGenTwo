@@ -13,6 +13,8 @@ namespace spvgentwo
 		friend class Module;
 
 	public:
+		Function() = default;
+
 		// empty function, call setReturnType() first, then use addParameters() and then finalize() to create the function
 		Function(Module* _pModule);
 
@@ -43,6 +45,10 @@ namespace spvgentwo
 		const char* getName() const;
 
 		BasicBlock& addBasicBlock(const char* _pName = nullptr) { return emplace_back(this, _pName); }
+
+		// remove _pBB from this function (destroying it), optionally replacing it with _pReplacement, returning uses of this basic block or its label
+		// if bool _gatherReferencedInstructions is true, also return uses of instructions from the removed basic block (OpName etc)
+		List<Instruction*> remove(const BasicBlock* _pBB, BasicBlock* _pReplacement = nullptr);
 
 		// return entry bb (avoid confusion when adding a BB to this function and instructions are "magically" added to the last BB if using m_pLast
 		BasicBlock& operator->() { return m_pBegin->inner(); }
@@ -79,6 +85,7 @@ namespace spvgentwo
 
 		// get list of all OpFunctionParameter instructions added by addParameters()
 		const List<Instruction>& getParameters() const { return m_Parameters; }
+		List<Instruction>& getParameters() { return m_Parameters; }
 
 		// creates opFunction, m_pFunctionType must have been completed (all parameters added via addParameters), returns opFunction
 		Instruction* finalize(const Flag<spv::FunctionControlMask> _control, const char* _pName = nullptr);
@@ -132,12 +139,12 @@ namespace spvgentwo
 	template<class T>
 	inline Instruction* Function::variable(const char* _pName, Instruction* _pInitialzer)
 	{
-		return variable(getModule()->type<T*>(spv::StorageClass::Function), _pName, _pInitialzer);
+		return variable(getModule()->template type<T*>(spv::StorageClass::Function), _pName, _pInitialzer);
 	}
 
 	template<class T>
 	inline Instruction* Function::variable(const T& _initialValue, const char* _pName)
 	{
-		return variable(getModule()->type<T*>(spv::StorageClass::Function, _initialValue), _pName, getModule()->constant(_initialValue));
+		return variable(getModule()->template type<T*>(spv::StorageClass::Function, _initialValue), _pName, getModule()->constant(_initialValue));
 	}
 } // !spvgentwo

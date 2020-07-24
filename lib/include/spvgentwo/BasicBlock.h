@@ -16,7 +16,10 @@ namespace spvgentwo
 	private:
 
 		Function* m_pFunction = nullptr; // parent
+		Instruction m_Label;
+
 	public:
+		BasicBlock() = default;
 
 		BasicBlock(Function* _pFunction, const char* _pName = nullptr);
 		BasicBlock(Function* _pFunction, BasicBlock&& _other) noexcept;
@@ -34,8 +37,12 @@ namespace spvgentwo
 
 		IAllocator* getAllocator();
 
+		Instruction* getLabel() { return &m_Label;	}
+		const Instruction* getLabel() const { return &m_Label; }
+
 		// get last instruction
-		Iterator getTerminator();
+		Instruction* getTerminator();
+		const Instruction* getTerminator() const;
 
 		// returns a list of BasicBlock branch targets of this blocks terminator
 		bool getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const;
@@ -58,8 +65,10 @@ namespace spvgentwo
 
 		bool read(IReader* _pReader, const Grammar& _grammar);
 
-		// structured if: true and false block must NOT have a terminator yet!
-		// returns last instruction of MergeBlock which creats a result
+		// remove instruction from this block (if it is in this block). OpLabel can't be removed. Returns true if the instruction was removed
+		bool remove(const Instruction* _pInstr);
+
+		// structured if, returns last instruction of MergeBlock which creats a result
 		BasicBlock& If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock& _falseBlock, BasicBlock* _pMergeBlock = nullptr, const Flag<spv::SelectionControlMask> _mask = spv::SelectionControlMask::MaskNone);
 
 		// If without else block

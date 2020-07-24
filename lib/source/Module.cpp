@@ -181,6 +181,69 @@ spvgentwo::Function& spvgentwo::Module::addFunction()
 	return m_Functions.emplace_back(this);
 }
 
+spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Module::remove(const Function* _pFunction, Function* _pReplacementToCall)
+{
+	List<Instruction*> uses(getAllocator());
+
+	if (_pFunction == nullptr)
+	{
+		return uses;
+	}
+
+	const Instruction* opFunction = _pFunction->getFunction();
+	Instruction* opFunctionReplacement = _pReplacementToCall != nullptr ? _pReplacementToCall->getFunction() : nullptr;
+
+	// remove from functions if its not an entry point
+	bool found = false;
+	for (auto it = m_Functions.begin(), end = m_Functions.end(); it != end; ++it)
+	{
+		if (it.operator->() == _pFunction)
+		{
+			m_Functions.erase(it);
+			found = true;
+			break;
+		}
+	}
+
+	// function seems to be an entry point
+	if (found == false)
+	{
+		for (auto it = m_EntryPoints.begin(), end = m_EntryPoints.end(); it != end; ++it)
+		{
+			if (it.operator->() == _pFunction)
+			{
+				m_EntryPoints.erase(it);
+				found = true;
+				break;
+			}
+		}
+	}
+
+	if (found)
+	{
+		auto gatherUse = [opFunction, opFunctionReplacement, &uses](Instruction& instr)
+		{
+			for (auto it = instr.getFirstActualOperand(), end = instr.end(); it != end; ++it)
+			{
+				if (*it == opFunction) // need to check use of OpFunctionparameter?
+				{
+					*it = opFunctionReplacement;
+					uses.emplace_back(&instr);
+					break;
+				}
+			}
+		};
+
+		iterateInstructions(gatherUse);
+	}
+	else
+	{
+		logError("Could not remove function, not found in module");
+	}
+
+	return uses;
+}
+
 spvgentwo::EntryPoint& spvgentwo::Module::addEntryPoint()
 {
 	return m_EntryPoints.emplace_back(this);
@@ -258,19 +321,41 @@ spvgentwo::Instruction* spvgentwo::Module::addNameInstr()
 void spvgentwo::Module::addName(Instruction* _pTarget, const char* _pName)
 {
 	addNameInstr()->opName(_pTarget, _pName);
-	m_NameLookup.emplaceUnique(NameInstrKey{ _pTarget, ~0u }, m_pAllocator).kv.value = _pName;
+	m_NameLookup.emplace(_pTarget, MemberName{ String(m_pAllocator, _pName), ~0u });
 }
 
 void spvgentwo::Module::addMemberName(Instruction* _pTargetBase, const char* _pMemberName, unsigned int _memberIndex)
 {
 	addNameInstr()->opMemberName(_pTargetBase, _memberIndex, _pMemberName);
-	m_NameLookup.emplaceUnique(NameInstrKey{ _pTargetBase, _memberIndex }, m_pAllocator).kv.value = _pMemberName;
+	m_NameLookup.emplace(_pTargetBase, MemberName{ String(m_pAllocator, _pMemberName), _memberIndex });
 }
 
 const char* spvgentwo::Module::getName(const Instruction* _pTarget, const unsigned int _memberIndex) const
 {
-	const String* pStr = m_NameLookup.get(NameInstrKey{ _pTarget, _memberIndex });
-	return pStr != nullptr ? pStr->c_str() : "";
+	for (auto& name : m_NameLookup.getRange(_pTarget))
+	{
+		if (name.kv.value.member == _memberIndex)
+		{
+			return name.kv.value.name.c_str();
+		}
+	}
+
+	return nullptr;
+}
+
+spvgentwo::Vector<spvgentwo::Module::MemberNameCStr> spvgentwo::Module::getNames(const Instruction* _pTarget) const
+{
+	Vector<MemberNameCStr> names(getAllocator());
+
+	for (auto& name : m_NameLookup.getRange(_pTarget))
+	{
+		if (name.kv.key == _pTarget) 
+		{		
+			names.emplace_back(name.kv.value.name.c_str(), name.kv.value.member);
+		}
+	}
+
+	return names;
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addModuleProccessedInstr()
@@ -613,6 +698,41 @@ bool spvgentwo::Module::resolveIDs()
 
 	iterateInstructions(lookUp);
 
+	auto updateFunctionTypes = [](Function& _fun) -> bool
+	{
+		if (auto it = _fun.getFunction()->getResultTypeOperand(); it != nullptr && it->isInstruction())
+		{
+			if (Instruction* funcType = _fun.setReturnType(it->instruction); funcType != nullptr)
+			{
+				for (Instruction& param : _fun.getParameters())
+				{
+					if (auto typeIt = param.getResultTypeOperand(); typeIt != nullptr && typeIt->isInstruction())
+					{
+						funcType->addOperand(typeIt->instruction);
+					}
+					else
+					{
+						return false;
+					}
+				}
+				return true;
+			}
+		}
+		return false;
+	};
+
+	for (Function& f : m_Functions)
+	{
+		if (updateFunctionTypes(f) == false)
+			return false;
+	}
+
+	for (EntryPoint& f : m_EntryPoints)
+	{
+		if (updateFunctionTypes(f) == false)
+			return false;
+	}
+
 	return success;
 }
 
@@ -864,7 +984,7 @@ bool spvgentwo::Module::reconstructNames()
 			return false;
 		}
 
-		String& name = m_NameLookup.emplaceUnique(NameInstrKey{ target, memberIndex }, m_pAllocator).kv.value;
+		String& name = m_NameLookup.emplace(target, MemberName{ m_pAllocator, memberIndex }).kv.value.name;
 
 		getLiteralString(name, it.next(), instr.end());
 
@@ -1108,4 +1228,142 @@ spvgentwo::Instruction* spvgentwo::Module::findInstructionById(const spv::Id _re
 	iterateInstructions(pred);
 
 	return instr;
+}
+
+void spvgentwo::Module::gatherUses(const Instruction* _pInstr, List<Instruction*>& _outUses, Instruction* _pReplacement)
+{
+	auto gather = [_pInstr, _pReplacement, &_outUses](Instruction& _instr)
+	{
+		for (auto it = _instr.getFirstActualOperand(), end = _instr.end(); it != end; ++it)
+		{
+			if (*it == _pInstr)
+			{
+				_outUses.emplace_back(&_instr);
+				if (_pReplacement != nullptr)
+				{
+					*it = _pReplacement;				
+				}
+			}
+		}
+	};
+
+	iterateInstructions(gather);
+}
+
+void spvgentwo::Module::replaceUses(const Instruction* _pInstr, Instruction* _pReplacement)
+{
+	if (_pInstr == nullptr) 
+	{
+		return;
+	}
+
+	auto replace = [_pInstr, _pReplacement](Instruction& _instr)
+	{
+		for (auto it = _instr.getFirstActualOperand(), end = _instr.end(); it != end; ++it)
+		{
+			if (*it == _pInstr)
+			{
+				*it = _pReplacement;
+			}
+		}
+	};
+
+	iterateInstructions(replace);
+}
+
+void spvgentwo::Module::removeFromLookupMaps(const Instruction* _pInstr)
+{
+	if (auto itt = m_InstrToType.find(_pInstr); itt != m_InstrToType.end())
+	{
+		if(auto tti = m_TypeToInstr.find(*itt->value); tti != m_TypeToInstr.end())
+		{
+			m_TypeToInstr.erase(tti);
+		}
+		m_InstrToType.erase(itt);
+	}
+
+	if (auto itc = m_InstrToConstant.find(_pInstr); itc != m_InstrToConstant.end())
+	{
+		if (auto cti = m_ConstantToInstr.find(*itc->value); cti != m_ConstantToInstr.end())
+		{
+			m_ConstantToInstr.erase(cti);
+		}
+		m_InstrToConstant.erase(itc);
+	}
+
+	m_NameLookup.eraseRange(_pInstr);
+}
+
+bool spvgentwo::Module::remove(const Instruction* _pInstr)
+{
+	if (_pInstr == nullptr || _pInstr->getModule() != this)
+	{
+		return false;
+	}
+
+	auto erase = [_pInstr](List<Instruction>& container) -> bool
+	{
+		auto it = container.find_if([_pInstr](const Instruction& _instr) {return &_instr == _pInstr; });
+		if (it != container.end())
+		{
+			container.erase(it);
+			return true;
+		}
+		return false;
+	};
+
+	if(_pInstr->getParentType() == Instruction::ParentType::Module)
+	{
+		if (erase(m_Capabilities)) return true;
+		if (erase(m_Extensions)) return true;
+
+		for (const auto& [key, value] : m_ExtInstrImport)
+		{
+			if (&value == _pInstr) 
+			{
+				m_ExtInstrImport.erase(m_ExtInstrImport.find(key));
+				return true;
+			}
+		}
+
+		if (&m_MemoryModel == _pInstr)
+		{
+			logError("OpMemoryModel can't be removed");
+			return false;
+		}
+
+		if (erase(m_SourceStrings)) return true;
+		if (erase(m_Names)) return true;
+		if (erase(m_ModuleProccessed)) return true;
+		if (erase(m_Decorations)) return true;
+		if (erase(m_TypesAndConstants)) return true;
+		if (erase(m_GlobalVariables)) return true;
+		if (erase(m_Undefs)) return true;
+		if (erase(m_Lines)) return true;
+	}
+	else if (_pInstr->getParentType() == Instruction::ParentType::Function && _pInstr->getFunction() != nullptr)
+	{
+		if (*_pInstr != spv::Op::OpFunctionParameter)
+		{
+			logError("OpFunction and OpFunctionEnd can't be removed");
+			return false;
+		}
+
+		// opFunction and opFunctionEnd cant be removed, only opFunctionParameters
+		return erase(_pInstr->getFunction()->getParameters());
+	}
+	else if (_pInstr->getParentType() == Instruction::ParentType::BasicBlock && _pInstr->getBasicBlock() != nullptr)
+	{
+		if (*_pInstr == spv::Op::OpLabel) 
+		{
+			logError("OpLabel can't be removed");
+			return false;
+		}
+
+		return _pInstr->getBasicBlock()->remove(_pInstr);
+	}
+
+	logError("Invalid instruction parent");
+
+	return false;
 }

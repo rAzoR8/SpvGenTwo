@@ -14,6 +14,8 @@ namespace spvgentwo
 	{
 		friend class Module;
 	public:
+		EntryPoint() = default;
+
 		// empty function, call setReturnType() first, then use addParameters() and then finalize() to create the function
 		EntryPoint(Module* _pModule);
 

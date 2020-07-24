@@ -17,12 +17,12 @@ namespace spvgentwo
 
 		HeapVector(HeapVector&& _other) noexcept : Vector<U>(stdrep::move(_other)) {}
 
-		HeapVector(size_t _size = 0u) : Vector<U>(HeapAllocator::instance(), _size) {}
+		HeapVector(sgt_size_t _size = 0u) : Vector<U>(HeapAllocator::instance(), _size) {}
 
 		// copy from array
-		HeapVector(const T* _pData, size_t _size = 0u) : Vector<U>(HeapAllocator::instance(), _pData, _size) {}
+		HeapVector(const T* _pData, sgt_size_t _size = 0u) : Vector<U>(HeapAllocator::instance(), _pData, _size) {}
 
-		template <size_t Size>
+		template <sgt_size_t Size>
 		HeapVector(const T(&_array)[Size]) : Vector<U>(HeapAllocator::instance(), _array) {}
 
 		template <typename ...Args>

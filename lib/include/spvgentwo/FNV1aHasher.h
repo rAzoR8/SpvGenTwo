@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stddef.h> // size_t
-
 namespace spvgentwo
 {
 	struct Hash64
@@ -18,8 +16,9 @@ namespace spvgentwo
 	
 	namespace detail
 	{
-		constexpr Hash64 Offset{ 0xcbf29ce484222325ui64 };
-		constexpr Hash64 Prime{ 0x100000001b3ui64 };
+		using hash_size_t = decltype(sizeof(int));
+		constexpr Hash64 Offset{ 0xcbf29ce484222325ull };
+		constexpr Hash64 Prime{ 0x100000001b3ull };
 	}
 
 	template <class Key>
@@ -29,7 +28,7 @@ namespace spvgentwo
 		Hash64 operator()(const Key& _key, Hash64 _seed = detail::Offset)
 		{
 			const unsigned char* pBytes = reinterpret_cast<const unsigned char*>(&_key);
-			for (size_t i = 0u; i < sizeof(Key); ++i)
+			for (detail::hash_size_t i = 0u; i < sizeof(Key); ++i)
 			{
 				_seed ^= pBytes[i];
 				_seed *= detail::Prime;
@@ -51,7 +50,7 @@ namespace spvgentwo
 
 		Hash64 add(const char* _pStr);
 
-		Hash64 add(const void* _pData, const size_t _length);
+		Hash64 add(const void* _pData, const detail::hash_size_t _length);
 
 		template <class T>
 		FNV1aHasher& operator<<(const T& _data);
@@ -100,10 +99,10 @@ namespace spvgentwo
 		return m_Hash;
 	}
 
-	inline Hash64 spvgentwo::FNV1aHasher::add(const void* _pData, const size_t _length)
+	inline Hash64 spvgentwo::FNV1aHasher::add(const void* _pData, const detail::hash_size_t _length)
 	{
 		const unsigned char* pBytes = reinterpret_cast<const unsigned char*>(_pData);
-		for (size_t i = 0u; i < _length; ++i)
+		for (detail::hash_size_t i = 0u; i < _length; ++i)
 		{
 			m_Hash ^= pBytes[i];
 			m_Hash *= detail::Prime;

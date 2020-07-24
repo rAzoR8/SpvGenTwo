@@ -102,6 +102,53 @@ const char* spvgentwo::Function::getName() const
 	return m_pModule->getName(&m_Function);
 }
 
+spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::remove(const BasicBlock* _pBB, BasicBlock* _pReplacement)
+{
+	List<Instruction*> uses(getAllocator());
+
+	if(_pBB == nullptr)
+	{
+		return uses;
+	}
+
+	Module* module = getModule();
+
+	const Instruction* opLabel = _pBB->getLabel();
+
+	bool found = false;
+	for (auto it = begin(); it != end(); ++it) 
+	{
+		if (it.operator->() == _pBB)
+		{
+			erase(it);
+			found = true;
+			break;
+		}
+	}
+
+	if (found == false)
+	{
+		module->logError("BasicBlock not found in function");
+		return uses;
+	}
+
+	auto gatherUse = [opLabel, _pBB, _pReplacement, &uses](Instruction& instr)
+	{
+		for (auto it = instr.getFirstActualOperand(), end = instr.end(); it != end; ++it)
+		{
+			if (*it == _pBB || *it == opLabel)
+			{
+				uses.emplace_back(&instr);
+				*it = _pReplacement;
+			}
+		}
+	};
+
+	module->iterateInstructions(gatherUse);
+
+	return uses;
+}
+
 spvgentwo::Instruction* spvgentwo::Function::getParameter(unsigned int _index)
 {
 	auto it = m_Parameters.begin() + _index;
@@ -118,10 +165,8 @@ spvgentwo::Instruction* spvgentwo::Function::variable(Instruction* _pPtrType, co
 
 	BasicBlock& funcEntry = **m_pBegin;
 
-	// insert var instruction after first lable
-	Instruction* pVar = funcEntry.insert_after(funcEntry.begin(), &funcEntry)->operator->();
-
-	pVar->opVariable(_pPtrType, spv::StorageClass::Function, _pInitialzer);
+	// insert var instruction after label
+	Instruction* pVar = funcEntry.emplace_front(&funcEntry).opVariable(_pPtrType, spv::StorageClass::Function, _pInitialzer);
 
 	if (_pName != nullptr)
 	{

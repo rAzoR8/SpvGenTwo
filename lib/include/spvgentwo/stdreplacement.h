@@ -2,12 +2,16 @@
 
 // replacement header for some std functions and traits
 
-#include <cstddef>
+namespace spvgentwo 
+{
+	using sgt_size_t = decltype(sizeof(int));
+	using sgt_nullptr_t = decltype(nullptr);
+}
 
 #ifdef SPVGENTWO_REPLACE_PLACEMENTNEW
 #pragma warning(disable: 4291)
 template <class T>
-inline void* operator new(size_t size, T* ptr) noexcept { (void)size; return ptr; }
+inline void* operator new(spvgentwo::sgt_size_t size, T* ptr) noexcept { (void)size; return ptr; }
 #else
 #include <new>
 #endif
@@ -200,18 +204,18 @@ namespace spvgentwo::stdrep
 // custom traits
 namespace spvgentwo::traits
 {
-	template <class T> static constexpr bool is_primitive_type_v = false;
-	template <>	static constexpr bool is_primitive_type_v<bool> = true;
-	template <>	static constexpr bool is_primitive_type_v<short> = true;
-	template <>	static constexpr bool is_primitive_type_v<unsigned short> = true;
-	template <>	static constexpr bool is_primitive_type_v<int> = true;
-	template <>	static constexpr bool is_primitive_type_v<unsigned int> = true;
-	template <>	static constexpr bool is_primitive_type_v<long> = true;
-	template <>	static constexpr bool is_primitive_type_v<unsigned long> = true;
-	template <>	static constexpr bool is_primitive_type_v<long long> = true;
-	template <>	static constexpr bool is_primitive_type_v<unsigned long long> = true;
-	template <>	static constexpr bool is_primitive_type_v<float> = true;
-	template <>	static constexpr bool is_primitive_type_v<double> = true;
+	template <class T> inline constexpr bool is_primitive_type_v = false;
+	template <>	inline constexpr bool is_primitive_type_v<bool> = true;
+	template <>	inline constexpr bool is_primitive_type_v<short> = true;
+	template <>	inline constexpr bool is_primitive_type_v<unsigned short> = true;
+	template <>	inline constexpr bool is_primitive_type_v<int> = true;
+	template <>	inline constexpr bool is_primitive_type_v<unsigned int> = true;
+	template <>	inline constexpr bool is_primitive_type_v<long> = true;
+	template <>	inline constexpr bool is_primitive_type_v<unsigned long> = true;
+	template <>	inline constexpr bool is_primitive_type_v<long long> = true;
+	template <>	inline constexpr bool is_primitive_type_v<unsigned long long> = true;
+	template <>	inline constexpr bool is_primitive_type_v<float> = true;
+	template <>	inline constexpr bool is_primitive_type_v<double> = true;
 
 	// cpp20
 	template <class T>
