@@ -1326,7 +1326,11 @@ bool spvgentwo::Module::remove(const Instruction* _pInstr)
 			}
 		}
 
-		if (&m_MemoryModel == _pInstr) return false;
+		if (&m_MemoryModel == _pInstr)
+		{
+			logError("OpMemoryModel can't be removed");
+			return false;
+		}
 
 		if (erase(m_SourceStrings)) return true;
 		if (erase(m_Names)) return true;
@@ -1339,13 +1343,27 @@ bool spvgentwo::Module::remove(const Instruction* _pInstr)
 	}
 	else if (_pInstr->getParentType() == Instruction::ParentType::Function && _pInstr->getFunction() != nullptr)
 	{
+		if (*_pInstr != spv::Op::OpFunctionParameter)
+		{
+			logError("OpFunction and OpFunctionEnd can't be removed");
+			return false;
+		}
+
 		// opFunction and opFunctionEnd cant be removed, only opFunctionParameters
 		return erase(_pInstr->getFunction()->getParameters());
 	}
 	else if (_pInstr->getParentType() == Instruction::ParentType::BasicBlock && _pInstr->getBasicBlock() != nullptr)
 	{
-		_pInstr->getBasicBlock()->remove(_pInstr);
+		if (*_pInstr == spv::Op::OpLabel) 
+		{
+			logError("OpLabel can't be removed");
+			return false;
+		}
+
+		return _pInstr->getBasicBlock()->remove(_pInstr);
 	}
+
+	logError("Invalid instruction parent");
 
 	return false;
 }
