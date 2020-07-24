@@ -261,59 +261,6 @@ int main(int argc, char* argv[])
 		// print text
 		module.iterateInstructions(print);
 
-		//for(auto& [instr, name] : module.getNameLookupMap())
-		//{
-		//	printf("%s %u: ", name.c_str(), instr.member);
-		//	print(*instr.target);
-		//}
-
-		//auto& ep = module.getEntryPoints().front();
-
-		//auto iter = [&module](Instruction& instr)-> bool
-		//{
-		//	const Type* t = instr.getType();
-		//	if (t != nullptr && t->isStruct())
-		//	{
-		//		for (auto& [name, index] : module.getNames(&instr))
-		//		{
-		//			printf("%s %u\n", name, index);
-		//		}
-		//		return true;
-		//	}
-		//	return false;
-		//};
-
-		//module.iterateInstructions(iter);
-
-		//for (auto& [name, index] : module.getNames(&ep.front().front()))
-		//{
-		//	printf("%s %u\n", name, index);
-		//}
-
-		// first cleanup instructions from the BB that is going to be removed
-		//for (Instruction& i : ep.front())
-		//{
-		//	module.replaceUses(&i, nullptr);
-		//}
-
-		//BasicBlock& newBB = ep.addBasicBlock("newBlock");
-		//newBB->opReturn();
-
-		//auto uses = ep.remove(&ep.front(), &newBB);
-
-		//for (auto use : uses) print(*use);
-
-		//auto uses = module.remove(&module.getFunctions().front());
-
-		//for (Instruction* use : uses) 
-		//{
-		//	print(*use);
-		//}
-
-		// TODO: cleanup uses
-
-		module.iterateInstructions(print);
-
 		if (success == false)
 		{
 			return -1;
