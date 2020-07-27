@@ -5,6 +5,7 @@
 #include "common/BinaryFileWriter.h"
 #include "common/BinaryFileReader.h"
 #include "common/ConsoleLogger.h"
+#include "common/ModuleToString.h"
 
 #include <cstring>
 
@@ -253,13 +254,20 @@ int main(int argc, char* argv[])
 			module.assignIDs(); // compact ids
 		}
 
-		printf("# SPIR-V Version %u.%u\n", module.getMajorVersion(), module.getMinorVersion());
-		printf("# Generator 0x%X\n", module.getSpvGenerator());
-		printf("# Bound %u\n", module.getSpvBound());
-		printf("# Schema %u\n\n", module.getSpvSchema());
+		String buffer(&alloc, 2048u);
+		ModuleStringPrinter printer(buffer, true);
 
-		// print text
-		module.iterateInstructions(print);
+		success = moduleToString(module, gram, &alloc, &printer, false);
+
+		printf("%s", buffer.c_str());
+
+		//printf("# SPIR-V Version %u.%u\n", module.getMajorVersion(), module.getMinorVersion());
+		//printf("# Generator 0x%X\n", module.getSpvGenerator());
+		//printf("# Bound %u\n", module.getSpvBound());
+		//printf("# Schema %u\n\n", module.getSpvSchema());
+
+		//// print text
+		//module.iterateInstructions(print);
 
 		if (success == false)
 		{

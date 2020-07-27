@@ -29,7 +29,7 @@ void spvgentwo::ModuleStringPrinter::append(unsigned int _literal, const char* _
         m_buffer.append(_pushColor);
     }
 
-    char buf[10] = { '\0' }; // max length is log10(UINT_MAX) ~ 9.6 -> 10
+    char buf[11] = { '\0' }; // max length is log10(UINT_MAX) ~ 9.6 + null terminator -> 11
 
 	unsigned int val = _literal;
 
@@ -51,7 +51,7 @@ void spvgentwo::ModuleStringPrinter::append(unsigned int _literal, const char* _
     }
 }
 
-bool spvgentwo::moduleToString(Module& _module, const Grammar& _grammar, IAllocator* _pAlloc, IModulePrinter* _pOutput)
+bool spvgentwo::moduleToString(Module& _module, const Grammar& _grammar, IAllocator* _pAlloc, IModulePrinter* _pOutput, bool _writePreamble)
 {
 	if (_pAlloc == nullptr || _pOutput == nullptr)
 	{
@@ -220,7 +220,7 @@ bool spvgentwo::moduleToString(Module& _module, const Grammar& _grammar, IAlloca
 			{
 				String litString(_pAlloc);
 				it = getLiteralString(litString, it, end);
-				*_pOutput << " \"";
+				*_pOutput << "\"";
 				_pOutput->append(litString.c_str(), "\x1B[32m", "\033[0m");
 				*_pOutput << "\"";
 				//printf(" \"\x1B[32m%s\033[0m\"", litString.c_str());
@@ -248,10 +248,13 @@ bool spvgentwo::moduleToString(Module& _module, const Grammar& _grammar, IAlloca
 		return false;
 	};
 
-	*_pOutput << "# SPIR-V Version " << _module.getMajorVersion() << "." << _module.getMinorVersion() << "\n";
-	*_pOutput << "# Generator " << _module.getSpvGenerator() << "\n";
-	*_pOutput << "# Bound " << _module.getSpvBound() << "\n";
-	*_pOutput << "# Schema " << _module.getSpvBound() << "\n\n";
+	if (_writePreamble)
+	{
+		*_pOutput << "# SPIR-V Version " << _module.getMajorVersion() << "." << _module.getMinorVersion() << "\n";
+		*_pOutput << "# Generator " << _module.getSpvGenerator() << "\n";
+		*_pOutput << "# Bound " << _module.getSpvBound() << "\n";
+		*_pOutput << "# Schema " << _module.getSpvBound() << "\n\n";
+	}
 
 	// print text
 	_module.iterateInstructions(print);

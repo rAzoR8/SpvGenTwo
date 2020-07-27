@@ -17,8 +17,6 @@ namespace spvgentwo
 
 		IModulePrinter& operator<<(const char* _pStr) {	append(_pStr); return *this;}
 		IModulePrinter& operator<<(unsigned int _literal) { append(_literal); return *this; }
-		//template <unsigned int Size>
-		//IModulePrinter& operator<<(const char(&_arr)[Size]) { append(_arr); return *this; }
 	};
 
 	class ModuleStringPrinter : public IModulePrinter
@@ -34,5 +32,5 @@ namespace spvgentwo
 		bool m_useColor = false;
 	};
 
-	bool moduleToString(Module& _module, const Grammar& _grammar, IAllocator* _pAlloc, IModulePrinter* _pOutput);
+	bool moduleToString(Module& _module, const Grammar& _grammar, IAllocator* _pAlloc, IModulePrinter* _pOutput, bool _writePreamble = true);
 }
