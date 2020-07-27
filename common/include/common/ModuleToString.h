@@ -24,13 +24,14 @@ namespace spvgentwo
 	class ModuleStringPrinter : public IModulePrinter
 	{
 	public:
-		ModuleStringPrinter(String& _outBuffer) : m_buffer(_outBuffer) {}
+		ModuleStringPrinter(String& _outBuffer, bool _useColorCodes = false) : m_buffer(_outBuffer), m_useColor(_useColorCodes){}
 
 		void append(const char* _pStr, const char* _pushColor = nullptr, const char* _popColor = nullptr) final;
 		void append(unsigned int _literal, const char* _pushColor = nullptr, const char* _popColor = nullptr) final;
 
 	private:
 		String& m_buffer;
+		bool m_useColor = false;
 	};
 
 	bool moduleToString(Module& _module, const Grammar& _grammar, IAllocator* _pAlloc, IModulePrinter* _pOutput);
