@@ -60,8 +60,13 @@ bool spvgentwo::moduleToString(Module& _module, const Grammar& _grammar, IAlloca
 
 	auto printOperand = [&](const Instruction& instr, const Operand& op, const Grammar::Operand* info)
 	{
+		if (op.isId() && info->kind == Grammar::OperandKind::IdResult)  // skip result id
+		{
+			return;
+		}
+
 		*_pOutput << " ";
-		if (op.isId() && info->kind != Grammar::OperandKind::IdResult) // skip result id
+		if (op.isId() && info->kind != Grammar::OperandKind::IdResult)
 		{
 			*_pOutput << "%";
 			_pOutput->append(op.id, "\x1B[33m", "\033[0m");
@@ -194,6 +199,10 @@ bool spvgentwo::moduleToString(Module& _module, const Grammar& _grammar, IAlloca
 				//printf("\x1B[34m%%%u\033[0m =", id);
 				*_pOutput << " =\t";
 			}
+			else
+			{
+				return true; // invalid instruction
+			}
 		}
 		else
 		{
@@ -220,7 +229,7 @@ bool spvgentwo::moduleToString(Module& _module, const Grammar& _grammar, IAlloca
 			{
 				String litString(_pAlloc);
 				it = getLiteralString(litString, it, end);
-				*_pOutput << "\"";
+				*_pOutput << " \"";
 				_pOutput->append(litString.c_str(), "\x1B[32m", "\033[0m");
 				*_pOutput << "\"";
 				//printf(" \"\x1B[32m%s\033[0m\"", litString.c_str());
