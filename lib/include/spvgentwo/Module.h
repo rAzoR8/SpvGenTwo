@@ -431,6 +431,11 @@ namespace spvgentwo
 		{
 			_compositeType.getSubTypes().emplace_back(*info);
 		}
+		else
+		{
+			logError("Type info not found for _pSubType");
+			return;
+		}
 
 		if constexpr (sizeof...(_types) > 0u)
 		{

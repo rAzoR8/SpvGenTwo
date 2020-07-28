@@ -698,41 +698,6 @@ bool spvgentwo::Module::resolveIDs()
 
 	iterateInstructions(lookUp);
 
-	auto updateFunctionTypes = [](Function& _fun) -> bool
-	{
-		if (auto it = _fun.getFunction()->getResultTypeOperand(); it != nullptr && it->isInstruction())
-		{
-			if (Instruction* funcType = _fun.setReturnType(it->instruction); funcType != nullptr)
-			{
-				for (Instruction& param : _fun.getParameters())
-				{
-					if (auto typeIt = param.getResultTypeOperand(); typeIt != nullptr && typeIt->isInstruction())
-					{
-						funcType->addOperand(typeIt->instruction);
-					}
-					else
-					{
-						return false;
-					}
-				}
-				return true;
-			}
-		}
-		return false;
-	};
-
-	for (Function& f : m_Functions)
-	{
-		if (updateFunctionTypes(f) == false)
-			return false;
-	}
-
-	for (EntryPoint& f : m_EntryPoints)
-	{
-		if (updateFunctionTypes(f) == false)
-			return false;
-	}
-
 	return success;
 }
 
@@ -947,6 +912,41 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 			auto& node = m_ConstantToInstr.emplaceUnique(stdrep::move(c), &instr);
 			m_InstrToConstant.emplaceUnique(&instr, &node.kv.key);
 		}
+	}
+
+	auto updateFunctionTypes = [](Function& _fun) -> bool
+	{
+		if (auto it = _fun.getFunction()->getResultTypeOperand(); it != nullptr && it->isInstruction())
+		{
+			if (Instruction* funcType = _fun.setReturnType(it->instruction); funcType != nullptr)
+			{
+				for (Instruction& param : _fun.getParameters())
+				{
+					if (auto typeIt = param.getResultTypeOperand(); typeIt != nullptr && typeIt->isInstruction())
+					{
+						funcType->addOperand(typeIt->instruction);
+					}
+					else
+					{
+						return false;
+					}
+				}
+				return true;
+			}
+		}
+		return false;
+	};
+
+	for (Function& f : m_Functions)
+	{
+		if (updateFunctionTypes(f) == false)
+			return false;
+	}
+
+	for (EntryPoint& f : m_EntryPoints)
+	{
+		if (updateFunctionTypes(f) == false)
+			return false;
 	}
 
 	return true;
