@@ -51,7 +51,7 @@ void spvgentwo::ModuleStringPrinter::append(unsigned int _literal, const char* _
     }
 }
 
-bool spvgentwo::moduleToString(Module& _module, const Grammar& _grammar, IAllocator* _pAlloc, IModulePrinter* _pOutput, bool _writePreamble)
+bool spvgentwo::moduleToString(const Module& _module, const Grammar& _grammar, IAllocator* _pAlloc, IModulePrinter* _pOutput, bool _writePreamble)
 {
 	if (_pAlloc == nullptr || _pOutput == nullptr)
 	{
