@@ -41,7 +41,7 @@ void spvgentwo::ModuleStringPrinter::append(unsigned int _literal, const char* _
 	{
 		buf[--len] = '0' + (_literal % 10u);
 		_literal /= 10u;
-	}while (_literal != 0);
+	}while (_literal != 0 && len > 0u);
 
     m_buffer.append(static_cast<const char*>(buf));
 
