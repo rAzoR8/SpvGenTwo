@@ -264,8 +264,9 @@ namespace spvgentwo
 
 		Instruction* opAccessChain(Instruction* _pBase, const List<unsigned int>& _indices);
 
-		template <class ... Instr>
-		Instruction* opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ... _pIndices);
+		// ConstInstr must be OpConstant (unsigne int) Instruction
+		template <class ... ConstInstr>
+		Instruction* opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstElementIndex, ConstInstr* ... _pIndices);
 
 		// Instruction* OpPtrAccessChain(); TODO
 		// Instruction* OpArrayLength(); TODO
@@ -902,6 +903,14 @@ namespace spvgentwo
 	template<class ...ConstInstr>
 	inline Instruction* Instruction::opAccessChain(Instruction* _pResultType, Instruction* _pBase, ConstInstr* ..._pIndices)
 	{
+		if (_pResultType == nullptr || _pBase == nullptr) return error();
+
+		if(_pResultType->isType() == false) 
+		{
+			getModule()->logError("_pResultType is not a type instruction");
+			return error();
+		}
+
 		if constexpr (sizeof...(_pIndices) > 0u)
 		{
 			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ConstInstr>...>, "ConstInstr must be of type Instruction");
@@ -913,6 +922,8 @@ namespace spvgentwo
 	template<class ...IntIndices>
 	inline Instruction* Instruction::opAccessChain(Instruction* _pBase, IntIndices ..._indices)
 	{
+		if (_pBase == nullptr) return error();
+
 		if constexpr (sizeof...(_indices) > 0u)
 		{
 			static_assert(stdrep::conjunction_v<stdrep::is_same<unsigned int, IntIndices>...>, "IntIndices must be of type unsigned int");
@@ -941,15 +952,36 @@ namespace spvgentwo
 		return error();
 	}
 
-	template<class ...Instr>
-	inline Instruction* Instruction::opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ..._pIndices)
+	template<class ...ConstInstr>
+	inline Instruction* Instruction::opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, ConstInstr* ..._pIndices)
 	{
+		if (_pResultType == nullptr || _pBase == nullptr || _pConstIndex == nullptr) return error();
+
+		if (_pResultType->isType() == false)
+		{
+			getModule()->logError("_pResultType is not a type instruction");
+			return error();
+		}
+
+		if (_pConstIndex->isSpecOrConstant() == false)
+		{
+			getModule()->logError("_pConstIndex is not a constant instruction");
+			return error();
+		}
+
+		if constexpr (sizeof...(_pIndices) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ConstInstr>...>, "ConstInstr must be of type Instruction");
+		}
+
 		return makeOp(spv::Op::OpInBoundsAccessChain, _pResultType, InvalidId, _pBase, _pConstIndex, _pIndices...);
 	}
 
 	template<class ...Operands>
 	inline Instruction* Instruction::opLoad(Instruction* _pPointerToVar, const Flag<spv::MemoryAccessMask> _memOperands, Operands ..._operands)
 	{
+		if (_pPointerToVar == nullptr) return error();
+
 		const Type* ptrType = _pPointerToVar->getType();
 		if (ptrType == nullptr) return error();
 
