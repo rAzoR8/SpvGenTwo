@@ -205,7 +205,7 @@ namespace spvgentwo
 
 		//  _pFunction is result of opFunction
 		template <class ... Instr>
-		void opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr ... _instr);
+		void opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr* ... _instr);
 
 		// _pEntryPoint is result of opFunction (_pFunction operand of opEntryPoint)
 		template <class ... ExecModeLiteral>
@@ -217,8 +217,8 @@ namespace spvgentwo
 		// TODO: OpConstant### instructions
 		// TODO: OpSpecConstant### instructions
 
-		template <class ...Args>
-		Instruction* opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, Args&& ..._instrOperands);
+		template <class ...ArgInstr>
+		Instruction* opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, ArgInstr* ..._instrOperands);
 
 		// convert this instruction to its OpSpecConstantOp variant
 		Instruction* toSpecOp();
@@ -230,13 +230,13 @@ namespace spvgentwo
 		void opFunctionEnd();
 
 		template <class ... ArgInstr>
-		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ... _args);
+		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr* ... _args);
 
 		Instruction* opFunctionCallDynamic(Instruction* _pResultType, Instruction* _pFunction, const List<Instruction*>& _args);
 
 		// generic helper for opFunctionCall using Function class
 		template <class ... ArgInstr>
-		Instruction* call(Function* _pFunction, ArgInstr ... _args);
+		Instruction* call(Function* _pFunction, ArgInstr* ... _args);
 
 		Instruction* callDynamic(Function* _pFunction, const List<Instruction*>& _args);
 		
@@ -697,7 +697,6 @@ namespace spvgentwo
 
 		// TODO: All the rest to at least maybe OpDecorateString without the INTEL extension instructions?
 
-
 	protected:
 		// return error instr
 		[[nodiscard]] Instruction* error() const;
@@ -781,11 +780,16 @@ namespace spvgentwo
 		return opBitcast(getModule()->template type<T>(), _pOperand);
 	}
 
-	template<class ...Args>
-	inline Instruction* Instruction::opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, Args&& ..._instrOperands)
+	template<class ...ArgInstr>
+	inline Instruction* Instruction::opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, ArgInstr* ..._instrOperands)
 	{
+		if constexpr (sizeof...(_instrOperands) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ArgInstr>...>, "ArgInstr must be of type Instruction");
+		}
+
 		// TODO: check _opcode for valid operations
-		return makeOp(spv::Op::OpSpecConstantOp, _pResultType, InvalidId, _opcode, stdrep::forward<Args>(_instrOperands)...);
+		return makeOp(spv::Op::OpSpecConstantOp, _pResultType, InvalidId, _opcode, _instrOperands...);
 	}
 
 	template<class T, class ...Args>
@@ -830,8 +834,15 @@ namespace spvgentwo
 	}
 
 	template<class ...ArgInstr>
-	inline Instruction* Instruction::opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ..._args)
+	inline Instruction* Instruction::opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr* ..._args)
 	{
+		if constexpr (sizeof...(_args) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ArgInstr>...>, "ArgInstr must be of type Instruction");
+		}
+
+		if (_pResultType == nullptr || _pFunction == nullptr) return error();
+
 		if (_pResultType->isType() && _pFunction->getOperation() == spv::Op::OpFunction)
 		{
 			return makeOp(spv::Op::OpFunctionCall, _pResultType, InvalidId, _pFunction, _args...);
@@ -843,14 +854,20 @@ namespace spvgentwo
 	}
 
 	template<class ...ArgInstr>
-	inline Instruction* Instruction::call(Function* _pFunction, ArgInstr ..._args)
+	inline Instruction* Instruction::call(Function* _pFunction, ArgInstr* ..._args)
 	{
+		if (_pFunction == nullptr) return error();
 		return opFunctionCall(_pFunction->getReturnType(), _pFunction->getFunction(), _args...);
 	}
 
 	template<class ...Instr>
-	inline void Instruction::opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr ..._instr)
+	inline void Instruction::opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr* ..._instr)
 	{
+		if constexpr (sizeof...(_instr) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, Instr>...>, "Instr must be of type Instruction");
+		}
+
 		makeOp(spv::Op::OpEntryPoint, _model, _pFunction, _pName, _instr...);
 	}
 
@@ -875,6 +892,11 @@ namespace spvgentwo
 	template<class ...Instr>
 	inline void Instruction::opDecorateId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr* ..._ids)
 	{
+		if constexpr (sizeof...(_ids) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, Instr>...>, "Instr must be of type Instruction");
+		}
+
 		makeOp(spv::Op::OpDecorateId, _pTarget, _decoration, _ids...);
 	}
 
@@ -1001,7 +1023,23 @@ namespace spvgentwo
 	template<class ...Operands>
 	inline void Instruction::opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<spv::MemoryAccessMask> _memOperands, Operands ..._operands)
 	{
-		makeOp(spv::Op::OpStore, _pPointerToVar, _valueToStore, _memOperands.mask, _operands...);
+		if (_pPointerToVar == nullptr || _valueToStore == nullptr)
+			return;
+
+		const Type* ptrtype = _pPointerToVar->getType();
+		const Type* valtype = _valueToStore->getType();
+
+		if (ptrtype == nullptr || valtype == nullptr)
+			return;
+
+		if (ptrtype->isPointer() && ptrtype->front() == *valtype)
+		{
+			makeOp(spv::Op::OpStore, _pPointerToVar, _valueToStore, _memOperands.mask, _operands...);		
+		}
+		else
+		{
+			getModule()->logError("Type of _pPointerToVar is not a pointer or the type pointed to does not match the type of _valueToStore");
+		}
 	}
 
 	template<class ...Components>
