@@ -258,10 +258,11 @@ namespace spvgentwo
 		template <class ... ConstInstr>
 		Instruction* opAccessChain(Instruction* _pResultType, Instruction* _pBase, ConstInstr* ... _pIndices);
 
-		// IntIndices must be of type unsigned int
+		// IntIndices must be of type unsigned int, the first 0 index to unrwap _pBases pointer type can omitted!
 		template <class ... IntIndices>
 		Instruction* opAccessChain(Instruction* _pBase, IntIndices... _indices);
-
+		
+		// the first 0 index to unrwap _pBases pointer type can omitted!
 		Instruction* opAccessChain(Instruction* _pBase, const List<unsigned int>& _indices);
 
 		// ConstInstr must be OpConstant (unsigne int) Instruction
