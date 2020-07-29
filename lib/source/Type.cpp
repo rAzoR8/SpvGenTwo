@@ -516,10 +516,15 @@ spvgentwo::List<spvgentwo::Type>::Iterator spvgentwo::Type::getSubType(const Lis
 
 	for (auto i : _indices)
 	{
+		auto prev = it;
 		it = it + i;
 		if (it != nullptr)
 		{
 			it = it->getSubTypes().begin();
+		}
+		else
+		{
+			return prev;
 		}
 	}
 

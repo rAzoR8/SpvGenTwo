@@ -297,12 +297,12 @@ namespace spvgentwo
 		Instruction* opCompositeConstructDynamic(Instruction* _pResultType, const List<Instruction*>& _constituents);
 
 		template <class ... IntIndices>
-		Instruction* opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ... _indices);
+		Instruction* opCompositeExtract(Instruction* _pComposite, IntIndices ... _indices);
 
 		Instruction* opCompositeExtractDynamic(Instruction* _pComposite, const List<unsigned int>& _indices);
 
 		template <class ... IntIndices>
-		Instruction* opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, const unsigned int _firstIndex, IntIndices ... _indices);
+		Instruction* opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, IntIndices ... _indices);
 
 		Instruction* opCopyObject(Instruction* _pObject);
 
@@ -699,7 +699,7 @@ namespace spvgentwo
 
 	protected:
 		// return error instr
-		Instruction* error() const;
+		[[nodiscard]] Instruction* error() const;
 
 	private:
 
@@ -903,17 +903,17 @@ namespace spvgentwo
 	template<class ...ConstInstr>
 	inline Instruction* Instruction::opAccessChain(Instruction* _pResultType, Instruction* _pBase, ConstInstr* ..._pIndices)
 	{
+		if constexpr (sizeof...(_pIndices) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ConstInstr>...>, "ConstInstr must be of type Instruction");
+		}
+
 		if (_pResultType == nullptr || _pBase == nullptr) return error();
 
 		if(_pResultType->isType() == false) 
 		{
 			getModule()->logError("_pResultType is not a type instruction");
 			return error();
-		}
-
-		if constexpr (sizeof...(_pIndices) > 0u)
-		{
-			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ConstInstr>...>, "ConstInstr must be of type Instruction");
 		}
 
 		return makeOp(spv::Op::OpAccessChain, _pResultType, InvalidId, _pBase, _pIndices...);
@@ -955,6 +955,11 @@ namespace spvgentwo
 	template<class ...ConstInstr>
 	inline Instruction* Instruction::opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, ConstInstr* ..._pIndices)
 	{
+		if constexpr (sizeof...(_pIndices) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ConstInstr>...>, "ConstInstr must be of type Instruction");
+		}
+
 		if (_pResultType == nullptr || _pBase == nullptr || _pConstIndex == nullptr) return error();
 
 		if (_pResultType->isType() == false)
@@ -969,11 +974,6 @@ namespace spvgentwo
 			return error();
 		}
 
-		if constexpr (sizeof...(_pIndices) > 0u)
-		{
-			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ConstInstr>...>, "ConstInstr must be of type Instruction");
-		}
-
 		return makeOp(spv::Op::OpInBoundsAccessChain, _pResultType, InvalidId, _pBase, _pConstIndex, _pIndices...);
 	}
 
@@ -984,6 +984,12 @@ namespace spvgentwo
 
 		const Type* ptrType = _pPointerToVar->getType();
 		if (ptrType == nullptr) return error();
+
+		if(ptrType->isPointer() == false)
+		{
+			getModule()->logError("_pPointerToVar is not of type pointer");
+			return error();
+		}
 
 		// Result Type is the type of the loaded object.It must be a type with ﬁxed size; i.e., it cannot be, nor include, any OpTypeRuntimeArray types.
 		// Pointer is the pointer to load through.Its type must be an OpTypePointer whose Type operand is the same as Result Type.
@@ -1004,6 +1010,13 @@ namespace spvgentwo
 
 		static_assert(componentCount > 1u && componentCount < 5u, "Invalid number of component indices [2..4]");
 
+		if constexpr (sizeof...(_components) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<unsigned int, Components>...>, "Components must be of type unsigned int");
+		}
+
+		if (_pVector1 == nullptr || _pVector2 == nullptr) return error();
+
 		const Type* lType = _pVector1->getType();
 		const Type* rType = _pVector2->getType();
 
@@ -1023,6 +1036,13 @@ namespace spvgentwo
 	template<class ...ConstituentInstr>
 	inline Instruction* Instruction::opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituent, ConstituentInstr* ..._constituents)
 	{
+		if constexpr (sizeof...(_constituents) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ConstituentInstr>...>, "ConstituentInstr must be of type Instruction");
+		}
+
+		if (_pResultType == nullptr || _pFirstConstituent == nullptr) return error();
+
 		const Type* type =  _pResultType->getType();
 		if (type == nullptr) return error();
 
@@ -1036,8 +1056,15 @@ namespace spvgentwo
 	}
 
 	template<class ...IntIndices>
-	inline Instruction* Instruction::opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ..._indices)
+	inline Instruction* Instruction::opCompositeExtract(Instruction* _pComposite, IntIndices ..._indices)
 	{
+		if constexpr (sizeof...(_indices) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<unsigned int, IntIndices>...>, "IntIndices must be of type unsigned int");
+		}
+
+		if (_pComposite == nullptr) return error();
+
 		const Type* pBaseType = _pComposite->getType();
 		if (pBaseType == nullptr) return error();
 
@@ -1049,12 +1076,12 @@ namespace spvgentwo
 			return error();
 		}
 
-		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...);
+		auto it = pBaseType->getSubType(_indices...);
 
 		if (it != nullptr)
 		{
 			Instruction* pResultType = pModule->addType(*it);
-			return makeOp(spv::Op::OpCompositeExtract, pResultType, InvalidId, _pComposite, literal_t{ _firstIndex }, literal_t{ _indices }...);
+			return makeOp(spv::Op::OpCompositeExtract, pResultType, InvalidId, _pComposite, literal_t{ _indices }...);
 		}
 
 		pModule->logError("Invalid index sequence specified for composite type extraction");
@@ -1063,8 +1090,15 @@ namespace spvgentwo
 	}
 
 	template<class ...IntIndices>
-	inline Instruction* Instruction::opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, const unsigned int _firstIndex, IntIndices ..._indices)
+	inline Instruction* Instruction::opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, IntIndices ..._indices)
 	{
+		if constexpr (sizeof...(_indices) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<unsigned int, IntIndices>...>, "IntIndices must be of type unsigned int");
+		}
+
+		if (_pComposite == nullptr || _pValue == nullptr) return error();
+
 		const Type* pBaseType = _pComposite->getType();
 		if (pBaseType == nullptr) return error();
 
@@ -1076,7 +1110,7 @@ namespace spvgentwo
 			return error();
 		}
 
-		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...);
+		auto it = pBaseType->getSubType(_indices...);
 
 		if (it != nullptr)
 		{
@@ -1085,7 +1119,7 @@ namespace spvgentwo
 
 			if (*it == *pValueType)
 			{
-				return makeOp(spv::Op::OpCompositeInsert, _pComposite->getTypeInstr(), InvalidId, _pValue, _pComposite, literal_t{ _firstIndex }, literal_t{ _indices }...);
+				return makeOp(spv::Op::OpCompositeInsert, _pComposite->getTypeInstr(), InvalidId, _pValue, _pComposite, literal_t{ _indices }...);
 			}
 
 			pModule->logError("Value type does not match composite insertion type");

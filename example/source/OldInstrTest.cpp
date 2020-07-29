@@ -215,9 +215,9 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* vecType = module.type<vector_t<float, 3>>();
 		Instruction* newVec3 = bb->opCompositeConstruct(vecType, x, y, z);
 		Instruction* updatedVec3 = bb->opVectorInsertDynamic(newVec3, extracted, index);
-		Instruction* shuffledVec4 = bb->opVectorShuffle(newVec3, updatedVec3, 0, 1, 1, 2);
+		Instruction* shuffledVec4 = bb->opVectorShuffle(newVec3, updatedVec3, 0u, 1u, 1u, 2u);
 		Instruction* undefVec3 = bb->opUndef(vecType);
-		shuffledVec4 = bb->opVectorShuffle(undefVec3, updatedVec3, 1, 2, 3, 0);
+		shuffledVec4 = bb->opVectorShuffle(undefVec3, updatedVec3, 1u, 2u, 3u, 0u);
 
 		Instruction* coord = module.constant(make_vector(0.5f, 0.5f));
 		Instruction* normal = bb->opLoad(uniNormal);
