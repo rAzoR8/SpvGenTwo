@@ -61,6 +61,22 @@ namespace spvgentwo::stdrep
 	template <bool cond, class T = void>
 	using enable_if_t = typename enable_if<cond, T>::type;
 
+	template<bool B, class T, class F>
+	struct conditional { using type = T; };
+
+	template<class T, class F>
+	struct conditional<false, T, F> { using type = F; };
+
+	template< bool B, class T, class F >
+	using conditional_t = typename conditional<B, T, F>::type;
+
+	template<class...> struct conjunction : true_type { };
+	template<class B1> struct conjunction<B1> : B1 { };
+	template<class B1, class... Bn> struct conjunction<B1, Bn...> : conditional_t<bool(B1::value), conjunction<Bn...>, B1> {};
+
+	template<class... B>
+	inline constexpr bool conjunction_v = conjunction<B...>::value;
+
 	template <class>
 	inline constexpr bool is_pointer_v = false;
 
@@ -112,8 +128,15 @@ namespace spvgentwo::stdrep
 		return static_cast<remove_reference_t<T>&&>(_Arg);
 	}
 
+	template<class T, class U>
+	struct is_same : false_type {};
+
+	template<class T>
+	struct is_same<T, T> : true_type {};
+
 	template <class, class>
 	inline constexpr bool is_same_v = false;
+
 	template <class T>
 	inline constexpr bool is_same_v<T, T> = true;
 
