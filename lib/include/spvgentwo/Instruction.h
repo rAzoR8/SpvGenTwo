@@ -254,11 +254,13 @@ namespace spvgentwo
 		// Instruction* OpCopyMemory(); TODO
 		// Instruction* OpCopyMemorySized(); TODO
 
-		template <class ... Instr>
-		Instruction* opAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ... _pIndices);
+		// ConstInstr must be OpConstant (unsigne int) Instruction
+		template <class ... ConstInstr>
+		Instruction* opAccessChain(Instruction* _pResultType, Instruction* _pBase, ConstInstr* ... _pIndices);
 
+		// IntIndices must be of type unsigned int
 		template <class ... IntIndices>
-		Instruction* opAccessChain(Instruction* _pBase, const unsigned int _firstIndex, IntIndices... _indices);
+		Instruction* opAccessChain(Instruction* _pBase, IntIndices... _indices);
 
 		Instruction* opAccessChain(Instruction* _pBase, const List<unsigned int>& _indices);
 
@@ -897,20 +899,30 @@ namespace spvgentwo
 		makeOp(spv::Op::OpLoopMerge, _pMergeBlock, _pContinueBlock, literal_t{ _loopControl }, _params...);
 	}
 
-	template<class ...Instr>
-	inline Instruction* Instruction::opAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ..._pIndices)
+	template<class ...ConstInstr>
+	inline Instruction* Instruction::opAccessChain(Instruction* _pResultType, Instruction* _pBase, ConstInstr* ..._pIndices)
 	{
-		return makeOp(spv::Op::OpAccessChain, _pResultType, InvalidId, _pBase, _pConstIndex, _pIndices...);
+		if constexpr (sizeof...(_pIndices) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ConstInstr>...>, "ConstInstr must be of type Instruction");
+		}
+
+		return makeOp(spv::Op::OpAccessChain, _pResultType, InvalidId, _pBase, _pIndices...);
 	}
 
 	template<class ...IntIndices>
-	inline Instruction* Instruction::opAccessChain(Instruction* _pBase, const unsigned int _firstIndex, IntIndices ..._indices)
+	inline Instruction* Instruction::opAccessChain(Instruction* _pBase, IntIndices ..._indices)
 	{
+		if constexpr (sizeof...(_indices) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<unsigned int, IntIndices>...>, "IntIndices must be of type unsigned int");
+		}
+
 		// Base must be a pointer, pointing to the base of a composite object.
 		const Type* pBaseType = _pBase->getType();
 		if (pBaseType == nullptr) return error();
 
-		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...); // base is a pointer type, so 0 is used to get the inner type
+		auto it = pBaseType->getSubType(0u, _indices...); // base is a pointer type, so 0 is used to get the inner type
 
 		if (it != nullptr)
 		{
@@ -921,7 +933,7 @@ namespace spvgentwo
 	
 			Instruction* pResultType = pModule->addType(it->wrapPointer(pBaseType->getStorageClass()));
 
-			return makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->constant(_firstIndex), pModule->template constant<unsigned int>(_indices)...);
+			return makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->template constant<unsigned int>(_indices)...);
 		}
 
 		getModule()->logError("Failed to deduct composite type of base operand for OpAccessChain");
