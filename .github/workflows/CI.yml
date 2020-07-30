@@ -23,4 +23,7 @@ jobs:
       
     # Runs a single command using the runners shell
     - name: CMake
-      run: cmake -S . -B build
+      run: cmake -S . -B build -DSPVGENTWO_BUILD_EXAMPLES=TRUE -DSPVGENTWO_BUILD_DISASSEMBLER=TRUE
+    
+    - name: Build
+      run: cmake --build build -j4
