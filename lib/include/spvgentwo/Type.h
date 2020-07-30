@@ -338,11 +338,11 @@ namespace spvgentwo
 		// return 1 if type is a scalar, return component count if type is vector, 0 otherwise
 		unsigned int getScalarOrVectorLength() const { return isScalar() ? 1u : isVector() ? getVectorComponentCount() : 0u; }
 
-		// depth first traversal of type hierarchy using integer indices (static variant)
+		// depth first traversal of type hierarchy using integer indices (static variant), returns the iterator of the last valid type accessed by index
 		template<class... Indices>
 		List<Type>::Iterator getSubType(const unsigned int _i, Indices... _indices) const;
 
-		// depth first traversal of type hierarchy using integer indices (dynamic variant)
+		// depth first traversal of type hierarchy using integer indices (dynamic variant), returns the iterator of the last valid type accessed by index
 		List<Type>::Iterator getSubType(const List<unsigned int>& _indices) const;
 
 		// creates a new empty type from this types allocator
@@ -595,7 +595,7 @@ namespace spvgentwo
 	template<class ...Indices>
 	inline List<Type>::Iterator Type::getSubType(const unsigned int _i, Indices ..._indices) const
 	{
-		auto it = m_subTypes.begin() + _i;
+		auto it = m_subTypes.begin() + (_i < m_subTypes.size() ? _i : 0u);
 
 		if constexpr (sizeof...(_indices) > 0)
 		{
@@ -604,6 +604,7 @@ namespace spvgentwo
 				return it->getSubType(_indices...);
 			}
 		}
+
 		return it;
 	}
 

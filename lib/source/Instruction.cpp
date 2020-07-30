@@ -194,9 +194,9 @@ spvgentwo::spv::StorageClass spvgentwo::Instruction::getStorageClass() const
 	switch (m_Operation)
 	{
 	case spv::Op::OpTypePointer:
-		return static_cast<spv::StorageClass>((begin() + 1)->getLiteral().value);
+		return static_cast<spv::StorageClass>((begin() + 1u)->getLiteral().value);
 	case spv::Op::OpVariable:
-		return static_cast<spv::StorageClass>((begin() + 2)->getLiteral().value);
+		return static_cast<spv::StorageClass>((begin() + 2u)->getLiteral().value);
 	default:
 		return spv::StorageClass::Max;
 	}
@@ -1179,6 +1179,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opConvertPtrToU(Instruction* _pP
 
 spvgentwo::Instruction* spvgentwo::Instruction::opBitcast(Instruction* _pResultType, Instruction* _pOperand)
 {
+	if (_pResultType == nullptr || _pOperand == nullptr) return error();
+
 	const Type* resultType = _pResultType->getType();
 	const Type* operandType = _pOperand->getType();
 
@@ -1226,6 +1228,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::error() const
 
 spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
 {
+	if (_pLeft == nullptr) return error();
+
 	const Type* pLeftType = _pLeft->getType();
 	const Type* pRightType = _pRight != nullptr ? _pRight->getType() : nullptr;
 
@@ -1262,6 +1266,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(spv::Op _op, Instruc
 
 spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _intFun, DualOpMemberFun _floatFun, const char* _pErrorMsg)
 {
+	if (_pLeft == nullptr || _pRight == nullptr) return error();
+
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
 
@@ -1286,6 +1292,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, 
 
 spvgentwo::Instruction* spvgentwo::Instruction::intFloatBoolOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _intFun, DualOpMemberFun _floatFun, DualOpMemberFun _boolFun, const char* _pErrorMsg)
 {
+	if (_pLeft == nullptr || _pRight == nullptr) return error();
+
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
 
@@ -1314,6 +1322,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::intFloatBoolOp(Instruction* _pLe
 
 spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, const char* _pErrorMsg)
 {
+	if (_pLeft == nullptr || _pRight == nullptr) return error();
+
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
 
@@ -1342,6 +1352,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::intFloatOp(Instruction* _pLeft, 
 
 spvgentwo::Instruction* spvgentwo::Instruction::intFloatBoolOp(Instruction* _pLeft, Instruction* _pRight, DualOpMemberFun _sIntFun, DualOpMemberFun _uIntFun, DualOpMemberFun _floatFun, DualOpMemberFun _boolFun, const char* _pErrorMsg)
 {
+	if (_pLeft == nullptr || _pRight == nullptr) return error();
+
 	const Type* lType = _pLeft->getType();
 	const Type* rType = _pRight->getType();
 

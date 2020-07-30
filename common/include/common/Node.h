@@ -65,7 +65,7 @@ namespace spvgentwo
 	inline Node<N, E>::Node(Node<N,E>&& _other) noexcept :
 		m_data(stdrep::move(_other.m_data)),
 		m_inputs(stdrep::move(_other.m_inputs)),
-		m_outputs(stdrep::move(_other.m_outputs)),
+		m_outputs(stdrep::move(_other.m_outputs))
 	{
 	}
 

@@ -47,7 +47,7 @@ void spvgentwo::EntryPoint::getGlobalVariableInterface(List<Operand>& _outVarIns
 					if (instr.getOperation() == spv::Op::OpFunctionCall)
 					{
 						// 3rd arg of opFunctionCall is OpFunction whos parent Function class holds the BBs were looking for
-						Instruction* pOpFunc = (instr.begin() + 2)->getInstruction();
+						Instruction* pOpFunc = (instr.begin() + 2u)->getInstruction();
 						Function* pFunction = pOpFunc->getFunction();
 
 						// add unvisited function BBs

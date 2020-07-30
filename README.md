@@ -146,6 +146,8 @@ Use the supplied CMakeLists.txt to generate project files for your build system.
 * `SPVGENTWO_REPLACE_TRAITS` is set to TRUE by default. If FALSE, `<type_traits>` and `<utility>` header will be included under `spvgentwo::stdrep` namespace.
 * `SPVGENTWO_LOGGING` is set to TRUE by default, calls to module.log() will have not effect if FALSE.
 
+Note that I mainly develop on windows using clang and MSVC but I'll also try to support GCC/linux. No efforts for apple-clang, sorry!
+
 # Tools
 
 SpvGenTwo includes a couple of CLI tools to explore and test the libraries capabilities.
@@ -196,6 +198,9 @@ A list of short and long term goals for this library:
 # Gallery
 
 SpvGenTwo is used in:
+
+* [Proto](https://github.com/rAzoR8/Proto)
+![Proto](https://raw.githubusercontent.com/rAzoR8/Proto/master/proto.png)
 
 * [SHADERed](https://github.com/dfranx/SHADERed)
 ![SHADERed](https://raw.githubusercontent.com/dfranx/SHADERed/master/Misc/Screenshots/IMG2.png)

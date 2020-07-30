@@ -53,7 +53,7 @@ spvgentwo::Module* spvgentwo::BasicBlock::getModule() const
 
 const char* spvgentwo::BasicBlock::getName() const
 {
-	return m_pBegin != nullptr ? getModule()->getName(m_pBegin->operator->()) : "";
+	return m_Label.getName();
 }
 
 spvgentwo::IAllocator* spvgentwo::BasicBlock::getAllocator()
@@ -63,7 +63,7 @@ spvgentwo::IAllocator* spvgentwo::BasicBlock::getAllocator()
 
 spvgentwo::Instruction* spvgentwo::BasicBlock::getTerminator()
 {
-	if (m_pLast != nullptr && (*m_pLast)->isTerminator())
+	if (empty() == false && back().isTerminator())
 	{
 		return &back();
 	}
@@ -73,7 +73,7 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::getTerminator()
 
 const spvgentwo::Instruction* spvgentwo::BasicBlock::getTerminator() const
 {
-	if (m_pLast != nullptr && (*m_pLast)->isTerminator())
+	if (empty() == false && back().isTerminator())
 	{
 		return &back();
 	}
@@ -83,7 +83,7 @@ const spvgentwo::Instruction* spvgentwo::BasicBlock::getTerminator() const
 
 bool spvgentwo::BasicBlock::getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const
 {
-	if (m_pBegin != m_pLast) // there is more then just initial opLabel
+	if (empty() == false) // there is more then just initial opLabel
 	{
 		return back().getBranchTargets(_outTargetBlocks);
 	}

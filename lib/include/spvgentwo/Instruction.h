@@ -205,7 +205,7 @@ namespace spvgentwo
 
 		//  _pFunction is result of opFunction
 		template <class ... Instr>
-		void opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr ... _instr);
+		void opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr* ... _instr);
 
 		// _pEntryPoint is result of opFunction (_pFunction operand of opEntryPoint)
 		template <class ... ExecModeLiteral>
@@ -217,8 +217,8 @@ namespace spvgentwo
 		// TODO: OpConstant### instructions
 		// TODO: OpSpecConstant### instructions
 
-		template <class ...Args>
-		Instruction* opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, Args&& ..._instrOperands);
+		template <class ...ArgInstr>
+		Instruction* opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, ArgInstr* ..._instrOperands);
 
 		// convert this instruction to its OpSpecConstantOp variant
 		Instruction* toSpecOp();
@@ -230,13 +230,13 @@ namespace spvgentwo
 		void opFunctionEnd();
 
 		template <class ... ArgInstr>
-		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ... _args);
+		Instruction* opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr* ... _args);
 
 		Instruction* opFunctionCallDynamic(Instruction* _pResultType, Instruction* _pFunction, const List<Instruction*>& _args);
 
 		// generic helper for opFunctionCall using Function class
 		template <class ... ArgInstr>
-		Instruction* call(Function* _pFunction, ArgInstr ... _args);
+		Instruction* call(Function* _pFunction, ArgInstr* ... _args);
 
 		Instruction* callDynamic(Function* _pFunction, const List<Instruction*>& _args);
 		
@@ -254,16 +254,20 @@ namespace spvgentwo
 		// Instruction* OpCopyMemory(); TODO
 		// Instruction* OpCopyMemorySized(); TODO
 
-		template <class ... Instr>
-		Instruction* opAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ... _pIndices);
+		// ConstInstr must be OpConstant (unsigne int) Instruction
+		template <class ... ConstInstr>
+		Instruction* opAccessChain(Instruction* _pResultType, Instruction* _pBase, ConstInstr* ... _pIndices);
 
+		// IntIndices must be of type unsigned int, the first 0 index to unrwap _pBases pointer type can omitted!
 		template <class ... IntIndices>
-		Instruction* opAccessChain(Instruction* _pBase, const unsigned int _firstIndex, IntIndices... _indices);
-
+		Instruction* opAccessChain(Instruction* _pBase, IntIndices... _indices);
+		
+		// the first 0 index to unrwap _pBases pointer type can omitted!
 		Instruction* opAccessChain(Instruction* _pBase, const List<unsigned int>& _indices);
 
-		template <class ... Instr>
-		Instruction* opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ... _pIndices);
+		// ConstInstr must be OpConstant (unsigne int) Instruction
+		template <class ... ConstInstr>
+		Instruction* opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstElementIndex, ConstInstr* ... _pIndices);
 
 		// Instruction* OpPtrAccessChain(); TODO
 		// Instruction* OpArrayLength(); TODO
@@ -294,12 +298,12 @@ namespace spvgentwo
 		Instruction* opCompositeConstructDynamic(Instruction* _pResultType, const List<Instruction*>& _constituents);
 
 		template <class ... IntIndices>
-		Instruction* opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ... _indices);
+		Instruction* opCompositeExtract(Instruction* _pComposite, IntIndices ... _indices);
 
 		Instruction* opCompositeExtractDynamic(Instruction* _pComposite, const List<unsigned int>& _indices);
 
 		template <class ... IntIndices>
-		Instruction* opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, const unsigned int _firstIndex, IntIndices ... _indices);
+		Instruction* opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, IntIndices ... _indices);
 
 		Instruction* opCopyObject(Instruction* _pObject);
 
@@ -693,10 +697,9 @@ namespace spvgentwo
 
 		// TODO: All the rest to at least maybe OpDecorateString without the INTEL extension instructions?
 
-
 	protected:
 		// return error instr
-		Instruction* error() const;
+		[[nodiscard]] Instruction* error() const;
 
 	private:
 
@@ -777,11 +780,16 @@ namespace spvgentwo
 		return opBitcast(getModule()->template type<T>(), _pOperand);
 	}
 
-	template<class ...Args>
-	inline Instruction* Instruction::opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, Args&& ..._instrOperands)
+	template<class ...ArgInstr>
+	inline Instruction* Instruction::opSpecConstantOp(Instruction* _pResultType, spv::Op _opcode, ArgInstr* ..._instrOperands)
 	{
+		if constexpr (sizeof...(_instrOperands) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ArgInstr>...>, "ArgInstr must be of type Instruction");
+		}
+
 		// TODO: check _opcode for valid operations
-		return makeOp(spv::Op::OpSpecConstantOp, _pResultType, InvalidId, _opcode, stdrep::forward<Args>(_instrOperands)...);
+		return makeOp(spv::Op::OpSpecConstantOp, _pResultType, InvalidId, _opcode, _instrOperands...);
 	}
 
 	template<class T, class ...Args>
@@ -826,8 +834,15 @@ namespace spvgentwo
 	}
 
 	template<class ...ArgInstr>
-	inline Instruction* Instruction::opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr ..._args)
+	inline Instruction* Instruction::opFunctionCall(Instruction* _pResultType, Instruction* _pFunction, ArgInstr* ..._args)
 	{
+		if constexpr (sizeof...(_args) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ArgInstr>...>, "ArgInstr must be of type Instruction");
+		}
+
+		if (_pResultType == nullptr || _pFunction == nullptr) return error();
+
 		if (_pResultType->isType() && _pFunction->getOperation() == spv::Op::OpFunction)
 		{
 			return makeOp(spv::Op::OpFunctionCall, _pResultType, InvalidId, _pFunction, _args...);
@@ -839,14 +854,20 @@ namespace spvgentwo
 	}
 
 	template<class ...ArgInstr>
-	inline Instruction* Instruction::call(Function* _pFunction, ArgInstr ..._args)
+	inline Instruction* Instruction::call(Function* _pFunction, ArgInstr* ..._args)
 	{
+		if (_pFunction == nullptr) return error();
 		return opFunctionCall(_pFunction->getReturnType(), _pFunction->getFunction(), _args...);
 	}
 
 	template<class ...Instr>
-	inline void Instruction::opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr ..._instr)
+	inline void Instruction::opEntryPoint(const spv::ExecutionModel _model, Instruction* _pFunction, const char* _pName, Instr* ..._instr)
 	{
+		if constexpr (sizeof...(_instr) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, Instr>...>, "Instr must be of type Instruction");
+		}
+
 		makeOp(spv::Op::OpEntryPoint, _model, _pFunction, _pName, _instr...);
 	}
 
@@ -871,6 +892,11 @@ namespace spvgentwo
 	template<class ...Instr>
 	inline void Instruction::opDecorateId(Instruction* _pTarget, spv::Decoration _decoration, Instruction* _pId, Instr* ..._ids)
 	{
+		if constexpr (sizeof...(_ids) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, Instr>...>, "Instr must be of type Instruction");
+		}
+
 		makeOp(spv::Op::OpDecorateId, _pTarget, _decoration, _ids...);
 	}
 
@@ -897,20 +923,40 @@ namespace spvgentwo
 		makeOp(spv::Op::OpLoopMerge, _pMergeBlock, _pContinueBlock, literal_t{ _loopControl }, _params...);
 	}
 
-	template<class ...Instr>
-	inline Instruction* Instruction::opAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ..._pIndices)
+	template<class ...ConstInstr>
+	inline Instruction* Instruction::opAccessChain(Instruction* _pResultType, Instruction* _pBase, ConstInstr* ..._pIndices)
 	{
-		return makeOp(spv::Op::OpAccessChain, _pResultType, InvalidId, _pBase, _pConstIndex, _pIndices...);
+		if constexpr (sizeof...(_pIndices) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ConstInstr>...>, "ConstInstr must be of type Instruction");
+		}
+
+		if (_pResultType == nullptr || _pBase == nullptr) return error();
+
+		if(_pResultType->isType() == false) 
+		{
+			getModule()->logError("_pResultType is not a type instruction");
+			return error();
+		}
+
+		return makeOp(spv::Op::OpAccessChain, _pResultType, InvalidId, _pBase, _pIndices...);
 	}
 
 	template<class ...IntIndices>
-	inline Instruction* Instruction::opAccessChain(Instruction* _pBase, const unsigned int _firstIndex, IntIndices ..._indices)
+	inline Instruction* Instruction::opAccessChain(Instruction* _pBase, IntIndices ..._indices)
 	{
+		if (_pBase == nullptr) return error();
+
+		if constexpr (sizeof...(_indices) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<unsigned int, IntIndices>...>, "IntIndices must be of type unsigned int");
+		}
+
 		// Base must be a pointer, pointing to the base of a composite object.
 		const Type* pBaseType = _pBase->getType();
 		if (pBaseType == nullptr) return error();
 
-		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...); // base is a pointer type, so 0 is used to get the inner type
+		auto it = pBaseType->getSubType(0u, _indices...); // base is a pointer type, so 0 is used to get the inner type
 
 		if (it != nullptr)
 		{
@@ -921,7 +967,7 @@ namespace spvgentwo
 	
 			Instruction* pResultType = pModule->addType(it->wrapPointer(pBaseType->getStorageClass()));
 
-			return makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->constant(_firstIndex), pModule->template constant<unsigned int>(_indices)...);
+			return makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase, pModule->template constant<unsigned int>(_indices)...);
 		}
 
 		getModule()->logError("Failed to deduct composite type of base operand for OpAccessChain");
@@ -929,17 +975,44 @@ namespace spvgentwo
 		return error();
 	}
 
-	template<class ...Instr>
-	inline Instruction* Instruction::opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, Instr* ..._pIndices)
+	template<class ...ConstInstr>
+	inline Instruction* Instruction::opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstIndex, ConstInstr* ..._pIndices)
 	{
+		if constexpr (sizeof...(_pIndices) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ConstInstr>...>, "ConstInstr must be of type Instruction");
+		}
+
+		if (_pResultType == nullptr || _pBase == nullptr || _pConstIndex == nullptr) return error();
+
+		if (_pResultType->isType() == false)
+		{
+			getModule()->logError("_pResultType is not a type instruction");
+			return error();
+		}
+
+		if (_pConstIndex->isSpecOrConstant() == false)
+		{
+			getModule()->logError("_pConstIndex is not a constant instruction");
+			return error();
+		}
+
 		return makeOp(spv::Op::OpInBoundsAccessChain, _pResultType, InvalidId, _pBase, _pConstIndex, _pIndices...);
 	}
 
 	template<class ...Operands>
 	inline Instruction* Instruction::opLoad(Instruction* _pPointerToVar, const Flag<spv::MemoryAccessMask> _memOperands, Operands ..._operands)
 	{
+		if (_pPointerToVar == nullptr) return error();
+
 		const Type* ptrType = _pPointerToVar->getType();
 		if (ptrType == nullptr) return error();
+
+		if(ptrType->isPointer() == false)
+		{
+			getModule()->logError("_pPointerToVar is not of type pointer");
+			return error();
+		}
 
 		// Result Type is the type of the loaded object.It must be a type with ﬁxed size; i.e., it cannot be, nor include, any OpTypeRuntimeArray types.
 		// Pointer is the pointer to load through.Its type must be an OpTypePointer whose Type operand is the same as Result Type.
@@ -950,7 +1023,23 @@ namespace spvgentwo
 	template<class ...Operands>
 	inline void Instruction::opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<spv::MemoryAccessMask> _memOperands, Operands ..._operands)
 	{
-		makeOp(spv::Op::OpStore, _pPointerToVar, _valueToStore, _memOperands.mask, _operands...);
+		if (_pPointerToVar == nullptr || _valueToStore == nullptr)
+			return;
+
+		const Type* ptrtype = _pPointerToVar->getType();
+		const Type* valtype = _valueToStore->getType();
+
+		if (ptrtype == nullptr || valtype == nullptr)
+			return;
+
+		if (ptrtype->isPointer() && ptrtype->front() == *valtype)
+		{
+			makeOp(spv::Op::OpStore, _pPointerToVar, _valueToStore, _memOperands.mask, _operands...);		
+		}
+		else
+		{
+			getModule()->logError("Type of _pPointerToVar is not a pointer or the type pointed to does not match the type of _valueToStore");
+		}
 	}
 
 	template<class ...Components>
@@ -959,6 +1048,13 @@ namespace spvgentwo
 		constexpr auto componentCount = sizeof...(_components);
 
 		static_assert(componentCount > 1u && componentCount < 5u, "Invalid number of component indices [2..4]");
+
+		if constexpr (sizeof...(_components) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<unsigned int, Components>...>, "Components must be of type unsigned int");
+		}
+
+		if (_pVector1 == nullptr || _pVector2 == nullptr) return error();
 
 		const Type* lType = _pVector1->getType();
 		const Type* rType = _pVector2->getType();
@@ -979,6 +1075,13 @@ namespace spvgentwo
 	template<class ...ConstituentInstr>
 	inline Instruction* Instruction::opCompositeConstruct(Instruction* _pResultType, Instruction* _pFirstConstituent, ConstituentInstr* ..._constituents)
 	{
+		if constexpr (sizeof...(_constituents) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ConstituentInstr>...>, "ConstituentInstr must be of type Instruction");
+		}
+
+		if (_pResultType == nullptr || _pFirstConstituent == nullptr) return error();
+
 		const Type* type =  _pResultType->getType();
 		if (type == nullptr) return error();
 
@@ -992,8 +1095,15 @@ namespace spvgentwo
 	}
 
 	template<class ...IntIndices>
-	inline Instruction* Instruction::opCompositeExtract(Instruction* _pComposite, const unsigned int _firstIndex, IntIndices ..._indices)
+	inline Instruction* Instruction::opCompositeExtract(Instruction* _pComposite, IntIndices ..._indices)
 	{
+		if constexpr (sizeof...(_indices) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<unsigned int, IntIndices>...>, "IntIndices must be of type unsigned int");
+		}
+
+		if (_pComposite == nullptr) return error();
+
 		const Type* pBaseType = _pComposite->getType();
 		if (pBaseType == nullptr) return error();
 
@@ -1005,12 +1115,12 @@ namespace spvgentwo
 			return error();
 		}
 
-		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...);
+		auto it = pBaseType->getSubType(_indices...);
 
 		if (it != nullptr)
 		{
 			Instruction* pResultType = pModule->addType(*it);
-			return makeOp(spv::Op::OpCompositeExtract, pResultType, InvalidId, _pComposite, literal_t{ _firstIndex }, literal_t{ _indices }...);
+			return makeOp(spv::Op::OpCompositeExtract, pResultType, InvalidId, _pComposite, literal_t{ _indices }...);
 		}
 
 		pModule->logError("Invalid index sequence specified for composite type extraction");
@@ -1019,8 +1129,15 @@ namespace spvgentwo
 	}
 
 	template<class ...IntIndices>
-	inline Instruction* Instruction::opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, const unsigned int _firstIndex, IntIndices ..._indices)
+	inline Instruction* Instruction::opCompositeInsert(Instruction* _pComposite, Instruction* _pValue, IntIndices ..._indices)
 	{
+		if constexpr (sizeof...(_indices) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<unsigned int, IntIndices>...>, "IntIndices must be of type unsigned int");
+		}
+
+		if (_pComposite == nullptr || _pValue == nullptr) return error();
+
 		const Type* pBaseType = _pComposite->getType();
 		if (pBaseType == nullptr) return error();
 
@@ -1032,7 +1149,7 @@ namespace spvgentwo
 			return error();
 		}
 
-		auto it = pBaseType->getSubType(0u, _firstIndex, _indices...);
+		auto it = pBaseType->getSubType(_indices...);
 
 		if (it != nullptr)
 		{
@@ -1041,7 +1158,7 @@ namespace spvgentwo
 
 			if (*it == *pValueType)
 			{
-				return makeOp(spv::Op::OpCompositeInsert, _pComposite->getTypeInstr(), InvalidId, _pValue, _pComposite, literal_t{ _firstIndex }, literal_t{ _indices }...);
+				return makeOp(spv::Op::OpCompositeInsert, _pComposite->getTypeInstr(), InvalidId, _pValue, _pComposite, literal_t{ _indices }...);
 			}
 
 			pModule->logError("Value type does not match composite insertion type");
