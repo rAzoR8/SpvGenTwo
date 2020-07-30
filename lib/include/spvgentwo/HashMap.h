@@ -206,7 +206,7 @@ namespace spvgentwo
 				{
 					first = it;
 				}
-				last = it + 1;
+				last = it + 1u;
 			}
 			
 		}

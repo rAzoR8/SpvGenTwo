@@ -8,7 +8,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 {
 	Module* module = _instr.getModule();
 	auto op1 = _instr.getFirstActualOperand();
-	auto op2 = op1 + 1;
+	auto op2 = op1 + 1u;
 
 	Instruction* typeInstr1 = op1 != nullptr && op1->isInstruction() && op1->instruction != nullptr ? op1->instruction->getTypeInstr() : nullptr;
 	Instruction* typeInstr2 = op2 != nullptr && op2->isInstruction() && op2->instruction != nullptr ? op2->instruction->getTypeInstr() : nullptr;
@@ -88,7 +88,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		// Matrix must be an OpTypeMatrix whose Column Type is Result Type.
 		if (type1->isMatrix())
 		{
-			return (typeInstr1->begin() + 1)->getInstruction();
+			return (typeInstr1->begin() + 1u)->getInstruction();
 		}
 		break;
 	}
@@ -419,7 +419,7 @@ bool spvgentwo::defaultimpl::validateImageOperandType(const Instruction& _instr)
 	}
 	else if(drefCompoOrMask && drefCompoOrMask->isInstruction())
 	{
-		imageOp1 = drefCompoOrMask + 2;
+		imageOp1 = drefCompoOrMask + 2u;
 		if (drefCompoOrMask.next()) opMask = drefCompoOrMask.next()->getLiteral().value;
 	}
 

@@ -194,9 +194,9 @@ spvgentwo::spv::StorageClass spvgentwo::Instruction::getStorageClass() const
 	switch (m_Operation)
 	{
 	case spv::Op::OpTypePointer:
-		return static_cast<spv::StorageClass>((begin() + 1)->getLiteral().value);
+		return static_cast<spv::StorageClass>((begin() + 1u)->getLiteral().value);
 	case spv::Op::OpVariable:
-		return static_cast<spv::StorageClass>((begin() + 2)->getLiteral().value);
+		return static_cast<spv::StorageClass>((begin() + 2u)->getLiteral().value);
 	default:
 		return spv::StorageClass::Max;
 	}
