@@ -18,6 +18,9 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    - name: Checkout
+      uses: actions/checkout
+      
     # Runs a single command using the runners shell
     - name: CMake
       run: cmake -S . -B build
