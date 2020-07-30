@@ -54,6 +54,15 @@ Module examples::geometryShader(IAllocator* _pAllocator, ILogger* _pLogger)
     {
         BasicBlock& bb = *entry; // get entry block to this function       
 
+        // test comp
+        {
+            Instruction* glin_PerVertexPtr = bb->opAccessChain(inPerVertex); // gl_in[0].gl_Position
+            Instruction* glin_PerVertex = bb->opLoad(glin_PerVertexPtr); // array
+
+            Instruction* struct_ = bb->opCompositeExtract(glin_PerVertex, 0u); // get the struct
+            Instruction* vec_y = bb->opCompositeExtract(struct_, 0u, 1u); // get vec -> get y element
+        }
+
         Instruction* glin_PositionPtr = bb->opAccessChain(inPerVertex, 0u, 0u); // gl_in[0].gl_Position
         Instruction* glin_Position = bb->opLoad(glin_PositionPtr);
 
