@@ -61,6 +61,10 @@ Module examples::geometryShader(IAllocator* _pAllocator, ILogger* _pLogger)
 
             Instruction* struct_ = bb->opCompositeExtract(glin_PerVertex, 0u); // get the struct
             Instruction* vec_y = bb->opCompositeExtract(struct_, 0u, 1u); // get vec -> get y element
+
+            vec_y = bb->Mul(vec_y, vec_y); // square
+
+            bb->opCompositeInsert(glin_PerVertex, vec_y, 0u, 0u, 1u);
         }
 
         Instruction* glin_PositionPtr = bb->opAccessChain(inPerVertex, 0u, 0u); // gl_in[0].gl_Position
