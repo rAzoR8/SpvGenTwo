@@ -149,8 +149,22 @@ const spvgentwo::Type* spvgentwo::Instruction::getType() const
 	{
 		return pModule->getTypeInfo(this);
 	}
+	else if (hasResultType())
+	{
+		return pModule->getTypeInfo(getTypeInstr());	
+	}
 
-	return pModule->getTypeInfo(getTypeInstr());
+	return nullptr;
+}
+
+const spvgentwo::Constant* spvgentwo::Instruction::getConstant() const
+{
+	if (isSpecOrConstant())
+	{
+		return getModule()->getConstantInfo(this);
+	}
+
+	return nullptr;
 }
 
 spvgentwo::Instruction::Iterator spvgentwo::Instruction::getResultTypeOperand() const

@@ -8,6 +8,7 @@ namespace spvgentwo
 {
 	// forward delcs
 	class Type;
+	class Constant;
 	class Function;
 	class Module;
 	class IReader;
@@ -90,6 +91,7 @@ namespace spvgentwo
 		spv::Id getResultId() const;
 		Instruction* getTypeInstr() const;
 		const Type* getType() const;
+		const Constant* getConstant() const;
 
 		// operand iterator helpers return null iterator of not compatible with operation 
 		Iterator getResultTypeOperand() const; // <id> ResultType operand
