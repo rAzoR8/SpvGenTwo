@@ -213,6 +213,9 @@ namespace spvgentwo
 
 		void opCapability(const spv::Capability _capability);
 
+		template <class ... ExecModeConstInstr>
+		void opExecutionModeId(Instruction* _pEntryPoint, const spv::ExecutionMode _mode, ExecModeConstInstr* ... _args);
+
 		// TODO: OpType### instructions
 		// TODO: OpConstant### instructions
 		// TODO: OpSpecConstant### instructions
@@ -875,6 +878,23 @@ namespace spvgentwo
 	inline void Instruction::opExecutionMode(Instruction* _pEntryPoint, const spv::ExecutionMode _mode, ExecModeLiteral ..._args)
 	{
 		makeOp(spv::Op::OpExecutionMode, _pEntryPoint, _mode, _args...);
+	}
+
+	template<class ...ExecModeConstInstr>
+	inline void Instruction::opExecutionModeId(Instruction* _pEntryPoint, const spv::ExecutionMode _mode, ExecModeConstInstr* ..._args)
+	{
+		if constexpr (sizeof...(_args) > 0u)
+		{
+			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, ExecModeConstInstr>...>, "ExecModeConstInstr must be of type Instruction");
+
+			if ((_args->isSpecOrConstant() && ...) == false)
+			{
+				getModule()->logError("Operand of OpExecutionModeId is not a constant instruction");
+				return;
+			}
+		}
+
+		makeOp(spv::Op::OpExecutionModeId, _pEntryPoint, _mode, _args...);
 	}
 
 	template<class ...Decorations>
