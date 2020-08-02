@@ -231,6 +231,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpEntryPoint | &#10004; |
 | opExecutionMode | &#10004; |
 | OpCapability | &#10004; |
+| OpExecutionModeId | &#10004; |
 | OpTypeXXX | via `Module::addType()` |
 | OpConstantXXX | via `Module::addConstant()` |
 | OpSpecConstantXXX | via `Module::addConstant()` |
