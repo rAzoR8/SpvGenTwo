@@ -39,10 +39,6 @@ namespace spvgentwo
 
 		template <class ... Args>
 		Instruction* addExecutionMode(const spv::ExecutionMode _mode, Args ... _args);
-		Instruction* addExecutionModeInstr();
-
-		const List<Instruction>& getExecutionModes() const { return m_ExecutionModes; }
-		List<Instruction>& getExecutionModes() { return m_ExecutionModes; }
 
 		// overrides Functions finalize (used internally), _pEntryPointName is mandatory parameter, returns opFunction
 		Instruction* finalize(const spv::ExecutionModel _model, const Flag<spv::FunctionControlMask> _control, const char* _pEntryPointName);
@@ -53,7 +49,6 @@ namespace spvgentwo
 
 	private:
 		Instruction m_EntryPoint; // OpEntryPoint
-		List<Instruction> m_ExecutionModes;
 		spv::ExecutionModel m_ExecutionModel = spv::ExecutionModel::Max;
 		bool m_finalized = false;
 	};
@@ -62,7 +57,6 @@ namespace spvgentwo
 	inline EntryPoint::EntryPoint(Module* _pModule, const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ..._paramTypeInstructions) :
 		Function(_pModule, _pEntryPointName, _control, _pReturnType, _paramTypeInstructions...),
 		m_EntryPoint(this),
-		m_ExecutionModes(_pModule->getAllocator()),
 		m_ExecutionModel(_model)
 	{
 		m_EntryPoint.opEntryPoint(_model, &m_Function, _pEntryPointName);
@@ -71,9 +65,30 @@ namespace spvgentwo
 	template<class ...Args>
 	inline Instruction* EntryPoint::addExecutionMode(const spv::ExecutionMode _mode, Args ..._args)
 	{
-		Instruction* pInstr = &m_ExecutionModes.emplace_back(this);
+		Instruction* pInstr = getModule()->addExtensionModeInstr();
 
-		pInstr->makeOp(getExecutionModeOp(_mode), &m_Function, _mode, _args...);
+		if (getExecutionModeOp(_mode) == spv::Op::OpExecutionModeId)
+		{
+			if constexpr (sizeof...(_args) > 0 && stdrep::conjunction_v<stdrep::is_same<Instruction, Args>...>)
+			{
+				pInstr->opExecutionModeId(&m_Function, _mode, _args...);			
+			}
+			else if (sizeof...(_args) == 0)
+			{
+				pInstr->opExecutionModeId(&m_Function, _mode);
+			}
+		}
+		else
+		{
+			if constexpr (sizeof...(_args) > 0 && false == stdrep::conjunction_v<stdrep::is_same<Instruction, Args>...>)
+			{
+				pInstr->opExecutionMode(&m_Function, _mode, _args...);
+			}
+			else if (sizeof...(_args) == 0)
+			{
+				pInstr->opExecutionMode(&m_Function, _mode);
+			}
+		}
 
 		return pInstr;
 	}

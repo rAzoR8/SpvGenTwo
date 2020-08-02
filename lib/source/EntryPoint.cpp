@@ -2,8 +2,7 @@
 
 spvgentwo::EntryPoint::EntryPoint(Module* _pModule) :
 	Function(_pModule),
-	m_EntryPoint(this),
-	m_ExecutionModes(m_pAllocator) // use allocator initialized by parent class
+	m_EntryPoint(this)
 {
 }
 
@@ -106,11 +105,6 @@ void spvgentwo::EntryPoint::finalizeGlobalInterface(const GlobalInterfaceVersion
 		
 		m_finalized = true;
 	}
-}
-
-spvgentwo::Instruction* spvgentwo::EntryPoint::addExecutionModeInstr()
-{
-	return &m_ExecutionModes.emplace_back(this);
 }
 
 spvgentwo::Instruction* spvgentwo::EntryPoint::finalize(const spv::ExecutionModel _model, const Flag<spv::FunctionControlMask> _control, const char* _pEntryPointName)

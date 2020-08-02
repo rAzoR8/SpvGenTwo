@@ -21,6 +21,7 @@ spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersio
 	m_Extensions(_pAllocator),
 	m_ExtInstrImport(_pAllocator),
 	m_MemoryModel(this),
+	m_ExecutionModes(_pAllocator),
 	m_SourceStrings(_pAllocator),
 	m_Names(_pAllocator),
 	m_ModuleProccessed(_pAllocator),
@@ -52,6 +53,7 @@ spvgentwo::Module::Module(Module&& _other) noexcept:
 	m_Extensions(stdrep::move(_other.m_Extensions)),
 	m_ExtInstrImport(stdrep::move(_other.m_ExtInstrImport)),
 	m_MemoryModel(this, stdrep::move(_other.m_MemoryModel)),
+	m_ExecutionModes(stdrep::move(_other.m_ExecutionModes)),
 	m_SourceStrings(stdrep::move(_other.m_SourceStrings)),
 	m_Names(stdrep::move(_other.m_Names)),
 	m_ModuleProccessed(stdrep::move(_other.m_ModuleProccessed)),
@@ -86,6 +88,7 @@ spvgentwo::Module& spvgentwo::Module::operator=(Module&& _other) noexcept
 	m_Extensions = stdrep::move(_other.m_Extensions);
 	m_ExtInstrImport = stdrep::move(_other.m_ExtInstrImport);
 	m_MemoryModel = stdrep::move(m_MemoryModel);
+	m_ExecutionModes = stdrep::move(m_ExecutionModes);
 	m_SourceStrings = stdrep::move(_other.m_SourceStrings);
 	m_Names = stdrep::move(_other.m_Names);
 	m_ModuleProccessed = stdrep::move(_other.m_ModuleProccessed);
@@ -132,6 +135,7 @@ void spvgentwo::Module::updateParentPointers()
 		instr.m_parent.pModule = this;
 	}
 
+	fixList(m_ExecutionModes);
 	fixList(m_SourceStrings);
 	fixList(m_Names);
 	fixList(m_ModuleProccessed);
@@ -157,6 +161,7 @@ void spvgentwo::Module::reset()
 
 	setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::Simple);
 
+	m_ExecutionModes.clear();
 	m_SourceStrings.clear();
 	m_Names.clear();
 	m_ModuleProccessed.clear();
@@ -1100,27 +1105,7 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			break;
 		case spv::Op::OpExecutionMode:
 		case spv::Op::OpExecutionModeId:
-		{
-			Instruction execMode(this);
-			execMode.readOperands(_pReader, _grammar, op, operands);
-
-			auto it = execMode.getFirstActualOperand();
-			if (it == nullptr || it->isId() == false)
-			{
-				return false; // TODO: log
-			}
-
-			const spv::Id id = it->id;
-			
-			EntryPoint** epp = entryPoints.get(id);
-			if (epp == nullptr)
-			{
-				return false;
-			}
-			
-			(*epp)->getExecutionModes().emplace_back(*epp, stdrep::move(execMode));
-		}
-			break;
+			if (addExtensionModeInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpString:
 		case spv::Op::OpSourceExtension:
 		case spv::Op::OpSource:
@@ -1180,6 +1165,11 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 	}
 
 	return true;
+}
+
+spvgentwo::Instruction* spvgentwo::Module::addExtensionModeInstr()
+{
+	return &m_ExecutionModes.emplace_back(this);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, const char* _pName, Instruction* _pInitialzer)

@@ -65,6 +65,9 @@ namespace spvgentwo
 		const Instruction& getMemoryModel() const { return m_MemoryModel; }
 		Instruction& getMemoryModel() { return m_MemoryModel; }
 
+		const List<Instruction>& getExecutionModes() const { return m_ExecutionModes; }
+		List<Instruction>& getExecutionModes() { return m_ExecutionModes; }
+
 		const List<Instruction>& getSourceStrings() const { return m_SourceStrings; }
 		List<Instruction>& getSourceStrings() { return m_SourceStrings; }
 
@@ -165,6 +168,9 @@ namespace spvgentwo
 
 		// parse a binary SPIR-V program from IReader using _grammer generated from SPIR-V machinereadable grammer json
 		bool read(IReader* _pReader, const Grammar& _grammar);
+
+		// for use with opExtensionMode, opExtensionModeId
+		Instruction* addExtensionModeInstr();
 
 		// for use with opString, opSource, opSourceContinued, opSourceExtension
 		Instruction* addSourceStringInstr();
@@ -339,6 +345,7 @@ namespace spvgentwo
 		HashMap<const char*, Instruction> m_ExtInstrImport; // todo: map between ext names and Instruction*
 		Instruction m_MemoryModel;
 
+		List<Instruction> m_ExecutionModes; // opExecutionMode, opExecutionModeId
 		List<Instruction> m_SourceStrings; // opString, opSource, opSourceContinued, opSourceExtension
 		List<Instruction> m_Names; // opName, opMemberName
 		List<Instruction> m_ModuleProccessed; // OpModuleProcessed
@@ -532,11 +539,8 @@ namespace spvgentwo
 		{
 			if (pred(*ep.getEntryPoint())) return;
 		}
-		for (auto& ep : _module.getEntryPoints())
-		{
-			if (iterateInstructionContainer(_func, ep.getExecutionModes())) return;
-		}
 
+		if (iterateInstructionContainer(_func, _module.getExecutionModes())) return;
 		if (iterateInstructionContainer(_func, _module.getSourceStrings())) return;
 		if (iterateInstructionContainer(_func, _module.getNames())) return;
 		if (iterateInstructionContainer(_func, _module.getModulesProcessed())) return;
