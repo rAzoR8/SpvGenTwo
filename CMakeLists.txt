@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10.0 FATAL_ERROR)
 
 macro(add_sources expression sources)
 	file(GLOB source_files RELATIVE "${CMAKE_CURRENT_LIST_DIR}" "${expression}")
