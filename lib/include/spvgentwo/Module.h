@@ -95,6 +95,9 @@ namespace spvgentwo
 		const HashMap<const Instruction*, MemberName>& getNameLookupMap() const { return m_NameLookup; }
 		HashMap<const Instruction*, MemberName>& getNameLookupMap() { return m_NameLookup; }
 
+		// look for instructions referenced by OpName matching string _pName (case sensitive)
+		Instruction* getInstructionByName(const char* _pName) const;
+
 		// add empty function
 		Function& addFunction();
 

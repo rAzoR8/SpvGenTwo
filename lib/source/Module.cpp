@@ -1357,3 +1357,30 @@ bool spvgentwo::Module::remove(const Instruction* _pInstr)
 
 	return false;
 }
+
+spvgentwo::Instruction* spvgentwo::Module::getInstructionByName(const char* _pName) const
+{
+	for (Instruction& instr : m_Names) 
+	{
+		auto it = instr.getFirstActualOperand();
+
+		if (Instruction* var = it->getInstruction(); var != nullptr)
+		{
+			auto j = 0u;
+			for (++it; it != instr.end() && it->isLiteral(); ++it)
+			{
+				const char* str = reinterpret_cast<const char*>(&it->literal.value);
+				for (unsigned int i = 0u; i < sizeof(unsigned int); ++i)
+				{
+					if (str[i] != _pName[j++])
+					{
+						return nullptr;
+					}
+					if (str[i] == '\0')
+						return var;
+				}
+			}
+		}
+	}
+	return nullptr;
+}
