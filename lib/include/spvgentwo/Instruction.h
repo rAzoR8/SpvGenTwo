@@ -98,7 +98,7 @@ namespace spvgentwo
 		Iterator getResultIdOperand() const; // Result <id> operand
 		Iterator getFirstActualOperand() const; // operand after Result <id>
 
-		// get StorageClass of OpVariable instructions
+		// get StorageClass of OpVariable and OpTypePointer instructions
 		spv::StorageClass getStorageClass() const;
 	
 		bool isType() const;
