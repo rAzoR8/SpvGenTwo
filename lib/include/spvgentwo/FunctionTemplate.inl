@@ -32,8 +32,10 @@ namespace spvgentwo
 		{
 			return addParameters(_paramTypeInstructions...);
 		}
-
-		return param;
+		else
+		{
+			return param;		
+		}
 	}
 
 	template<class T>

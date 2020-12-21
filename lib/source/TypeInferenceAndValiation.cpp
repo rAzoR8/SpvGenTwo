@@ -2,6 +2,8 @@
 #include "spvgentwo/Instruction.h"
 #include "spvgentwo/Module.h"
 
+#include "spvgentwo/ModuleTemplate.inl"
+
 using namespace spvgentwo;
 
 spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo::Instruction& _instr)

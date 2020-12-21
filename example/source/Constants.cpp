@@ -1,4 +1,5 @@
 #include "example/Constants.h"
+#include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 

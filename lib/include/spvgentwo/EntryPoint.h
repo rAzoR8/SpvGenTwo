@@ -53,5 +53,3 @@ namespace spvgentwo
 		bool m_finalized = false;
 	};
 } // !spvgentwo
-
-#include "EntryPointTemplate.inl"

@@ -737,5 +737,3 @@ namespace spvgentwo
 	// or null-iterator if some operand was not a literal value
 	Instruction::Iterator getLiteralString(String& _out, Instruction::Iterator _begin, Instruction::Iterator _end);
 } // !spvgentwo
-
-#include "InstructionTemplate.inl"

@@ -1,5 +1,7 @@
 #include "example/FragmentShader.h"
 #include "spvgentwo/TypeAlias.h"
+#include "spvgentwo/Templates.h"
+
 using namespace spvgentwo;
 
 spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)

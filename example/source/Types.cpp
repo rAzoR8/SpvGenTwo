@@ -1,5 +1,7 @@
 #include "example/Types.h"
 
+#include "spvgentwo/Templates.h"
+
 using namespace spvgentwo;
 
 Module examples::types(IAllocator* _pAllocator, ILogger* _pLogger)

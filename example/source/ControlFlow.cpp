@@ -1,6 +1,7 @@
 #include "example/ControlFlow.h"
 #include "spvgentwo/Operators.h"
 #include "common/ControlFlowGraph.h"
+#include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 using namespace ops;

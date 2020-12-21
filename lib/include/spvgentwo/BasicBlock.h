@@ -114,5 +114,3 @@ namespace spvgentwo
 		BasicBlock& GreaterEqual(Instruction* _pRight) { return GreaterEqual(&back(), _pRight); }
 	};
 } // !spvgentwo
-
-#include "BasicBlockTemplate.inl"

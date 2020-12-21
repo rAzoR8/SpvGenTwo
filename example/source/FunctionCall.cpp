@@ -1,4 +1,5 @@
 #include "example/FunctionCall.h"
+#include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 

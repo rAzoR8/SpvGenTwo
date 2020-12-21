@@ -7,6 +7,9 @@
 #include "spvgentwo/TypeInferenceAndValiation.h"
 #include "spvgentwo/Grammar.h"
 
+#include "spvgentwo/InstructionTemplate.inl"
+#include "spvgentwo/ModuleTemplate.inl"
+
 spvgentwo::Instruction::Instruction(Module* _pModule, Instruction&& _other) noexcept :
 	List(stdrep::move(_other)),
 	m_Operation(_other.m_Operation),

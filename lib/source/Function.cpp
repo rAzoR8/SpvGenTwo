@@ -2,6 +2,9 @@
 #include "spvgentwo/Module.h"
 #include "spvgentwo/Reader.h"
 
+#include "spvgentwo/InstructionTemplate.inl"
+#include "spvgentwo/ModuleTemplate.inl"
+
 spvgentwo::Function::Function(Module* _pModule) : 
 	List(_pModule->getAllocator()),
 	m_pModule(_pModule),

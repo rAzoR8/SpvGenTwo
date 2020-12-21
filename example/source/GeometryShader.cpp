@@ -1,5 +1,6 @@
 #include "example/GeometryShader.h"
 #include "spvgentwo/TypeAlias.h"
+#include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 

@@ -1,6 +1,7 @@
 #include "example/Extensions.h"
 
 #include "spvgentwo/GLSL450Instruction.h"
+#include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 using namespace ext;

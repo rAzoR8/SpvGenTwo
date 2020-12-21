@@ -1,5 +1,7 @@
 #include "spvgentwo/EntryPoint.h"
 
+#include "spvgentwo/InstructionTemplate.inl"
+
 spvgentwo::EntryPoint::EntryPoint(Module* _pModule) :
 	Function(_pModule),
 	m_EntryPoint(this)

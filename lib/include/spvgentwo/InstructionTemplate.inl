@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Type.h"
+#include "Module.h"
+
 namespace spvgentwo
 {
 	template<class ...Args>

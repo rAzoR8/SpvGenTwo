@@ -102,5 +102,3 @@ namespace spvgentwo
 		List<Instruction> m_Parameters; // OpFunctionParameters
 	};
 } // !spvgentwo
-
-#include "FunctionTemplate.inl"

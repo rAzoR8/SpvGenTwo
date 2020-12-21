@@ -4,6 +4,7 @@
 #include "common/ConsoleLogger.h"
 #include "spvgentwo/Operators.h"
 #include "spvgentwo/GLSL450Instruction.h"
+#include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 using namespace ops;

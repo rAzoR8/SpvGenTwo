@@ -53,6 +53,14 @@ add_include_folder("lib/include" "lib_includes")
 add_library(SpvGenTwoLib "${lib_sources}")
 target_include_directories(SpvGenTwoLib PUBLIC "${lib_includes}")
 
+if (MSVC)
+    # warning level 4 and all warnings as errors
+    add_compile_options(/W4 /permissive-)
+else()
+    # lots of warnings and all warnings as errors
+    add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif()
+
 #common sources - shared between examples and tests
 add_sources("common/source/*.cpp" "common_sources")
 add_sources("common/include/common/*.h" "common_sources")

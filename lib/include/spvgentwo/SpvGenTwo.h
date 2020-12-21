@@ -24,3 +24,6 @@
 
 // extensions
 #include "GLSL450Instruction.h"
+
+// templates
+#include "Templates.h"

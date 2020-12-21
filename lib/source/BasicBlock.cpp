@@ -3,6 +3,8 @@
 #include "spvgentwo/Module.h"
 #include "spvgentwo/Reader.h"
 
+#include "spvgentwo/InstructionTemplate.inl"
+
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, const char* _pName) : List(_pFunction->getAllocator()),
 	m_pFunction(_pFunction),
 	m_Label(this)
