@@ -68,7 +68,7 @@ namespace spvgentwo
 		operator bool() const { return pFn != nullptr; }
 
 		template <typename ... OtherArgs>
-		ReturnType operator()(OtherArgs... _args) const { return (pObj->*pMemberFn)(_args...); }
+		ReturnType operator()(OtherArgs... _args) const { return (pObj->*pFn)(_args...); }
 	};
 
 	template <typename Obj, typename ReturnType, typename... Args>
@@ -227,7 +227,7 @@ namespace spvgentwo
 	class Callable<ReturnType(Obj::*)(Args...)> : public Callable<ReturnType(Args...)>
 	{
 		using Callable<ReturnType(Args...)>::Callable;
-		virtual ~Callable() { reset(); }
+		virtual ~Callable() { Callable::reset(); }
 	};
 
 	// variadic variant

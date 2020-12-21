@@ -24,7 +24,7 @@ namespace spvgentwo
 		HeapCallable& operator=(HeapCallable&& _other) noexcept { Callable<Func>::operator=(stdrep::move(_other)); return *this; }
 
 		template <typename ...Args>
-		HeapCallable& operator=(Args&& ..._args) noexcept { Callable<Func>::operator=(stdrep::forward<Args>(..._args)); return *this; }
+		HeapCallable& operator=(Args&& ..._args) noexcept { Callable<Func>::operator=(stdrep::forward<Args>(_args)...); return *this; }
 	};
 
 	template <typename ReturnType, typename... Args>
