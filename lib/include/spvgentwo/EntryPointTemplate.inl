@@ -22,7 +22,7 @@ namespace spvgentwo
 			{
 				pInstr->opExecutionModeId(&m_Function, _mode, _args...);			
 			}
-			else if (sizeof...(_args) == 0)
+			else if constexpr (sizeof...(_args) == 0)
 			{
 				pInstr->opExecutionModeId(&m_Function, _mode);
 			}
@@ -33,7 +33,7 @@ namespace spvgentwo
 			{
 				pInstr->opExecutionMode(&m_Function, _mode, _args...);
 			}
-			else if (sizeof...(_args) == 0)
+			else if constexpr (sizeof...(_args) == 0)
 			{
 				pInstr->opExecutionMode(&m_Function, _mode);
 			}

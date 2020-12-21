@@ -6,7 +6,7 @@ spvgentwo::ConsoleLogger::ConsoleLogger() : ILogger(LogImpl)
 {
 }
 
-void spvgentwo::ConsoleLogger::LogImpl(ILogger* _pInstance, LogLevel _level, const char* _pFormat, ...)
+void spvgentwo::ConsoleLogger::LogImpl([[maybe_unused]] ILogger* _pInstance, LogLevel _level, const char* _pFormat, ...)
 {
 	switch (_level)
 	{

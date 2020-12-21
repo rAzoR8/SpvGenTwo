@@ -22,7 +22,6 @@ struct MyExpr
 	//Instruction* constnt = nullptr;
 	Instruction* result = nullptr;
 
-	//template<class Node>
 	void operator()(const List<MyExpr*>& _inputs, const List<MyExpr*>& _outputs)
 	{
 		Instruction* lhs = _inputs.empty() ? nullptr : _inputs.front()->result;

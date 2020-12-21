@@ -25,7 +25,7 @@ namespace spvgentwo
 	template<class ... TypeInstr>
 	inline Instruction* Function::addParameters(Instruction* _pParamType, TypeInstr* ..._paramTypeInstructions)
 	{
-		Instruction* param = m_Parameters.emplace_back(this).opFunctionParameter(_pParamType);
+		[[maybe_unused]] Instruction* param = m_Parameters.emplace_back(this).opFunctionParameter(_pParamType);
 		m_pFunctionType->addOperand(_pParamType);
 
 		if constexpr (sizeof...(_paramTypeInstructions) > 0)

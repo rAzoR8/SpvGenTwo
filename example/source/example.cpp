@@ -25,7 +25,7 @@ class TestLogger : public ILogger
 {
 public:
 	TestLogger() : ILogger(LogImpl) {}
-	static void LogImpl(ILogger* _pInstance, LogLevel _level, const char* _pFormat, ...)
+	static void LogImpl([[maybe_unused]] ILogger* _pInstance, LogLevel _level, const char* _pFormat, ...)
 	{
 		switch (_level)
 		{

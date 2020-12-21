@@ -47,7 +47,7 @@ namespace spvgentwo
 		BasicBlock* getBranchTarget() const { return isBranchTarget() ? branchTarget : nullptr; }
 		Instruction* getInstruction() const { return isInstruction() ? instruction : nullptr; }
 		const literal_t getLiteral() const { return isLiteral() ? literal : literal_t{}; }
-		const spv::Id getId() const { return isId() ? id : InvalidId; }
+		spv::Id getId() const { return isId() ? id : InvalidId; }
 
 		Operand(const Operand& _other);
 		Operand(Operand&& _other) noexcept;

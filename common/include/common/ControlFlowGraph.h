@@ -40,9 +40,9 @@ namespace spvgentwo
 
 			if (term != nullptr)
 			{
-				for (auto it = term->getFirstActualOperand(); it != term->end(); ++it)
+				for (auto term_it = term->getFirstActualOperand(); term_it != term->end(); ++term_it)
 				{
-					addEdge(node, it);
+					addEdge(node, term_it);
 				}
 			}
 		}

@@ -75,7 +75,7 @@ spvgentwo::HeapAllocator* spvgentwo::HeapAllocator::instance()
 	return &alloc;
 }
 
-void spvgentwo::HeapAllocator::setHeapAllocBreakpoint(unsigned int _id)
+void spvgentwo::HeapAllocator::setHeapAllocBreakpoint([[maybe_unused]] unsigned int _id)
 {
 #ifdef SPVGENTWO_DEBUG_HEAP_ALLOC
 	m_breakpoints.insert(_id);

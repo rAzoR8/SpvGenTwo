@@ -69,7 +69,7 @@ namespace spvgentwo
 		const T* operator->() const { return &m_data; }
 
 	private:
-		T m_data;
+		T m_data{};
 		Entry* m_pPrev = nullptr;
 		Entry* m_pNext = nullptr;
 	};

@@ -258,7 +258,7 @@ namespace spvgentwo
 
 		// set Properties by type: spv::Dim -> image Dimension etc
 		template <class Prop, class ...Props>
-		const void setProperties(const Prop& _first, const Props& ... _props);
+		void setProperties(const Prop& _first, const Props& ... _props);
 
 		bool isVoid() const { return m_Type == spv::Op::OpTypeVoid; }
 		bool isBool() const { return m_Type == spv::Op::OpTypeBool;	}
@@ -609,7 +609,7 @@ namespace spvgentwo
 	}
 
 	template<class Prop, class ...Props>
-	inline const void Type::setProperties(const Prop& _first, const Props& ..._props)
+	inline void Type::setProperties([[maybe_unused]] const Prop& _first, const Props& ..._props)
 	{
 		// check for properties first
 		if constexpr (stdrep::is_same_v<Prop, spv::StorageClass>)

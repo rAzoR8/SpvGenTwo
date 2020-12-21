@@ -273,7 +273,7 @@ namespace spvgentwo::traits
 	const T* selectTypeFromArgs() { return nullptr; }
 
 	template <class T, class First, class... Args>
-	const T* selectTypeFromArgs(First& _first, Args&... _tail)
+	const T* selectTypeFromArgs([[maybe_unused]] First& _first, [[maybe_unused]] Args&... _tail)
 	{
 		if constexpr (is_same_base_type_v<First, T>)
 		{
