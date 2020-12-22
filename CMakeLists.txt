@@ -49,6 +49,7 @@ cmake_option(SPVGENTWO_REPLACE_PLACEMENTNEW "Don't use replacement new from <new
 cmake_option(SPVGENTWO_REPLACE_TRAITS "Use custom traits instead of <type_traits>" TRUE)
 cmake_option(SPVGENTWO_BUILD_EXAMPLES "Build examples" FALSE)
 cmake_option(SPVGENTWO_BUILD_DISASSEMBLER "Build disassembler" FALSE)
+cmake_option(SPVGENTWO_BUILD_REFLECT "Build reflect" FALSE)
 cmake_option(SPVGENTWO_DEBUG_HEAP_ALLOC "Log heap allocations" FALSE)
 
 #lib sources
@@ -90,6 +91,17 @@ if(${SPVGENTWO_BUILD_DISASSEMBLER})
 	add_executable(SpvGenTwoDisassembler "${dis_sources}")
 	target_include_directories(SpvGenTwoDisassembler PUBLIC "${dis_includes};${common_includes}")
 	target_link_libraries(SpvGenTwoDisassembler PUBLIC SpvGenTwoLib SpvGenTwoCommon)
+endif()
+
+#reflection project
+if(${SPVGENTWO_BUILD_REFLECT})
+	add_sources("refl/source/*.cpp" "refl_sources")
+	add_sources("refl/include/refl/*.h" "refl_sources")
+	add_include_folder("refl/include" "refl_includes")
+
+	add_executable(SpvGenTwoReflect "${refl_sources}")
+	target_include_directories(SpvGenTwoDisassembler PUBLIC "${refl_includes};${common_includes}")
+	target_link_libraries(SpvGenTwoReflect PUBLIC SpvGenTwoLib SpvGenTwoCommon)
 endif()
 
 message(STATUS "")
