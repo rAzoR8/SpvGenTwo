@@ -105,8 +105,6 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	ReflectionHelper refl(module);
-
 	if (varName != nullptr)
 	{
 		Instruction* inst = module.getInstructionByName(varName);
@@ -118,7 +116,7 @@ int main(int argc, char* argv[])
 		}
 
 		List<const Instruction*> decorations(&alloc);
-		refl.getVariableDecorations(inst, decorations);
+		ReflectionHelper::getVariableDecorations(module, inst, decorations);
 
 		if (printDescriptorSet)
 		{

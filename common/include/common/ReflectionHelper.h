@@ -10,20 +10,13 @@ namespace spvgentwo
 	class Module;
 	class Instruction;
 
-	class ReflectionHelper
+	namespace ReflectionHelper
 	{
-	public:
-		ReflectionHelper(const Module& _module);
-		~ReflectionHelper();
-
 		// parse OpExecutionMode/Id operands, returns false if LocalSize or LocalSizeHint is present
-		bool getLocalSize(unsigned int& _x, unsigned int& _y, unsigned int& _z) const;
+		bool getLocalSize(const Module& _module, unsigned int& _x, unsigned int& _y, unsigned int& _z);
 
-		void getVariablesByStorageClass(spv::StorageClass _class, List<const Instruction*>& _outVariables) const;
+		void getVariablesByStorageClass(const Module& _module, spv::StorageClass _class, List<const Instruction*>& _outVariables);
 
-		void getVariableDecorations(const Instruction* _pVariable, List<const Instruction*>& _outDecorations) const;
-
-	private:
-		const Module& m_module;
+		void getVariableDecorations(const Module& _module, const Instruction* _pVariable, List<const Instruction*>& _outDecorations);
 	};
 } // !spvgentwo

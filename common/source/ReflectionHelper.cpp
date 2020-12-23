@@ -2,17 +2,10 @@
 
 #include "spvgentwo/Module.h"
 
-spvgentwo::ReflectionHelper::ReflectionHelper(const Module& _module) : m_module(_module)
-{
-}
 
-spvgentwo::ReflectionHelper::~ReflectionHelper()
+bool spvgentwo::ReflectionHelper::getLocalSize(const Module& _module, unsigned int& _x, unsigned int& _y, unsigned int& _z)
 {
-}
-
-bool spvgentwo::ReflectionHelper::getLocalSize(unsigned int& _x, unsigned int& _y, unsigned int& _z) const
-{
-	for (const auto& mode : m_module.getExecutionModes()) 
+	for (const auto& mode : _module.getExecutionModes()) 
 	{
 		if (auto it = mode.begin().next(); it != nullptr && mode.size() > 4u)
 		{
@@ -51,9 +44,9 @@ bool spvgentwo::ReflectionHelper::getLocalSize(unsigned int& _x, unsigned int& _
 	return false;
 }
 
-void spvgentwo::ReflectionHelper::getVariablesByStorageClass(spv::StorageClass _class, List<const Instruction*>& _outVariables) const
+void spvgentwo::ReflectionHelper::getVariablesByStorageClass(const Module& _module, spv::StorageClass _class, List<const Instruction*>& _outVariables)
 {
-	for (const Instruction& var : m_module.getGlobalVariables()) 
+	for (const Instruction& var : _module.getGlobalVariables()) 
 	{
 		if (var.getStorageClass() == _class)
 		{
@@ -62,12 +55,12 @@ void spvgentwo::ReflectionHelper::getVariablesByStorageClass(spv::StorageClass _
 	}
 }
 
-void spvgentwo::ReflectionHelper::getVariableDecorations(const Instruction* _pVariable, List<const Instruction*>& _outDecorations) const
+void spvgentwo::ReflectionHelper::getVariableDecorations(const Module& _module, const Instruction* _pVariable, List<const Instruction*>& _outDecorations)
 {
 	if (_pVariable == nullptr)
 		return;
 
-	for(const Instruction& decoration : m_module.getDecorations())
+	for(const Instruction& decoration : _module.getDecorations())
 	{
 		if (*decoration.getFirstActualOperand() == _pVariable)
 		{
