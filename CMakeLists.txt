@@ -33,11 +33,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 if (MSVC)
-    # warning level 4 and all warnings as errors
+	#enforce strictness on msvc
     add_compile_options(/W4 /permissive-)
-else()
-    # lots of warnings and all warnings as errors
-    add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
 #this project
