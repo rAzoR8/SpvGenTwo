@@ -1,5 +1,3 @@
-#pragma once
-
 #include "common/GrammarHelper.h"
 
 namespace

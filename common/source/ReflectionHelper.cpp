@@ -2,7 +2,6 @@
 
 #include "spvgentwo/Module.h"
 
-
 bool spvgentwo::ReflectionHelper::getLocalSize(const Module& _module, unsigned int& _x, unsigned int& _y, unsigned int& _z)
 {
 	for (const auto& mode : _module.getExecutionModes()) 

@@ -6,6 +6,7 @@
 #include "common/BinaryFileReader.h"
 #include "common/ConsoleLogger.h"
 #include "common/ReflectionHelper.h"
+#include "common/GrammarHelper.h"
 
 #include <cstring>
 
@@ -44,6 +45,7 @@ int main(int argc, char* argv[])
 	const char* varName = nullptr; // variable to inspect
 
 	bool printDescriptorSet = false;
+	bool printLocation = false;
 
 	const int end = argc - 1;;
 
@@ -56,11 +58,15 @@ int main(int argc, char* argv[])
 		}
 		else if (i < end && strcmp(arg, "--var") == 0)
 		{
-			varName = argv[i + 1];
+			varName = argv[++i];
 		}
 		else if (strcmp(arg, "--dset") == 0)
 		{
 			printDescriptorSet = true;
+		}
+		else if (strcmp(arg, "--loc") == 0)
+		{
+			printLocation = true;
 		}
 	}
 
@@ -118,12 +124,19 @@ int main(int argc, char* argv[])
 		List<const Instruction*> decorations(&alloc);
 		ReflectionHelper::getVariableDecorations(module, inst, decorations);
 
-		if (printDescriptorSet)
+		for (const Instruction* deco : decorations)
 		{
-			
+			auto it = GrammarHelper::getOperandByName(deco, gram, "Decoration");
+
+			if (it == nullptr || it.next() == nullptr) continue;
+
+			if ((printDescriptorSet && it->getLiteral() == (unsigned)spv::Decoration::DescriptorSet) || 
+				(printLocation && it->getLiteral() == (unsigned)spv::Decoration::Location))
+			{
+				printf("%u", it.next()->getLiteral().value);
+			}
 		}
 	}
-
 	
 	return 0;
 }
