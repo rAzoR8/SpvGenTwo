@@ -11,6 +11,8 @@ namespace spvgentwo
 		EntryIterator(Entry<T>* _pEntry = nullptr) : m_pEntry(_pEntry) {}
 		EntryIterator(const EntryIterator<T>& _other) : m_pEntry(_other.m_pEntry) {}
 
+		EntryIterator& operator=(const EntryIterator<T>& _other);
+
 		bool operator==(const EntryIterator<T>& _other) const;
 		bool operator!=(const EntryIterator<T>& _other) const;
 
@@ -48,6 +50,13 @@ namespace spvgentwo
 	private:
 		Entry<T>* m_pEntry = nullptr;
 	};
+
+	template<class T>
+	inline EntryIterator<T>& EntryIterator<T>::operator=(const EntryIterator<T>& _other)
+	{
+		m_pEntry = _other.m_pEntry;
+		return *this;
+	}
 
 	template<class T>
 	inline bool EntryIterator<T>::operator==(const EntryIterator<T>& _other) const
