@@ -187,7 +187,7 @@ namespace spvgentwo
 			static_assert(stdrep::conjunction_v<stdrep::is_same<Instruction, Instr>...>, "Instr must be of type Instruction");
 		}
 
-		makeOp(spv::Op::OpDecorateId, _pTarget, _decoration, _ids...);
+		makeOp(spv::Op::OpDecorateId, _pTarget, _decoration, _pId, _ids...);
 	}
 
 	template<class ...VarInst>

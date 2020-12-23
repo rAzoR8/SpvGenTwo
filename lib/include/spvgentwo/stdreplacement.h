@@ -9,7 +9,11 @@ namespace spvgentwo
 }
 
 #ifdef SPVGENTWO_REPLACE_PLACEMENTNEW
+
+#if _MSC_VER && !__INTEL_COMPILER
 #pragma warning(disable: 4291)
+#endif
+
 template <class T>
 inline void* operator new(spvgentwo::sgt_size_t size, T* ptr) noexcept { (void)size; return ptr; }
 #else

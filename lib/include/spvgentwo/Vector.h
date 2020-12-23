@@ -69,7 +69,7 @@ namespace spvgentwo
 		void emplace_back_args(const T& _first, Args&& ..._tail);
 
 		// assign _data to elements, _count == max means all
-		void assign(const T& _data, sgt_size_t _offset = 0u, sgt_size_t _count = ~0ull);
+		void assign(const T& _data, sgt_size_t _offset = 0u, sgt_size_t _count = ~(sgt_size_t{ 0 }));
 	protected:
 		void deallocate();
 

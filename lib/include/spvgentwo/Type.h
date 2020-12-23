@@ -251,7 +251,7 @@ namespace spvgentwo
 		const Type& back() const { return m_subTypes.back(); }
 
 		template <class T>
-		Type& fundamental(const T* _typeInfo = nullptr) { /*static_assert(false, "incompatible type"); GCC doesnt like this*/ return *this; }
+		Type& fundamental([[maybe_unused]] const T* _typeInfo = nullptr) { /*static_assert(false, "incompatible type"); GCC doesnt like this*/ return *this; }
 
 		template <class T, class ... Props>
 		Type& make(const Props& ... _props);
