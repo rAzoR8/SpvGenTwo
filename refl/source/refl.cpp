@@ -7,6 +7,8 @@
 #include "common/ConsoleLogger.h"
 #include "common/ReflectionHelper.h"
 #include "common/GrammarHelper.h"
+#include "common/HeapList.h"
+#include "common/HeapString.h"
 
 #include <cstring>
 
@@ -24,17 +26,14 @@ void map(const List<const Instruction*>& instructions, Pred pred, Func func)
 	}
 }
 
-// move to ReflectionHelper
-Instruction::Iterator getDecorationLiteralOperand(const Instruction& decoration)
+HeapList<HeapString> getVariableNames(const Module& _module)
 {
-	Instruction::Iterator it = nullptr;
-
-	if (decoration == spv::Op::OpDecorate)
+	HeapList<HeapString> names;
+	for (const Instruction& var : _module.getGlobalVariables())
 	{
-		it = decoration.getFirstActualOperand().next();
+		names.emplace_back(var.getName());
 	}
-
-	return it;
+	return names;
 }
 
 int main(int argc, char* argv[])
@@ -112,6 +111,12 @@ int main(int argc, char* argv[])
 		if (inst == nullptr)
 		{
 			logger.logWarning("Instruction with OpName %s not found in module", varName);
+
+			for (const String& name : getVariableNames(module))
+			{
+				logger.logInfo("%s", name.c_str());
+			}
+
 			return -1;
 		}
 
