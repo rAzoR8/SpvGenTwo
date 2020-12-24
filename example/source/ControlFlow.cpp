@@ -16,9 +16,9 @@ spvgentwo::Module examples::controlFlow(spvgentwo::IAllocator* _pAllocator, spvg
     module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::Simple);
 
     // uniforms
-    Instruction* uniOffset = module.uniform<int>("u_Offset");
+    Instruction* uniOffset = module.uniform<int>(u8"u_Offset");
 
-    Function& loopFunc = module.addFunction<float>("loop", spv::FunctionControlMask::Const);
+    Function& loopFunc = module.addFunction<float>(u8"loop", spv::FunctionControlMask::Const);
     {
         Instruction* one = module.constant(1);
         Instruction* loopCount = module.constant(10);

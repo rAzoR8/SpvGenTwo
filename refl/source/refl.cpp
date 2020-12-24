@@ -99,12 +99,6 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	//// creates type & constant infos for lookup (needed for codegen)
-	//if (module.reconstructTypeAndConstantInfo() == false)
-	//{
-	//	return -1;
-	//}
-
 	// parses strings for lookup of named instructions, needed for printing
 	if (module.reconstructNames() == false)
 	{

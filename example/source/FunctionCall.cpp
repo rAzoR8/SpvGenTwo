@@ -12,10 +12,10 @@ Module examples::functionCall(IAllocator* _pAllocator, ILogger* _pLogger)
     module.addCapability(spv::Capability::Shader);
 
     // global variables
-    Instruction* uniformVar = module.uniform<vector_t<float, 3>>("u_Position");
+    Instruction* uniformVar = module.uniform<vector_t<float, 3>>(u8"u_Position");
 
     // float add(float x, float y)
-    Function& funcAdd = module.addFunction<float, float, float>("add", spv::FunctionControlMask::Const);
+    Function& funcAdd = module.addFunction<float, float, float>(u8"add", spv::FunctionControlMask::Const);
     {
         BasicBlock& bb = *funcAdd; // get entry block to this function
 
@@ -28,7 +28,7 @@ Module examples::functionCall(IAllocator* _pAllocator, ILogger* _pLogger)
 
     // void entryPoint();
     {
-        EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, "main");
+        EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, u8"main");
         entry.addExecutionMode(spv::ExecutionMode::OriginUpperLeft);
         BasicBlock& bb = *entry; // get entry block to this function
 

@@ -16,7 +16,7 @@ Module examples::geometryShader(IAllocator* _pAllocator, ILogger* _pLogger)
     //module.addExtension("GLSL.std.450"); // needed?
     module.addSourceStringInstr()->opSource(spv::SourceLanguage::GLSL, 330u);
 
-    EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Geometry, "main");
+    EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Geometry, u8"main");
     entry.addExecutionMode(spv::ExecutionMode::InputPoints);
     entry.addExecutionMode(spv::ExecutionMode::Invocations, 1u);
     entry.addExecutionMode(spv::ExecutionMode::OutputLineStrip);
@@ -37,19 +37,19 @@ Module examples::geometryShader(IAllocator* _pAllocator, ILogger* _pLogger)
     type.FloatM(); // float gl_PointSize
     type.Member().ArrayElement(1u).Float(); // float gl_ClipDistance[];
     
-    Instruction* glPerVertexType = module.addType(type, "gl_PerVertex"); // just to assign the name
+    Instruction* glPerVertexType = module.addType(type, u8"gl_PerVertex"); // just to assign the name
     module.addDecorationInstr()->opDecorate(glPerVertexType, spv::Decoration::Block);
     module.addDecorationInstr()->opMemberDecorate(glPerVertexType, 0, spv::Decoration::BuiltIn, spv::BuiltIn::Position);
     module.addDecorationInstr()->opMemberDecorate(glPerVertexType, 1, spv::Decoration::BuiltIn, spv::BuiltIn::PointSize);
     module.addDecorationInstr()->opMemberDecorate(glPerVertexType, 2, spv::Decoration::BuiltIn, spv::BuiltIn::ClipDistance);
-    module.addMemberName(glPerVertexType, "gl_Position", 0u);
-    module.addMemberName(glPerVertexType, "gl_PointSize", 1u);
-    module.addMemberName(glPerVertexType, "gl_ClipDistance", 2u);
+    module.addMemberName(glPerVertexType, u8"gl_Position", 0u);
+    module.addMemberName(glPerVertexType, u8"gl_PointSize", 1u);
+    module.addMemberName(glPerVertexType, u8"gl_ClipDistance", 2u);
 
     const char* memberName = glPerVertexType->getName(1u);
 
-    Instruction* outPerVertex = module.output(type, "gl_out");
-    Instruction* inPerVertex = module.input(type.wrapArray(1u), "gl_in");
+    Instruction* outPerVertex = module.output(type, u8"gl_out");
+    Instruction* inPerVertex = module.input(type.wrapArray(1u), u8"gl_in");
 
     // void main();
     {

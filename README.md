@@ -36,15 +36,15 @@ Module module(&alloc, spv::Version, &log);
 // configure capabilities and extensions
 module.addCapability(spv::Capability::Shader);
 module.addCapability(spv::Capability::VulkanMemoryModelKHR);
-module.addExtension("SPV_KHR_vulkan_memory_model");
-Instruction* ext = module.getExtensionInstructionImport("GLSL.std.450");
+module.addExtension(u8"SPV_KHR_vulkan_memory_model");
+Instruction* ext = module.getExtensionInstructionImport(u8"GLSL.std.450");
 module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
 
 // global variables
-Instruction* uniformVar = module.uniform<vector_t<float, 3>>("u_Position");
+Instruction* uniformVar = module.uniform<vector_t<float, 3>>(u8"u_Position");
 
 // float add(float x, float y)
-Function& funcAdd = module.addFunction<float, float, float>("add", spv::FunctionControlMask::Const);
+Function& funcAdd = module.addFunction<float, float, float>(u8"add", spv::FunctionControlMask::Const);
 {
     BasicBlock& bb = *funcAdd; // get entry block to this function
 
@@ -57,7 +57,7 @@ Function& funcAdd = module.addFunction<float, float, float>("add", spv::Function
 
 // void entryPoint();
 {
-    EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, "main");
+    EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, u8"main");
     entry.addExecutionMode(spv::ExecutionMode::OriginUpperLeft);
     BasicBlock& bb = *entry; // get entry block to this function
 

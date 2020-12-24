@@ -15,7 +15,7 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
 
     // use Vulkan Memory Model
     module.addCapability(spv::Capability::VulkanMemoryModelKHR);
-    module.addExtension("SPV_KHR_vulkan_memory_model"); // add extension by string
+    module.addExtension(u8"SPV_KHR_vulkan_memory_model"); // add extension by string
 
 
     // Instruction* extId = module.getExtensionInstructionImport("GLSL.std.450");
@@ -28,7 +28,7 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
 
         // SPV_AMD_gcn_shader example: https://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/master/extensions/AMD/SPV_AMD_gcn_shader.html
         {
-            module.addExtension("SPV_AMD_gcn_shader"); // adds an OpExtension instruction to the module
+            module.addExtension(u8"SPV_AMD_gcn_shader"); // adds an OpExtension instruction to the module
 
             // opcodes taken from extension spec:
             const unsigned int CubeFaceCoordAMD = 2;
@@ -37,7 +37,7 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
 
             // getExtensionInstructionImport adds extension to the module
             // return value ext can be used with Instruction.opExtInst(resultType, extId, opCode, ...);
-            Instruction* extId = module.getExtensionInstructionImport("SPV_AMD_gcn_shader");
+            Instruction* extId = module.getExtensionInstructionImport(u8"SPV_AMD_gcn_shader");
 
             /// CubeFaceCoordAMD example:
 
@@ -57,7 +57,7 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
             Instruction* uint64 = module.type<unsigned long int>();
 
             // The second variant of opExtInst can direclty add the extension to the module by supplying the extension name "GLSL.std.450"
-            Instruction* time = bb->opExtInst(uint64, "SPV_AMD_gcn_shader", TimeAMD);
+            Instruction* time = bb->opExtInst(uint64, u8"SPV_AMD_gcn_shader", TimeAMD);
         }
 
         // SpvGenTwo comes with GLSL extension instructions (GLSL450Intruction derives from Instruction>

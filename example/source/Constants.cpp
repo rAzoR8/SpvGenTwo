@@ -10,7 +10,7 @@ spvgentwo::Module examples::constants(spvgentwo::IAllocator* _pAllocator, spvgen
 	module.addCapability(spv::Capability::GenericPointer);
 	module.addCapability(spv::Capability::LiteralSampler);
 
-	Function& main = module.addEntryPoint<void>(spv::ExecutionModel::Vertex, "main");
+	Function& main = module.addEntryPoint<void>(spv::ExecutionModel::Vertex, u8"main");
 	BasicBlock& bb = *main;
 
 	// using addConstant() manually:

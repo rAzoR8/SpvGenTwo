@@ -1,4 +1,4 @@
-#include "example/ExpressionGraph.h"
+﻿#include "example/ExpressionGraph.h"
 #include "common/ExprGraph.h"
 
 using namespace spvgentwo;
@@ -66,7 +66,7 @@ spvgentwo::Module examples::expressionGraph(spvgentwo::IAllocator* _pAllocator, 
 
 	Module module(_pAllocator, spv::Version, _pLogger);
 	module.addCapability(spv::Capability::Shader);
-	Function& main = module.addEntryPoint<void>(spv::ExecutionModel::Vertex, "main");
+	Function& main = module.addEntryPoint<void>(spv::ExecutionModel::Vertex, u8"mainÜmlautß"); //test utf-8
 	BasicBlock& bb = *main;
 
 	ExprGraph<MyExpr> exprgraph(_pAllocator);

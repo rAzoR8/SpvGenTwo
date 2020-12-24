@@ -1369,20 +1369,27 @@ spvgentwo::Instruction* spvgentwo::Module::getInstructionByName(const char* _pNa
 
 		if (Instruction* var = it->getInstruction(); var != nullptr)
 		{
-			auto j = 0u;
-			for (++it; it != instr.end() && it->isLiteral(); ++it)
+			auto cmp = [&]() -> bool
 			{
-				const char* str = reinterpret_cast<const char*>(&it->literal.value);
-				for (unsigned int i = 0u; i < sizeof(unsigned int); ++i)
+				auto j = 0u;
+				for (++it; it != instr.end() && it->isLiteral(); ++it)
 				{
-					if (str[i] != _pName[j++])
+					const char* str = reinterpret_cast<const char*>(&it->literal.value);
+					for (unsigned int i = 0u; i < sizeof(unsigned int); ++i)
 					{
-						return nullptr;
+						if (str[i] == '\0' && _pName[j] == '\0')
+						{
+							return true;
+						} 
+						else if (str[i] != _pName[j++])
+						{
+							return false;
+						}
 					}
-					if (str[i] == '\0')
-						return var;
-				}
-			}
+				};
+				return true;
+			};
+			if (cmp()) return var;
 		}
 	}
 	return nullptr;
