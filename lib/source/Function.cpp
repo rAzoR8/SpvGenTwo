@@ -207,7 +207,7 @@ spvgentwo::Instruction* spvgentwo::Function::finalize(const Flag<spv::FunctionCo
 
 	Instruction* pFunc = m_Function.opFunction(_control, m_pReturnType, m_pFunctionType);
 
-	if (_pName != nullptr)
+	if (_pName != nullptr && pFunc->isErrorInstr() == false)
 	{
 		m_pModule->addName(pFunc, _pName);
 	}

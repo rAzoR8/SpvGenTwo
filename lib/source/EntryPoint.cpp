@@ -4,12 +4,18 @@
 
 spvgentwo::EntryPoint::EntryPoint(Module* _pModule) :
 	Function(_pModule),
-	m_EntryPoint(this)
+	m_EntryPoint(this),
+	m_nameStorage(_pModule->getAllocator())
 {
 }
 
 spvgentwo::EntryPoint::~EntryPoint()
 {
+}
+
+const char* spvgentwo::EntryPoint::getName() const
+{
+	return m_nameStorage.c_str();
 }
 
 void spvgentwo::EntryPoint::getGlobalVariableInterface(List<Operand>& _outVarInstr, const GlobalInterfaceVersion _version) const
@@ -109,13 +115,19 @@ void spvgentwo::EntryPoint::finalizeGlobalInterface(const GlobalInterfaceVersion
 	}
 }
 
+spvgentwo::String& spvgentwo::EntryPoint::getNameStorage()
+{
+	return m_nameStorage;
+}
+
 spvgentwo::Instruction* spvgentwo::EntryPoint::finalize(const spv::ExecutionModel _model, const Flag<spv::FunctionControlMask> _control, const char* _pEntryPointName)
 {
 	Instruction* pFunc = Function::finalize(_control, _pEntryPointName);
 
-	if (pFunc != nullptr)
+	if (pFunc != nullptr && pFunc->isErrorInstr() == false)
 	{
 		m_EntryPoint.opEntryPoint(_model, &m_Function, _pEntryPointName);
+		m_nameStorage = _pEntryPointName;
 	}
 
 	return pFunc;

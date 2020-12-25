@@ -1087,7 +1087,7 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 				return false;
 			}
 
-			auto it = ep->getEntryPoint()->getFirstActualOperand();
+			auto it = ep->getEntryPoint()->getFirstActualOperand(); // get execution model
 			if (it == nullptr || it->isLiteral() == false)
 			{
 				return false;
@@ -1102,6 +1102,10 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			}
 
 			const spv::Id id = it->id; // function result id
+
+			// copy name form LiteralString of OpEntryPoint to name storage for getName query
+			ep->getNameStorage().clear();
+			getLiteralString(ep->getNameStorage(), ++it, ep->getEntryPoint()->end());
 
 			entryPoints.emplaceUnique(id, ep);
 		}
@@ -1126,9 +1130,16 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 		case spv::Op::OpDecorationGroup:
 			if (addDecorationInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpVariable:
-			// TODO: check if storage type != function
-			// TODO: add to m_TypeToInstr and m_InstrToType after pointer resolve
-			if (addGlobalVariableInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+			if (addGlobalVariableInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false;
+			
+			// check if storage type != function
+			if (m_GlobalVariables.last()->getStorageClass() == spv::StorageClass::Function)
+			{
+				logError("Found OpVariable with StorageClass 'Function in global scope");
+				return false;
+			}
+
+			break;
 		case spv::Op::OpUndef:
 			if(addUndefInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpLine:
@@ -1137,14 +1148,19 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 		case spv::Op::OpFunction:
 		{
 			Instruction opFunc(this);
-			opFunc.readOperands(_pReader, _grammar, op, operands);
-
-			const spv::Id id = opFunc.getResultId();
-			if (id == InvalidId)
+			if (opFunc.readOperands(_pReader, _grammar, op, operands) == false)
 			{
-				return false; // TODO: log
+				return false;
 			}
 
+			const spv::Id id = opFunc.getResultId();
+			if (id == InvalidId || id >= m_spvBound)
+			{
+				logError("Invalid result ID for OpFunction");
+				return false;
+			}
+
+			// check if this function is an existing entrypoint, otherwise create new function
 			Function* func = nullptr;
 			if (EntryPoint** epp = entryPoints.get(id); epp != nullptr)
 			{

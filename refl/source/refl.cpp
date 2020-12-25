@@ -26,6 +26,16 @@ void map(const List<const Instruction*>& instructions, Pred pred, Func func)
 	}
 }
 
+template <template <class> class Container>
+void getList(const Container<Instruction>& _container, List<const Instruction*>& _instructions)
+{
+	for (const Instruction& instr : _container)
+	{
+		_instructions.emplace_back(&instr);
+	}
+}
+
+
 HeapList<HeapString> getVariableNames(const Module& _module)
 {
 	HeapList<HeapString> names;
@@ -34,6 +44,19 @@ HeapList<HeapString> getVariableNames(const Module& _module)
 		names.emplace_back(var.getName());
 	}
 	return names;
+}
+
+void printFunctions(const Module& _module)
+{
+	for (const EntryPoint& ep : _module.getEntryPoints())
+	{
+		printf("%s [EP]\n", ep.getName());
+	}
+
+	for (const Function& fun : _module.getFunctions())
+	{
+		printf("%s\n", fun.getName());
+	}
 }
 
 int main(int argc, char* argv[])
@@ -45,6 +68,7 @@ int main(int argc, char* argv[])
 
 	bool printDescriptorSet = false;
 	bool printLocation = false;
+	bool listFunctions = false;
 
 	const int end = argc - 1;;
 
@@ -66,6 +90,10 @@ int main(int argc, char* argv[])
 		else if (strcmp(arg, "--loc") == 0)
 		{
 			printLocation = true;
+		}
+		else if (strcmp(arg, "--funcs") == 0)
+		{
+			listFunctions = true;
 		}
 	}
 
@@ -104,6 +132,18 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
+	if (listFunctions)
+	{
+		printFunctions(module);
+	}
+
+	//for (const String& name : getVariableNames(module))
+	//{
+	//	logger.logInfo("%s", name.c_str());
+	//}
+
+	List<const Instruction*> decorations(&alloc);
+
 	if (varName != nullptr)
 	{
 		Instruction* inst = module.getInstructionByName(varName);
@@ -111,29 +151,36 @@ int main(int argc, char* argv[])
 		if (inst == nullptr)
 		{
 			logger.logWarning("Instruction with OpName %s not found in module", varName);
-
-			for (const String& name : getVariableNames(module))
-			{
-				logger.logInfo("%s", name.c_str());
-			}
-
 			return -1;
 		}
 
-		List<const Instruction*> decorations(&alloc);
 		ReflectionHelper::getVariableDecorations(module, inst, decorations);
+	}
+	else
+	{
+		getList(module.getDecorations(), decorations);
+	}
 
-		for (const Instruction* deco : decorations)
+	for (const Instruction* deco : decorations)
+	{
+		auto it = deco->getFirstActualOperand(); // target
+
+		if (it != nullptr && it->isInstruction())
 		{
-			auto it = GrammarHelper::getOperandByName(deco, gram, "Decoration");
-
-			if (it == nullptr || it.next() == nullptr) continue;
-
-			if ((printDescriptorSet && it->getLiteral() == (unsigned)spv::Decoration::DescriptorSet) || 
-				(printLocation && it->getLiteral() == (unsigned)spv::Decoration::Location))
+			if (const char* name = it->instruction->getName(); name != nullptr)
 			{
-				printf("%u", it.next()->getLiteral().value);
+				printf("%s: ", name);
 			}
+		}
+
+		it = GrammarHelper::getOperandByName(deco, gram, "Decoration");
+
+		if (it == nullptr || it.next() == nullptr) continue;
+
+		if ((printDescriptorSet && it->getLiteral() == (unsigned)spv::Decoration::DescriptorSet) ||
+			(printLocation && it->getLiteral() == (unsigned)spv::Decoration::Location))
+		{
+			printf("%u\n", it.next()->getLiteral().value);
 		}
 	}
 	

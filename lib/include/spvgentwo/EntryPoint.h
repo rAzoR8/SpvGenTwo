@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Function.h"
+#include "String.h"
 
 namespace spvgentwo
 {
@@ -25,6 +26,8 @@ namespace spvgentwo
 		
 		~EntryPoint() override;
 
+		const char* getName() const;
+
 		// TODO: move constructor & asignment
 
 		// get all the global OpVariables with StorageClass != Function used in this function
@@ -47,9 +50,12 @@ namespace spvgentwo
 		// only to be called by the Module before serialization
 		void finalizeGlobalInterface(const GlobalInterfaceVersion _version);
 
+		String& getNameStorage();
+
 	private:
 		Instruction m_EntryPoint; // OpEntryPoint
 		spv::ExecutionModel m_ExecutionModel = spv::ExecutionModel::Max;
+		String m_nameStorage; // literal string of EP name that was encoded in OpEntryPoint
 		bool m_finalized = false;
 	};
 } // !spvgentwo
