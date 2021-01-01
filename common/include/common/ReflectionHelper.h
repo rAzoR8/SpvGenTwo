@@ -17,6 +17,11 @@ namespace spvgentwo
 
 		void getVariablesByStorageClass(const Module& _module, spv::StorageClass _class, List<const Instruction*>& _outVariables);
 
-		void getVariableDecorations(const Module& _module, const Instruction* _pVariable, List<const Instruction*>& _outDecorations);
+		void getVariableDecorations(const Instruction* _pVariable, List<const Instruction*>& _outDecorations);
+
+		// _pDecoration must be OpDecorate (not OpMemberDecorate etc), returns uint_max if invalid/not applicable
+		unsigned int getLiteralFromDecoration(spv::Decoration _decoration, const Instruction* _pDecoration);
+
+		unsigned int getDecorationLiteralFromVariable(spv::Decoration _decoration, const Instruction* _pVariable);
 	};
 } // !spvgentwo

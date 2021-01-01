@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 
-		ReflectionHelper::getVariableDecorations(module, inst, decorations);
+		ReflectionHelper::getVariableDecorations(inst, decorations);
 	}
 	else
 	{

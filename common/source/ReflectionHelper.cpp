@@ -54,16 +54,53 @@ void spvgentwo::ReflectionHelper::getVariablesByStorageClass(const Module& _modu
 	}
 }
 
-void spvgentwo::ReflectionHelper::getVariableDecorations(const Module& _module, const Instruction* _pVariable, List<const Instruction*>& _outDecorations)
+void spvgentwo::ReflectionHelper::getVariableDecorations(const Instruction* _pVariable, List<const Instruction*>& _outDecorations)
 {
-	if (_pVariable == nullptr)
+	if (_pVariable == nullptr || _pVariable->getModule() == nullptr)
 		return;
 
-	for(const Instruction& decoration : _module.getDecorations())
+	for(const Instruction& decoration : _pVariable->getModule()->getDecorations())
 	{
-		if (*decoration.getFirstActualOperand() == _pVariable)
+		if (*decoration.getFirstActualOperand() == _pVariable) // check target
 		{
 			_outDecorations.emplace_back(&decoration);
 		}
 	}
+}
+
+unsigned int spvgentwo::ReflectionHelper::getLiteralFromDecoration(spv::Decoration _decoration, const Instruction* _pDecoration)
+{
+	if (_pDecoration == nullptr || *_pDecoration != spv::Op::OpDecorate)
+		return ~0u;
+
+	auto decorate = _pDecoration->getFirstActualOperand().next(); // skip target operand
+
+	// check if this is the kind of decoration we are lookin for
+	if (decorate != nullptr && decorate.next() != nullptr && decorate->getLiteral() == static_cast<unsigned int>(_decoration))
+	{
+		return decorate.next()->getLiteral();
+	}
+
+	return ~0u;
+}
+
+unsigned int spvgentwo::ReflectionHelper::getDecorationLiteralFromVariable(spv::Decoration _decoration, const Instruction* _pVariable)
+{
+	if (_pVariable == nullptr || *_pVariable != spv::Op::OpVariable || _pVariable->getModule() == nullptr)
+		return ~0u;
+
+	for (const Instruction& decoration : _pVariable->getModule()->getDecorations())
+	{
+		auto target = decoration.getFirstActualOperand();
+
+		if (target != nullptr && *target == _pVariable)
+		{
+			if (auto deco = target.next(); deco != nullptr && deco->getLiteral() == static_cast<unsigned int>(_decoration))
+			{
+				return deco->getLiteral();
+			}
+		}
+	}
+
+	return ~0u;
 }
