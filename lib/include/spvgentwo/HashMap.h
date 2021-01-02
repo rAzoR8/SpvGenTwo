@@ -30,15 +30,23 @@ namespace spvgentwo
 
 	public:
 
-		HashMap(IAllocator* _pAllocator = nullptr, const unsigned int _buckets = DefaultBucktCount);
+		HashMap(IAllocator* _pAllocator = nullptr, unsigned int _buckets = DefaultBucktCount);
 		HashMap(HashMap&& _other) noexcept;
 
-		~HashMap();
+		// computes bucket size as sizeof..(_keyvals) * 2 + 1 (number of nodes construected from args passed)
+		// added further nodes after construction is therefore suboptimal, use default consturctor with _buckets count for runtime decided count
+		template <class ... Args>
+		HashMap(IAllocator* _pAllocator, Key&& _key, Value&& _value, Args&& ... _keyvals);
+
+		virtual ~HashMap();
 
 		HashMap& operator=(HashMap&& _other) noexcept;
 
 		template <class ... Args>
 		Node& emplace(Args&& ... _args);
+
+		template <class ... Args>
+		void emplaceArgs(Key&& _key, Value&& _value, Args&& ... _keyvals);
 
 		// returns existing node if duplicate
 		template <class ... Args>
@@ -95,7 +103,7 @@ namespace spvgentwo
 	};
 
 	template<class Key, class Value>
-	inline HashMap<Key, Value>::HashMap(IAllocator* _pAllocator, const unsigned int _buckets) :
+	inline HashMap<Key, Value>::HashMap(IAllocator* _pAllocator, unsigned int _buckets) :
 		m_pAllocator(_pAllocator), m_Buckets(_buckets)
 	{
 		m_pBuckets = reinterpret_cast<Bucket*>(m_pAllocator->allocate(m_Buckets * sizeof(Bucket)));
@@ -328,6 +336,14 @@ namespace spvgentwo
 
 	template<class Key, class Value>
 	template<class ...Args>
+	inline HashMap<Key, Value>::HashMap(IAllocator* _pAllocator, Key&& _key, Value&& _value, Args && ..._keyvals) :
+		HashMap<Key, Value>(_pAllocator, sizeof...(_keyvals) * 2u + 1u)
+	{
+		emplaceArgs(stdrep::forward<Key>(_key), stdrep::forward<Value>(_value), stdrep::forward<Args>(_keyvals)...);
+	}
+
+	template<class Key, class Value>
+	template<class ...Args>
 	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplace(Args&& ..._args)
 	{
 		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, stdrep::forward<Args>(_args)...);
@@ -351,6 +367,18 @@ namespace spvgentwo
 		++m_Elements;
 
 		return n;
+	}
+
+	template<class Key, class Value>
+	template<class ...Args>
+	inline void HashMap<Key, Value>::emplaceArgs(Key&& _key, Value&& _value, Args && ..._keyvals)
+	{
+		emplace(stdrep::forward<Key>(_key), stdrep::forward<Value>(_value));
+
+		if constexpr (sizeof...(_keyvals) > 1)
+		{
+			emplaceArgs(stdrep::forward<Args>(_keyvals)...);
+		}
 	}
 
 	template<class Key, class Value>
