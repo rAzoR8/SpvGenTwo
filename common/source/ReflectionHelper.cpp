@@ -95,9 +95,9 @@ unsigned int spvgentwo::ReflectionHelper::getDecorationLiteralFromVariable(spv::
 
 		if (target != nullptr && *target == _pVariable)
 		{
-			if (auto deco = target.next(); deco != nullptr && deco->getLiteral() == static_cast<unsigned int>(_decoration))
+			if (auto deco = target.next(); deco != nullptr && deco.next() != nullptr && deco->getLiteral() == static_cast<unsigned int>(_decoration))
 			{
-				return deco->getLiteral();
+				return deco.next()->getLiteral();
 			}
 		}
 	}

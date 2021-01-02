@@ -66,8 +66,8 @@ int main(int argc, char* argv[])
 	const char* spv = nullptr;
 	const char* varName = nullptr; // variable to inspect
 
-	bool printDescriptorSet = false;
-	bool printLocation = false;
+	HeapList<spv::Decoration> decorationsToPrint;
+
 	bool listFunctions = false;
 
 	const int end = argc - 1;;
@@ -85,11 +85,11 @@ int main(int argc, char* argv[])
 		}
 		else if (strcmp(arg, "--dset") == 0)
 		{
-			printDescriptorSet = true;
+			decorationsToPrint.emplace_back(spv::Decoration::DescriptorSet);
 		}
 		else if (strcmp(arg, "--loc") == 0)
 		{
-			printLocation = true;
+			decorationsToPrint.emplace_back(spv::Decoration::Location);
 		}
 		else if (strcmp(arg, "--funcs") == 0)
 		{
@@ -161,26 +161,24 @@ int main(int argc, char* argv[])
 		getList(module.getDecorations(), decorations);
 	}
 
-	for (const Instruction* deco : decorations)
+	for (const Instruction* inst : decorations)
 	{
-		auto it = deco->getFirstActualOperand(); // target
+		//auto it = deco->getFirstActualOperand(); // target
 
-		if (it != nullptr && it->isInstruction())
+		//if (it != nullptr && it->isInstruction())
+		//{
+		//	if (const char* name = it->instruction->getName(); name != nullptr)
+		//	{
+		//		printf("%s: ", name);
+		//	}
+		//}
+
+		for (spv::Decoration deco : decorationsToPrint)\
 		{
-			if (const char* name = it->instruction->getName(); name != nullptr)
+			if (auto value = ReflectionHelper::getLiteralFromDecoration(deco, inst); value != ~0u) 
 			{
-				printf("%s: ", name);
+				printf("%u\n", value);
 			}
-		}
-
-		it = GrammarHelper::getOperandByName(deco, gram, "Decoration");
-
-		if (it == nullptr || it.next() == nullptr) continue;
-
-		if ((printDescriptorSet && it->getLiteral() == (unsigned)spv::Decoration::DescriptorSet) ||
-			(printLocation && it->getLiteral() == (unsigned)spv::Decoration::Location))
-		{
-			printf("%u\n", it.next()->getLiteral().value);
 		}
 	}
 	
