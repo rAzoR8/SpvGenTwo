@@ -9,6 +9,7 @@
 #include "common/GrammarHelper.h"
 #include "common/HeapList.h"
 #include "common/HeapString.h"
+#include "common/HeapHashMap.h"
 
 #include <cstring>
 
@@ -59,6 +60,55 @@ void printFunctions(const Module& _module)
 	}
 }
 
+const HeapHashMap<spv::Decoration, const char*> DecorationNames(
+	spv::Decoration::RelaxedPrecision, "RelaxedPrecision",
+	spv::Decoration::SpecId, "SpecId",
+	spv::Decoration::Block, "Block",
+	spv::Decoration::BufferBlock, "BufferBlock",
+	spv::Decoration::RowMajor, "RowMajor",
+	spv::Decoration::ColMajor, "ColMajor",
+	spv::Decoration::ArrayStride, "ArrayStride",
+	spv::Decoration::MatrixStride, "MatrixStride",
+	spv::Decoration::GLSLShared, "GLSLShared",
+	spv::Decoration::GLSLPacked, "GLSLPacked",
+	spv::Decoration::CPacked, "CPacked",
+	spv::Decoration::BuiltIn, "BuiltIn",
+	spv::Decoration::NoPerspective, "NoPerspective",
+	spv::Decoration::Flat, "Flat",
+	spv::Decoration::Patch, "Patch",
+	spv::Decoration::Centroid, "Centroid",
+	spv::Decoration::Sample, "Sample",
+	spv::Decoration::Invariant, "Invariant",
+	spv::Decoration::Restrict, "Restrict`",
+	spv::Decoration::Aliased, "Aliased",
+	spv::Decoration::Volatile, "Volatile",
+	spv::Decoration::Constant, "Constant",
+	spv::Decoration::NonWritable, "NonWritable",
+	spv::Decoration::NonReadable, "NonReadable",
+	spv::Decoration::Uniform, "Uniform",
+	spv::Decoration::UniformId, "UniformId",
+	spv::Decoration::SaturatedConversion, "SaturatedConversion",
+	spv::Decoration::Stream, "Stream",
+	spv::Decoration::Location, "Location",
+	spv::Decoration::Component, "Component",
+	spv::Decoration::Index, "Index",
+	spv::Decoration::Binding, "Binding",
+	spv::Decoration::DescriptorSet, "DescriptorSet",
+	spv::Decoration::Offset, "Offset",
+	spv::Decoration::XfbBuffer, "XfbBuffer",
+	spv::Decoration::XfbStride, "XfbStride",
+	spv::Decoration::FuncParamAttr, "FuncParamAttr",
+	spv::Decoration::FPRoundingMode, "FPRoundingMode",
+	spv::Decoration::FPFastMathMode, "FPFastMathMode",
+	spv::Decoration::LinkageAttributes, "LinkageAttributes",
+	spv::Decoration::NoContraction, "NoContraction",
+	spv::Decoration::InputAttachmentIndex, "InputAttachmentIndex",
+	spv::Decoration::Alignment, "Alignment",
+	spv::Decoration::MaxByteOffset, "MaxByteOffset",
+	spv::Decoration::AlignmentId, "AlignmentId",
+	spv::Decoration::MaxByteOffsetId, "MaxByteOffsetId"
+);
+
 int main(int argc, char* argv[])
 {
 	ConsoleLogger logger;
@@ -82,6 +132,18 @@ int main(int argc, char* argv[])
 		else if (i < end && strcmp(arg, "--var") == 0)
 		{
 			varName = argv[++i];
+		}
+		else if (i < end && strcmp(arg, "--deco") == 0)
+		{
+			const char* input = argv[++i];
+
+			for (const auto& [deco, str] : DecorationNames)
+			{
+				if (strcmp(str, input) == 0)
+				{
+					decorationsToPrint.emplace_back(deco);
+				}
+			}
 		}
 		else if (strcmp(arg, "--dset") == 0)
 		{
