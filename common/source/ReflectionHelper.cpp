@@ -68,6 +68,56 @@ void spvgentwo::ReflectionHelper::getVariableDecorations(const Instruction* _pVa
 	}
 }
 
+spvgentwo::spv::Decoration spvgentwo::ReflectionHelper::getSpvDecorationKindFromDecoration(const Instruction* _pDecoration)
+{
+	if (_pDecoration == nullptr)
+	{
+		return spv::Decoration::Max;
+	}
+
+	auto it = _pDecoration->getFirstActualOperand().next(); // skip target ID
+
+	if (*_pDecoration == spv::Op::OpDecorate && it != nullptr)
+	{
+		return static_cast<spv::Decoration>(it->getLiteral().value);
+	}
+	else if (*_pDecoration == spv::Op::OpMemberDecorate && it.next() != nullptr)
+	{
+		return static_cast<spv::Decoration>(it.next()->getLiteral().value); // skip member index
+	}
+
+	return spv::Decoration::Max;
+}
+
+bool spvgentwo::ReflectionHelper::getSpvDecorationAndLiteralFromDecoration(const Instruction* _pInDecoration, spv::Decoration& _outDecoration, unsigned int& _outValue)
+{
+	if (_pInDecoration == nullptr || (*_pInDecoration != spv::Op::OpDecorate && *_pInDecoration == spv::Op::OpMemberDecorate))
+	{
+		return false;
+	}
+
+	auto it = _pInDecoration->getFirstActualOperand().next(); // skip target ID
+
+	if (*_pInDecoration == spv::Op::OpMemberDecorate )
+	{
+		++it; // skip member index
+	}
+
+	if (it != nullptr)
+	{
+		_outDecoration = static_cast<spv::Decoration>(it->getLiteral().value);
+
+		if (it.next() != nullptr)
+		{
+			_outValue = it.next()->getLiteral();
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
 unsigned int spvgentwo::ReflectionHelper::getLiteralFromDecoration(spv::Decoration _decoration, const Instruction* _pDecoration)
 {
 	if (_pDecoration == nullptr || *_pDecoration != spv::Op::OpDecorate)

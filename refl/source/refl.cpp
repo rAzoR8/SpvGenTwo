@@ -15,51 +15,6 @@
 
 using namespace spvgentwo;
 
-template <class Pred, class Func>
-void map(const List<const Instruction*>& instructions, Pred pred, Func func)
-{
-	for (const Instruction* instr : instructions)
-	{
-		if (pred(instr))
-		{
-			func(instr);
-		}
-	}
-}
-
-template <template <class> class Container>
-void getList(const Container<Instruction>& _container, List<const Instruction*>& _instructions)
-{
-	for (const Instruction& instr : _container)
-	{
-		_instructions.emplace_back(&instr);
-	}
-}
-
-
-HeapList<HeapString> getVariableNames(const Module& _module)
-{
-	HeapList<HeapString> names;
-	for (const Instruction& var : _module.getGlobalVariables())
-	{
-		names.emplace_back(var.getName());
-	}
-	return names;
-}
-
-void printFunctions(const Module& _module)
-{
-	for (const EntryPoint& ep : _module.getEntryPoints())
-	{
-		printf("%s [EP]\n", ep.getName());
-	}
-
-	for (const Function& fun : _module.getFunctions())
-	{
-		printf("%s\n", fun.getName());
-	}
-}
-
 const HeapHashMap<spv::Decoration, const char*> DecorationNames(
 	spv::Decoration::RelaxedPrecision, "RelaxedPrecision",
 	spv::Decoration::SpecId, "SpecId",
@@ -109,6 +64,83 @@ const HeapHashMap<spv::Decoration, const char*> DecorationNames(
 	spv::Decoration::MaxByteOffsetId, "MaxByteOffsetId"
 );
 
+template <class Pred, class Func>
+void map(const List<const Instruction*>& instructions, Pred pred, Func func)
+{
+	for (const Instruction* instr : instructions)
+	{
+		if (pred(instr))
+		{
+			func(instr);
+		}
+	}
+}
+
+template <template <class> class Container>
+void getList(const Container<Instruction>& _container, List<const Instruction*>& _instructions)
+{
+	for (const Instruction& instr : _container)
+	{
+		_instructions.emplace_back(&instr);
+	}
+}
+
+HeapList<HeapString> getVariableNames(const Module& _module)
+{
+	HeapList<HeapString> names;
+	for (const Instruction& var : _module.getGlobalVariables())
+	{
+		names.emplace_back(var.getName());
+	}
+	return names;
+}
+
+void printFunctions(const Module& _module)
+{
+	for (const EntryPoint& ep : _module.getEntryPoints())
+	{
+		printf("%s [EP]\n", ep.getName());
+	}
+
+	for (const Function& fun : _module.getFunctions())
+	{
+		printf("%s\n", fun.getName());
+	}
+}
+
+void printVariables(const Module& _module)
+{
+	HeapList<const Instruction*> decorations;
+
+	for (const Instruction& var : _module.getGlobalVariables())
+	{
+		printf("%s:\n", var.getName());
+
+		decorations.clear();
+		ReflectionHelper::getVariableDecorations(&var, decorations);
+		
+		for (const Instruction* deco : decorations)
+		{
+			spv::Decoration spvDeco{};
+			unsigned int value = ~0u;
+			if (ReflectionHelper::getSpvDecorationAndLiteralFromDecoration(deco, spvDeco, value))
+			{
+				if (auto it = DecorationNames.find(spvDeco); it != DecorationNames.end())				
+				{
+					if (value != ~0u)
+					{
+						printf("\t%s \t %u\n", it->value, value);					
+					}
+					else // no literal value for this decoration
+					{
+						printf("\t%s\n", it->value);
+					}
+				}
+			}
+		}
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	ConsoleLogger logger;
@@ -119,6 +151,7 @@ int main(int argc, char* argv[])
 	HeapList<spv::Decoration> decorationsToPrint;
 
 	bool listFunctions = false;
+	bool listVariables = false;
 
 	const int end = argc - 1;;
 
@@ -145,17 +178,13 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
-		else if (strcmp(arg, "--dset") == 0)
-		{
-			decorationsToPrint.emplace_back(spv::Decoration::DescriptorSet);
-		}
-		else if (strcmp(arg, "--loc") == 0)
-		{
-			decorationsToPrint.emplace_back(spv::Decoration::Location);
-		}
 		else if (strcmp(arg, "--funcs") == 0)
 		{
 			listFunctions = true;
+		}
+		else if (strcmp(arg, "--vars") == 0)
+		{
+			listVariables = true;
 		}
 	}
 
@@ -199,10 +228,10 @@ int main(int argc, char* argv[])
 		printFunctions(module);
 	}
 
-	//for (const String& name : getVariableNames(module))
-	//{
-	//	logger.logInfo("%s", name.c_str());
-	//}
+	if (listVariables)
+	{
+		printVariables(module);
+	}
 
 	List<const Instruction*> decorations(&alloc);
 
