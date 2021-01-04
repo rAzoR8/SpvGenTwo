@@ -179,6 +179,15 @@ namespace spvgentwo::stdrep
 	template <class T>
 	inline constexpr bool is_const_v<const T> = true;
 
+	template <class>
+	inline constexpr bool is_reference_v = false;
+
+	template <class T>
+	inline constexpr bool is_reference_v<T&> = true;
+
+	template <class T>
+	inline constexpr bool is_reference_v<T&&> = true;
+
 	namespace detail {
 
 		template <class T>
@@ -193,6 +202,11 @@ namespace spvgentwo::stdrep
 		auto try_add_rvalue_reference(int)->type_identity<T&&>;
 		template <class T>
 		auto try_add_rvalue_reference(...)->type_identity<T>;
+
+		template <class T>
+		auto try_add_pointer(int)->type_identity<typename remove_reference<T>::type*>;
+		template <class T>
+		auto try_add_pointer(...)->type_identity<T>;
 
 	} // namespace detail
 
@@ -211,6 +225,9 @@ namespace spvgentwo::stdrep
 	template<class T>
 	typename add_rvalue_reference<T>::type declval() noexcept;
 
+	template <class T>
+	struct add_pointer : decltype(detail::try_add_pointer<T>(0)) {};
+
 	namespace detail
 	{
 		template <class, class T, class... Args>
@@ -225,6 +242,47 @@ namespace spvgentwo::stdrep
 
 	template <class T, class... Args>
 	inline constexpr bool is_constructible_v = is_constructible<T, Args...>::value;
+
+	template<class T>
+	struct is_function : integral_constant<bool, !is_const_v<const T> && !is_reference_v<T>> {};
+
+	template<class T>
+	inline constexpr bool is_function_v = is_function<T>::value;
+
+	template<class T>
+	struct remove_extent { typedef T type; };
+
+	template<class T>
+	struct remove_extent<T[]> { typedef T type; };
+
+	template<class T, sgt_size_t N>
+	struct remove_extent<T[N]> { typedef T type; };
+
+	template <class>
+	inline constexpr bool is_array_v = false;
+
+	template <class T>
+	inline constexpr bool is_array_v<T[]> = true;
+
+	template< class T >
+	struct decay
+	{
+	private:
+		typedef typename remove_reference<T>::type U;
+	public:
+		typedef typename conditional<
+			is_array_v<U>,
+			typename remove_extent<U>::type*,
+			typename conditional<
+			is_function_v<U>,
+			typename add_pointer<U>::type,
+			typename remove_cv<U>::type
+			>::type
+		>::type type;
+	};
+
+	template< class T >
+	using decay_t = typename decay<T>::type;
 } // !spvgentwo::stdrep
 #endif
 
