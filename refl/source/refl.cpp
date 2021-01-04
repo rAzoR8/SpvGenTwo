@@ -117,7 +117,7 @@ void printVariables(const Module& _module)
 		printf("%s:\n", var.getName());
 
 		decorations.clear();
-		ReflectionHelper::getVariableDecorations(&var, decorations);
+		ReflectionHelper::getDecorations(&var, decorations);
 		
 		for (const Instruction* deco : decorations)
 		{
@@ -245,7 +245,7 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 
-		ReflectionHelper::getVariableDecorations(inst, decorations);
+		ReflectionHelper::getDecorations(inst, decorations);
 	}
 	else
 	{

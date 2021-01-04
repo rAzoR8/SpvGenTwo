@@ -43,7 +43,7 @@ bool spvgentwo::ReflectionHelper::getLocalSize(const Module& _module, unsigned i
 	return false;
 }
 
-void spvgentwo::ReflectionHelper::getVariablesByStorageClass(const Module& _module, spv::StorageClass _class, List<const Instruction*>& _outVariables)
+void spvgentwo::ReflectionHelper::getGlobalVariablesByStorageClass(const Module& _module, spv::StorageClass _class, List<const Instruction*>& _outVariables)
 {
 	for (const Instruction& var : _module.getGlobalVariables()) 
 	{
@@ -54,14 +54,14 @@ void spvgentwo::ReflectionHelper::getVariablesByStorageClass(const Module& _modu
 	}
 }
 
-void spvgentwo::ReflectionHelper::getVariableDecorations(const Instruction* _pVariable, List<const Instruction*>& _outDecorations)
+void spvgentwo::ReflectionHelper::getDecorations(const Instruction* _pTarget, List<const Instruction*>& _outDecorations)
 {
-	if (_pVariable == nullptr || _pVariable->getModule() == nullptr)
+	if (_pTarget == nullptr || _pTarget->getModule() == nullptr)
 		return;
 
-	for(const Instruction& decoration : _pVariable->getModule()->getDecorations())
+	for(const Instruction& decoration : _pTarget->getModule()->getDecorations())
 	{
-		if (*decoration.getFirstActualOperand() == _pVariable) // check target
+		if (*decoration.getFirstActualOperand() == _pTarget) // check target
 		{
 			_outDecorations.emplace_back(&decoration);
 		}
@@ -134,16 +134,16 @@ unsigned int spvgentwo::ReflectionHelper::getLiteralFromDecoration(spv::Decorati
 	return ~0u;
 }
 
-unsigned int spvgentwo::ReflectionHelper::getDecorationLiteralFromVariable(spv::Decoration _decoration, const Instruction* _pVariable)
+unsigned int spvgentwo::ReflectionHelper::getDecorationLiteralFromTarget(spv::Decoration _decoration, const Instruction* _pTarget)
 {
-	if (_pVariable == nullptr || *_pVariable != spv::Op::OpVariable || _pVariable->getModule() == nullptr)
+	if (_pTarget == nullptr || _pTarget->getModule() == nullptr)
 		return ~0u;
 
-	for (const Instruction& decoration : _pVariable->getModule()->getDecorations())
+	for (const Instruction& decoration : _pTarget->getModule()->getDecorations())
 	{
 		auto target = decoration.getFirstActualOperand();
 
-		if (target != nullptr && *target == _pVariable)
+		if (target != nullptr && *target == _pTarget)
 		{
 			if (auto deco = target.next(); deco != nullptr && deco.next() != nullptr && deco->getLiteral() == static_cast<unsigned int>(_decoration))
 			{
