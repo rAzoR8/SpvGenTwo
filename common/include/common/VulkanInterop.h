@@ -4,6 +4,9 @@
 
 namespace spvgentwo
 {
+    // forward decls
+    class Instruction;
+
 	namespace vk
 	{
         // identical to VkShaderStageFlagBits
@@ -36,5 +39,28 @@ namespace spvgentwo
 
         // returns VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM if incompatible (OpenCL, unknown extension)
         ShaderStageFlagBits getShaderStageFromExecutionModel(spv::ExecutionModel _model);
+
+        // identical to VkDescriptorType
+        enum class DescriptorType
+        {
+            VK_DESCRIPTOR_TYPE_SAMPLER = 0,
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1,
+            VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE = 2,
+            VK_DESCRIPTOR_TYPE_STORAGE_IMAGE = 3,
+            VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER = 4,
+            VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER = 5,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6,
+            VK_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
+            VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
+            VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT = 10,
+            VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT = 1000138000,
+            VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR = 1000150000,
+            VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV = 1000165000,
+            VK_DESCRIPTOR_TYPE_MAX_ENUM = 0x7FFFFFFF
+        };
+
+        // returns VK_DESCRIPTOR_TYPE_MAX_ENUM if input variable is incompatible. This is not an accureate translation for all VK usecases (can't infer if buffer is 'dynamic')
+        DescriptorType getDescriptorTypeFromVariable(const Instruction* _pVariable);
 	}
 } //spvgentwo

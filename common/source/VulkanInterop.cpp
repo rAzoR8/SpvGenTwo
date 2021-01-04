@@ -1,4 +1,6 @@
 #include "common/VulkanInterop.h"
+#include "spvgentwo/Instruction.h"
+#include "spvgentwo/Type.h"
 
 spvgentwo::vk::ShaderStageFlagBits spvgentwo::vk::getShaderStageFromExecutionModel(spv::ExecutionModel _model)
 {
@@ -39,4 +41,57 @@ spvgentwo::vk::ShaderStageFlagBits spvgentwo::vk::getShaderStageFromExecutionMod
 		break;
 	}
     return ShaderStageFlagBits::VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+}
+
+spvgentwo::vk::DescriptorType spvgentwo::vk::getDescriptorTypeFromVariable(const Instruction* _pVariable)
+{
+	if (_pVariable == nullptr || _pVariable->getModule() == nullptr)
+	{
+		return DescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
+	}
+
+	const Type* type = _pVariable->getType();
+
+	if (type == nullptr)
+	{
+		return DescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
+	}
+
+	const spv::StorageClass storage = _pVariable->getStorageClass();
+
+	switch (type->getBaseTypeOp())
+	{
+	case spv::Op::OpTypeSampler:		return DescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+	case spv::Op::OpTypeSampledImage:	return DescriptorType::VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	case spv::Op::OpTypeImage:
+	{
+		switch (type->getImageDimension())
+		{
+		case spv::Dim::Buffer:		return DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+		case spv::Dim::SubpassData: return DescriptorType::VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		default:
+			switch (type->getImageSamplerAccess())
+			{
+			case SamplerImageAccess::Sampled: return DescriptorType::VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			case SamplerImageAccess::Storage: return DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			default: break;
+			}
+			break;
+		}
+		break;
+	}
+	case spv::Op::OpTypeAccelerationStructureKHR:	return DescriptorType::VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+	default: // assume this is a buffer
+		switch (storage)
+		{
+		case spv::StorageClass::Uniform:			[[fallthrough]];
+		case spv::StorageClass::UniformConstant:	return DescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		case spv::StorageClass::StorageBuffer:		return DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		default:
+			break;
+		}
+		break;
+	}
+
+	return DescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
 }
