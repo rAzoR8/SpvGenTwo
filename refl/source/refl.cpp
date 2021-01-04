@@ -11,7 +11,8 @@
 #include "common/HeapString.h"
 #include "common/HeapHashMap.h"
 
-#include <cstring>
+#include <cstring> // strcmp
+#include <cstdio> // printf, note windows console, and others too, don't print SPIR-V's UTF-8 strings properly
 
 using namespace spvgentwo;
 
@@ -64,6 +65,24 @@ const HeapHashMap<spv::Decoration, const char*> DecorationNames(
 	spv::Decoration::MaxByteOffsetId, "MaxByteOffsetId"
 );
 
+const HeapHashMap<spv::ExecutionModel, const char*> ExecutionModelNames(
+	spv::ExecutionModel::Vertex, "Vertex",
+	spv::ExecutionModel::TessellationControl, "TessellationControl",
+	spv::ExecutionModel::TessellationEvaluation, "TessellationEvaluation",
+	spv::ExecutionModel::Geometry, "Geometry",
+	spv::ExecutionModel::Fragment, "Fragment",
+	spv::ExecutionModel::GLCompute, "GLCompute",
+	spv::ExecutionModel::Kernel, "Kernel",
+	spv::ExecutionModel::TaskNV, "TaskNV",
+	spv::ExecutionModel::MeshNV, "MeshNV",
+	spv::ExecutionModel::RayGenerationKHR, "RayGenerationKHR",
+	spv::ExecutionModel::IntersectionKHR, "IntersectionKHR",
+	spv::ExecutionModel::AnyHitKHR, "AnyHitKHR",
+	spv::ExecutionModel::ClosestHitKHR, "ClosestHitKHR",
+	spv::ExecutionModel::MissKHR, "MissKHR",
+	spv::ExecutionModel::CallableKHR, "CallableKHR"
+);
+
 template <class Pred, class Func>
 void map(const List<const Instruction*>& instructions, Pred pred, Func func)
 {
@@ -85,21 +104,14 @@ void getList(const Container<Instruction>& _container, List<const Instruction*>&
 	}
 }
 
-HeapList<HeapString> getVariableNames(const Module& _module)
-{
-	HeapList<HeapString> names;
-	for (const Instruction& var : _module.getGlobalVariables())
-	{
-		names.emplace_back(var.getName());
-	}
-	return names;
-}
-
 void printFunctions(const Module& _module)
 {
 	for (const EntryPoint& ep : _module.getEntryPoints())
 	{
-		printf("%s [EP]\n", ep.getName());
+		if (const char** shaderType = ExecutionModelNames[ep.getExecutionModel()]; shaderType != nullptr)
+		{
+			printf("%s [EP %s]\n", ep.getName(), *shaderType);		
+		}
 	}
 
 	for (const Function& fun : _module.getFunctions())
@@ -108,16 +120,23 @@ void printFunctions(const Module& _module)
 	}
 }
 
-void printVariables(const Module& _module)
+void printDecorations(const List<Instruction>& _targets)
 {
 	HeapList<const Instruction*> decorations;
 
-	for (const Instruction& var : _module.getGlobalVariables())
+	for (const Instruction& target : _targets)
 	{
-		printf("%s:\n", var.getName());
-
 		decorations.clear();
-		ReflectionHelper::getDecorations(&var, decorations);
+		ReflectionHelper::getDecorations(&target, decorations);
+
+		if (const char* name = target.getName(); name != nullptr)
+		{
+			printf("%s:\n", name);		
+		}
+		else if(decorations.empty() == false)
+		{
+			printf("[UNNAMED]:\n");
+		}
 		
 		for (const Instruction* deco : decorations)
 		{
@@ -152,6 +171,7 @@ int main(int argc, char* argv[])
 
 	bool listFunctions = false;
 	bool listVariables = false;
+	bool listTypeAndConstants = false;
 
 	const int end = argc - 1;;
 
@@ -185,6 +205,10 @@ int main(int argc, char* argv[])
 		else if (strcmp(arg, "--vars") == 0)
 		{
 			listVariables = true;
+		}
+		else if (strcmp(arg, "--types") == 0)
+		{
+			listTypeAndConstants = true;
 		}
 	}
 
@@ -230,7 +254,12 @@ int main(int argc, char* argv[])
 
 	if (listVariables)
 	{
-		printVariables(module);
+		printDecorations(module.getGlobalVariables());
+	}
+
+	if (listTypeAndConstants)
+	{
+		printDecorations(module.getTypesAndConstants());
 	}
 
 	List<const Instruction*> decorations(&alloc);
@@ -254,17 +283,7 @@ int main(int argc, char* argv[])
 
 	for (const Instruction* inst : decorations)
 	{
-		//auto it = deco->getFirstActualOperand(); // target
-
-		//if (it != nullptr && it->isInstruction())
-		//{
-		//	if (const char* name = it->instruction->getName(); name != nullptr)
-		//	{
-		//		printf("%s: ", name);
-		//	}
-		//}
-
-		for (spv::Decoration deco : decorationsToPrint)\
+		for (spv::Decoration deco : decorationsToPrint)
 		{
 			if (auto value = ReflectionHelper::getLiteralFromDecoration(deco, inst); value != ~0u) 
 			{
