@@ -285,7 +285,7 @@ int main(int argc, char* argv[])
 	{
 		for (spv::Decoration deco : decorationsToPrint)
 		{
-			if (auto value = ReflectionHelper::getLiteralFromDecoration(deco, inst); value != ~0u) 
+			if (auto value = ReflectionHelper::getLiteralFromDecoration(deco, inst); value != sgt_uint32_max)
 			{
 				printf("%u\n", value);
 			}
