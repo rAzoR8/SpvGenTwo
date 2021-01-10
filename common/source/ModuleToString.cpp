@@ -149,6 +149,7 @@ namespace
 		}
 	}
 
+	// returns false on failure
 	bool printInstruction(const spvgentwo::Instruction& _instr, const spvgentwo::Grammar& _grammar)
 	{
 		return false;
@@ -199,7 +200,6 @@ bool spvgentwo::moduleToString(const Module& _module, const Grammar& _grammar, I
 		return false;
 	}
 
-	bool success = true;
 	auto print = [&](const Instruction& instr) -> bool
 	{
 		auto* info = _grammar.getInfo(static_cast<unsigned int>(instr.getOperation()));
@@ -237,7 +237,6 @@ bool spvgentwo::moduleToString(const Module& _module, const Grammar& _grammar, I
 			if (infoIt == infoEnd)
 			{
 				_pOutput->append("\nINVALID INSTRUCTION\n");
-				success = false;
 				return true; // stop iteration
 			}
 
@@ -267,7 +266,7 @@ bool spvgentwo::moduleToString(const Module& _module, const Grammar& _grammar, I
 		}
 
 		_pOutput->append("\n");
-		return false;
+		return false; // continue iteration
 	};
 
 	if (_writePreamble)
@@ -279,7 +278,7 @@ bool spvgentwo::moduleToString(const Module& _module, const Grammar& _grammar, I
 	}
 
 	// print text
-	_module.iterateInstructions(print);
+	bool success = !_module.iterateInstructions(print);
 
 	return success;
 }
