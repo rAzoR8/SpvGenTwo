@@ -6,6 +6,8 @@ namespace spvgentwo
 	class IAllocator
 	{
 	public:
+		virtual ~IAllocator() {}
+
 		virtual void* allocate(const sgt_size_t _bytes, const unsigned int _aligment = 1u) = 0;
 		virtual void deallocate(void* _ptr, const sgt_size_t _bytes = 0u) = 0;
 
