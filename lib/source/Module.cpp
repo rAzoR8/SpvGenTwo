@@ -1383,29 +1383,12 @@ spvgentwo::Instruction* spvgentwo::Module::getInstructionByName(const char* _pNa
 	{
 		auto it = instr.getFirstActualOperand();
 
-		if (Instruction* var = it->getInstruction(); var != nullptr)
+		if (Instruction* target = it->getInstruction(); target != nullptr)
 		{
-			auto cmp = [&]() -> bool
+			if (compareLiteralString(_pName, it.next(), instr.end()))
 			{
-				auto j = 0u;
-				for (++it; it != instr.end() && it->isLiteral(); ++it)
-				{
-					const char* str = reinterpret_cast<const char*>(&it->literal.value);
-					for (unsigned int i = 0u; i < sizeof(unsigned int); ++i)
-					{
-						if (str[i] == '\0' && _pName[j] == '\0')
-						{
-							return true;
-						} 
-						else if (str[i] != _pName[j++])
-						{
-							return false;
-						}
-					}
-				};
-				return true;
-			};
-			if (cmp()) return var;
+				return target;
+			} 
 		}
 	}
 	return nullptr;
