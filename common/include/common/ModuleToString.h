@@ -11,14 +11,16 @@ namespace spvgentwo
 	class IModulePrinter
 	{
 	public:
-		// expects ANSI color codes, nllptr does nothing
+		// expects ANSI color codes, nullptr does nothing
 		virtual void append(const char* _pText, const char* _pushColor = nullptr, const char* _popColor = nullptr) = 0;
+		// append a literal value as base10 ascii string
 		virtual void append(unsigned int _literal, const char* _pushColor = nullptr, const char* _popColor = nullptr) = 0;
 
 		IModulePrinter& operator<<(const char* _pStr) {	append(_pStr); return *this;}
 		IModulePrinter& operator<<(unsigned int _literal) { append(_literal); return *this; }
 	};
 
+	// default example implementation
 	class ModuleStringPrinter : public IModulePrinter
 	{
 	public:

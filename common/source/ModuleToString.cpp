@@ -1,8 +1,133 @@
 #include "common/ModuleToString.h"
+#include "common/ExternalMemoryAllocator.h"
 
 #include "spvgentwo/String.h"
 #include "spvgentwo/Module.h"
 #include "spvgentwo/Grammar.h"
+
+namespace
+{
+	// _outBuffer must have space for at least 10 digits ( max length is log10(UINT_MAX) ~ 9.6 )
+	void uintToString(unsigned int _value, char* _outBuffer)
+	{
+		unsigned int len = 0u; // count length of our string
+		for (unsigned int val = _value; val != 0u; val /= 10u, ++len) {}
+		len = _value == 0u ? 1u : len;
+
+		do
+		{
+			_outBuffer[--len] = '0' + (_value % 10u);
+			_value /= 10u;
+		} while (_value != 0 && len > 0u);
+	}
+
+	void printOperand(const spvgentwo::Instruction& _instr, const spvgentwo::Operand& op, const spvgentwo::Grammar::Operand* _pInfo, const spvgentwo::Grammar& _grammar, spvgentwo::IModulePrinter* _pOutput)
+	{
+		using namespace spvgentwo;
+
+ 		if (op.isId() && _pInfo->kind == Grammar::OperandKind::IdResult)  // skip result id
+		{
+			return;
+		}
+
+		*_pOutput << " ";
+		if (op.isId() && _pInfo->kind != Grammar::OperandKind::IdResult)
+		{
+			*_pOutput << "%";
+			_pOutput->append(op.id, "\x1B[33m", "\033[0m");
+		}
+		else if (op.isLiteral())
+		{
+			if (_instr.getOperation() == spv::Op::OpExtInst)
+			{
+				bool printedName = false;
+				if (auto set = _instr.getFirstActualOperand(); set != nullptr && set->isInstruction() && *set->instruction == spv::Op::OpExtInstImport) // extension set
+				{					
+					Grammar::Extension ext = Grammar::Extension::Core;
+					if (compareLiteralString("GLSL.std.450", set->instruction->getFirstActualOperand(), set->instruction->end()))
+					{
+						ext = Grammar::Extension::Glsl;
+					}
+					else if (compareLiteralString("OpenCL.std", set->instruction->getFirstActualOperand(), set->instruction->end()))
+					{
+						ext = Grammar::Extension::OpenCl;
+					}
+
+					if (ext != Grammar::Extension::Core)
+					{
+						if (auto* extInfo = _grammar.getInfo(static_cast<unsigned int>(op.literal.value), ext); extInfo != nullptr)
+						{
+							_pOutput->append(extInfo->name, "\x1B[35m", "\033[0m");
+							printedName = true;
+						}
+					}
+				}
+
+				if (printedName == false)
+				{
+					_pOutput->append(op.literal.value, "\x1B[31m", "\033[0m");
+				}
+			}
+			else if (_pInfo->category == Grammar::OperandCategory::BitEnum || _pInfo->category == Grammar::OperandCategory::ValueEnum)
+			{
+				const char* name = _grammar.getOperandName(_pInfo->kind, op.literal.value);
+				_pOutput->append(name == nullptr ? "UNKNOWN" : name);
+			}
+			else if (_pInfo->kind == Grammar::OperandKind::LiteralSpecConstantOpInteger)
+			{
+				if (auto* instrInfo = _grammar.getInfo(op.literal.value); instrInfo != nullptr)
+				{
+					_pOutput->append(instrInfo->name);
+				}
+				else
+				{
+					_pOutput->append(op.literal.value, "\x1B[31m", "\033[0m");
+				}
+			}
+			else
+			{
+				_pOutput->append(op.literal.value, "\x1B[31m", "\033[0m");
+			} // TODO: check for OpConstant args like floats
+		}
+		else if (op.isInstruction())
+		{
+			*_pOutput << "%";
+			if (op.instruction == nullptr)
+			{
+				_pOutput->append("INVALIDINSTRPTR", "\x1B[33m", "\033[0m");
+				return;
+			}
+
+			if (const char* name = op.instruction->getName(); name != nullptr && stringLength(name) > 1)
+			{
+				_pOutput->append(name, "\x1B[33m", "\033[0m");
+			}
+			else
+			{
+				_pOutput->append(op.instruction->getResultId(), "\x1B[33m", "\033[0m");
+			}
+		}
+		else if (op.isBranchTarget())
+		{
+			*_pOutput << "%";
+
+			if (op.branchTarget == nullptr)
+			{
+				_pOutput->append("INVALIDBASICBLOCKPTR", " \x1B[33m", "\033[0m");
+				return;
+			}
+
+			if (const char* name = op.branchTarget->getName(); name != nullptr && stringLength(name) > 1)
+			{
+				_pOutput->append(name, "\x1B[33m", "\033[0m");
+			}
+			else
+			{
+				_pOutput->append(op.branchTarget->getLabel()->getResultId());
+			}
+		}
+	}
+}
 
 void spvgentwo::ModuleStringPrinter::append(const char* _pStr, const char* _pushColor, const char* _popColor)
 {
@@ -57,115 +182,6 @@ bool spvgentwo::moduleToString(const Module& _module, const Grammar& _grammar, I
 	{
 		return false;
 	}
-
-	String extName(_pAlloc);
-	auto printOperand = [&](const Instruction& instr, const Operand& op, const Grammar::Operand* info)
-	{
-		if (op.isId() && info->kind == Grammar::OperandKind::IdResult)  // skip result id
-		{
-			return;
-		}
-
-		*_pOutput << " ";
-		if (op.isId() && info->kind != Grammar::OperandKind::IdResult)
-		{
-			*_pOutput << "%";
-			_pOutput->append(op.id, "\x1B[33m", "\033[0m");
-		}
-		else if (op.isLiteral())
-		{
-			if (instr.getOperation() == spv::Op::OpExtInst)
-			{
-				bool printedName = false;
-				if (auto set = instr.getFirstActualOperand(); set != nullptr && set->isInstruction() && set->instruction->getOperation() == spv::Op::OpExtInstImport) // extension set
-				{
-					extName.clear();
-					getLiteralString(extName, set->instruction->getFirstActualOperand(), set->instruction->end());
-
-					Grammar::Extension ext = Grammar::Extension::Core;
-					if (extName == "GLSL.std.450")
-					{
-						ext = Grammar::Extension::Glsl;
-					}
-					else if (extName == "OpenCL.std")
-					{
-						ext = Grammar::Extension::OpenCl;
-					}
-
-					if (ext != Grammar::Extension::Core)
-					{
-						if (auto* extInfo = _grammar.getInfo(static_cast<unsigned int>(op.literal.value), ext); extInfo != nullptr)
-						{
-							_pOutput->append(extInfo->name, "\x1B[35m", "\033[0m");
-							printedName = true;
-						}
-					}
-				}
-
-				if (printedName == false)
-				{
-					_pOutput->append(op.literal.value, "\x1B[31m", "\033[0m");
-				}
-			}
-			else if (info->category == Grammar::OperandCategory::BitEnum || info->category == Grammar::OperandCategory::ValueEnum)
-			{
-				const char* name = _grammar.getOperandName(info->kind, op.literal.value);
-				_pOutput->append(name == nullptr ? "UNKNOWN" : name);
-			}
-			else if (info->kind == Grammar::OperandKind::LiteralSpecConstantOpInteger)
-			{
-				if (auto* instrInfo = _grammar.getInfo(op.literal.value); instrInfo != nullptr)
-				{
-					_pOutput->append(instrInfo->name);
-				}
-				else
-				{
-					_pOutput->append(op.literal.value, "\x1B[31m", "\033[0m");
-				}
-			}
-			else
-			{
-				_pOutput->append(op.literal.value, "\x1B[31m", "\033[0m");
-			} // TODO: check for OpConstant args like floats
-		}
-		else if (op.isInstruction())
-		{
-			*_pOutput << "%";
-			if (op.instruction == nullptr)
-			{
-				_pOutput->append("INVALIDINSTRPTR", "\x1B[33m", "\033[0m");
-				return;
-			}
-
-			if (const char* name = op.instruction->getName(); name != nullptr && stringLength(name) > 1)
-			{
-				_pOutput->append(name, "\x1B[33m", "\033[0m");
-			}
-			else
-			{
-				_pOutput->append(op.instruction->getResultId(), "\x1B[33m", "\033[0m");
-			}
-		}
-		else if (op.isBranchTarget())
-		{
-			*_pOutput << "%";
-
-			if (op.branchTarget == nullptr)
-			{
-				_pOutput->append("INVALIDBASICBLOCKPTR", " \x1B[33m", "\033[0m");
-				return;
-			}
-
-			if (const char* name = op.branchTarget->getName(); name != nullptr && stringLength(name) > 1)
-			{
-				_pOutput->append(name, "\x1B[33m", "\033[0m");
-			}
-			else
-			{
-				_pOutput->append(op.branchTarget->getLabel()->getResultId());
-			}
-		}
-	};
 
 	String litString(_pAlloc);
 
@@ -223,7 +239,7 @@ bool spvgentwo::moduleToString(const Module& _module, const Grammar& _grammar, I
 				continue;
 			}
 
-			printOperand(instr, *it, infoIt);
+			printOperand(instr, *it, infoIt, _grammar, _pOutput);
 
 			if (infoIt->kind != Grammar::OperandKind::ImageOperands &&
 				infoIt->kind != Grammar::OperandKind::LiteralSpecConstantOpInteger &&
