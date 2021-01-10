@@ -1464,3 +1464,24 @@ spvgentwo::Instruction::Iterator spvgentwo::getLiteralString(String& _out, Instr
 
 	return _it;
 }
+
+bool spvgentwo::compareLiteralString(const char* _pStr, Instruction::Iterator _begin, Instruction::Iterator _end, sgt_size_t _StrLength)
+{
+	sgt_size_t j = 0u;
+	for (auto it = _begin; it != _end && it->isLiteral() && j < _StrLength; ++it)
+	{
+		const char* str = reinterpret_cast<const char*>(&it->literal.value);
+		for (unsigned int i = 0u; i < sizeof(unsigned int); ++i)
+		{
+			if (str[i] == '\0' && _pStr[j] == '\0')
+			{
+				return true;
+			}
+			else if (str[i] != _pStr[j++])
+			{
+				return false;
+			}
+		}
+	};
+	return true;
+}
