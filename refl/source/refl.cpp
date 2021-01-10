@@ -10,6 +10,7 @@
 #include "common/HeapList.h"
 #include "common/HeapString.h"
 #include "common/HeapHashMap.h"
+#include "common/ModuleToString.h"
 
 #include <cstring> // strcmp
 #include <cstdio> // printf, note windows console, and others too, don't print SPIR-V's UTF-8 strings properly
@@ -266,15 +267,19 @@ int main(int argc, char* argv[])
 
 	if (varName != nullptr)
 	{
-		Instruction* inst = module.getInstructionByName(varName);
+		const Instruction* instr = module.getInstructionByName(varName);
 
-		if (inst == nullptr)
+		if (instr == nullptr)
 		{
 			logger.logWarning("Instruction with OpName %s not found in module", varName);
 			return -1;
 		}
 
-		ReflectionHelper::getDecorations(inst, decorations);
+		HeapString str;
+		ModuleStringPrinter print(str);
+		printInstruction(*instr, gram, print);
+
+		ReflectionHelper::getDecorations(instr, decorations);
 	}
 	else
 	{

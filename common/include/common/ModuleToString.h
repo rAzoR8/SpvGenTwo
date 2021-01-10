@@ -4,6 +4,7 @@ namespace spvgentwo
 {
 	// forward decl
 	class Module;
+	class Instruction;
 	class Grammar;
 	class String;
 	class IAllocator;
@@ -34,5 +35,8 @@ namespace spvgentwo
 		bool m_useColor = false;
 	};
 
-	bool moduleToString(const Module& _module, const Grammar& _grammar, IModulePrinter* _pOutput, bool _writePreamble = true);
+	// returns false on failure / invalid instruction
+	bool printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _pOutput);
+
+	bool printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _pOutput, bool _writePreamble = true);
 }

@@ -21,7 +21,7 @@ namespace
 		} while (_value != 0 && len > 0u);
 	}
 
-	spvgentwo::Instruction::Iterator appendLiteralString(spvgentwo::IModulePrinter* _pOutput, spvgentwo::Instruction::Iterator _it, spvgentwo::Instruction::Iterator _end, const char* _pushColor, const char* _popColor)
+	spvgentwo::Instruction::Iterator appendLiteralString(spvgentwo::IModulePrinter& _printer, spvgentwo::Instruction::Iterator _it, spvgentwo::Instruction::Iterator _end, const char* _pushColor, const char* _popColor)
 	{
 		for (; _it != _end && _it->isLiteral(); ++_it)
 		{
@@ -32,17 +32,17 @@ namespace
 				buf[i] = str[i];
 				if (str[i] == '\0')
 				{
-					_pOutput->append(buf, _pushColor, _popColor);
+					_printer.append(buf, _pushColor, _popColor);
 					return _it.next();
 				}
 			}
-			_pOutput->append(buf, _pushColor, _popColor);
+			_printer.append(buf, _pushColor, _popColor);
 		}
 
 		return _it;
 	}
 
-	void printOperand(const spvgentwo::Instruction& _instr, const spvgentwo::Operand& op, const spvgentwo::Grammar::Operand* _pInfo, const spvgentwo::Grammar& _grammar, spvgentwo::IModulePrinter* _pOutput)
+	void printOperand(const spvgentwo::Instruction& _instr, const spvgentwo::Operand& op, const spvgentwo::Grammar::Operand* _pInfo, const spvgentwo::Grammar& _grammar, spvgentwo::IModulePrinter& _printer)
 	{
 		using namespace spvgentwo;
 
@@ -51,11 +51,11 @@ namespace
 			return;
 		}
 
-		*_pOutput << " ";
+		_printer << " ";
 		if (op.isId() && _pInfo->kind != Grammar::OperandKind::IdResult)
 		{
-			*_pOutput << "%";
-			_pOutput->append(op.id, "\x1B[33m", "\033[0m");
+			_printer << "%";
+			_printer.append(op.id, "\x1B[33m", "\033[0m");
 		}
 		else if (op.isLiteral())
 		{
@@ -78,7 +78,7 @@ namespace
 					{
 						if (auto* extInfo = _grammar.getInfo(static_cast<unsigned int>(op.literal.value), ext); extInfo != nullptr)
 						{
-							_pOutput->append(extInfo->name, "\x1B[35m", "\033[0m");
+							_printer.append(extInfo->name, "\x1B[35m", "\033[0m");
 							printedName = true;
 						}
 					}
@@ -86,75 +86,69 @@ namespace
 
 				if (printedName == false)
 				{
-					_pOutput->append(op.literal.value, "\x1B[31m", "\033[0m");
+					_printer.append(op.literal.value, "\x1B[31m", "\033[0m");
 				}
 			}
 			else if (_pInfo->category == Grammar::OperandCategory::BitEnum || _pInfo->category == Grammar::OperandCategory::ValueEnum)
 			{
 				const char* name = _grammar.getOperandName(_pInfo->kind, op.literal.value);
-				_pOutput->append(name == nullptr ? "UNKNOWN" : name);
+				_printer.append(name == nullptr ? "UNKNOWN" : name);
 			}
 			else if (_pInfo->kind == Grammar::OperandKind::LiteralSpecConstantOpInteger)
 			{
 				if (auto* instrInfo = _grammar.getInfo(op.literal.value); instrInfo != nullptr)
 				{
-					_pOutput->append(instrInfo->name);
+					_printer.append(instrInfo->name);
 				}
 				else
 				{
-					_pOutput->append(op.literal.value, "\x1B[31m", "\033[0m");
+					_printer.append(op.literal.value, "\x1B[31m", "\033[0m");
 				}
 			}
 			else
 			{
-				_pOutput->append(op.literal.value, "\x1B[31m", "\033[0m");
+				_printer.append(op.literal.value, "\x1B[31m", "\033[0m");
 			} // TODO: check for OpConstant args like floats
 		}
 		else if (op.isInstruction())
 		{
-			*_pOutput << "%";
+			_printer << "%";
 			if (op.instruction == nullptr)
 			{
-				_pOutput->append("INVALIDINSTRPTR", "\x1B[33m", "\033[0m");
+				_printer.append("INVALIDINSTRPTR", "\x1B[33m", "\033[0m");
 				return;
 			}
 
 			if (const char* name = op.instruction->getName(); name != nullptr && stringLength(name) > 1)
 			{
-				_pOutput->append(name, "\x1B[33m", "\033[0m");
+				_printer.append(name, "\x1B[33m", "\033[0m");
 			}
 			else
 			{
-				_pOutput->append(op.instruction->getResultId(), "\x1B[33m", "\033[0m");
+				_printer.append(op.instruction->getResultId(), "\x1B[33m", "\033[0m");
 			}
 		}
 		else if (op.isBranchTarget())
 		{
-			*_pOutput << "%";
+			_printer << "%";
 
 			if (op.branchTarget == nullptr)
 			{
-				_pOutput->append("INVALIDBASICBLOCKPTR", " \x1B[33m", "\033[0m");
+				_printer.append("INVALIDBASICBLOCKPTR", " \x1B[33m", "\033[0m");
 				return;
 			}
 
 			if (const char* name = op.branchTarget->getName(); name != nullptr && stringLength(name) > 1)
 			{
-				_pOutput->append(name, "\x1B[33m", "\033[0m");
+				_printer.append(name, "\x1B[33m", "\033[0m");
 			}
 			else
 			{
-				_pOutput->append(op.branchTarget->getLabel()->getResultId());
+				_printer.append(op.branchTarget->getLabel()->getResultId());
 			}
 		}
 	}
-
-	// returns false on failure
-	bool printInstruction(const spvgentwo::Instruction& _instr, const spvgentwo::Grammar& _grammar)
-	{
-		return false;
-	}
-}
+} // !anonymous
 
 void spvgentwo::ModuleStringPrinter::append(const char* _pStr, const char* _pushColor, const char* _popColor)
 {
@@ -193,92 +187,96 @@ void spvgentwo::ModuleStringPrinter::append(unsigned int _literal, const char* _
     }
 }
 
-bool spvgentwo::moduleToString(const Module& _module, const Grammar& _grammar, IModulePrinter* _pOutput, bool _writePreamble)
+bool spvgentwo::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer)
 {
-	if (_pOutput == nullptr)
+	using namespace spvgentwo;
+	auto* info = _grammar.getInfo(static_cast<unsigned int>(_instr.getOperation()));
+
+	if (_instr.hasResult())
 	{
-		return false;
+		_printer << "%";
+		if (const char* name = _instr.getName(); name != nullptr && stringLength(name) > 1)
+		{
+			_printer.append(name, "\x1B[34m", "\033[0m");
+			_printer << " = ";
+		}
+		else if (auto id = _instr.getResultId(); id != InvalidId)
+		{
+			_printer.append(id, "\x1B[34m", "\033[0m");
+			_printer << " =\t";
+		}
+		else
+		{
+			return false; // invalid instruction
+		}
+	}
+	else
+	{
+		_printer << "\t";
+	}
+
+	_printer << info->name;
+
+	auto infoIt = info->operands.begin();
+	auto infoEnd = info->operands.end();
+
+	for (auto it = _instr.begin(), end = _instr.end(); it != end;)
+	{
+		if (infoIt == infoEnd)
+		{
+			_printer.append("\nINVALID INSTRUCTION\n");
+			return false; // invalid instruction
+		}
+
+		if (infoIt->kind == Grammar::OperandKind::LiteralString)
+		{
+			_printer << " \"";
+			it = appendLiteralString(_printer, it, end, "\x1B[32m", "\033[0m");
+			_printer << "\"";
+
+			++infoIt;
+			continue;
+		}
+
+		printOperand(_instr, *it, infoIt, _grammar, _printer);
+
+		if (infoIt->kind != Grammar::OperandKind::ImageOperands &&
+			infoIt->kind != Grammar::OperandKind::LiteralSpecConstantOpInteger &&
+			infoIt->kind != Grammar::OperandKind::Decoration &&
+			infoIt->kind != Grammar::OperandKind::ExecutionMode &&
+			infoIt->kind != Grammar::OperandKind::LiteralString &&
+			infoIt->quantifier != Grammar::Quantifier::ZeroOrAny)
+		{
+			++infoIt;
+		}
+
+		++it;
+	}
+	return true;
+}
+
+bool spvgentwo::printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _printer, bool _writePreamble)
+{
+	if (_writePreamble)
+	{
+		_printer << "# SPIR-V Version " << _module.getMajorVersion() << "." << _module.getMinorVersion() << "\n";
+		_printer << "# Generator " << _module.getSpvGenerator() << "\n";
+		_printer << "# Bound " << _module.getSpvBound() << "\n";
+		_printer << "# Schema " << _module.getSpvBound() << "\n\n";
 	}
 
 	auto print = [&](const Instruction& instr) -> bool
 	{
-		auto* info = _grammar.getInfo(static_cast<unsigned int>(instr.getOperation()));
-
-		if (instr.hasResult())
+		if (printInstruction(instr, _grammar, _printer))
 		{
-			*_pOutput << "%";
-			if (const char* name = instr.getName(); name != nullptr && stringLength(name) > 1)
-			{
-				_pOutput->append(name, "\x1B[34m", "\033[0m");
-				*_pOutput << " = ";
-			}
-			else if (auto id = instr.getResultId(); id != InvalidId)
-			{
-				_pOutput->append(id, "\x1B[34m", "\033[0m");
-				*_pOutput << " =\t";
-			}
-			else
-			{
-				return true; // invalid instruction
-			}
+			_printer.append("\n");
+			return false; // continue iteration
 		}
-		else
-		{
-			*_pOutput << "\t";
-		}
-
-		*_pOutput << info->name;
-
-		auto infoIt = info->operands.begin();
-		auto infoEnd = info->operands.end();
-
-		for (auto it = instr.begin(), end = instr.end(); it != end;)
-		{
-			if (infoIt == infoEnd)
-			{
-				_pOutput->append("\nINVALID INSTRUCTION\n");
-				return true; // stop iteration
-			}
-
-			if (infoIt->kind == Grammar::OperandKind::LiteralString)
-			{
-				*_pOutput << " \"";
-				it = appendLiteralString(_pOutput, it, end, "\x1B[32m", "\033[0m");
-				*_pOutput << "\"";
-
-				++infoIt;
-				continue;
-			}
-
-			printOperand(instr, *it, infoIt, _grammar, _pOutput);
-
-			if (infoIt->kind != Grammar::OperandKind::ImageOperands &&
-				infoIt->kind != Grammar::OperandKind::LiteralSpecConstantOpInteger &&
-				infoIt->kind != Grammar::OperandKind::Decoration &&
-				infoIt->kind != Grammar::OperandKind::ExecutionMode &&
-				infoIt->kind != Grammar::OperandKind::LiteralString &&
-				infoIt->quantifier != Grammar::Quantifier::ZeroOrAny)
-			{
-				++infoIt;
-			}
-
-			++it;
-		}
-
-		_pOutput->append("\n");
-		return false; // continue iteration
+		return true;
 	};
 
-	if (_writePreamble)
-	{
-		*_pOutput << "# SPIR-V Version " << _module.getMajorVersion() << "." << _module.getMinorVersion() << "\n";
-		*_pOutput << "# Generator " << _module.getSpvGenerator() << "\n";
-		*_pOutput << "# Bound " << _module.getSpvBound() << "\n";
-		*_pOutput << "# Schema " << _module.getSpvBound() << "\n\n";
-	}
-
 	// print text
-	bool success = !_module.iterateInstructions(print);
+	const bool success = !_module.iterateInstructions(print);
 
 	return success;
 }

@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
 		String buffer(&alloc, 2048u);
 		ModuleStringPrinter printer(buffer, true);
 
-		const bool success = moduleToString(module, gram, &printer, true);
+		const bool success = printModule(module, gram, printer, true);
 
 		printf("%s", buffer.c_str());
 
