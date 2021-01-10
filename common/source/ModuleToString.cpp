@@ -21,6 +21,27 @@ namespace
 		} while (_value != 0 && len > 0u);
 	}
 
+	spvgentwo::Instruction::Iterator appendLiteralString(spvgentwo::IModulePrinter* _pOutput, spvgentwo::Instruction::Iterator _it, spvgentwo::Instruction::Iterator _end, const char* _pushColor, const char* _popColor)
+	{
+		for (; _it != _end && _it->isLiteral(); ++_it)
+		{
+			char buf[5] = { '\0' }; // make sure we always have a terminator
+			const char* str = reinterpret_cast<const char*>(&_it->literal.value);
+			for (unsigned int i = 0u; i < sizeof(unsigned int); ++i)
+			{
+				buf[i] = str[i];
+				if (str[i] == '\0')
+				{
+					_pOutput->append(buf, _pushColor, _popColor);
+					return _it.next();
+				}
+			}
+			_pOutput->append(buf, _pushColor, _popColor);
+		}
+
+		return _it;
+	}
+
 	void printOperand(const spvgentwo::Instruction& _instr, const spvgentwo::Operand& op, const spvgentwo::Grammar::Operand* _pInfo, const spvgentwo::Grammar& _grammar, spvgentwo::IModulePrinter* _pOutput)
 	{
 		using namespace spvgentwo;
@@ -127,6 +148,11 @@ namespace
 			}
 		}
 	}
+
+	bool printInstruction(const spvgentwo::Instruction& _instr, const spvgentwo::Grammar& _grammar)
+	{
+		return false;
+	}
 }
 
 void spvgentwo::ModuleStringPrinter::append(const char* _pStr, const char* _pushColor, const char* _popColor)
@@ -166,14 +192,12 @@ void spvgentwo::ModuleStringPrinter::append(unsigned int _literal, const char* _
     }
 }
 
-bool spvgentwo::moduleToString(const Module& _module, const Grammar& _grammar, IAllocator* _pAlloc, IModulePrinter* _pOutput, bool _writePreamble)
+bool spvgentwo::moduleToString(const Module& _module, const Grammar& _grammar, IModulePrinter* _pOutput, bool _writePreamble)
 {
-	if (_pAlloc == nullptr || _pOutput == nullptr)
+	if (_pOutput == nullptr)
 	{
 		return false;
 	}
-
-	String litString(_pAlloc);
 
 	bool success = true;
 	auto print = [&](const Instruction& instr) -> bool
@@ -219,10 +243,8 @@ bool spvgentwo::moduleToString(const Module& _module, const Grammar& _grammar, I
 
 			if (infoIt->kind == Grammar::OperandKind::LiteralString)
 			{
-				litString.clear();
-				it = getLiteralString(litString, it, end);
 				*_pOutput << " \"";
-				_pOutput->append(litString.c_str(), "\x1B[32m", "\033[0m");
+				it = appendLiteralString(_pOutput, it, end, "\x1B[32m", "\033[0m");
 				*_pOutput << "\"";
 
 				++infoIt;

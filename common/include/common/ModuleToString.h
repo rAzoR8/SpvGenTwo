@@ -34,5 +34,5 @@ namespace spvgentwo
 		bool m_useColor = false;
 	};
 
-	bool moduleToString(const Module& _module, const Grammar& _grammar, IAllocator* _pAlloc, IModulePrinter* _pOutput, bool _writePreamble = true);
+	bool moduleToString(const Module& _module, const Grammar& _grammar, IModulePrinter* _pOutput, bool _writePreamble = true);
 }
