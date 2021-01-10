@@ -24,7 +24,7 @@ namespace spvgentwo
 		sgt_size_t m_Deallocated = 0u;
 
 #ifdef SPVGENTWO_DEBUG_HEAP_ALLOC
-		struct entry { unsigned int id; unsigned int size; operator sgt_size_t() const { return sgt_size_t(id) | sgt_size_t(size) << 32u; } };
+		struct entry { unsigned int id; unsigned int size; operator sgt_uint64_t() const { return sgt_uint64_t(id) | sgt_uint64_t(size) << 32u; } };
 
 		std::unordered_map<void*, entry> m_allocations;
 		std::unordered_set<unsigned int> m_breakpoints;

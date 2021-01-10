@@ -6,6 +6,16 @@ namespace spvgentwo
 {
 	using sgt_size_t = decltype(sizeof(int));
 	using sgt_nullptr_t = decltype(nullptr);
+
+	constexpr sgt_size_t sgt_size_max = ~(sgt_size_t)0;
+	constexpr auto sgt_uint32_max = ~0u;
+	constexpr auto sgt_uint64_max = ~0ull;
+
+	using sgt_uint32_t = decltype(sgt_uint32_max);
+	using sgt_uint64_t = decltype(sgt_uint64_max);
+
+	static_assert(sizeof(sgt_uint32_t) == 4, "32bit integer type size mismatch");
+	static_assert(sizeof(sgt_uint64_t) == 8, "63bit integer type size mismatch");
 }
 
 #ifdef SPVGENTWO_REPLACE_PLACEMENTNEW
