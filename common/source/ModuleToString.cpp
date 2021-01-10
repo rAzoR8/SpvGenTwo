@@ -156,17 +156,7 @@ void spvgentwo::ModuleStringPrinter::append(unsigned int _literal, const char* _
 
     char buf[11] = { '\0' }; // max length is log10(UINT_MAX) ~ 9.6 + null terminator -> 11
 
-	unsigned int val = _literal;
-
-	unsigned int len = 0u; // compute length of our string
-	for (; val != 0u; val /= 10u, ++len) {}
-	len = _literal == 0u ? 1u : len;
-
-	do
-	{
-		buf[--len] = '0' + (_literal % 10u);
-		_literal /= 10u;
-	}while (_literal != 0 && len > 0u);
+	uintToString(_literal, buf);
 
     m_buffer.append(static_cast<const char*>(buf));
 
