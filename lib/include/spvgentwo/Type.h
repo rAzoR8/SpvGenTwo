@@ -87,6 +87,9 @@ namespace spvgentwo
 		bool operator==(const Type& _other) const;
 		bool operator!=(const Type& _other) const { return !operator==(_other); }
 
+		bool operator==(spv::Op _type) const { return m_Type == _type; }
+		bool operator!=(spv::Op _type) const { return m_Type != _type; }
+
 		void reset();
 
 		spv::Op getType() const { return m_Type; }
