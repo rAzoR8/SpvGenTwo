@@ -43,14 +43,14 @@ spvgentwo::vk::ShaderStageFlagBits spvgentwo::vk::getShaderStageFromExecutionMod
     return ShaderStageFlagBits::VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
 }
 
-spvgentwo::vk::DescriptorType spvgentwo::vk::getDescriptorTypeFromVariable(const Instruction* _pVariable)
+spvgentwo::vk::DescriptorType spvgentwo::vk::getDescriptorTypeFromVariable(const Instruction& _variable)
 {
-	if (_pVariable == nullptr || _pVariable->getModule() == nullptr || *_pVariable != spv::Op::OpVariable)
+	if (_variable.getModule() == nullptr || _variable != spv::Op::OpVariable)
 	{
 		return DescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
 	}
 
-	const Type* ptr = _pVariable->getType();
+	const Type* ptr = _variable.getType();
 
 	if (ptr == nullptr || *ptr != spv::Op::OpTypePointer || ptr->getSubTypes().empty())
 	{
@@ -59,7 +59,7 @@ spvgentwo::vk::DescriptorType spvgentwo::vk::getDescriptorTypeFromVariable(const
 
 	const Type& type = ptr->front();
 
-	const spv::StorageClass storage = _pVariable->getStorageClass();
+	const spv::StorageClass storage = _variable.getStorageClass();
 
 	switch (type.getType())
 	{

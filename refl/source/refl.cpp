@@ -11,6 +11,7 @@
 #include "common/HeapString.h"
 #include "common/HeapHashMap.h"
 #include "common/ModuleToString.h"
+#include "common/VulkanInterop.h"
 
 #include <cstring> // strcmp
 #include <cstdio> // printf, note windows console, and others too, don't print SPIR-V's UTF-8 strings properly
@@ -84,6 +85,24 @@ const HeapHashMap<spv::ExecutionModel, const char*> ExecutionModelNames(
 	spv::ExecutionModel::CallableKHR, (const char*)"CallableKHR"
 );
 
+const HeapHashMap<vk::DescriptorType, const char*> DescriptorTypeNames(
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER, (const char*)"VK_DESCRIPTOR_TYPE_SAMPLER",
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (const char*)"VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER",
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, (const char*)"VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE",
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, (const char*)"VK_DESCRIPTOR_TYPE_STORAGE_IMAGE",
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, (const char*)"VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER",
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, (const char*)"VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER",
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, (const char*)"VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER",
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, (const char*)"VK_DESCRIPTOR_TYPE_STORAGE_BUFFER",
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, (const char*)"VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC",
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, (const char*)"VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC",
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, (const char*)"VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT",
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT, (const char*)"VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT",
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, (const char*)"VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR",
+	vk::DescriptorType::VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV, (const char*)"VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV"
+);
+
+
 template <class Pred, class Func>
 void map(const List<const Instruction*>& instructions, Pred pred, Func func)
 {
@@ -121,7 +140,7 @@ void printFunctions(const Module& _module)
 	}
 }
 
-void printDecorations(const List<Instruction>& _targets)
+void printDecorations(const List<Instruction>& _targets, bool _printDescriptorType)
 {
 	HeapList<const Instruction*> decorations;
 
@@ -137,6 +156,14 @@ void printDecorations(const List<Instruction>& _targets)
 		else if(decorations.empty() == false)
 		{
 			printf("[UNNAMED]:\n");
+		}
+
+		if (target == spv::Op::OpVariable && _printDescriptorType)
+		{
+			if (auto it = DescriptorTypeNames.find(vk::getDescriptorTypeFromVariable(target)); it != DescriptorTypeNames.end())
+			{
+				printf("\t%s\n", it->value);
+			}
 		}
 		
 		for (const Instruction* deco : decorations)
@@ -173,6 +200,7 @@ int main(int argc, char* argv[])
 	bool listFunctions = false;
 	bool listVariables = false;
 	bool listTypeAndConstants = false;
+	bool printVKDescriptorType = false;
 
 	const int end = argc - 1;;
 
@@ -211,6 +239,10 @@ int main(int argc, char* argv[])
 		{
 			listTypeAndConstants = true;
 		}
+		else if (strcmp(arg, "--desc") == 0)
+		{
+			printVKDescriptorType = true;
+		}
 	}
 
 	if (spv == nullptr)
@@ -248,6 +280,12 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
+	// get type info for vulkan descriptor lookup help
+	if (module.reconstructTypeAndConstantInfo() == false)
+	{
+		return -1;
+	}
+
 	if (listFunctions)
 	{
 		printFunctions(module);
@@ -255,12 +293,12 @@ int main(int argc, char* argv[])
 
 	if (listVariables)
 	{
-		printDecorations(module.getGlobalVariables());
+		printDecorations(module.getGlobalVariables(), printVKDescriptorType);
 	}
 
 	if (listTypeAndConstants)
 	{
-		printDecorations(module.getTypesAndConstants());
+		printDecorations(module.getTypesAndConstants(), false);
 	}
 
 	List<const Instruction*> decorations(&alloc);
@@ -273,6 +311,14 @@ int main(int argc, char* argv[])
 		{
 			logger.logWarning("Instruction with OpName %s not found in module", varName);
 			return -1;
+		}
+
+		if (printVKDescriptorType)
+		{
+			if (auto it = DescriptorTypeNames.find(vk::getDescriptorTypeFromVariable(*instr)); it != DescriptorTypeNames.end())
+			{
+				printf("%s\n", it->value);
+			}
 		}
 
 		HeapString str;
