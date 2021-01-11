@@ -45,32 +45,34 @@ spvgentwo::vk::ShaderStageFlagBits spvgentwo::vk::getShaderStageFromExecutionMod
 
 spvgentwo::vk::DescriptorType spvgentwo::vk::getDescriptorTypeFromVariable(const Instruction* _pVariable)
 {
-	if (_pVariable == nullptr || _pVariable->getModule() == nullptr)
+	if (_pVariable == nullptr || _pVariable->getModule() == nullptr || *_pVariable != spv::Op::OpVariable)
 	{
 		return DescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
 	}
 
-	const Type* type = _pVariable->getType();
+	const Type* ptr = _pVariable->getType();
 
-	if (type == nullptr)
+	if (ptr == nullptr || *ptr != spv::Op::OpTypePointer || ptr->getSubTypes().empty())
 	{
 		return DescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
 	}
+
+	const Type& type = ptr->front();
 
 	const spv::StorageClass storage = _pVariable->getStorageClass();
 
-	switch (type->getBaseTypeOp())
+	switch (type.getType())
 	{
 	case spv::Op::OpTypeSampler:		return DescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
-	case spv::Op::OpTypeSampledImage:	return DescriptorType::VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	case spv::Op::OpTypeSampledImage:	return DescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	case spv::Op::OpTypeImage:
 	{
-		switch (type->getImageDimension())
+		switch (type.getImageDimension())
 		{
 		case spv::Dim::Buffer:		return DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
 		case spv::Dim::SubpassData: return DescriptorType::VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
 		default:
-			switch (type->getImageSamplerAccess())
+			switch (type.getImageSamplerAccess())
 			{
 			case SamplerImageAccess::Sampled: return DescriptorType::VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 			case SamplerImageAccess::Storage: return DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;

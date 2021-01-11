@@ -60,6 +60,7 @@ namespace spvgentwo
             VK_DESCRIPTOR_TYPE_MAX_ENUM = 0x7FFFFFFF
         };
 
+        // _pVariable needs to have a valid type (Module::reconstructTypeAndConstantInfo() has to be called before)
         // returns VK_DESCRIPTOR_TYPE_MAX_ENUM if input variable is incompatible. This is not an accureate translation for all VK usecases (can't infer if buffer is 'dynamic')
         DescriptorType getDescriptorTypeFromVariable(const Instruction* _pVariable);
 	}
