@@ -120,6 +120,8 @@ namespace spvgentwo
 
 	public:
 
+		using FuncType = ReturnType(Args...);
+
 		Callable(IAllocator* _pAllocator = nullptr) : 
 			m_pAllocator(_pAllocator)
 		{}
@@ -237,6 +239,8 @@ namespace spvgentwo
 		VariadicFunc<ReturnType, Args...> m_func{};
 
 	public:
+		using FuncType = ReturnType(Args..., ...);
+
 		Callable(const Callable& _other) : m_func{ _other.m_func } {}
 		Callable(Callable&& _other) : m_func{ stdrep::move(_other.m_func) } {}
 		Callable(ReturnType(*_func)(Args..., ...)) : m_func{ _func }{}

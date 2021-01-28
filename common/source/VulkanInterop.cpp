@@ -1,4 +1,6 @@
 #include "common/VulkanInterop.h"
+#include "common/ReflectionHelper.h"
+#include "common/HeapCallable.h"
 #include "spvgentwo/Instruction.h"
 #include "spvgentwo/Type.h"
 
@@ -61,21 +63,52 @@ spvgentwo::vk::DescriptorType spvgentwo::vk::getDescriptorTypeFromVariable(const
 
 	const spv::StorageClass storage = _variable.getStorageClass();
 
+	// https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/chap16.html#interfaces-resources-setandbinding
+	// A noteworthy example of using multiple statically - used shader variables sharing the same descriptor set and binding values is a descriptor of type VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER that has multiple corresponding shader variables in the UniformConstant storage class, where some could be OpTypeImage, some could be OpTypeSampler(Sampled = 1), and some could be OpTypeSampledImage.
+
+	if (storage == spv::StorageClass::UniformConstant &&
+		(	
+			type.getType() == spv::Op::OpTypeSampler		||
+			type.getType() == spv::Op::OpTypeSampledImage	||
+			type.getType() == spv::Op::OpTypeImage)
+		)
+	{
+		const unsigned int set = ReflectionHelper::getDecorationLiteralFromTarget(spv::Decoration::DescriptorSet, &_variable);
+		const unsigned int binding = ReflectionHelper::getDecorationLiteralFromTarget(spv::Decoration::Binding, &_variable);
+
+		//auto x = make_callable([](const Instruction*) {});
+
+		//ReflectionHelper::getVariablesWithDecoration(_variable.getModule(), spv::Decoration::DescriptorSet, x, &set);
+	}
+
 	switch (type.getType())
 	{
-	case spv::Op::OpTypeSampler:		return DescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
-	case spv::Op::OpTypeSampledImage:	return DescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	case spv::Op::OpTypeSampler:					return DescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+	case spv::Op::OpTypeSampledImage:
+		switch (type.front().getImageSamplerAccess())
+		{
+		case SamplerImageAccess::Sampled:			return DescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+		case SamplerImageAccess::Storage:			return DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+		default:									return DescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		}		
 	case spv::Op::OpTypeImage:
 	{
 		switch (type.getImageDimension())
 		{
-		case spv::Dim::Buffer:		return DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
-		case spv::Dim::SubpassData: return DescriptorType::VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-		default:
+		case spv::Dim::Buffer:		
 			switch (type.getImageSamplerAccess())
 			{
-			case SamplerImageAccess::Sampled: return DescriptorType::VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-			case SamplerImageAccess::Storage: return DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			case SamplerImageAccess::Sampled:		return DescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+			case SamplerImageAccess::Storage:		return DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+			default: break;
+			}
+			break;
+		case spv::Dim::SubpassData:					return DescriptorType::VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		default: // dim1/2/3
+			switch (type.getImageSamplerAccess())
+			{
+			case SamplerImageAccess::Sampled:		return DescriptorType::VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			case SamplerImageAccess::Storage:		return DescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 			default: break;
 			}
 			break;

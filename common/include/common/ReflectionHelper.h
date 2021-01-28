@@ -2,6 +2,7 @@
 
 #include "spvgentwo/List.h"
 #include "spvgentwo/Spv.h"
+#include "Callable.h"
 
 namespace spvgentwo
 {
@@ -18,6 +19,12 @@ namespace spvgentwo
 		// get all GLOBAL variables by StorageClass, Function variables are not gathered
 		void getGlobalVariablesByStorageClass(const Module& _module, spv::StorageClass _class, List<const Instruction*>& _outVariables);
 
+		// get all instructions which have been decorated with _decoration & _value
+		void getVariablesWithDecoration(const Module& _module, spv::Decoration _decoration, List<const Instruction*>& _outTargets, const unsigned int* _pValue = nullptr);
+
+		// get call func with instructions which have been decorated with _decoration & _value
+		void getVariablesWithDecoration(const Module& _module, spv::Decoration _decoration, Callable<void(const Instruction*)> _func, const unsigned int* _pValue = nullptr);
+
 		// get list of OpDecorate, OpMemberDecorate etc that target _pTarget in the instruction's module
 		void getDecorations(const Instruction* _pTarget, List<const Instruction*>& _outDecorations);
 
@@ -31,6 +38,7 @@ namespace spvgentwo
 		unsigned int getLiteralFromDecoration(spv::Decoration _decoration, const Instruction* _pDecoration);
 
 		// get the literal value of _decoration used to decorate _pTarget instruction (type or variable)
-		unsigned int getDecorationLiteralFromTarget(spv::Decoration _decoration, const Instruction* _pTarget);
+		// _pOutDecoration can be used to receive the OpDecoration instruction associated to the target & decoration type
+		unsigned int getDecorationLiteralFromTarget(spv::Decoration _decoration, const Instruction* _pTarget, const Instruction** _pOutDecoration = nullptr);
 	};
 } // !spvgentwo
