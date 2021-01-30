@@ -2,7 +2,6 @@
 
 #include "spvgentwo/List.h"
 #include "spvgentwo/Spv.h"
-#include "Callable.h"
 
 namespace spvgentwo
 {
@@ -22,8 +21,9 @@ namespace spvgentwo
 		// get all instructions which have been decorated with _decoration & _value
 		void getVariablesWithDecoration(const Module& _module, spv::Decoration _decoration, List<const Instruction*>& _outTargets, const unsigned int* _pValue = nullptr);
 
-		// get call func with instructions which have been decorated with _decoration & _value
-		void getVariablesWithDecoration(const Module& _module, spv::Decoration _decoration, Callable<void(const Instruction*)> _func, const unsigned int* _pValue = nullptr);
+		// get call func with instructions which have been decorated with _decoration & _value (implemented in ReflectionHelperTemplate.inl)
+		template <class Func>
+		void getVariablesWithDecorationFunc(const Module& _module, spv::Decoration _decoration, Func _func, const unsigned int* _pValue = nullptr);
 
 		// get list of OpDecorate, OpMemberDecorate etc that target _pTarget in the instruction's module
 		void getDecorations(const Instruction* _pTarget, List<const Instruction*>& _outDecorations);

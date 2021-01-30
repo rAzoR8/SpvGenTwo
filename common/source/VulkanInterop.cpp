@@ -1,5 +1,6 @@
 #include "common/VulkanInterop.h"
 #include "common/ReflectionHelper.h"
+#include "common/ReflectionHelperTemplate.inl"
 #include "common/HeapCallable.h"
 #include "spvgentwo/Instruction.h"
 #include "spvgentwo/Type.h"
@@ -64,7 +65,8 @@ spvgentwo::vk::DescriptorType spvgentwo::vk::getDescriptorTypeFromVariable(const
 	const spv::StorageClass storage = _variable.getStorageClass();
 
 	// https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/chap16.html#interfaces-resources-setandbinding
-	// A noteworthy example of using multiple statically - used shader variables sharing the same descriptor set and binding values is a descriptor of type VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER that has multiple corresponding shader variables in the UniformConstant storage class, where some could be OpTypeImage, some could be OpTypeSampler(Sampled = 1), and some could be OpTypeSampledImage.
+	// A noteworthy example of using multiple statically-used shader variables sharing the same descriptor set and binding values is a descriptor of type VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+	// that has multiple corresponding shader variables in the UniformConstant storage class, where some could be OpTypeImage, some could be OpTypeSampler(Sampled = 1), and some could be OpTypeSampledImage.
 
 	if (storage == spv::StorageClass::UniformConstant &&
 		(	
@@ -76,9 +78,36 @@ spvgentwo::vk::DescriptorType spvgentwo::vk::getDescriptorTypeFromVariable(const
 		const unsigned int set = ReflectionHelper::getDecorationLiteralFromTarget(spv::Decoration::DescriptorSet, &_variable);
 		const unsigned int binding = ReflectionHelper::getDecorationLiteralFromTarget(spv::Decoration::Binding, &_variable);
 
-		//auto x = make_callable([](const Instruction*) {});
+		bool foundCombinedImageSampler = false;
+		auto check = [&](const Instruction* _pVar)
+		{
+			if(foundCombinedImageSampler) // skip rest
+			{
+				return;			
+			}
 
-		//ReflectionHelper::getVariablesWithDecoration(_variable.getModule(), spv::Decoration::DescriptorSet, x, &set);
+			// we found another variable in the same set
+			if (const Type* otherType = _pVar->getType(); _pVar != &_variable && otherType != nullptr && _pVar->getStorageClass() == spv::StorageClass::UniformConstant)
+			{
+				// check for [sampler & image] or [image & sampler] variable combo
+				if (((otherType->getType() == spv::Op::OpTypeSampler) && (type.getType() == spv::Op::OpTypeSampledImage || type.getType() == spv::Op::OpTypeImage)) ||
+					((type.getType() == spv::Op::OpTypeSampler) && (otherType->getType() == spv::Op::OpTypeSampledImage || otherType->getType() == spv::Op::OpTypeImage))) 
+				{
+					// we found a image or sampler on the same descriptor set & binding in UniformConstant storage class
+					if (ReflectionHelper::getDecorationLiteralFromTarget(spv::Decoration::Binding, _pVar) == binding)
+					{
+						foundCombinedImageSampler = true;
+					}
+				}
+			}
+		};
+
+		ReflectionHelper::getVariablesWithDecorationFunc(*_variable.getModule(), spv::Decoration::DescriptorSet, check, &set); // get variable in the same set
+
+		if (foundCombinedImageSampler)
+		{
+			return DescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		}
 	}
 
 	switch (type.getType())

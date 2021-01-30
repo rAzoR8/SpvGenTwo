@@ -1,4 +1,5 @@
 #include "common/ReflectionHelper.h"
+#include "common/ReflectionHelperTemplate.inl"
 
 #include "spvgentwo/Module.h"
 
@@ -56,74 +57,7 @@ void spvgentwo::ReflectionHelper::getGlobalVariablesByStorageClass(const Module&
 
 void spvgentwo::ReflectionHelper::getVariablesWithDecoration(const Module& _module, spv::Decoration _decoration, List<const Instruction*>& _outTargets, const unsigned int* _pValue)
 {
-	for (const Instruction& deco : _module.getDecorations())
-	{
-		auto target = deco.getFirstActualOperand();
-
-		auto it = target.next(); // skip target ID
-
-		bool match = false;
-		if (deco == spv::Op::OpDecorate && it != nullptr && static_cast<spv::Decoration>(it->getLiteral().value) == _decoration)
-		{
-			match = true;
-		}
-		else if (deco == spv::Op::OpMemberDecorate && it.next() != nullptr && static_cast<spv::Decoration>(it.next()->getLiteral().value) == _decoration)
-		{
-			match = true;
-			++it;
-		}
-
-		if (match && it.next() != nullptr)
-		{
-			if (_pValue != nullptr)
-			{
-				if (*_pValue == it.next()->getLiteral())
-				{
-					_outTargets.emplace_back(target->getInstruction());
-				}
-			}
-			else
-			{
-				_outTargets.emplace_back(target->getInstruction());
-			}
-		}
-	}
-}
-
-void spvgentwo::ReflectionHelper::getVariablesWithDecoration(const Module& _module, spv::Decoration _decoration, Callable<void(const Instruction*)> _func, const unsigned int* _pValue)
-{
-	for (const Instruction& deco : _module.getDecorations())
-	{
-		auto target = deco.getFirstActualOperand();
-
-		auto it = target.next(); // skip target ID
-
-		bool match = false;
-		if (deco == spv::Op::OpDecorate && it != nullptr && static_cast<spv::Decoration>(it->getLiteral().value) == _decoration)
-		{
-			match = true;
-		}
-		else if (deco == spv::Op::OpMemberDecorate && it.next() != nullptr && static_cast<spv::Decoration>(it.next()->getLiteral().value) == _decoration)
-		{
-			match = true;
-			++it;
-		}
-
-		if (match && it.next() != nullptr)
-		{
-			if (_pValue != nullptr)
-			{
-				if (*_pValue == it.next()->getLiteral())
-				{
-					_func(target->getInstruction());
-				}
-			}
-			else
-			{
-				_func(target->getInstruction());
-			}
-		}
-	}
+	getVariablesWithDecorationFunc(_module, _decoration, [&_outTargets](const Instruction* _pTarget) {_outTargets.emplace_back(_pTarget); }, _pValue);
 }
 
 void spvgentwo::ReflectionHelper::getDecorations(const Instruction* _pTarget, List<const Instruction*>& _outDecorations)
@@ -217,6 +151,11 @@ unsigned int spvgentwo::ReflectionHelper::getDecorationLiteralFromTarget(spv::De
 
 		if (target != nullptr && *target == _pTarget)
 		{
+			if (decoration == spv::Op::OpMemberDecorate)
+			{
+				target = target.next(); // skip member index
+			}
+
 			if (auto deco = target.next(); deco != nullptr && deco.next() != nullptr && deco->getLiteral() == static_cast<unsigned int>(_decoration))
 			{
 				if (_pOutDecoration != nullptr)

@@ -62,6 +62,7 @@ target_include_directories(SpvGenTwoLib PUBLIC "${lib_includes}")
 #common sources - shared between examples and tests
 add_sources("common/source/*.cpp" "common_sources")
 add_sources("common/include/common/*.h" "common_sources")
+add_sources("common/include/common/*.inl" "common_sources")
 add_include_folder("common/include" "common_includes")
 
 add_library(SpvGenTwoCommon "${common_sources}")
