@@ -78,35 +78,38 @@ spvgentwo::vk::DescriptorType spvgentwo::vk::getDescriptorTypeFromVariable(const
 		const unsigned int set = ReflectionHelper::getDecorationLiteralFromTarget(spv::Decoration::DescriptorSet, &_variable);
 		const unsigned int binding = ReflectionHelper::getDecorationLiteralFromTarget(spv::Decoration::Binding, &_variable);
 
-		bool foundCombinedImageSampler = false;
-		auto check = [&](const Instruction* _pVar)
+		if (set != sgt_uint32_max && binding != sgt_uint32_max)
 		{
-			if(foundCombinedImageSampler) // skip rest
+			bool foundCombinedImageSampler = false;
+			auto check = [&](const Instruction* _pVar)
 			{
-				return;			
-			}
-
-			// we found another variable in the same set
-			if (const Type* otherType = _pVar->getType(); _pVar != &_variable && otherType != nullptr && _pVar->getStorageClass() == spv::StorageClass::UniformConstant)
-			{
-				// check for [sampler & image] or [image & sampler] variable combo
-				if (((otherType->getType() == spv::Op::OpTypeSampler) && (type.getType() == spv::Op::OpTypeSampledImage || type.getType() == spv::Op::OpTypeImage)) ||
-					((type.getType() == spv::Op::OpTypeSampler) && (otherType->getType() == spv::Op::OpTypeSampledImage || otherType->getType() == spv::Op::OpTypeImage))) 
+				if (foundCombinedImageSampler) // skip rest
 				{
-					// we found a image or sampler on the same descriptor set & binding in UniformConstant storage class
-					if (ReflectionHelper::getDecorationLiteralFromTarget(spv::Decoration::Binding, _pVar) == binding)
+					return;
+				}
+
+				// we found another variable in the same set
+				if (const Type* otherType = _pVar->getType(); _pVar != &_variable && otherType != nullptr && _pVar->getStorageClass() == spv::StorageClass::UniformConstant)
+				{
+					// check for [sampler & image] or [image & sampler] variable combo
+					if (((otherType->getType() == spv::Op::OpTypeSampler) && (type.getType() == spv::Op::OpTypeSampledImage || type.getType() == spv::Op::OpTypeImage)) ||
+						((type.getType() == spv::Op::OpTypeSampler) && (otherType->getType() == spv::Op::OpTypeSampledImage || otherType->getType() == spv::Op::OpTypeImage)))
 					{
-						foundCombinedImageSampler = true;
+						// we found a image or sampler on the same descriptor set & binding in UniformConstant storage class
+						if (ReflectionHelper::getDecorationLiteralFromTarget(spv::Decoration::Binding, _pVar) == binding)
+						{
+							foundCombinedImageSampler = true;
+						}
 					}
 				}
+			};
+
+			ReflectionHelper::getVariablesWithDecorationFunc(*_variable.getModule(), spv::Decoration::DescriptorSet, check, &set); // get variable in the same set
+
+			if (foundCombinedImageSampler)
+			{
+				return DescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			}
-		};
-
-		ReflectionHelper::getVariablesWithDecorationFunc(*_variable.getModule(), spv::Decoration::DescriptorSet, check, &set); // get variable in the same set
-
-		if (foundCombinedImageSampler)
-		{
-			return DescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		}
 	}
 
