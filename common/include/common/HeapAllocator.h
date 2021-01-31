@@ -14,7 +14,7 @@ namespace spvgentwo
 	public:
 		void* allocate(const sgt_size_t _bytes, const unsigned int _aligment = 1u) final;
 		void deallocate(void* _ptr, const sgt_size_t _bytes) final;
-		~HeapAllocator();
+		~HeapAllocator() override;
 
 		static HeapAllocator* instance();
 

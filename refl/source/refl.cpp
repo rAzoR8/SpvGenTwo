@@ -169,12 +169,12 @@ void printDecorations(const List<Instruction>& _targets, bool _printDescriptorTy
 		for (const Instruction* deco : decorations)
 		{
 			spv::Decoration spvDeco{};
-			unsigned int value = ~0u;
+			unsigned int value = sgt_uint32_max;
 			if (ReflectionHelper::getSpvDecorationAndLiteralFromDecoration(deco, spvDeco, value))
 			{
 				if (auto it = DecorationNames.find(spvDeco); it != DecorationNames.end())				
 				{
-					if (value != ~0u)
+					if (value != sgt_uint32_max)
 					{
 						printf("\t%s \t %u\n", it->value, value);					
 					}

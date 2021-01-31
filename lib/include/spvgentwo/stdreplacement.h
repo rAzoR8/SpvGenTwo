@@ -392,4 +392,4 @@ namespace spvgentwo::traits
 			return new(_ptr) T{ stdrep::forward<Args>(_args)... };
 		}
 	}
-} // !spvgentw
+} // !spvgentwo::traits
