@@ -68,6 +68,7 @@ add_include_folder("common/include" "common_includes")
 add_library(SpvGenTwoCommon "${common_sources}")
 target_include_directories(SpvGenTwoCommon PRIVATE "${lib_includes}")
 target_include_directories(SpvGenTwoCommon PUBLIC "${common_includes}")
+target_link_libraries(SpvGenTwoCommon PRIVATE SpvGenTwoLib)
 
 #example project
 if(${SPVGENTWO_BUILD_EXAMPLES})
@@ -77,7 +78,7 @@ if(${SPVGENTWO_BUILD_EXAMPLES})
 
 	add_executable(SpvGenTwoExample "${example_sources}")
 	target_include_directories(SpvGenTwoExample PUBLIC "${example_includes};${common_includes}")
-	target_link_libraries(SpvGenTwoExample PUBLIC SpvGenTwoLib SpvGenTwoCommon)
+	target_link_libraries(SpvGenTwoExample PRIVATE SpvGenTwoLib SpvGenTwoCommon)
 endif()
 
 #disassembler project
@@ -88,7 +89,7 @@ if(${SPVGENTWO_BUILD_DISASSEMBLER})
 
 	add_executable(SpvGenTwoDisassembler "${dis_sources}")
 	target_include_directories(SpvGenTwoDisassembler PUBLIC "${dis_includes};${common_includes}")
-	target_link_libraries(SpvGenTwoDisassembler PUBLIC SpvGenTwoLib SpvGenTwoCommon)
+	target_link_libraries(SpvGenTwoDisassembler PRIVATE SpvGenTwoLib SpvGenTwoCommon)
 endif()
 
 #reflection project
@@ -99,7 +100,7 @@ if(${SPVGENTWO_BUILD_REFLECT})
 
 	add_executable(SpvGenTwoReflect "${refl_sources}")
 	target_include_directories(SpvGenTwoDisassembler PUBLIC "${refl_includes};${common_includes}")
-	target_link_libraries(SpvGenTwoReflect PUBLIC SpvGenTwoLib SpvGenTwoCommon)
+	target_link_libraries(SpvGenTwoReflect PRIVATE SpvGenTwoLib SpvGenTwoCommon)
 endif()
 
 message(STATUS "")
