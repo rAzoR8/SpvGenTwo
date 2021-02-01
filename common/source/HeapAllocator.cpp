@@ -1,6 +1,6 @@
 #include "common/HeapAllocator.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #ifdef SPVGENTWO_DEBUG_HEAP_ALLOC
 	#include <cassert>
@@ -9,10 +9,13 @@
 
 void* spvgentwo::HeapAllocator::allocate(const sgt_size_t _bytes, const unsigned int _aligment)
 {
-	(void)_aligment;
 	m_Allocated += _bytes;
 
-	void* ptr = malloc(_bytes);
+#if defined(_WIN32) || defined(__CYGWIN__)
+	void* ptr = _aligned_malloc(_bytes, _aligment);
+#else	
+	void* ptr = std::aligned_alloc(_aligment, _bytes);
+#endif
 
 #ifdef SPVGENTWO_DEBUG_HEAP_ALLOC
 	entry alloc{ (uint32_t)m_allocations.size(), (uint32_t)_bytes };
@@ -51,7 +54,11 @@ void spvgentwo::HeapAllocator::deallocate(void* _ptr, const sgt_size_t _bytes)
 	m_allocations.erase(_ptr);
 #endif
 
-	free(_ptr);
+#if defined(_WIN32) || defined(__CYGWIN__)
+	 _aligned_free(_ptr);
+#else	
+	std::free(_ptr);
+#endif
 }
 
 spvgentwo::HeapAllocator::~HeapAllocator()
