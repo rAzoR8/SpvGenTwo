@@ -99,7 +99,7 @@ if(${SPVGENTWO_BUILD_REFLECT})
 	add_include_folder("refl/include" "refl_includes")
 
 	add_executable(SpvGenTwoReflect "${refl_sources}")
-	target_include_directories(SpvGenTwoDisassembler PUBLIC "${refl_includes};${common_includes}")
+	target_include_directories(SpvGenTwoReflect PUBLIC "${refl_includes};${common_includes}")
 	target_link_libraries(SpvGenTwoReflect PRIVATE SpvGenTwoLib SpvGenTwoCommon)
 endif()
 
