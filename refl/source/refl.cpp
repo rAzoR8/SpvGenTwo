@@ -298,10 +298,9 @@ int main(int argc, char* argv[])
 	{
 		if (const Instruction* instr = module.getInstructionById(idToPrint); instr != nullptr)
 		{
-			HeapString str;
-			ModuleStringPrinter print(str);
-			printInstruction(*instr, gram, print);
-			printf("%s\n", str.c_str());
+			auto printer = ModuleSimpleFuncPrinter([](const char* _pStr) { printf("%s", _pStr);	});
+			printInstruction(*instr, gram, printer);
+			printf("\n");
 		}
 		else
 		{

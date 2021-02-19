@@ -168,25 +168,6 @@ void spvgentwo::ModuleStringPrinter::append(const char* _pStr, const char* _push
     }
 }
 
-void spvgentwo::ModuleStringPrinter::append(unsigned int _literal, const char* _pushColor, const char* _popColor)
-{
-    if (_pushColor != nullptr && m_useColor)
-    {
-        m_buffer.append(_pushColor);
-    }
-
-    char buf[11] = { '\0' }; // max length is log10(UINT_MAX) ~ 9.6 + null terminator -> 11
-
-	uintToString(_literal, buf);
-
-    m_buffer.append(static_cast<const char*>(buf));
-
-    if (_popColor != nullptr && m_useColor)
-    {
-        m_buffer.append(_popColor);
-    }
-}
-
 bool spvgentwo::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer)
 {
 	using namespace spvgentwo;
@@ -279,4 +260,12 @@ bool spvgentwo::printModule(const Module& _module, const Grammar& _grammar, IMod
 	const bool success = !_module.iterateInstructions(print);
 
 	return success;
+}
+
+void spvgentwo::IModulePrinter::append(unsigned int _literal, const char* _pushColor, const char* _popColor)
+{
+	char buf[11] = { '\0' }; // max length is log10(UINT_MAX) ~ 9.6 + null terminator -> 11
+	uintToString(_literal, buf);
+
+	append(buf, _pushColor, _popColor);
 }
