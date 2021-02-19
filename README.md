@@ -139,9 +139,10 @@ SpvGenTwo is split into 4 folders:
 
 Use the supplied CMakeLists.txt to generate project files for your build system. SpvGenTwo allows the user to use STL headers (`<type_traits>`, `<new>` etc) instead of my hand-made replacements (see `stdreplament.h`).
 
-* `SPVGENTWO_BUILD_EXAMPLES` is set to FALSE by default. If TRUE, an executable with sources from the 'example' will be built.
+* `SPVGENTWO_BUILD_EXAMPLES` is set to FALSE by default. If TRUE, an executable with sources from the 'example' folder will be built.
     * Note that the SpvGenTwoExample executable project requires the Vulkan SDK to be installed as it calls spirv-val and spriv-dis.
-* `SPVGENTWO_BUILD_DISASSEMBLER` is set to FALSE by default. If TRUE, an executable with sources from the 'dis' will be built.
+* `SPVGENTWO_BUILD_DISASSEMBLER` is set to FALSE by default. If TRUE, an executable with sources from the 'dis' folder will be built.
+* `SPVGENTWO_BUILD_REFLECT` is set to FALSE by default. If TRUE, an executable with sources from the 'refl' folder will be built.
 * `SPVGENTWO_REPLACE_PLACEMENTNEW` is set to TRUE by default. If FALSE, placement-new will be included from `<new>` header.
 * `SPVGENTWO_REPLACE_TRAITS` is set to TRUE by default. If FALSE, `<type_traits>` and `<utility>` header will be included under `spvgentwo::stdrep` namespace.
 * `SPVGENTWO_LOGGING` is set to TRUE by default, calls to module.log() will have not effect if FALSE.
