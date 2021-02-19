@@ -1220,7 +1220,7 @@ spvgentwo::Instruction* spvgentwo::Module::addLineInstr()
 	return &m_Lines.emplace_back(this);
 }
 
-spvgentwo::Instruction* spvgentwo::Module::findInstructionById(const spv::Id _resultId)
+spvgentwo::Instruction* spvgentwo::Module::getInstructionById(const spv::Id _resultId)
 {
 	Instruction* instr = nullptr;
 
