@@ -164,6 +164,24 @@ CLI: ```SpvGenTwoDisassembler [file] <option> <option>```
 * `--assignids` re-assigns instruction result IDs starting from 1. Some SPIR-V compilers emit IDs in a very high range, making it hard to read and trace data flow in assembly language text, `assignIDs` helps with that.
 * `--serialize` writes the parsed SPIR-V program to a `serialized.spv` file in the working directory (this is a debug feature).
 
+## Reflector
+
+SpvGenTwoReflect source can be found at [refl/source/refl.cpp](refl/source/refl.cpp)
+
+CLI: SpvGenTwoReflect ```[file] <option> <option>```
+
+### Options
+* `--var name` select variable by name (if OpVariable was annotated by OpName) for DescriptorType & Decoration printing (`name` has to be a UTF-8 string)
+    * `--var MyBuffer`
+* `--deco decoration` select [decoration](https://github.com/KhronosGroup/SPIRV-Headers/blob/75b30a659c8a4979104986652c54cc421fc51129/include/spirv/unified1/spirv.core.grammar.json#L9486) to query for in the module
+    * `--deco DescriptorSet`
+* `--funcs` list functions names in the module
+* `--vars` list global variables in the module (StorageClass != Function)
+* `--types` list types and constatns in the module
+* `--desc` print Vulkan DescriptorType for global variables or for variable selected by `--var name`
+* `--id Id` print SPIR-V assembly text for the instruction with result Id
+    * `--id 24`
+
 # Documentation
 
 Please read the [documentation](DOCUMENTATION.md) for more detailed information on how to use SpvGenTwo and some reasoning about my design choices.
