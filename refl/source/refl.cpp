@@ -15,6 +15,7 @@
 
 #include <cstring> // strcmp
 #include <cstdio> // printf, note windows console, and others too, don't print SPIR-V's UTF-8 strings properly
+#include <cstdlib> // strtoul
 
 using namespace spvgentwo;
 
@@ -158,6 +159,8 @@ void printDecorations(const List<Instruction>& _targets, bool _printDescriptorTy
 			printf("[UNNAMED]:\n");
 		}
 
+		printf("\tSpvId\t\t%u\n", target.getResultId());
+
 		if (target == spv::Op::OpVariable && _printDescriptorType)
 		{
 			if (auto it = DescriptorTypeNames.find(vk::getDescriptorTypeFromVariable(target)); it != DescriptorTypeNames.end())
@@ -176,7 +179,7 @@ void printDecorations(const List<Instruction>& _targets, bool _printDescriptorTy
 				{
 					if (value != sgt_uint32_max)
 					{
-						printf("\t%s \t %u\n", it->value, value);					
+						printf("\t%s \t%u\n", it->value, value);					
 					}
 					else // no literal value for this decoration
 					{
@@ -201,6 +204,7 @@ int main(int argc, char* argv[])
 	bool listVariables = false;
 	bool listTypeAndConstants = false;
 	bool printVKDescriptorType = false;
+	spv::Id idToPrint = InvalidId;
 
 	const int end = argc - 1;;
 
@@ -210,6 +214,10 @@ int main(int argc, char* argv[])
 		if (spv == nullptr)
 		{
 			spv = arg;
+		}
+		else if (i < end && strcmp(arg, "--id") == 0)
+		{
+			idToPrint = strtoul(argv[++i], nullptr, 10);
 		}
 		else if (i < end && strcmp(arg, "--var") == 0)
 		{
@@ -286,18 +294,36 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
+	if (idToPrint != InvalidId)
+	{
+		if (const Instruction* instr = module.getInstructionById(idToPrint); instr != nullptr)
+		{
+			HeapString str;
+			ModuleStringPrinter print(str);
+			printInstruction(*instr, gram, print);
+			printf("%s\n", str.c_str());
+		}
+		else
+		{
+			logger.logWarning("Instruction with Id %u not found in module", idToPrint);
+		}
+	}
+
 	if (listFunctions)
 	{
+		printf("Functions:\n");
 		printFunctions(module);
 	}
 
 	if (listVariables)
 	{
+		printf("Global Variables:\n");
 		printDecorations(module.getGlobalVariables(), printVKDescriptorType);
 	}
 
 	if (listTypeAndConstants)
 	{
+		printf("Types and Constants:\n");
 		printDecorations(module.getTypesAndConstants(), false);
 	}
 
@@ -320,10 +346,6 @@ int main(int argc, char* argv[])
 				printf("%s\n", it->value);
 			}
 		}
-
-		HeapString str;
-		ModuleStringPrinter print(str);
-		printInstruction(*instr, gram, print);
 
 		ReflectionHelper::getDecorations(instr, decorations);
 	}
