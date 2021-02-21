@@ -12,6 +12,7 @@
 #include "common/HeapHashMap.h"
 #include "common/ModuleToString.h"
 #include "common/VulkanInterop.h"
+#include "common/ExternalMemoryAllocator.h"
 
 #include <cstring> // strcmp
 #include <cstdio> // printf, note windows console, and others too, don't print SPIR-V's UTF-8 strings properly
@@ -103,6 +104,7 @@ const HeapHashMap<vk::DescriptorType, const char*> DescriptorTypeNames(
 	vk::DescriptorType::VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV, (const char*)"VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV"
 );
 
+auto g_instrPrinter = ModuleSimpleFuncPrinter([](const char* _pStr) { printf("%s", _pStr); });
 
 template <class Pred, class Func>
 void map(const List<const Instruction*>& instructions, Pred pred, Func func)
@@ -141,7 +143,7 @@ void printFunctions(const Module& _module)
 	}
 }
 
-void printDecorations(const List<Instruction>& _targets, bool _printDescriptorType)
+void printDecorations(const List<Instruction>& _targets, const Grammar& _gram, bool _printDescriptorType)
 {
 	HeapList<const Instruction*> decorations;
 
@@ -154,12 +156,14 @@ void printDecorations(const List<Instruction>& _targets, bool _printDescriptorTy
 		{
 			printf("%s:\n", name);		
 		}
-		else if(decorations.empty() == false)
+		else
 		{
 			printf("[UNNAMED]:\n");
 		}
 
-		printf("\tSpvId\t\t%u\n", target.getResultId());
+		printf("\t");
+		printInstruction(target, _gram, g_instrPrinter, false);
+		printf("\n");
 
 		if (target == spv::Op::OpVariable && _printDescriptorType)
 		{
@@ -298,8 +302,7 @@ int main(int argc, char* argv[])
 	{
 		if (const Instruction* instr = module.getInstructionById(idToPrint); instr != nullptr)
 		{
-			auto printer = ModuleSimpleFuncPrinter([](const char* _pStr) { printf("%s", _pStr);	});
-			printInstruction(*instr, gram, printer);
+			printInstruction(*instr, gram, g_instrPrinter);
 			printf("\n");
 		}
 		else
@@ -317,13 +320,13 @@ int main(int argc, char* argv[])
 	if (listVariables)
 	{
 		printf("Global Variables:\n");
-		printDecorations(module.getGlobalVariables(), printVKDescriptorType);
+		printDecorations(module.getGlobalVariables(), gram, printVKDescriptorType);
 	}
 
 	if (listTypeAndConstants)
 	{
 		printf("Types and Constants:\n");
-		printDecorations(module.getTypesAndConstants(), false);
+		printDecorations(module.getTypesAndConstants(), gram, false);
 	}
 
 	List<const Instruction*> decorations(&alloc);
@@ -351,6 +354,11 @@ int main(int argc, char* argv[])
 	else
 	{
 		getList(module.getDecorations(), decorations);
+	}
+
+	if (decorations.empty() == false)
+	{
+		printf("Decorations:\n");
 	}
 
 	for (const Instruction* inst : decorations)
