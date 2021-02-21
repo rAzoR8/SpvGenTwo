@@ -168,7 +168,7 @@ void spvgentwo::ModuleStringPrinter::append(const char* _pStr, const char* _push
     }
 }
 
-bool spvgentwo::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer)
+bool spvgentwo::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer, bool _printName)
 {
 	using namespace spvgentwo;
 	auto* info = _grammar.getInfo(static_cast<unsigned int>(_instr.getOperation()));
@@ -176,7 +176,7 @@ bool spvgentwo::printInstruction(const Instruction& _instr, const Grammar& _gram
 	if (_instr.hasResult())
 	{
 		_printer << "%";
-		if (const char* name = _instr.getName(); name != nullptr && stringLength(name) > 1)
+		if (const char* name = _instr.getName(); _printName && name != nullptr && stringLength(name) > 1)
 		{
 			_printer.append(name, "\x1B[34m", "\033[0m");
 			_printer << " = ";

@@ -81,7 +81,7 @@ namespace spvgentwo
 	ModuleSimpleFuncPrinter(FuncStr _strFunc, bool _useColorCodes = false)->ModuleSimpleFuncPrinter<FuncStr>;
 
 	// returns false on failure / invalid instruction
-	bool printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _pOutput);
+	bool printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _pOutput, bool _printName = true);
 
 	bool printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _pOutput, bool _writePreamble = true);
 }
