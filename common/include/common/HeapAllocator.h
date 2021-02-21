@@ -31,4 +31,18 @@ namespace spvgentwo
 #endif
 	};
 
+	template <class Container>
+	class HeapContainer : public Container
+	{
+	public:
+		template <class ... ContainerArgs>
+		HeapContainer(ContainerArgs&& ... _args) : Container(HeapAllocator::instance(), stdrep::forward<ContainerArgs>(_args)...) {}
+	};
+
+	template <class Container, class ... ContainerArgs>
+	auto make_heap_container(ContainerArgs&& ... _args)
+	{
+		return HeapContainer<Container>(stdrep::forward<ContainerArgs>(_args)...);
+	}
+
 } //! spvgentwo
