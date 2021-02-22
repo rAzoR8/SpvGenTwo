@@ -30,9 +30,10 @@ namespace spvgentwo
 			BranchTarget,
 			Literal,
 			Id
-		} type;
+		} type{};
 
-		union {
+		union
+		{
 			BasicBlock* branchTarget = nullptr; 
 			Instruction* instruction; // intermediate or type
 			literal_t literal;
@@ -46,8 +47,13 @@ namespace spvgentwo
 
 		BasicBlock* getBranchTarget() const { return isBranchTarget() ? branchTarget : nullptr; }
 		Instruction* getInstruction() const { return isInstruction() ? instruction : nullptr; }
-		const literal_t getLiteral() const { return isLiteral() ? literal : literal_t{}; }
+		literal_t getLiteral() const { return isLiteral() ? literal : literal_t{}; }
 		spv::Id getId() const { return isId() ? id : InvalidId; }
+
+		explicit operator Instruction*() const { return getInstruction(); }
+		explicit operator spv::Id() const { return getId(); }
+		explicit operator literal_t() const { return getLiteral(); }
+		explicit operator BasicBlock* () const { return getBranchTarget(); }
 
 		Operand(const Operand& _other);
 		Operand(Operand&& _other) noexcept;
