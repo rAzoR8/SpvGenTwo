@@ -127,13 +127,27 @@ void getList(const Container<Instruction>& _container, List<const Instruction*>&
 	}
 }
 
-void printFunctions(const Module& _module)
+void printFunctions(const Module& _module, const Grammar& gram)
 {
 	for (const EntryPoint& ep : _module.getEntryPoints())
 	{
 		if (const char** shaderType = ExecutionModelNames[ep.getExecutionModel()]; shaderType != nullptr)
 		{
 			printf("%s [EP %s]\n", ep.getName(), *shaderType);		
+		}
+
+		for (const Operand& op : ep.getInterfaceVariables())
+		{
+			if (const Instruction* var = op.getInstruction(); var != nullptr)
+			{
+				if (const char* name = var->getName(); name != nullptr)
+				{
+					printf("\t%s\t", name);
+				}
+
+				printInstruction(*var, gram, g_instrPrinter, false);
+				printf("\n");
+			}
 		}
 	}
 
@@ -314,7 +328,7 @@ int main(int argc, char* argv[])
 	if (listFunctions)
 	{
 		printf("Functions:\n");
-		printFunctions(module);
+		printFunctions(module, gram);
 	}
 
 	if (listVariables)
