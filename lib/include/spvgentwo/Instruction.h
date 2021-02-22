@@ -737,6 +737,9 @@ namespace spvgentwo
 	// or null-iterator if some operand was not a literal value
 	Instruction::Iterator getLiteralString(String& _out, Instruction::Iterator _begin, Instruction::Iterator _end);
 
+	// advance _begin iterator to the first operand after the last word of the literal string containing the string terminator
+	Instruction::Iterator skipLiteralString(Instruction::Iterator _begin);
+
 	// compares _pStr element-by-elemnt with byte elements of literals in the literal string range [_begin, _end[ or until length of _pStr (_StrLength) until string terminator is encountered
 	// note that SPIR-V strings are UTF-8 encoded
 	bool compareLiteralString(const char* _pStr, Instruction::Iterator _begin, Instruction::Iterator _end, sgt_size_t _StrLength = sgt_size_max);

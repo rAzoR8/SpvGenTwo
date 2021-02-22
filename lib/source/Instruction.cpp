@@ -1465,6 +1465,18 @@ spvgentwo::Instruction::Iterator spvgentwo::getLiteralString(String& _out, Instr
 	return _it;
 }
 
+spvgentwo::Instruction::Iterator spvgentwo::skipLiteralString(Instruction::Iterator _begin)
+{
+	for (; _begin != nullptr && _begin->isLiteral(); ++_begin)
+	{ 
+		if (hasStringTerminator(_begin->literal))
+		{
+			return _begin.next();
+		}
+	}
+	return _begin;
+}
+
 bool spvgentwo::compareLiteralString(const char* _pStr, Instruction::Iterator _begin, Instruction::Iterator _end, sgt_size_t _StrLength)
 {
 	sgt_size_t j = 0u;
