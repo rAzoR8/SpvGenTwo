@@ -5,12 +5,6 @@
 
 namespace spvgentwo
 {
-	enum class GlobalInterfaceVersion
-	{
-		SpirV1_3, // 1.0 - 1.3 Input and Output StorageClass
-		SpirV14_x // 1.4 - 1.x any StorageClass != Function
-	};
-
 	class EntryPoint : public Function
 	{
 		friend class Module;
@@ -30,9 +24,6 @@ namespace spvgentwo
 
 		// TODO: move constructor & asignment
 
-		// get all the global OpVariables with StorageClass != Function used in this function
-		void getGlobalVariableInterface(List<Operand>& _outVarinstr, const GlobalInterfaceVersion _version) const;
-
 		spv::ExecutionModel getExecutionModel() const { return m_ExecutionModel; }
 		void setExecutionModel(const spv::ExecutionModel _model) { m_ExecutionModel = _model; }
 
@@ -45,6 +36,9 @@ namespace spvgentwo
 
 		// overrides Functions finalize (used internally), _pEntryPointName is mandatory parameter, returns opFunction
 		Instruction* finalize(const spv::ExecutionModel _model, const Flag<spv::FunctionControlMask> _control, const char* _pEntryPointName);
+
+		// get Variable interface (instructions) operands of OpEntryPoint
+		Range<Instruction::Iterator> getInterfaceVariables() const;
 
 	private:
 		// only to be called by the Module before serialization

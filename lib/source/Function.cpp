@@ -44,7 +44,6 @@ spvgentwo::Function& spvgentwo::Function::operator=(Function&& _other) noexcept
 		bb.m_pFunction = this;
 	}
 
-	//m_pModule = _other.m_pModule;
 	m_pReturnType = _other.m_pReturnType;
 	m_Function = stdrep::move(_other.m_Function);
 	//m_FunctionEnd(this, spv::Op::OpFunctionEnd), // no need to move
@@ -213,4 +212,91 @@ spvgentwo::Instruction* spvgentwo::Function::finalize(const Flag<spv::FunctionCo
 	}
 
 	return pFunc;
+}
+
+void spvgentwo::collectReferencedVariables(const Function& _func, List<Operand>& _outVarInstr, const GlobalInterfaceVersion _version, IAllocator* _pAllocator)
+{
+	struct VisitedBB
+	{
+		VisitedBB(BasicBlock* _pBB) : pBB(_pBB), visited(false) {}
+		BasicBlock* pBB = nullptr;
+		bool visited = false;
+		bool operator==(const BasicBlock* _pBB) const { return pBB == _pBB; }
+	};
+
+	List<VisitedBB> BBs(_pAllocator);
+
+	// entry points own basic blocks
+	for (BasicBlock& bb : _func)
+	{
+		BBs.emplace_back(&bb);
+	}
+
+	// go through all basicblocks (including called functions)
+	auto size = 0ull;
+	do
+	{
+		size = BBs.size();
+
+		for (VisitedBB& bb : BBs)
+		{
+			if (bb.visited == false)
+			{
+				bb.visited = true;
+
+				// find calls to other functions and add those functions basic blocks
+				for (Instruction& instr : *bb.pBB)
+				{
+					if (instr.getOperation() == spv::Op::OpFunctionCall)
+					{
+						// 3rd arg of opFunctionCall is OpFunction whos parent Function class holds the BBs were looking for
+						Instruction* pOpFunc = (instr.begin() + 2u)->getInstruction();
+						Function* pFunction = pOpFunc->getFunction();
+
+						// add unvisited function BBs
+						for (BasicBlock& funcBB : *pFunction)
+						{
+							if (BBs.contains(&funcBB) == false) // skip recursive calls
+							{
+								BBs.emplace_back(&funcBB);
+							}
+						}
+					}
+				}
+			}
+		}
+	} while (size < BBs.size());
+
+	// go through the instructions of the collected basic blocks and look for use of op variable operands
+	for (VisitedBB& bb : BBs)
+	{
+		for (Instruction& instr : *bb.pBB)
+		{
+			// go through operands that are Instructions which consume OpVariable
+			for (Operand& operand : instr)
+			{
+				// find valid OpVariable (resultType, resultId, Storage Class)
+				Instruction* pArg = operand.getInstruction();
+				if (pArg != nullptr && pArg->getOperation() == spv::Op::OpVariable)
+				{
+					const spv::StorageClass storage = pArg->getStorageClass();
+					if (_version == GlobalInterfaceVersion::SpirV1_3 && storage != spv::StorageClass::Input && storage != spv::StorageClass::Output)
+					{
+						continue;
+					}
+					else if (_version == GlobalInterfaceVersion::SpirV14_x && storage == spv::StorageClass::Function)
+					{
+						continue;
+					}
+
+					// uniquely add the instruction to the interface list
+					if (_outVarInstr.contains(pArg) == false)
+					{
+						_outVarInstr.emplace_back(pArg);
+					}
+					break;
+				}
+			}
+		}
+	}
 }

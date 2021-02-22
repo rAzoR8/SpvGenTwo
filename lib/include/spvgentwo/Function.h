@@ -8,6 +8,12 @@ namespace spvgentwo
 	class Module;
 	class IAllocator;
 
+	enum class GlobalInterfaceVersion
+	{
+		SpirV1_3, // 1.0 - 1.3 Input and Output StorageClass
+		SpirV14_x // 1.4 - 1.x any StorageClass != Function
+	};
+
 	class Function : public List<BasicBlock>
 	{
 		friend class Module;
@@ -101,4 +107,7 @@ namespace spvgentwo
 
 		List<Instruction> m_Parameters; // OpFunctionParameters
 	};
+
+	// get all the global OpVariables with StorageClass != Function used in this function
+	void collectReferencedVariables(const Function& _func, List<Operand>& _outVarInstr, const GlobalInterfaceVersion _version, IAllocator* _pAllocator);
 } // !spvgentwo
