@@ -19,15 +19,7 @@ namespace spvgentwo
 		using ReferenceType = Node&;
 		using PointerType = Node*;
 
-		struct Range
-		{
-			typename Bucket::Iterator m_Begin;
-			typename Bucket::Iterator m_End;
-
-			typename Bucket::Iterator begin() const { return m_Begin; }
-			typename Bucket::Iterator end() const { return m_End; }
-		};
-
+		using TRange = Range<typename Bucket::Iterator>;
 	public:
 
 		HashMap(IAllocator* _pAllocator = nullptr, unsigned int _buckets = DefaultBucktCount);
@@ -67,11 +59,11 @@ namespace spvgentwo
 		// retuns nullptr if not resident
 		Value* operator[](const Key& _key) const { return get(hash(_key)); }
 
-		Range getRange(const Hash64 _hash) const;
+		TRange getRange(const Hash64 _hash) const;
 
 		// only enable overload of Key type differs from Hash64
 		template <class T = Key, typename = stdrep::enable_if_t<stdrep::is_same_v<T, Key> && !stdrep::is_same_v<T, Hash64>>>
-		Range getRange(const T& _key) const { return getRange(hash(_key)); }
+		TRange getRange(const T& _key) const { return getRange(hash(_key)); }
 
 		Iterator find(const Key& _key) const;
 
@@ -201,7 +193,7 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline typename HashMap<Key, Value>::Range HashMap<Key, Value>::getRange(const Hash64 _hash) const
+	inline typename HashMap<Key, Value>::TRange HashMap<Key, Value>::getRange(const Hash64 _hash) const
 	{
 		const auto index = _hash % m_Buckets;
 		const Bucket& bucket = m_pBuckets[index];
@@ -223,7 +215,7 @@ namespace spvgentwo
 			
 		}
 
-		return { first , last};
+		return { first , last };
 	}
 
 	template<class Key, class Value>

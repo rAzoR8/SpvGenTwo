@@ -45,10 +45,18 @@ namespace spvgentwo
 		operator Entry<T>* () { return m_pEntry; }
 		operator const Entry<T>* ()  const { return m_pEntry; }
 
-		//operator bool() const { return m_pEntry != nullptr; }
-
 	private:
 		Entry<T>* m_pEntry = nullptr;
+	};
+
+	template <class Iterator>
+	struct Range
+	{
+		Iterator m_Begin;
+		Iterator m_End;
+
+		Iterator begin() const { return m_Begin; }
+		Iterator end() const { return m_End; }
 	};
 
 	template<class T>
