@@ -243,7 +243,7 @@ bool spvgentwo::printModule(const Module& _module, const Grammar& _grammar, IMod
 		_printer << "# SPIR-V Version " << _module.getMajorVersion() << "." << _module.getMinorVersion() << "\n";
 		_printer << "# Generator " << _module.getSpvGenerator() << "\n";
 		_printer << "# Bound " << _module.getSpvBound() << "\n";
-		_printer << "# Schema " << _module.getSpvBound() << "\n\n";
+		_printer << "# Schema " << _module.getSpvSchema() << "\n\n";
 	}
 
 	auto print = [&](const Instruction& instr) -> bool
