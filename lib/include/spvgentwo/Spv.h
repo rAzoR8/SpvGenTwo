@@ -29,7 +29,7 @@ namespace spvgentwo::spv
 	using Id = unsigned int;
 	static constexpr unsigned int MagicNumber = 0x07230203;
 	static constexpr unsigned int Version = 66816;
-	static constexpr unsigned int Revision = 3;
+	static constexpr unsigned int Revision = 4;
 	static constexpr unsigned int OpCodeMask = 0xffff;
 	static constexpr unsigned int WordCountShift = 16;
 	enum class ImageOperandsMask : unsigned
@@ -85,6 +85,8 @@ namespace spvgentwo::spv
 		NSZ = 0x0004,
 		AllowRecip = 0x0008,
 		Fast = 0x0010,
+		AllowContractFastINTEL = 0x10000,
+		AllowReassocINTEL = 0x20000,
 	};
 	enum class FPFastMathModeShift : unsigned
 	{
@@ -94,6 +96,8 @@ namespace spvgentwo::spv
 		NSZ = 3,
 		AllowRecip = 4,
 		Fast = 5,
+		AllowContractFastINTEL = 6,
+		AllowReassocINTEL = 7,
 		Max = 0x7fffffff
 	};
 	enum class SelectionControlMask : unsigned
@@ -128,6 +132,7 @@ namespace spvgentwo::spv
 		LoopCoalesceINTEL = 0x100000,
 		MaxInterleavingINTEL = 0x200000,
 		SpeculatedIterationsINTEL = 0x400000,
+		NoFusionINTEL = 0x800000,
 	};
 	enum class LoopControlShift : unsigned
 	{
@@ -148,6 +153,7 @@ namespace spvgentwo::spv
 		LoopCoalesceINTEL = 14,
 		MaxInterleavingINTEL = 15,
 		SpeculatedIterationsINTEL = 16,
+		NoFusionINTEL = 17,
 		Max = 0x7fffffff
 	};
 	enum class FunctionControlMask : unsigned
@@ -279,6 +285,21 @@ namespace spvgentwo::spv
 		SkipAABBsKHR = 10,
 		Max = 0x7fffffff
 	};
+	enum class FragmentShadingRateMask : unsigned
+	{
+		Vertical2Pixels = 0x0001,
+		Vertical4Pixels = 0x0002,
+		Horizontal2Pixels = 0x0004,
+		Horizontal4Pixels = 0x0008,
+	};
+	enum class FragmentShadingRateShift : unsigned
+	{
+		Vertical2Pixels = 0,
+		Vertical4Pixels = 1,
+		Horizontal2Pixels = 2,
+		Horizontal4Pixels = 3,
+		Max = 0x7fffffff
+	};
 	enum class SourceLanguage : unsigned
 	{
 		Unknown = 0,
@@ -390,10 +411,16 @@ namespace spvgentwo::spv
 		SampleInterlockUnorderedEXT = 5369,
 		ShadingRateInterlockOrderedEXT = 5370,
 		ShadingRateInterlockUnorderedEXT = 5371,
+		SharedLocalMemorySizeINTEL = 5618,
+		RoundingModeRTPINTEL = 5620,
+		RoundingModeRTNINTEL = 5621,
+		FloatingPointModeALTINTEL = 5622,
+		FloatingPointModeIEEEINTEL = 5623,
 		MaxWorkgroupSizeINTEL = 5893,
 		MaxWorkDimINTEL = 5894,
 		NoGlobalOffsetINTEL = 5895,
 		NumSIMDWorkitemsINTEL = 5896,
+		SchedulerTargetFmaxMhzINTEL = 5903,
 		Max = 0x7fffffff
 	};
 	enum class StorageClass : unsigned
@@ -426,6 +453,8 @@ namespace spvgentwo::spv
 		PhysicalStorageBuffer = 5349,
 		PhysicalStorageBufferEXT = 5349,
 		CodeSectionINTEL = 5605,
+		DeviceOnlyINTEL = 5936,
+		HostOnlyINTEL = 5937,
 		Max = 0x7fffffff
 	};
 	enum class Dim : unsigned
@@ -496,6 +525,8 @@ namespace spvgentwo::spv
 		Rg8ui = 37,
 		R16ui = 38,
 		R8ui = 39,
+		R64ui = 40,
+		R64i = 41,
 		Max = 0x7fffffff
 	};
 	enum class ImageChannelOrder : unsigned
@@ -549,6 +580,18 @@ namespace spvgentwo::spv
 		RTZ = 1,
 		RTP = 2,
 		RTN = 3,
+		Max = 0x7fffffff
+	};
+	enum class FPDenormMode : unsigned
+	{
+		Preserve = 0,
+		FlushToZero = 1,
+		Max = 0x7fffffff
+	};
+	enum class FPOperationMode : unsigned
+	{
+		IEEE = 0,
+		ALT = 1,
 		Max = 0x7fffffff
 	};
 	enum class LinkageType : unsigned
@@ -642,12 +685,22 @@ namespace spvgentwo::spv
 		RestrictPointerEXT = 5355,
 		AliasedPointer = 5356,
 		AliasedPointerEXT = 5356,
+		SIMTCallINTEL = 5599,
 		ReferencedIndirectlyINTEL = 5602,
+		ClobberINTEL = 5607,
+		SideEffectsINTEL = 5608,
+		VectorComputeVariableINTEL = 5624,
+		FuncParamIOKindINTEL = 5625,
+		VectorComputeFunctionINTEL = 5626,
+		StackCallINTEL = 5627,
+		GlobalVariableOffsetINTEL = 5628,
 		CounterBuffer = 5634,
 		HlslCounterBufferGOOGLE = 5634,
 		UserSemantic = 5635,
 		HlslSemanticGOOGLE = 5635,
 		UserTypeGOOGLE = 5636,
+		FunctionRoundingModeINTEL = 5822,
+		FunctionDenormModeINTEL = 5823,
 		RegisterINTEL = 5825,
 		MemoryINTEL = 5826,
 		NumbanksINTEL = 5827,
@@ -660,6 +713,17 @@ namespace spvgentwo::spv
 		MergeINTEL = 5834,
 		BankBitsINTEL = 5835,
 		ForcePow2DepthINTEL = 5836,
+		BurstCoalesceINTEL = 5899,
+		CacheSizeINTEL = 5900,
+		DontStaticallyCoalesceINTEL = 5901,
+		PrefetchINTEL = 5902,
+		StallEnableINTEL = 5905,
+		FuseLoopsInFunctionINTEL = 5907,
+		BufferLocationINTEL = 5921,
+		IOPipeStorageINTEL = 5944,
+		FunctionFloatingPointModeINTEL = 6080,
+		SingleElementVectorINTEL = 6085,
+		VectorComputeCallableFunctionINTEL = 6087,
 		Max = 0x7fffffff
 	};
 	enum class BuiltIn : unsigned
@@ -706,20 +770,22 @@ namespace spvgentwo::spv
 		VertexIndex = 42,
 		InstanceIndex = 43,
 		SubgroupEqMask = 4416,
-		SubgroupGeMask = 4417,
-		SubgroupGtMask = 4418,
-		SubgroupLeMask = 4419,
-		SubgroupLtMask = 4420,
 		SubgroupEqMaskKHR = 4416,
+		SubgroupGeMask = 4417,
 		SubgroupGeMaskKHR = 4417,
+		SubgroupGtMask = 4418,
 		SubgroupGtMaskKHR = 4418,
+		SubgroupLeMask = 4419,
 		SubgroupLeMaskKHR = 4419,
+		SubgroupLtMask = 4420,
 		SubgroupLtMaskKHR = 4420,
 		BaseVertex = 4424,
 		BaseInstance = 4425,
 		DrawIndex = 4426,
+		PrimitiveShadingRateKHR = 4432,
 		DeviceIndex = 4438,
 		ViewIndex = 4440,
+		ShadingRateKHR = 4444,
 		BaryCoordNoPerspAMD = 4992,
 		BaryCoordNoPerspCentroidAMD = 4993,
 		BaryCoordNoPerspSampleAMD = 4994,
@@ -771,7 +837,6 @@ namespace spvgentwo::spv
 		WorldToObjectNV = 5331,
 		WorldToObjectKHR = 5331,
 		HitTNV = 5332,
-		HitTKHR = 5332,
 		HitKindNV = 5333,
 		HitKindKHR = 5333,
 		IncomingRayFlagsNV = 5351,
@@ -884,8 +949,12 @@ namespace spvgentwo::spv
 		GroupNonUniformQuad = 68,
 		ShaderLayer = 69,
 		ShaderViewportIndex = 70,
+		FragmentShadingRateKHR = 4422,
 		SubgroupBallotKHR = 4423,
 		DrawParameters = 4427,
+		WorkgroupMemoryExplicitLayoutKHR = 4428,
+		WorkgroupMemoryExplicitLayout8BitAccessKHR = 4429,
+		WorkgroupMemoryExplicitLayout16BitAccessKHR = 4430,
 		SubgroupVoteKHR = 4431,
 		StorageBuffer16BitAccess = 4433,
 		StorageUniformBufferBlock16 = 4433,
@@ -908,12 +977,15 @@ namespace spvgentwo::spv
 		RoundingModeRTE = 4467,
 		RoundingModeRTZ = 4468,
 		RayQueryProvisionalKHR = 4471,
-		RayTraversalPrimitiveCullingProvisionalKHR = 4478,
+		RayQueryKHR = 4472,
+		RayTraversalPrimitiveCullingKHR = 4478,
+		RayTracingKHR = 4479,
 		Float16ImageAMD = 5008,
 		ImageGatherBiasLodAMD = 5009,
 		FragmentMaskAMD = 5010,
 		StencilExportEXT = 5013,
 		ImageReadWriteLodAMD = 5015,
+		Int64ImageEXT = 5016,
 		ShaderClockKHR = 5055,
 		SampleMaskOverrideCoverageNV = 5249,
 		GeometryShaderPassthroughNV = 5251,
@@ -973,19 +1045,40 @@ namespace spvgentwo::spv
 		SubgroupBufferBlockIOINTEL = 5569,
 		SubgroupImageBlockIOINTEL = 5570,
 		SubgroupImageMediaBlockIOINTEL = 5579,
+		RoundToInfinityINTEL = 5582,
+		FloatingPointModeINTEL = 5583,
 		IntegerFunctions2INTEL = 5584,
 		FunctionPointersINTEL = 5603,
 		IndirectReferencesINTEL = 5604,
+		AsmINTEL = 5606,
+		AtomicFloat32MinMaxEXT = 5612,
+		AtomicFloat64MinMaxEXT = 5613,
+		AtomicFloat16MinMaxEXT = 5616,
+		VectorComputeINTEL = 5617,
+		VectorAnyINTEL = 5619,
 		SubgroupAvcMotionEstimationINTEL = 5696,
 		SubgroupAvcMotionEstimationIntraINTEL = 5697,
 		SubgroupAvcMotionEstimationChromaINTEL = 5698,
+		VariableLengthArrayINTEL = 5817,
+		FunctionFloatControlINTEL = 5821,
 		FPGAMemoryAttributesINTEL = 5824,
+		FPFastMathModeINTEL = 5837,
+		ArbitraryPrecisionIntegersINTEL = 5844,
 		UnstructuredLoopControlsINTEL = 5886,
 		FPGALoopControlsINTEL = 5888,
 		KernelAttributesINTEL = 5892,
 		FPGAKernelAttributesINTEL = 5897,
+		FPGAMemoryAccessesINTEL = 5898,
+		FPGAClusterAttributesINTEL = 5904,
+		LoopFuseINTEL = 5906,
+		FPGABufferLocationINTEL = 5920,
+		USMStorageClassesINTEL = 5935,
+		IOPipesINTEL = 5943,
 		BlockingPipesINTEL = 5945,
 		FPGARegINTEL = 5948,
+		AtomicFloat32AddEXT = 6033,
+		AtomicFloat64AddEXT = 6034,
+		LongConstantCompositeINTEL = 6089,
 		Max = 0x7fffffff
 	};
 	enum class RayQueryIntersection : unsigned
@@ -1353,13 +1446,19 @@ namespace spvgentwo::spv
 		OpPtrEqual = 401,
 		OpPtrNotEqual = 402,
 		OpPtrDiff = 403,
+		OpTerminateInvocation = 4416,
 		OpSubgroupBallotKHR = 4421,
 		OpSubgroupFirstInvocationKHR = 4422,
 		OpSubgroupAllKHR = 4428,
 		OpSubgroupAnyKHR = 4429,
 		OpSubgroupAllEqualKHR = 4430,
 		OpSubgroupReadInvocationKHR = 4432,
-		OpTypeRayQueryProvisionalKHR = 4472,
+		OpTraceRayKHR = 4445,
+		OpExecuteCallableKHR = 4446,
+		OpConvertUToAccelerationStructureKHR = 4447,
+		OpIgnoreIntersectionKHR = 4448,
+		OpTerminateRayKHR = 4449,
+		OpTypeRayQueryKHR = 4472,
 		OpRayQueryInitializeKHR = 4473,
 		OpRayQueryTerminateKHR = 4474,
 		OpRayQueryGenerateIntersectionKHR = 4475,
@@ -1383,15 +1482,11 @@ namespace spvgentwo::spv
 		OpReportIntersectionNV = 5334,
 		OpReportIntersectionKHR = 5334,
 		OpIgnoreIntersectionNV = 5335,
-		OpIgnoreIntersectionKHR = 5335,
 		OpTerminateRayNV = 5336,
-		OpTerminateRayKHR = 5336,
 		OpTraceNV = 5337,
-		OpTraceRayKHR = 5337,
 		OpTypeAccelerationStructureNV = 5341,
 		OpTypeAccelerationStructureKHR = 5341,
 		OpExecuteCallableNV = 5344,
-		OpExecuteCallableKHR = 5344,
 		OpTypeCooperativeMatrixNV = 5358,
 		OpCooperativeMatrixLoadNV = 5359,
 		OpCooperativeMatrixStoreNV = 5360,
@@ -1425,8 +1520,13 @@ namespace spvgentwo::spv
 		OpUSubSatINTEL = 5596,
 		OpIMul32x16INTEL = 5597,
 		OpUMul32x16INTEL = 5598,
-		OpFunctionPointerINTEL = 5600,
+		OpConstFunctionPointerINTEL = 5600,
 		OpFunctionPointerCallINTEL = 5601,
+		OpAsmTargetINTEL = 5609,
+		OpAsmINTEL = 5610,
+		OpAsmCallINTEL = 5611,
+		OpAtomicFMinEXT = 5614,
+		OpAtomicFMaxEXT = 5615,
 		OpDecorateString = 5632,
 		OpDecorateStringGOOGLE = 5632,
 		OpMemberDecorateString = 5633,
@@ -1549,7 +1649,12 @@ namespace spvgentwo::spv
 		OpSubgroupAvcSicGetPackedSkcLumaCountThresholdINTEL = 5814,
 		OpSubgroupAvcSicGetPackedSkcLumaSumThresholdINTEL = 5815,
 		OpSubgroupAvcSicGetInterRawSadsINTEL = 5816,
+		OpVariableLengthArrayINTEL = 5818,
+		OpSaveMemoryINTEL = 5819,
+		OpRestoreMemoryINTEL = 5820,
 		OpLoopControlINTEL = 5887,
+		OpPtrCastToCrossWorkgroupINTEL = 5934,
+		OpCrossWorkgroupCastToPtrINTEL = 5938,
 		OpReadPipeBlockingINTEL = 5946,
 		OpWritePipeBlockingINTEL = 5947,
 		OpFPGARegINTEL = 5949,
@@ -1570,6 +1675,11 @@ namespace spvgentwo::spv
 		OpRayQueryGetWorldRayOriginKHR = 6030,
 		OpRayQueryGetIntersectionObjectToWorldKHR = 6031,
 		OpRayQueryGetIntersectionWorldToObjectKHR = 6032,
+		OpAtomicFAddEXT = 6035,
+		OpTypeBufferSurfaceINTEL = 6086,
+		OpTypeStructContinuedINTEL = 6090,
+		OpConstantCompositeContinuedINTEL = 6091,
+		OpSpecConstantCompositeContinuedINTEL = 6092,
 		Max = 0x7fffffff
 	};
 	enum class Extension : unsigned
@@ -1586,54 +1696,73 @@ namespace spvgentwo::spv
 		SPV_EXT_fragment_invocation_density = 9,
 		SPV_EXT_fragment_shader_interlock = 10,
 		SPV_EXT_physical_storage_buffer = 11,
-		SPV_EXT_shader_stencil_export = 12,
-		SPV_EXT_shader_viewport_index_layer = 13,
-		SPV_GOOGLE_decorate_string = 14,
-		SPV_GOOGLE_hlsl_functionality1 = 15,
-		SPV_GOOGLE_user_type = 16,
-		SPV_INTEL_blocking_pipes = 17,
-		SPV_INTEL_device_side_avc_motion_estimation = 18,
-		SPV_INTEL_fpga_loop_controls = 19,
-		SPV_INTEL_fpga_memory_attributes = 20,
-		SPV_INTEL_fpga_reg = 21,
-		SPV_INTEL_function_pointers = 22,
-		SPV_INTEL_kernel_attributes = 23,
-		SPV_INTEL_media_block_io = 24,
-		SPV_INTEL_shader_integer_functions2 = 25,
-		SPV_INTEL_subgroups = 26,
-		SPV_INTEL_unstructured_loop_controls = 27,
-		SPV_KHR_16bit_storage = 28,
-		SPV_KHR_8bit_storage = 29,
-		SPV_KHR_device_group = 30,
-		SPV_KHR_float_controls = 31,
-		SPV_KHR_multiview = 32,
-		SPV_KHR_no_integer_wrap_decoration = 33,
-		SPV_KHR_physical_storage_buffer = 34,
-		SPV_KHR_post_depth_coverage = 35,
-		SPV_KHR_ray_query = 36,
-		SPV_KHR_ray_tracing = 37,
-		SPV_KHR_shader_atomic_counter_ops = 38,
-		SPV_KHR_shader_ballot = 39,
-		SPV_KHR_shader_clock = 40,
-		SPV_KHR_shader_draw_parameters = 41,
-		SPV_KHR_storage_buffer_storage_class = 42,
-		SPV_KHR_subgroup_vote = 43,
-		SPV_KHR_variable_pointers = 44,
-		SPV_KHR_vulkan_memory_model = 45,
-		SPV_NVX_multiview_per_view_attributes = 46,
-		SPV_NV_compute_shader_derivatives = 47,
-		SPV_NV_cooperative_matrix = 48,
-		SPV_NV_fragment_shader_barycentric = 49,
-		SPV_NV_geometry_shader_passthrough = 50,
-		SPV_NV_mesh_shader = 51,
-		SPV_NV_ray_tracing = 52,
-		SPV_NV_sample_mask_override_coverage = 53,
-		SPV_NV_shader_image_footprint = 54,
-		SPV_NV_shader_sm_builtins = 55,
-		SPV_NV_shader_subgroup_partitioned = 56,
-		SPV_NV_shading_rate = 57,
-		SPV_NV_stereo_view_rendering = 58,
-		SPV_NV_viewport_array2 = 59,
+		SPV_EXT_shader_atomic_float_add = 12,
+		SPV_EXT_shader_atomic_float_min_max = 13,
+		SPV_EXT_shader_image_int64 = 14,
+		SPV_EXT_shader_stencil_export = 15,
+		SPV_EXT_shader_viewport_index_layer = 16,
+		SPV_GOOGLE_decorate_string = 17,
+		SPV_GOOGLE_hlsl_functionality1 = 18,
+		SPV_GOOGLE_user_type = 19,
+		SPV_INTEL_arbitrary_precision_integers = 20,
+		SPV_INTEL_blocking_pipes = 21,
+		SPV_INTEL_device_side_avc_motion_estimation = 22,
+		SPV_INTEL_float_controls2 = 23,
+		SPV_INTEL_fp_fast_math_mode = 24,
+		SPV_INTEL_fpga_buffer_location = 25,
+		SPV_INTEL_fpga_cluster_attributes = 26,
+		SPV_INTEL_fpga_loop_controls = 27,
+		SPV_INTEL_fpga_memory_accesses = 28,
+		SPV_INTEL_fpga_memory_attributes = 29,
+		SPV_INTEL_fpga_reg = 30,
+		SPV_INTEL_function_pointers = 31,
+		SPV_INTEL_inline_assembly = 32,
+		SPV_INTEL_io_pipes = 33,
+		SPV_INTEL_kernel_attributes = 34,
+		SPV_INTEL_long_constant_composite = 35,
+		SPV_INTEL_loop_fuse = 36,
+		SPV_INTEL_media_block_io = 37,
+		SPV_INTEL_shader_integer_functions2 = 38,
+		SPV_INTEL_subgroups = 39,
+		SPV_INTEL_unstructured_loop_controls = 40,
+		SPV_INTEL_usm_storage_classes = 41,
+		SPV_INTEL_variable_length_array = 42,
+		SPV_INTEL_vector_compute = 43,
+		SPV_KHR_16bit_storage = 44,
+		SPV_KHR_8bit_storage = 45,
+		SPV_KHR_device_group = 46,
+		SPV_KHR_float_controls = 47,
+		SPV_KHR_fragment_shading_rate = 48,
+		SPV_KHR_multiview = 49,
+		SPV_KHR_no_integer_wrap_decoration = 50,
+		SPV_KHR_physical_storage_buffer = 51,
+		SPV_KHR_post_depth_coverage = 52,
+		SPV_KHR_ray_query = 53,
+		SPV_KHR_ray_tracing = 54,
+		SPV_KHR_shader_atomic_counter_ops = 55,
+		SPV_KHR_shader_ballot = 56,
+		SPV_KHR_shader_clock = 57,
+		SPV_KHR_shader_draw_parameters = 58,
+		SPV_KHR_storage_buffer_storage_class = 59,
+		SPV_KHR_subgroup_vote = 60,
+		SPV_KHR_terminate_invocation = 61,
+		SPV_KHR_variable_pointers = 62,
+		SPV_KHR_vulkan_memory_model = 63,
+		SPV_KHR_workgroup_memory_explicit_layout = 64,
+		SPV_NVX_multiview_per_view_attributes = 65,
+		SPV_NV_compute_shader_derivatives = 66,
+		SPV_NV_cooperative_matrix = 67,
+		SPV_NV_fragment_shader_barycentric = 68,
+		SPV_NV_geometry_shader_passthrough = 69,
+		SPV_NV_mesh_shader = 70,
+		SPV_NV_ray_tracing = 71,
+		SPV_NV_sample_mask_override_coverage = 72,
+		SPV_NV_shader_image_footprint = 73,
+		SPV_NV_shader_sm_builtins = 74,
+		SPV_NV_shader_subgroup_partitioned = 75,
+		SPV_NV_shading_rate = 76,
+		SPV_NV_stereo_view_rendering = 77,
+		SPV_NV_viewport_array2 = 78,
 		Max = 0x7fffffff
 	};
 	static constexpr const char* ExtensionNames[] =
@@ -1650,26 +1779,43 @@ namespace spvgentwo::spv
 		"SPV_EXT_fragment_invocation_density",
 		"SPV_EXT_fragment_shader_interlock",
 		"SPV_EXT_physical_storage_buffer",
+		"SPV_EXT_shader_atomic_float_add",
+		"SPV_EXT_shader_atomic_float_min_max",
+		"SPV_EXT_shader_image_int64",
 		"SPV_EXT_shader_stencil_export",
 		"SPV_EXT_shader_viewport_index_layer",
 		"SPV_GOOGLE_decorate_string",
 		"SPV_GOOGLE_hlsl_functionality1",
 		"SPV_GOOGLE_user_type",
+		"SPV_INTEL_arbitrary_precision_integers",
 		"SPV_INTEL_blocking_pipes",
 		"SPV_INTEL_device_side_avc_motion_estimation",
+		"SPV_INTEL_float_controls2",
+		"SPV_INTEL_fp_fast_math_mode",
+		"SPV_INTEL_fpga_buffer_location",
+		"SPV_INTEL_fpga_cluster_attributes",
 		"SPV_INTEL_fpga_loop_controls",
+		"SPV_INTEL_fpga_memory_accesses",
 		"SPV_INTEL_fpga_memory_attributes",
 		"SPV_INTEL_fpga_reg",
 		"SPV_INTEL_function_pointers",
+		"SPV_INTEL_inline_assembly",
+		"SPV_INTEL_io_pipes",
 		"SPV_INTEL_kernel_attributes",
+		"SPV_INTEL_long_constant_composite",
+		"SPV_INTEL_loop_fuse",
 		"SPV_INTEL_media_block_io",
 		"SPV_INTEL_shader_integer_functions2",
 		"SPV_INTEL_subgroups",
 		"SPV_INTEL_unstructured_loop_controls",
+		"SPV_INTEL_usm_storage_classes",
+		"SPV_INTEL_variable_length_array",
+		"SPV_INTEL_vector_compute",
 		"SPV_KHR_16bit_storage",
 		"SPV_KHR_8bit_storage",
 		"SPV_KHR_device_group",
 		"SPV_KHR_float_controls",
+		"SPV_KHR_fragment_shading_rate",
 		"SPV_KHR_multiview",
 		"SPV_KHR_no_integer_wrap_decoration",
 		"SPV_KHR_physical_storage_buffer",
@@ -1682,8 +1828,10 @@ namespace spvgentwo::spv
 		"SPV_KHR_shader_draw_parameters",
 		"SPV_KHR_storage_buffer_storage_class",
 		"SPV_KHR_subgroup_vote",
+		"SPV_KHR_terminate_invocation",
 		"SPV_KHR_variable_pointers",
 		"SPV_KHR_vulkan_memory_model",
+		"SPV_KHR_workgroup_memory_explicit_layout",
 		"SPV_NVX_multiview_per_view_attributes",
 		"SPV_NV_compute_shader_derivatives",
 		"SPV_NV_cooperative_matrix",
@@ -1998,7 +2146,8 @@ namespace spvgentwo::spv
 		case Op::OpSubgroupAnyKHR: *hasResult = true; *hasResultType = true; break;
 		case Op::OpSubgroupAllEqualKHR: *hasResult = true; *hasResultType = true; break;
 		case Op::OpSubgroupReadInvocationKHR: *hasResult = true; *hasResultType = true; break;
-		case Op::OpTypeRayQueryProvisionalKHR: *hasResult = true; *hasResultType = false; break;
+		case Op::OpConvertUToAccelerationStructureKHR: *hasResult = true; *hasResultType = true; break;
+		case Op::OpTypeRayQueryKHR: *hasResult = true; *hasResultType = false; break;
 		case Op::OpRayQueryProceedKHR: *hasResult = true; *hasResultType = true; break;
 		case Op::OpRayQueryGetIntersectionTypeKHR: *hasResult = true; *hasResultType = true; break;
 		case Op::OpGroupIAddNonUniformAMD: *hasResult = true; *hasResultType = true; break;
@@ -2042,8 +2191,13 @@ namespace spvgentwo::spv
 		case Op::OpUSubSatINTEL: *hasResult = true; *hasResultType = true; break;
 		case Op::OpIMul32x16INTEL: *hasResult = true; *hasResultType = true; break;
 		case Op::OpUMul32x16INTEL: *hasResult = true; *hasResultType = true; break;
-		case Op::OpFunctionPointerINTEL: *hasResult = true; *hasResultType = true; break;
+		case Op::OpConstFunctionPointerINTEL: *hasResult = true; *hasResultType = true; break;
 		case Op::OpFunctionPointerCallINTEL: *hasResult = true; *hasResultType = true; break;
+		case Op::OpAsmTargetINTEL: *hasResult = true; *hasResultType = true; break;
+		case Op::OpAsmINTEL: *hasResult = true; *hasResultType = true; break;
+		case Op::OpAsmCallINTEL: *hasResult = true; *hasResultType = true; break;
+		case Op::OpAtomicFMinEXT: *hasResult = true; *hasResultType = true; break;
+		case Op::OpAtomicFMaxEXT: *hasResult = true; *hasResultType = true; break;
 		case Op::OpVmeImageINTEL: *hasResult = true; *hasResultType = true; break;
 		case Op::OpTypeVmeImageINTEL: *hasResult = true; *hasResultType = false; break;
 		case Op::OpTypeAvcImePayloadINTEL: *hasResult = true; *hasResultType = false; break;
@@ -2162,6 +2316,10 @@ namespace spvgentwo::spv
 		case Op::OpSubgroupAvcSicGetPackedSkcLumaCountThresholdINTEL: *hasResult = true; *hasResultType = true; break;
 		case Op::OpSubgroupAvcSicGetPackedSkcLumaSumThresholdINTEL: *hasResult = true; *hasResultType = true; break;
 		case Op::OpSubgroupAvcSicGetInterRawSadsINTEL: *hasResult = true; *hasResultType = true; break;
+		case Op::OpVariableLengthArrayINTEL: *hasResult = true; *hasResultType = true; break;
+		case Op::OpSaveMemoryINTEL: *hasResult = true; *hasResultType = true; break;
+		case Op::OpPtrCastToCrossWorkgroupINTEL: *hasResult = true; *hasResultType = true; break;
+		case Op::OpCrossWorkgroupCastToPtrINTEL: *hasResult = true; *hasResultType = true; break;
 		case Op::OpReadPipeBlockingINTEL: *hasResult = true; *hasResultType = true; break;
 		case Op::OpWritePipeBlockingINTEL: *hasResult = true; *hasResultType = true; break;
 		case Op::OpFPGARegINTEL: *hasResult = true; *hasResultType = true; break;
@@ -2182,6 +2340,8 @@ namespace spvgentwo::spv
 		case Op::OpRayQueryGetWorldRayOriginKHR: *hasResult = true; *hasResultType = true; break;
 		case Op::OpRayQueryGetIntersectionObjectToWorldKHR: *hasResult = true; *hasResultType = true; break;
 		case Op::OpRayQueryGetIntersectionWorldToObjectKHR: *hasResult = true; *hasResultType = true; break;
+		case Op::OpAtomicFAddEXT: *hasResult = true; *hasResultType = true; break;
+		case Op::OpTypeBufferSurfaceINTEL: *hasResult = true; *hasResultType = false; break;
 		}
 	}
 	inline constexpr bool HasResult(Op opcode) {
@@ -2242,6 +2402,11 @@ namespace spvgentwo::spv
 		case Op::OpModuleProcessed: return false;
 		case Op::OpExecutionModeId: return false;
 		case Op::OpDecorateId: return false;
+		case Op::OpTerminateInvocation: return false;
+		case Op::OpTraceRayKHR: return false;
+		case Op::OpExecuteCallableKHR: return false;
+		case Op::OpIgnoreIntersectionKHR: return false;
+		case Op::OpTerminateRayKHR: return false;
 		case Op::OpRayQueryInitializeKHR: return false;
 		case Op::OpRayQueryTerminateKHR: return false;
 		case Op::OpRayQueryGenerateIntersectionKHR: return false;
@@ -2260,7 +2425,11 @@ namespace spvgentwo::spv
 		case Op::OpSubgroupImageMediaBlockWriteINTEL: return false;
 		case Op::OpDecorateString: return false;
 		case Op::OpMemberDecorateString: return false;
+		case Op::OpRestoreMemoryINTEL: return false;
 		case Op::OpLoopControlINTEL: return false;
+		case Op::OpTypeStructContinuedINTEL: return false;
+		case Op::OpConstantCompositeContinuedINTEL: return false;
+		case Op::OpSpecConstantCompositeContinuedINTEL: return false;
 		}
 	}
 	inline constexpr bool HasResultType(Op opcode) {
@@ -2347,7 +2516,12 @@ namespace spvgentwo::spv
 		case Op::OpModuleProcessed: return false;
 		case Op::OpExecutionModeId: return false;
 		case Op::OpDecorateId: return false;
-		case Op::OpTypeRayQueryProvisionalKHR: return false;
+		case Op::OpTerminateInvocation: return false;
+		case Op::OpTraceRayKHR: return false;
+		case Op::OpExecuteCallableKHR: return false;
+		case Op::OpIgnoreIntersectionKHR: return false;
+		case Op::OpTerminateRayKHR: return false;
+		case Op::OpTypeRayQueryKHR: return false;
 		case Op::OpRayQueryInitializeKHR: return false;
 		case Op::OpRayQueryTerminateKHR: return false;
 		case Op::OpRayQueryGenerateIntersectionKHR: return false;
@@ -2381,7 +2555,12 @@ namespace spvgentwo::spv
 		case Op::OpTypeAvcImeDualReferenceStreaminINTEL: return false;
 		case Op::OpTypeAvcRefResultINTEL: return false;
 		case Op::OpTypeAvcSicResultINTEL: return false;
+		case Op::OpRestoreMemoryINTEL: return false;
 		case Op::OpLoopControlINTEL: return false;
+		case Op::OpTypeBufferSurfaceINTEL: return false;
+		case Op::OpTypeStructContinuedINTEL: return false;
+		case Op::OpConstantCompositeContinuedINTEL: return false;
+		case Op::OpSpecConstantCompositeContinuedINTEL: return false;
 		}
 	}
 	inline constexpr bool IsTypeOp(Op opcode) {
@@ -2410,7 +2589,7 @@ namespace spvgentwo::spv
 		case Op::OpTypeForwardPointer: return true;
 		case Op::OpTypePipeStorage: return true;
 		case Op::OpTypeNamedBarrier: return true;
-		case Op::OpTypeRayQueryProvisionalKHR: return true;
+		case Op::OpTypeRayQueryKHR: return true;
 		case Op::OpTypeAccelerationStructureNV: return true;
 		case Op::OpTypeCooperativeMatrixNV: return true;
 		case Op::OpTypeVmeImageINTEL: return true;
@@ -2426,6 +2605,8 @@ namespace spvgentwo::spv
 		case Op::OpTypeAvcImeDualReferenceStreaminINTEL: return true;
 		case Op::OpTypeAvcRefResultINTEL: return true;
 		case Op::OpTypeAvcSicResultINTEL: return true;
+		case Op::OpTypeBufferSurfaceINTEL: return true;
+		case Op::OpTypeStructContinuedINTEL: return true;
 		}
 	}
 	inline constexpr bool IsConstantOp(Op opcode) {
@@ -2438,6 +2619,7 @@ namespace spvgentwo::spv
 		case Op::OpConstantSampler: return true;
 		case Op::OpConstantNull: return true;
 		case Op::OpConstantPipeStorage: return true;
+		case Op::OpConstantCompositeContinuedINTEL: return true;
 		}
 	}
 	inline constexpr bool IsSpecConstantOp(Op opcode) {
@@ -2448,6 +2630,7 @@ namespace spvgentwo::spv
 		case Op::OpSpecConstant: return true;
 		case Op::OpSpecConstantComposite: return true;
 		case Op::OpSpecConstantOp: return true;
+		case Op::OpSpecConstantCompositeContinuedINTEL: return true;
 		}
 	}
 } // spvgentwo::spv
