@@ -22,7 +22,7 @@ struct MyExpr
 	//Instruction* constnt = nullptr;
 	Instruction* result = nullptr;
 
-	void operator()(const List<MyExpr*>& _inputs, const List<MyExpr*>& _outputs)
+	void operator()(const List<MyExpr*>& _inputs, [[maybe_unused]] const List<MyExpr*>& _outputs)
 	{
 		Instruction* lhs = _inputs.empty() ? nullptr : _inputs.front()->result;
 		Instruction* rhs = _inputs.size() == 2u ? _inputs.back()->result : nullptr;

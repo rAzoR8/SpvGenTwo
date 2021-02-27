@@ -1,4 +1,3 @@
-#include "spvgentwo/Logger.h"
 #include "spvgentwo/Module.h"
 #include "spvgentwo/Grammar.h"
 
@@ -6,13 +5,10 @@
 #include "common/BinaryFileReader.h"
 #include "common/ConsoleLogger.h"
 #include "common/ReflectionHelper.h"
-#include "common/GrammarHelper.h"
 #include "common/HeapList.h"
-#include "common/HeapString.h"
 #include "common/HeapHashMap.h"
 #include "common/ModulePrinter.h"
 #include "common/VulkanInterop.h"
-#include "common/ExternalMemoryAllocator.h"
 
 #include <cstring> // strcmp
 #include <cstdio> // printf, note windows console, and others too, don't print SPIR-V's UTF-8 strings properly
@@ -107,18 +103,6 @@ const HeapHashMap<vk::DescriptorType, const char*> DescriptorTypeNames(
 
 auto g_instrPrinter = ModuleSimpleFuncPrinter([](const char* _pStr) { printf("%s", _pStr); });
 
-template <class Pred, class Func>
-void map(const List<const Instruction*>& instructions, Pred pred, Func func)
-{
-	for (const Instruction* instr : instructions)
-	{
-		if (pred(instr))
-		{
-			func(instr);
-		}
-	}
-}
-
 template <template <class> class Container>
 void getList(const Container<Instruction>& _container, List<const Instruction*>& _instructions)
 {
@@ -193,6 +177,35 @@ void printFunctions(const Module& _module, const Grammar& _gram)
 	printf("\n");
 }
 
+void printVariable(const Instruction& _instr, const Grammar& _gram)
+{
+	if (const char* name = _instr.getName(); name != nullptr)
+	{
+		if (strcmp(name, "") != 0)
+		{
+			printf("%s:\t", name);
+		}
+		else
+		{
+			printf("[EMPTY]:\t");
+		}
+	}
+	else
+	{
+		printf("[UNNAMED]:\t");
+	}
+
+	printInstruction(_instr, _gram, g_instrPrinter, PrintInstructionName::False, PrintOperandName::True, "\t");
+
+	if (_instr == spv::Op::OpVariable)
+	{
+		if (auto it = DescriptorTypeNames.find(vk::getDescriptorTypeFromVariable(_instr)); it != DescriptorTypeNames.end())
+		{
+			printf("\t[%s]", it->value);
+		}
+	}
+}
+
 void printDecorationsForTargets(const List<Instruction>& _targets, const Grammar& _gram)
 {
 	HeapList<const Instruction*> decorations;
@@ -202,32 +215,7 @@ void printDecorationsForTargets(const List<Instruction>& _targets, const Grammar
 		decorations.clear();
 		ReflectionHelper::getDecorations(&target, decorations);
 
-		if (const char* name = target.getName(); name != nullptr)
-		{
-			if (strcmp(name, "") != 0)
-			{
-				printf("%s:\t", name);			
-			}
-			else
-			{
-				printf("[EMPTY]:\t");
-			}
-		}
-		else
-		{
-			printf("[UNNAMED]:\t");
-		}
-
-		printInstruction(target, _gram, g_instrPrinter, PrintInstructionName::False, PrintOperandName::True, "\t");
-
-		if (target == spv::Op::OpVariable)
-		{
-			if (auto it = DescriptorTypeNames.find(vk::getDescriptorTypeFromVariable(target)); it != DescriptorTypeNames.end())
-			{
-				printf("\t[%s]", it->value);
-			}
-		}
-
+		printVariable(target, _gram);
 		printf("\n");
 
 		for (const Instruction* deco : decorations)
@@ -430,23 +418,8 @@ int main(int argc, char* argv[])
 
 	if (instr != nullptr)
 	{
-		if (const char* name = instr->getName(); name != nullptr)
-		{
-			if (strcmp(name, "") != 0)
-			{
-				printf("%s:\t", name);
-			}
-			else
-			{
-				printf("[EMPTY]:\t");
-			}
-		}
-		else
-		{
-			printf("[UNNAMED]:\t");
-		}
-
-		printInstruction(*instr, gram, g_instrPrinter, PrintInstructionName::False, PrintOperandName::True, "\t"); printf(":\n");
+		printVariable(*instr, gram);
+		printf("\n");
 
 		if (instr->hasResultType())
 		{
@@ -454,11 +427,6 @@ int main(int argc, char* argv[])
 			{
 				printInstruction(*type, gram, g_instrPrinter); printf("\n");
 			}
-		}
-
-		if (auto it = DescriptorTypeNames.find(vk::getDescriptorTypeFromVariable(*instr)); it != DescriptorTypeNames.end())
-		{
-			printf("\t\t%s\n", it->value);
 		}
 
 		decorations.clear();
