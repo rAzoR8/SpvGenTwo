@@ -10,7 +10,7 @@
 #include "common/HeapList.h"
 #include "common/HeapString.h"
 #include "common/HeapHashMap.h"
-#include "common/ModuleToString.h"
+#include "common/ModulePrinter.h"
 #include "common/VulkanInterop.h"
 #include "common/ExternalMemoryAllocator.h"
 
@@ -19,6 +19,7 @@
 #include <cstdlib> // strtoul
 
 using namespace spvgentwo;
+using namespace ModulePrinter;
 
 const HeapHashMap<spv::Decoration, const char*> DecorationNames(
 	spv::Decoration::RelaxedPrecision, (const char*)"RelaxedPrecision",
@@ -127,14 +128,48 @@ void getList(const Container<Instruction>& _container, List<const Instruction*>&
 	}
 }
 
-void printFunctions(const Module& _module, const Grammar& gram)
+void printFunctions(const Module& _module, const Grammar& _gram)
 {
+	auto printFnType = [&](const Function& _func)
+	{
+		printf("\t"); // OpFunction
+		if (const Instruction* instr = _func.getFunction(); instr != nullptr)
+		{
+			printInstruction(*instr, _gram, g_instrPrinter, PrintInstructionName::False);
+		}
+
+		printf("\n\t"); // OpTypeFunction
+		if (const Instruction* type = _func.getFunctionType(); type != nullptr)
+		{
+			printInstruction(*type, _gram, g_instrPrinter, PrintInstructionName::True);
+			printf("\n");
+
+			for (auto it = type->getFirstActualOperand(); it != type->end(); ++it)
+			{
+				if (const Instruction* instr = it->getInstruction(); instr != nullptr)
+				{
+					printf("\t");
+					printInstruction(*instr, _gram, g_instrPrinter, PrintInstructionName::True);
+					printf("\n");
+				}
+			}
+		}
+		printf("\n");
+	};
+
 	for (const EntryPoint& ep : _module.getEntryPoints())
 	{
 		if (const char** shaderType = ExecutionModelNames[ep.getExecutionModel()]; shaderType != nullptr)
 		{
 			printf("%s [EP %s]\n", ep.getName(), *shaderType);		
 		}
+		if (const Instruction* instr = ep.getEntryPoint(); instr != nullptr)
+		{
+			printInstruction(*instr, _gram, g_instrPrinter, PrintInstructionName::False, PrintOperandName::False);
+		}
+		printf("\n");
+
+		printFnType(ep);
 
 		for (const Operand& op : ep.getInterfaceVariables())
 		{
@@ -145,7 +180,7 @@ void printFunctions(const Module& _module, const Grammar& gram)
 					printf("\t%s\t", name);
 				}
 
-				printInstruction(*var, gram, g_instrPrinter, false);
+				printInstruction(*var, _gram, g_instrPrinter, PrintInstructionName::False);
 				printf("\n");
 			}
 		}
@@ -154,6 +189,8 @@ void printFunctions(const Module& _module, const Grammar& gram)
 	for (const Function& fun : _module.getFunctions())
 	{
 		printf("%s\n", fun.getName());
+
+		printFnType(fun);
 	}
 }
 
@@ -176,7 +213,7 @@ void printDecorations(const List<Instruction>& _targets, const Grammar& _gram, b
 		}
 
 		printf("\t");
-		printInstruction(target, _gram, g_instrPrinter, false);
+		printInstruction(target, _gram, g_instrPrinter, PrintInstructionName::False);
 		printf("\n");
 
 		if (target == spv::Op::OpVariable && _printDescriptorType)
@@ -221,6 +258,7 @@ int main(int argc, char* argv[])
 	bool listFunctions = false;
 	bool listVariables = false;
 	bool listTypeAndConstants = false;
+	bool listDecorations = false;
 	bool printVKDescriptorType = false;
 	spv::Id idToPrint = InvalidId;
 
@@ -241,15 +279,20 @@ int main(int argc, char* argv[])
 		{
 			varName = argv[++i];
 		}
-		else if (i < end && strcmp(arg, "--deco") == 0)
+		else if (strcmp(arg, "--deco") == 0)
 		{
-			const char* input = argv[++i];
+			listDecorations = true;
 
-			for (const auto& [deco, str] : DecorationNames)
+			if (i < end)
 			{
-				if (strcmp(str, input) == 0)
+				const char* input = argv[++i];
+
+				for (const auto& [deco, str] : DecorationNames)
 				{
-					decorationsToPrint.emplace_back(deco);
+					if (strcmp(str, input) == 0)
+					{
+						decorationsToPrint.emplace_back(deco);
+					}
 				}
 			}
 		}
@@ -363,9 +406,12 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		ReflectionHelper::getDecorations(instr, decorations);
+		if (listDecorations)
+		{
+			ReflectionHelper::getDecorations(instr, decorations);		
+		}
 	}
-	else
+	else if (listDecorations)
 	{
 		getList(module.getDecorations(), decorations);
 	}

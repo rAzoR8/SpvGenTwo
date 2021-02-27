@@ -5,7 +5,7 @@
 #include "common/BinaryFileWriter.h"
 #include "common/BinaryFileReader.h"
 #include "common/ConsoleLogger.h"
-#include "common/ModuleToString.h"
+#include "common/ModulePrinter.h"
 
 #include <cstring>
 
@@ -14,6 +14,7 @@
 #endif // !_NDEBUG
 
 using namespace spvgentwo;
+using namespace ModulePrinter;
 
 int main(int argc, char* argv[])
 {
@@ -23,6 +24,9 @@ int main(int argc, char* argv[])
 	bool serialize = false; // for debugging
 	bool reassignIDs = false;
 	bool callSPIRVDis = false;
+	PrintInstructionName printInstructionNames = PrintInstructionName::True;
+	PrintOperandName printOperandNames = PrintOperandName::True;
+	PrintPreamble printPreamble = PrintPreamble::True;
 
 	for (int i = 1u; i < argc; ++i)
 	{
@@ -42,6 +46,18 @@ int main(int argc, char* argv[])
 		else if (strcmp(arg, "--calldis") == 0)
 		{
 			callSPIRVDis = true;
+		}
+		else if (strcmp(arg, "--noinstrnames") == 0)
+		{
+			printInstructionNames = PrintInstructionName::False;
+		}
+		else if (strcmp(arg, "--noopnames") == 0)
+		{
+			printOperandNames = PrintOperandName::False;
+		}
+		else if (strcmp(arg, "--nopreamble") == 0)
+		{
+			printPreamble = PrintPreamble::False;
 		}
 	}
 
@@ -95,8 +111,8 @@ int main(int argc, char* argv[])
 			module.assignIDs(); // compact ids
 		}
 
-		auto printer = ModuleSimpleFuncPrinter([](const char* _pStr) { printf("%s", _pStr);	}, true);
-		const bool success = printModule(module, gram, printer, true);
+		auto printer = ModulePrinter::ModuleSimpleFuncPrinter([](const char* _pStr) { printf("%s", _pStr);	}, true);
+		const bool success = ModulePrinter::printModule(module, gram, printer, printPreamble, printInstructionNames, printOperandNames);
 
 		if (success == false)
 		{

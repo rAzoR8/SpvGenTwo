@@ -147,7 +147,7 @@ Use the supplied CMakeLists.txt to generate project files for your build system.
 * `SPVGENTWO_REPLACE_TRAITS` is set to TRUE by default. If FALSE, `<type_traits>` and `<utility>` header will be included under `spvgentwo::stdrep` namespace.
 * `SPVGENTWO_LOGGING` is set to TRUE by default, calls to module.log() will have not effect if FALSE.
 
-Note that I mainly develop on windows using clang and MSVC but I'll also try to support GCC/linux. No efforts for apple-clang, sorry!
+Note that I mainly develop on windows using clang and MSVC but I'll also try to support GCC/linux.
 
 # Tools
 
@@ -164,6 +164,9 @@ CLI: ```SpvGenTwoDisassembler [file] <option> <option>```
 ### Options
 * `--assignids` re-assigns instruction result IDs starting from 1. Some SPIR-V compilers emit IDs in a very high range, making it hard to read and trace data flow in assembly language text, `assignIDs` helps with that.
 * `--serialize` writes the parsed SPIR-V program to a `serialized.spv` file in the working directory (this is a debug feature).
+* `--noinstrnames` don't replace result IDs with OpNames
+* `--noopnames` don't replace operand IDs with OpNames
+* `--nopreamble` don't print SPIR-V preamble
 
 ## Reflector
 
@@ -175,7 +178,9 @@ CLI: SpvGenTwoReflect ```[file] <option> <option>```
 * `--var name` select variable by name (if OpVariable was annotated by OpName) for DescriptorType & Decoration printing (`name` has to be a UTF-8 string)
     * `--var MyBuffer`
 * `--deco decoration` select [decoration](https://github.com/KhronosGroup/SPIRV-Headers/blob/75b30a659c8a4979104986652c54cc421fc51129/include/spirv/unified1/spirv.core.grammar.json#L9486) to query for in the module
-    * `--deco DescriptorSet`
+    * `--deco` print all decorations in the module
+    * `--deco DescriptorSet` to print only DescriptorSets
+    * `--deco DescriptorSet --deco Binding` to print only DescriptorSets & Bindings
 * `--funcs` list functions names in the module
 * `--vars` list global variables in the module (StorageClass != Function)
 * `--types` list types and constatns in the module

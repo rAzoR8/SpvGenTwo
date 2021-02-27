@@ -1,4 +1,4 @@
-#include "common/ModuleToString.h"
+#include "common/ModulePrinter.h"
 #include "common/ExternalMemoryAllocator.h"
 
 #include "spvgentwo/String.h"
@@ -21,7 +21,7 @@ namespace
 		} while (_value != 0 && len > 0u);
 	}
 
-	spvgentwo::Instruction::Iterator appendLiteralString(spvgentwo::IModulePrinter& _printer, spvgentwo::Instruction::Iterator _it, spvgentwo::Instruction::Iterator _end, const char* _pushColor, const char* _popColor)
+	spvgentwo::Instruction::Iterator appendLiteralString(spvgentwo::ModulePrinter::IModulePrinter& _printer, spvgentwo::Instruction::Iterator _it, spvgentwo::Instruction::Iterator _end, const char* _pushColor, const char* _popColor)
 	{
 		for (; _it != _end && _it->isLiteral(); ++_it)
 		{
@@ -42,7 +42,7 @@ namespace
 		return _it;
 	}
 
-	void printOperand(const spvgentwo::Instruction& _instr, const spvgentwo::Operand& op, const spvgentwo::Grammar::Operand* _pInfo, const spvgentwo::Grammar& _grammar, spvgentwo::IModulePrinter& _printer)
+	void printOperand(const spvgentwo::Instruction& _instr, const spvgentwo::Operand& op, const spvgentwo::Grammar::Operand* _pInfo, const spvgentwo::Grammar& _grammar, spvgentwo::ModulePrinter::IModulePrinter& _printer, spvgentwo::ModulePrinter::PrintOperandName _printOperandNames)
 	{
 		using namespace spvgentwo;
 
@@ -119,7 +119,7 @@ namespace
 				return;
 			}
 
-			if (const char* name = op.instruction->getName(); name != nullptr && stringLength(name) > 1)
+			if (const char* name = op.instruction->getName(); _printOperandNames == ModulePrinter::PrintOperandName::True && name != nullptr && stringLength(name) > 1)
 			{
 				_printer.append(name, "\x1B[33m", "\033[0m");
 			}
@@ -138,7 +138,7 @@ namespace
 				return;
 			}
 
-			if (const char* name = op.branchTarget->getName(); name != nullptr && stringLength(name) > 1)
+			if (const char* name = op.branchTarget->getName(); _printOperandNames == ModulePrinter::PrintOperandName::True && name != nullptr && stringLength(name) > 1)
 			{
 				_printer.append(name, "\x1B[33m", "\033[0m");
 			}
@@ -150,7 +150,7 @@ namespace
 	}
 } // !anonymous
 
-void spvgentwo::ModuleStringPrinter::append(const char* _pStr, const char* _pushColor, const char* _popColor)
+void spvgentwo::ModulePrinter::ModuleStringPrinter::append(const char* _pStr, const char* _pushColor, const char* _popColor)
 {
     if (_pushColor != nullptr && m_useColor)
     {
@@ -168,7 +168,7 @@ void spvgentwo::ModuleStringPrinter::append(const char* _pStr, const char* _push
     }
 }
 
-bool spvgentwo::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer, bool _printName)
+bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer, PrintInstructionName _printInstrName, PrintOperandName _printOperandNames)
 {
 	using namespace spvgentwo;
 	auto* info = _grammar.getInfo(static_cast<unsigned int>(_instr.getOperation()));
@@ -176,7 +176,7 @@ bool spvgentwo::printInstruction(const Instruction& _instr, const Grammar& _gram
 	if (_instr.hasResult())
 	{
 		_printer << "%";
-		if (const char* name = _instr.getName(); _printName && name != nullptr && stringLength(name) > 1)
+		if (const char* name = _instr.getName(); _printInstrName == PrintInstructionName::True && name != nullptr && stringLength(name) > 1)
 		{
 			_printer.append(name, "\x1B[34m", "\033[0m");
 			_printer << " = ";
@@ -219,7 +219,7 @@ bool spvgentwo::printInstruction(const Instruction& _instr, const Grammar& _gram
 			continue;
 		}
 
-		printOperand(_instr, *it, infoIt, _grammar, _printer);
+		printOperand(_instr, *it, infoIt, _grammar, _printer, _printOperandNames);
 
 		if (infoIt->kind != Grammar::OperandKind::ImageOperands &&
 			infoIt->kind != Grammar::OperandKind::LiteralSpecConstantOpInteger &&
@@ -236,9 +236,9 @@ bool spvgentwo::printInstruction(const Instruction& _instr, const Grammar& _gram
 	return true;
 }
 
-bool spvgentwo::printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _printer, bool _writePreamble)
+bool spvgentwo::ModulePrinter::printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _printer, PrintPreamble _printPreamble, PrintInstructionName _printInstrName, PrintOperandName _printOperandNames)
 {
-	if (_writePreamble)
+	if (_printPreamble == PrintPreamble::True)
 	{
 		_printer << "# SPIR-V Version " << _module.getMajorVersion() << "." << _module.getMinorVersion() << "\n";
 		_printer << "# Generator " << _module.getSpvGenerator() << "\n";
@@ -248,7 +248,7 @@ bool spvgentwo::printModule(const Module& _module, const Grammar& _grammar, IMod
 
 	auto print = [&](const Instruction& instr) -> bool
 	{
-		if (printInstruction(instr, _grammar, _printer))
+		if (printInstruction(instr, _grammar, _printer, _printInstrName, _printOperandNames))
 		{
 			_printer.append("\n");
 			return false; // continue iteration
@@ -262,7 +262,7 @@ bool spvgentwo::printModule(const Module& _module, const Grammar& _grammar, IMod
 	return success;
 }
 
-void spvgentwo::IModulePrinter::append(unsigned int _literal, const char* _pushColor, const char* _popColor)
+void spvgentwo::ModulePrinter::IModulePrinter::append(unsigned int _literal, const char* _pushColor, const char* _popColor)
 {
 	char buf[11] = { '\0' }; // max length is log10(UINT_MAX) ~ 9.6 + null terminator -> 11
 	uintToString(_literal, buf);
