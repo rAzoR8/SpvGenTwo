@@ -224,7 +224,7 @@ void printDecorations(const List<Instruction>& _targets, const Grammar& _gram)
 		{
 			if (auto it = DescriptorTypeNames.find(vk::getDescriptorTypeFromVariable(target)); it != DescriptorTypeNames.end())
 			{
-				printf("\t\t%s", it->value);
+				printf("\t[%s]", it->value);
 			}
 		}
 
@@ -277,14 +277,22 @@ int main(int argc, char* argv[])
 
 			if (i < end)
 			{
-				const char* input = argv[++i];
+				const char* input = argv[i+1];
 
+				bool validDeco = false;
 				for (const auto& [deco, str] : DecorationNames)
 				{
 					if (strcmp(str, input) == 0)
 					{
 						decorationsToPrint.emplace_back(deco);
+						validDeco = true;
+						break;
 					}
+				}
+
+				if (validDeco) // 2nd argument part was valid
+				{
+					++i;
 				}
 			}
 		}
@@ -343,19 +351,6 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	if (idToPrint != InvalidId)
-	{
-		if (const Instruction* instr = module.getInstructionById(idToPrint); instr != nullptr)
-		{
-			printInstruction(*instr, gram, g_instrPrinter);
-			printf("\n");
-		}
-		else
-		{
-			logger.logWarning("Instruction with Id %u not found in module", idToPrint);
-		}
-	}
-
 	if (listFunctions)
 	{
 		printf("Functions:\n");
@@ -374,25 +369,43 @@ int main(int argc, char* argv[])
 		printDecorations(module.getTypesAndConstants(), gram);
 	}
 
-	List<const Instruction*> decorations(&alloc);
+	const Instruction* instr = nullptr;
 
 	if (varName != nullptr)
 	{
 		printf("%s:\n", varName);
 
-		const Instruction* instr = module.getInstructionByName(varName);
+		instr = module.getInstructionByName(varName);
 
 		if (instr == nullptr)
 		{
 			logger.logWarning("Instruction with OpName %s not found in module", varName);
 			return -1;
 		}
+	}
+	else if (idToPrint != InvalidId)
+	{
+		instr = module.getInstructionById(idToPrint);
 
-		printInstruction(*instr, gram, g_instrPrinter); printf("\n");
-
-		if (const Instruction* type = instr->getTypeInstr(); type != nullptr)
+		if (instr == nullptr)
 		{
-			printInstruction(*type, gram, g_instrPrinter); printf("\n");		
+			logger.logWarning("Instruction with Id %u not found in module", idToPrint);
+			return -1;
+		}
+	}
+
+	List<const Instruction*> decorations(&alloc);
+
+	if (instr != nullptr)
+	{
+		printInstruction(*instr, gram, g_instrPrinter, PrintInstructionName::True, PrintOperandName::True, "\t"); printf("\n");
+
+		if (instr->hasResultType())
+		{
+			if (const Instruction* type = instr->getResultTypeInstr(); type != nullptr && type->isErrorInstr() == false)
+			{
+				printInstruction(*type, gram, g_instrPrinter); printf("\n");
+			}
 		}
 
 		if (auto it = DescriptorTypeNames.find(vk::getDescriptorTypeFromVariable(*instr)); it != DescriptorTypeNames.end())
@@ -402,7 +415,7 @@ int main(int argc, char* argv[])
 
 		if (listDecorations)
 		{
-			ReflectionHelper::getDecorations(instr, decorations);		
+			ReflectionHelper::getDecorations(instr, decorations);
 		}
 	}
 	else if (listDecorations)
@@ -415,20 +428,20 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	for (const Instruction* instr : decorations)
+	for (const Instruction* decoInstr : decorations)
 	{
 		if (decorationsToPrint.empty())
 		{
-			printInstruction(*instr, gram, g_instrPrinter); printf("\n");
+			printInstruction(*decoInstr, gram, g_instrPrinter); printf("\n");
 		}
 
 		for (spv::Decoration decoToPrint : decorationsToPrint)
 		{
-			spv::Decoration deco{};
+			spv::Decoration outDeco{};
 			unsigned int value = sgt_uint32_max;
-			if (ReflectionHelper::getSpvDecorationAndLiteralFromDecoration(instr, deco, value) && deco == decoToPrint)
+			if (ReflectionHelper::getSpvDecorationAndLiteralFromDecoration(decoInstr, outDeco, value) && outDeco == decoToPrint)
 			{
-				printInstruction(*instr, gram, g_instrPrinter); printf("\n");
+				printInstruction(*decoInstr, gram, g_instrPrinter); printf("\n");
 			}
 		}
 	}
