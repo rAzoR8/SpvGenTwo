@@ -21,9 +21,11 @@ int main(int argc, char* argv[])
 	ConsoleLogger logger;
 
 	const char* spv = nullptr;
+	const char* tabs = "\t\t";
 	bool serialize = false; // for debugging
 	bool reassignIDs = false;
 	bool callSPIRVDis = false;
+	bool colors = true;
 	PrintInstructionName printInstructionNames = PrintInstructionName::True;
 	PrintOperandName printOperandNames = PrintOperandName::True;
 	PrintPreamble printPreamble = PrintPreamble::True;
@@ -58,6 +60,14 @@ int main(int argc, char* argv[])
 		else if (strcmp(arg, "--nopreamble") == 0)
 		{
 			printPreamble = PrintPreamble::False;
+		}
+		else if (strcmp(arg, "--nocolors") == 0)
+		{
+			colors = false;
+		}
+		else if (i+1 < argc && strcmp(arg, "--tabs") == 0)
+		{
+			tabs = argv[++i];
 		}
 	}
 
@@ -111,8 +121,8 @@ int main(int argc, char* argv[])
 			module.assignIDs(); // compact ids
 		}
 
-		auto printer = ModulePrinter::ModuleSimpleFuncPrinter([](const char* _pStr) { printf("%s", _pStr);	}, true);
-		const bool success = ModulePrinter::printModule(module, gram, printer, printPreamble, printInstructionNames, printOperandNames);
+		auto printer = ModulePrinter::ModuleSimpleFuncPrinter([](const char* _pStr) { printf("%s", _pStr);	}, colors);
+		const bool success = ModulePrinter::printModule(module, gram, printer, printPreamble, printInstructionNames, printOperandNames, tabs);
 
 		if (success == false)
 		{
