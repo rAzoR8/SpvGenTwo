@@ -168,9 +168,8 @@ void spvgentwo::ModulePrinter::ModuleStringPrinter::append(const char* _pStr, co
     }
 }
 
-bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer, PrintInstructionName _printInstrName, PrintOperandName _printOperandNames)
+bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer, PrintInstructionName _printInstrName, PrintOperandName _printOperandNames, const char* _pIndentation)
 {
-	using namespace spvgentwo;
 	auto* info = _grammar.getInfo(static_cast<unsigned int>(_instr.getOperation()));
 
 	if (_instr.hasResult())
@@ -179,24 +178,23 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 		if (const char* name = _instr.getName(); _printInstrName == PrintInstructionName::True && name != nullptr && stringLength(name) > 1)
 		{
 			_printer.append(name, "\x1B[34m", "\033[0m");
-			_printer << " = ";
 		}
 		else if (auto id = _instr.getResultId(); id != InvalidId)
 		{
 			_printer.append(id, "\x1B[34m", "\033[0m");
-			_printer << " =\t";
 		}
 		else
 		{
+			_printer.append("\nINVALID INSTRUCTION\n");
 			return false; // invalid instruction
 		}
 	}
-	else
-	{
-		_printer << "\t";
-	}
 
-	_printer << info->name;
+	if (_pIndentation != nullptr)
+	{
+		_printer << _pIndentation;
+	}
+	_printer <<  info->name;
 
 	auto infoIt = info->operands.begin();
 	auto infoEnd = info->operands.end();
@@ -236,7 +234,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 	return true;
 }
 
-bool spvgentwo::ModulePrinter::printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _printer, PrintPreamble _printPreamble, PrintInstructionName _printInstrName, PrintOperandName _printOperandNames)
+bool spvgentwo::ModulePrinter::printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _printer, PrintPreamble _printPreamble, PrintInstructionName _printInstrName, PrintOperandName _printOperandNames, const char* _pIndentation)
 {
 	if (_printPreamble == PrintPreamble::True)
 	{
@@ -248,7 +246,7 @@ bool spvgentwo::ModulePrinter::printModule(const Module& _module, const Grammar&
 
 	auto print = [&](const Instruction& instr) -> bool
 	{
-		if (printInstruction(instr, _grammar, _printer, _printInstrName, _printOperandNames))
+		if (printInstruction(instr, _grammar, _printer, _printInstrName, _printOperandNames, _pIndentation))
 		{
 			_printer.append("\n");
 			return false; // continue iteration

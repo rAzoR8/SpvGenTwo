@@ -98,8 +98,8 @@ namespace spvgentwo
 		};
 
 		// returns false on failure / invalid instruction
-		bool printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _pOutput, PrintInstructionName _printInstrName = PrintInstructionName::True, PrintOperandName _printOperandNames = PrintOperandName::True);
+		bool printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _pOutput, PrintInstructionName _printInstrName = PrintInstructionName::True, PrintOperandName _printOperandNames = PrintOperandName::True, const char* _pIndentation = "\t\t");
 
-		bool printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _pOutput, PrintPreamble _printPreamble = PrintPreamble::True, PrintInstructionName _printInstrName = PrintInstructionName::True, PrintOperandName _printOperandNames = PrintOperandName::True);
+		bool printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _pOutput, PrintPreamble _printPreamble = PrintPreamble::True, PrintInstructionName _printInstrName = PrintInstructionName::True, PrintOperandName _printOperandNames = PrintOperandName::True, const char* _pIndentation = "\t\t");
 	} // !ModulePrinter
 }

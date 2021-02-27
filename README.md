@@ -167,6 +167,8 @@ CLI: ```SpvGenTwoDisassembler [file] <option> <option>```
 * `--noinstrnames` don't replace result IDs with OpNames
 * `--noopnames` don't replace operand IDs with OpNames
 * `--nopreamble` don't print SPIR-V preamble
+* `--nocolors` don't use [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) color codes
+* `--tabs "    "` example: use 4 spaces instead of 2 tabs
 
 ## Reflector
 
@@ -184,7 +186,6 @@ CLI: SpvGenTwoReflect ```[file] <option> <option>```
 * `--funcs` list functions names in the module
 * `--vars` list global variables in the module (StorageClass != Function)
 * `--types` list types and constatns in the module
-* `--desc` print Vulkan DescriptorType for global variables or for variable selected by `--var name`
 * `--id Id` print SPIR-V assembly text for the instruction with result Id
     * `--id 24`
 
