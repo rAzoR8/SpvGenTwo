@@ -126,18 +126,15 @@ bool spvgentwo::ReflectionHelper::getSpvDecorationAndLiteralFromDecoration(const
 
 unsigned int spvgentwo::ReflectionHelper::getLiteralFromDecoration(spv::Decoration _decoration, const Instruction* _pDecoration)
 {
-	if (_pDecoration == nullptr || *_pDecoration != spv::Op::OpDecorate)
-		return sgt_uint32_max;
+	spv::Decoration deco{};
+	unsigned int value = sgt_uint32_max;
 
-	auto decorate = _pDecoration->getFirstActualOperand().next(); // skip target operand
-
-	// check if this is the kind of decoration we are lookin for
-	if (decorate != nullptr && decorate.next() != nullptr && decorate->getLiteral() == static_cast<unsigned int>(_decoration))
+	if (getSpvDecorationAndLiteralFromDecoration(_pDecoration, deco, value) == false || deco != _decoration)
 	{
-		return decorate.next()->getLiteral();
+		return sgt_uint32_max;	
 	}
 
-	return sgt_uint32_max;
+	return value;
 }
 
 unsigned int spvgentwo::ReflectionHelper::getDecorationLiteralFromTarget(spv::Decoration _decoration, const Instruction* _pTarget, const Instruction** _pOutDecoration)
