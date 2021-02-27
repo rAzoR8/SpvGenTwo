@@ -193,7 +193,7 @@ void printFunctions(const Module& _module, const Grammar& _gram)
 	printf("\n");
 }
 
-void printDecorations(const List<Instruction>& _targets, const Grammar& _gram)
+void printDecorationsForTargets(const List<Instruction>& _targets, const Grammar& _gram)
 {
 	HeapList<const Instruction*> decorations;
 
@@ -360,13 +360,13 @@ int main(int argc, char* argv[])
 	if (listVariables)
 	{
 		printf("Global Variables:\n");
-		printDecorations(module.getGlobalVariables(), gram);
+		printDecorationsForTargets(module.getGlobalVariables(), gram);
 	}
 
 	if (listTypeAndConstants)
 	{
 		printf("Types and Constants:\n");
-		printDecorations(module.getTypesAndConstants(), gram);
+		printDecorationsForTargets(module.getTypesAndConstants(), gram);
 	}
 
 	const Instruction* instr = nullptr;
@@ -394,11 +394,59 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	auto printDecorations = [&decorationsToPrint, &gram](const List<const Instruction*>& _decorations)
+	{
+		for (const Instruction* decoInstr : _decorations)
+		{
+			if (decorationsToPrint.empty())
+			{
+				printInstruction(*decoInstr, gram, g_instrPrinter); printf("\n");
+			}
+
+			for (spv::Decoration decoToPrint : decorationsToPrint)
+			{
+				spv::Decoration outDeco{};
+				unsigned int value = sgt_uint32_max;
+				if (ReflectionHelper::getSpvDecorationAndLiteralFromDecoration(decoInstr, outDeco, value) && outDeco == decoToPrint)
+				{
+					printInstruction(*decoInstr, gram, g_instrPrinter); printf("\n");
+				}
+			}
+		}
+	};
+
 	List<const Instruction*> decorations(&alloc);
+
+	if (listDecorations)
+	{
+		getList(module.getDecorations(), decorations);
+
+		printf("Decorations:\n");
+
+		printDecorations(decorations);
+
+		printf("\n");
+	}
 
 	if (instr != nullptr)
 	{
-		printInstruction(*instr, gram, g_instrPrinter, PrintInstructionName::True, PrintOperandName::True, "\t"); printf("\n");
+		if (const char* name = instr->getName(); name != nullptr)
+		{
+			if (strcmp(name, "") != 0)
+			{
+				printf("%s:\t", name);
+			}
+			else
+			{
+				printf("[EMPTY]:\t");
+			}
+		}
+		else
+		{
+			printf("[UNNAMED]:\t");
+		}
+
+		printInstruction(*instr, gram, g_instrPrinter, PrintInstructionName::False, PrintOperandName::True, "\t"); printf(":\n");
 
 		if (instr->hasResultType())
 		{
@@ -413,37 +461,10 @@ int main(int argc, char* argv[])
 			printf("\t\t%s\n", it->value);
 		}
 
-		if (listDecorations)
-		{
-			ReflectionHelper::getDecorations(instr, decorations);
-		}
-	}
-	else if (listDecorations)
-	{
-		getList(module.getDecorations(), decorations);
+		decorations.clear();
+		ReflectionHelper::getDecorations(instr, decorations);
 
-		if (decorations.empty() == false)
-		{
-			printf("Decorations:\n");
-		}
-	}
-
-	for (const Instruction* decoInstr : decorations)
-	{
-		if (decorationsToPrint.empty())
-		{
-			printInstruction(*decoInstr, gram, g_instrPrinter); printf("\n");
-		}
-
-		for (spv::Decoration decoToPrint : decorationsToPrint)
-		{
-			spv::Decoration outDeco{};
-			unsigned int value = sgt_uint32_max;
-			if (ReflectionHelper::getSpvDecorationAndLiteralFromDecoration(decoInstr, outDeco, value) && outDeco == decoToPrint)
-			{
-				printInstruction(*decoInstr, gram, g_instrPrinter); printf("\n");
-			}
-		}
+		printDecorations(decorations);
 	}
 	
 	return 0;
