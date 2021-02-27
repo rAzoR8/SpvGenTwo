@@ -870,7 +870,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 
 			c.setOperation(instr.getOperation());
 
-			const Type* t = getTypeInfo(instr.getTypeInstr());
+			const Type* t = getTypeInfo(instr.getResultTypeInstr());
 			if (t == nullptr)
 			{
 				logError("Constant type not found");

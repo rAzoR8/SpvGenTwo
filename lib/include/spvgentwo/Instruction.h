@@ -89,7 +89,7 @@ namespace spvgentwo
 
 		// operand helper
 		spv::Id getResultId() const;
-		Instruction* getTypeInstr() const;
+		Instruction* getResultTypeInstr() const;
 		const Type* getType() const;
 		const Constant* getConstant() const;
 

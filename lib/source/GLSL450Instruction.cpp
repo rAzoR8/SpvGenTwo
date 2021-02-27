@@ -5,7 +5,7 @@
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const glslstd450::Op _op, Instruction* _pFloat, const bool _no64Bit)
 {
-	Instruction* pTypeInstr = _pFloat->getTypeInstr();
+	Instruction* pTypeInstr = _pFloat->getResultTypeInstr();
 	if (pTypeInstr == nullptr) return error();
 
 	const Type* pType = pTypeInstr->getType();
@@ -22,7 +22,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const gl
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2)
 {
-	Instruction* returnType = _pOp1->getTypeInstr();
+	Instruction* returnType = _pOp1->getResultTypeInstr();
 	if (returnType == nullptr) return error();
 
 	const Type* leftType = returnType->getType();
@@ -42,7 +42,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const gl
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3)
 {
-	Instruction* returnType = _pOp1->getTypeInstr();
+	Instruction* returnType = _pOp1->getResultTypeInstr();
 	if (returnType == nullptr) return error();
 
 	const Type* type1 = returnType->getType();
@@ -63,7 +63,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(const gl
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(const glslstd450::Op _op, Instruction* _pInt, const bool _signed)
 {
-	Instruction* pTypeInstr = _pInt->getTypeInstr();
+	Instruction* pTypeInstr = _pInt->getResultTypeInstr();
 	if (pTypeInstr == nullptr) return error();
 
 	const Type* pType = pTypeInstr->getType();
@@ -81,7 +81,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(const glsl
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed)
 {
-	Instruction* returnType = _pOp1->getTypeInstr();
+	Instruction* returnType = _pOp1->getResultTypeInstr();
 	if (returnType == nullptr) return error();
 
 	const Type* leftType = returnType->getType();
@@ -101,7 +101,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(const glsl
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed)
 {
-	Instruction* returnType = _pOp1->getTypeInstr();
+	Instruction* returnType = _pOp1->getResultTypeInstr();
 	if (returnType == nullptr) return error();
 
 	const Type* type1 = returnType->getType();
@@ -127,7 +127,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opLength(Instruction* _pX)
 
 	if (type->isVectorOfFloat())
 	{
-		if (auto it = _pX->getTypeInstr()->getFirstActualOperand(); it != nullptr && it->isInstruction()) // extract base type
+		if (auto it = _pX->getResultTypeInstr()->getFirstActualOperand(); it != nullptr && it->isInstruction()) // extract base type
 		{
 			return opExtInst(it->instruction, ExtName, static_cast<unsigned int>(glslstd450::Op::Length), _pX);
 		}
@@ -147,7 +147,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opDistance(Instruction* _p
 
 	if (type1->isScalarOrVectorOfSameLength(spv::Op::OpTypeFloat, *type2))
 	{
-		if (auto it = _pP1->getTypeInstr()->getFirstActualOperand(); it != nullptr && it->isInstruction()) // extract base type
+		if (auto it = _pP1->getResultTypeInstr()->getFirstActualOperand(); it != nullptr && it->isInstruction()) // extract base type
 		{
 			return opExtInst(it->instruction, ExtName, static_cast<unsigned int>(glslstd450::Op::Distance), _pP1, _pP2);
 		}
@@ -160,8 +160,8 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opDistance(Instruction* _p
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opCross(Instruction* _pLeft, Instruction* _pRight)
 {
-	Instruction* pLeftTypeInstr = _pLeft->getTypeInstr();
-	Instruction* pRightTypeInstr = _pRight->getTypeInstr();
+	Instruction* pLeftTypeInstr = _pLeft->getResultTypeInstr();
+	Instruction* pRightTypeInstr = _pRight->getResultTypeInstr();
 
 	if (pLeftTypeInstr == nullptr || pRightTypeInstr == nullptr) return error();
 
@@ -186,7 +186,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opRefract(Instruction* _pI
 
 	if (typeI->isScalarOrVectorOfSameLength(spv::Op::OpTypeFloat, *typeN) && typeN->getBaseType() == *typeEta)
 	{
-		return opExtInst(_pIvec->getTypeInstr(), ExtName, static_cast<unsigned int>(glslstd450::Op::Refract), _pIvec, _pNvec, _pEtaFloat);
+		return opExtInst(_pIvec->getResultTypeInstr(), ExtName, static_cast<unsigned int>(glslstd450::Op::Refract), _pIvec, _pNvec, _pEtaFloat);
 	}
 
 	getModule()->logError("Operands of opRefract are not vector of float or _pEtaFloat is not a float scalar");
@@ -212,7 +212,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opDeterminant(Instruction*
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opMatrixInverse(Instruction* _pMatrix)
 {
-	Instruction* _pTypeInstr = _pMatrix->getTypeInstr();
+	Instruction* _pTypeInstr = _pMatrix->getResultTypeInstr();
 	if (_pTypeInstr == nullptr) return error();
 
 	const Type* pType = _pTypeInstr->getType();

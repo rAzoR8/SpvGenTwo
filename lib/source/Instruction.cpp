@@ -133,7 +133,7 @@ spvgentwo::spv::Id spvgentwo::Instruction::getResultId() const
 	return it->getId();
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::getTypeInstr() const
+spvgentwo::Instruction* spvgentwo::Instruction::getResultTypeInstr() const
 {
 	if (hasResultType())
 	{
@@ -154,7 +154,7 @@ const spvgentwo::Type* spvgentwo::Instruction::getType() const
 	}
 	else if (hasResultType())
 	{
-		return pModule->getTypeInfo(getTypeInstr());	
+		return pModule->getTypeInfo(getResultTypeInstr());	
 	}
 
 	return nullptr;
@@ -166,6 +166,8 @@ const spvgentwo::Constant* spvgentwo::Instruction::getConstant() const
 	{
 		return getModule()->getConstantInfo(this);
 	}
+
+	getModule()->logError("Instruction is not a constant");
 
 	return nullptr;
 }
@@ -702,7 +704,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opPhiDynamic(const List<Instruct
 		return error();
 	}
 
-	Instruction* type = _variables.front()->getTypeInstr();
+	Instruction* type = _variables.front()->getResultTypeInstr();
 
 	if (type == nullptr) return error();
 
@@ -711,7 +713,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opPhiDynamic(const List<Instruct
 	for (auto it = _variables.begin().next(); it != _variables.end(); ++it)
 	{
 		Instruction* var = *it;
-		if (var == nullptr || (var->getTypeInstr() != type) || (var->getBasicBlock() == nullptr))
+		if (var == nullptr || (var->getResultTypeInstr() != type) || (var->getBasicBlock() == nullptr))
 		{
 			getModule()->logError("Invalid variable (type or null) passed to opPhiDynamic");
 			return error();
@@ -817,8 +819,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLe
 
 spvgentwo::Instruction* spvgentwo::Instruction::opDot(Instruction* _pLeft, Instruction* _pRight)
 {
-	Instruction* pLeftTypeInstr = _pLeft->getTypeInstr();
-	Instruction* pRightTypeInstr = _pRight->getTypeInstr();
+	Instruction* pLeftTypeInstr = _pLeft->getResultTypeInstr();
+	Instruction* pRightTypeInstr = _pRight->getResultTypeInstr();
 
 	if (pLeftTypeInstr == nullptr || pRightTypeInstr == nullptr) return error();
 
@@ -924,7 +926,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opCompositeExtractDynamic(Instru
 
 spvgentwo::Instruction* spvgentwo::Instruction::opCopyObject(Instruction* _pObject)
 {
-	return makeOp(spv::Op::OpCopyObject, _pObject->getTypeInstr(), InvalidId, _pObject);
+	return makeOp(spv::Op::OpCopyObject, _pObject->getResultTypeInstr(), InvalidId, _pObject);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatrix)
@@ -950,7 +952,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instructi
 
 	if (vecType->isVector() && indexType->isInt())
 	{
-		auto component = _pVector->getTypeInstr()->getFirstActualOperand();
+		auto component = _pVector->getResultTypeInstr()->getFirstActualOperand();
 		return makeOp(spv::Op::OpVectorExtractDynamic, component->getInstruction(), InvalidId, _pVector, _pIndexInt);	
 	}
 
@@ -991,7 +993,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 		if (trueType->isScalar() || trueType->isVector() || trueType->isPointer() ||
 			(getModule()->getSpvVersion() >= makeVersion(1u, 4u) && trueType->isComposite()))
 		{
-			return makeOp(spv::Op::OpSelect, _pTrueObj->getTypeInstr(), InvalidId, _pCondBool, _pTrueObj, _pFalseObj);
+			return makeOp(spv::Op::OpSelect, _pTrueObj->getResultTypeInstr(), InvalidId, _pCondBool, _pTrueObj, _pFalseObj);
 		}
 
 		getModule()->logError("Object arguments of opSelect are not of type Scalar|Vector|Pointer|Composite");
@@ -1013,7 +1015,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorTimesScalar(Instruction*
 
 	if (pScalarType->isFloat() && pVecType->isVectorOfFloat(0u, pScalarType->getFloatWidth()))
 	{
-		return makeOp(spv::Op::OpVectorTimesScalar, _pVector->getTypeInstr(), InvalidId, _pVector, _pScalar);
+		return makeOp(spv::Op::OpVectorTimesScalar, _pVector->getResultTypeInstr(), InvalidId, _pVector, _pScalar);
 	}
 
 	getModule()->logError("Operand of OpVectorTimesScalar is not a scalar or vector of float type");
@@ -1030,7 +1032,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opMatrixTimesScalar(Instruction*
 
 	if (pScalarType->isFloat() && pMatType->hasSameBase(*pScalarType) && pMatType->isMatrix())
 	{
-		return makeOp(spv::Op::OpMatrixTimesScalar, _pMatrix->getTypeInstr(), InvalidId, _pMatrix, _pScalar);
+		return makeOp(spv::Op::OpMatrixTimesScalar, _pMatrix->getResultTypeInstr(), InvalidId, _pMatrix, _pScalar);
 	}
 
 	getModule()->logError("Operand of OpMatrixTimesScalar is not a scalar or matrix of float type");
@@ -1047,7 +1049,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorTimesMatrix(Instruction*
 
 	if (pVecType->isVectorOfFloat() && pMatType->isMatrix() && pMatType->hasSameBase(*pVecType) && pMatType->front().getVectorComponentCount() == pVecType->getVectorComponentCount())
 	{
-		return makeOp(spv::Op::OpVectorTimesMatrix, _pVector->getTypeInstr(), InvalidId, _pVector, _pMatrix);
+		return makeOp(spv::Op::OpVectorTimesMatrix, _pVector->getResultTypeInstr(), InvalidId, _pVector, _pMatrix);
 	}
 
 	getModule()->logError("Operand of OpVectorTimesMatrix is not a vector or matrix of float type");
@@ -1169,7 +1171,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opQuantizeToF16(Instruction* _pF
 
 	if (type->isScalarOrVectorOf(spv::Op::OpTypeFloat, 0u, 32u))
 	{
-		return makeOp(spv::Op::OpQuantizeToF16, _pFloatVec->getTypeInstr(), InvalidId, _pFloatVec);
+		return makeOp(spv::Op::OpQuantizeToF16, _pFloatVec->getResultTypeInstr(), InvalidId, _pFloatVec);
 	}
 
 	getModule()->logError("Operand of OpQuantizeToF16 is not a float type with 32 bit component width");

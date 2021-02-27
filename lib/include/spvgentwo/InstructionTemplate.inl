@@ -193,7 +193,7 @@ namespace spvgentwo
 	template<class ...VarInst>
 	inline Instruction* Instruction::opPhi(Instruction* _pVar, VarInst* ..._variables)
 	{
-		makeOp(spv::Op::OpPhi, _pVar->getTypeInstr(), InvalidId);
+		makeOp(spv::Op::OpPhi, _pVar->getResultTypeInstr(), InvalidId);
 
 		auto addVar = [&](Instruction* var)
 		{
@@ -448,7 +448,7 @@ namespace spvgentwo
 
 			if (*it == *pValueType)
 			{
-				return makeOp(spv::Op::OpCompositeInsert, _pComposite->getTypeInstr(), InvalidId, _pValue, _pComposite, literal_t{ _indices }...);
+				return makeOp(spv::Op::OpCompositeInsert, _pComposite->getResultTypeInstr(), InvalidId, _pValue, _pComposite, literal_t{ _indices }...);
 			}
 
 			pModule->logError("Value type does not match composite insertion type");
