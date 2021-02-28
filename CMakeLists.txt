@@ -50,6 +50,7 @@ cmake_option(SPVGENTWO_BUILD_REFLECT "Build reflect" FALSE)
 cmake_option(SPVGENTWO_DEBUG_HEAP_ALLOC "Log heap allocations" FALSE)
 
 #lib sources
+add_sources("misc/*.natvis" "lib_sources")
 add_sources("lib/source/*.cpp" "lib_sources")
 add_sources("lib/include/spvgentwo/*.h" "lib_sources")
 add_sources("lib/include/spvgentwo/*.inl" "lib_sources")

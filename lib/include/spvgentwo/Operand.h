@@ -34,10 +34,10 @@ namespace spvgentwo
 
 		union
 		{
-			BasicBlock* branchTarget = nullptr; 
-			Instruction* instruction; // intermediate or type
+			Instruction* instruction = nullptr; // intermediate or type
 			literal_t literal;
 			spv::Id id;
+			BasicBlock* branchTarget; 
 		};
 
 		bool isBranchTarget() const { return type == Type::BranchTarget; }
