@@ -42,17 +42,17 @@ namespace
 		return _it;
 	}
 
-	void printOperand(const spvgentwo::Instruction& _instr, const spvgentwo::Operand& op, const spvgentwo::Grammar::Operand* _pInfo, const spvgentwo::Grammar& _grammar, spvgentwo::ModulePrinter::IModulePrinter& _printer, spvgentwo::ModulePrinter::PrintOperandName _printOperandNames)
+	void printOperand(const spvgentwo::Instruction& _instr, const spvgentwo::Operand& op, const spvgentwo::Grammar::Operand& _info, const spvgentwo::Grammar& _grammar, spvgentwo::ModulePrinter::IModulePrinter& _printer, spvgentwo::ModulePrinter::PrintOptions _options)
 	{
 		using namespace spvgentwo;
 
- 		if (op.isId() && _pInfo->kind == Grammar::OperandKind::IdResult)  // skip result id
+ 		if (op.isId() && _info.kind == Grammar::OperandKind::IdResult)  // skip result id
 		{
 			return;
 		}
 
 		_printer << " ";
-		if (op.isId() && _pInfo->kind != Grammar::OperandKind::IdResult)
+		if (op.isId() && _info.kind != Grammar::OperandKind::IdResult)
 		{
 			_printer << "%";
 			_printer.append(op.id, "\x1B[33m", "\033[0m");
@@ -89,16 +89,11 @@ namespace
 					_printer.append(op.literal.value, "\x1B[31m", "\033[0m");
 				}
 			}
-			else if (_pInfo->category == Grammar::OperandCategory::BitEnum || _pInfo->category == Grammar::OperandCategory::ValueEnum)
+			else if (_info.category == Grammar::OperandCategory::BitEnum || _info.category == Grammar::OperandCategory::ValueEnum)
 			{
-				const char* name = _grammar.getOperandName(_pInfo->kind, op.literal.value);
-				_printer.append(name == nullptr ? "UNKNOWN" : name);
-			}
-			else if (_pInfo->kind == Grammar::OperandKind::LiteralSpecConstantOpInteger)
-			{
-				if (auto* instrInfo = _grammar.getInfo(op.literal.value); instrInfo != nullptr)
+				if (const char* name = _grammar.getOperandName(_info.kind, op.literal.value); name != nullptr && (_options & ModulePrinter::PrintOptionsBits::OperandName))
 				{
-					_printer.append(instrInfo->name);
+					_printer.append(name);				
 				}
 				else
 				{
@@ -119,7 +114,7 @@ namespace
 				return;
 			}
 
-			if (const char* name = op.instruction->getName(); _printOperandNames == ModulePrinter::PrintOperandName::True && name != nullptr && stringLength(name) > 1)
+			if (const char* name = op.instruction->getName(); (_options & ModulePrinter::PrintOptionsBits::InstructionName) && name != nullptr && stringLength(name) > 1)
 			{
 				_printer.append(name, "\x1B[33m", "\033[0m");
 			}
@@ -138,7 +133,7 @@ namespace
 				return;
 			}
 
-			if (const char* name = op.branchTarget->getName(); _printOperandNames == ModulePrinter::PrintOperandName::True && name != nullptr && stringLength(name) > 1)
+			if (const char* name = op.branchTarget->getName(); _options & ModulePrinter::PrintOptionsBits::OperandName && name != nullptr && stringLength(name) > 1)
 			{
 				_printer.append(name, "\x1B[33m", "\033[0m");
 			}
@@ -168,25 +163,28 @@ void spvgentwo::ModulePrinter::ModuleStringPrinter::append(const char* _pStr, co
     }
 }
 
-bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer, PrintInstructionName _printInstrName, PrintOperandName _printOperandNames, const char* _pIndentation)
+bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer, PrintOptions _options, const char* _pIndentation)
 {
-	auto* info = _grammar.getInfo(static_cast<unsigned int>(_instr.getOperation()));
+	auto* instrInfo = _grammar.getInfo(static_cast<unsigned int>(_instr.getOperation()));
 
-	if (_instr.hasResult())
+	if (_instr.hasResult() && ((_options & PrintOptionsBits::InstructionName) || (_options & PrintOptionsBits::ResultId)))
 	{
 		_printer << "%";
-		if (const char* name = _instr.getName(); _printInstrName == PrintInstructionName::True && name != nullptr && stringLength(name) > 1)
+		if (const char* name = _instr.getName(); (_options & PrintOptionsBits::InstructionName) && name != nullptr && stringLength(name) > 1)
 		{
 			_printer.append(name, "\x1B[34m", "\033[0m");
 		}
-		else if (auto id = _instr.getResultId(); id != InvalidId)
+		else if (_options & PrintOptionsBits::ResultId)
 		{
-			_printer.append(id, "\x1B[34m", "\033[0m");
-		}
-		else
-		{
-			_printer.append("\nINVALID INSTRUCTION\n");
-			return false; // invalid instruction
+			if (auto id = _instr.getResultId(); id != InvalidId)
+			{
+				_printer.append(id, "\x1B[34m", "\033[0m");
+			}
+			else
+			{
+				_printer.append("\nINVALID INSTRUCTION\n");
+				return false; // invalid instruction
+			}
 		}
 	}
 
@@ -194,49 +192,112 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 	{
 		_printer << _pIndentation;
 	}
-	_printer <<  info->name;
 
-	auto infoIt = info->operands.begin();
-	auto infoEnd = info->operands.end();
-
-	for (auto it = _instr.begin(), end = _instr.end(); it != end;)
+	if (_options & PrintOptionsBits::OperationName)
 	{
-		if (infoIt == infoEnd)
+		_printer <<  instrInfo->name;	
+	}
+
+	auto it = _instr.begin();
+	auto end = _instr.end();
+
+	for (const Grammar::Operand& info : instrInfo->operands)
+	{
+		if (it == end)
 		{
-			_printer.append("\nINVALID INSTRUCTION\n");
-			return false; // invalid instruction
+			if (info.quantifier == Grammar::Quantifier::One)
+			{
+				_printer.append("\nINVALID INSTRUCTION\n");
+				return false; // invalid instruction			
+			}
+
+			continue;
 		}
 
-		if (infoIt->kind == Grammar::OperandKind::LiteralString)
+		if (info.kind == Grammar::OperandKind::LiteralString)
 		{
 			_printer << " \"";
 			it = appendLiteralString(_printer, it, end, "\x1B[32m", "\033[0m");
 			_printer << "\"";
 
-			++infoIt;
 			continue;
 		}
-
-		printOperand(_instr, *it, infoIt, _grammar, _printer, _printOperandNames);
-
-		if (infoIt->kind != Grammar::OperandKind::ImageOperands &&
-			infoIt->kind != Grammar::OperandKind::LiteralSpecConstantOpInteger &&
-			infoIt->kind != Grammar::OperandKind::Decoration &&
-			infoIt->kind != Grammar::OperandKind::ExecutionMode &&
-			infoIt->kind != Grammar::OperandKind::LiteralString &&
-			infoIt->quantifier != Grammar::Quantifier::ZeroOrAny)
+		
+		if (info.category == Grammar::OperandCategory::Composite && info.quantifier == Grammar::Quantifier::ZeroOrAny)
 		{
-			++infoIt;
+			if (auto* bases = _grammar.getOperandBases(info.kind); bases != nullptr)
+			{
+				auto bit = bases->begin();
+				auto bend = bases->end();
+
+				for (; it != end; ++it, ++bit)
+				{
+					if (bit == bend) // reset
+					{
+						bit = bases->begin();
+					}
+
+					printOperand(_instr, *it, *bit, _grammar, _printer, _options);
+				}
+
+				continue;
+			}
+			else
+			{
+				_printer.append("\nINVALID INSTRUCTION\n");
+				return false; // invalid instruction
+			}
 		}
 
-		++it;
+		printOperand(_instr, *it, info, _grammar, _printer, _options);
+		// need to increment 'it' after this part
+
+		if (info.kind == Grammar::OperandKind::LiteralSpecConstantOpInteger)
+		{
+			Instruction constInstr;
+			constInstr.setParent(_instr); // allocator
+			constInstr.setOperation(static_cast<spv::Op>(it->getLiteral().value)); // opcode
+			if (constInstr.hasResultType())
+			{
+				constInstr.addOperand(*_instr.getResultTypeOperand());
+			}
+			if (constInstr.hasResult())
+			{
+				constInstr.addOperand(InvalidId);
+			}
+
+			// copy remaining operands
+			for (++it ;it != end; ++it)
+			{
+				constInstr.addOperand(*it);
+			}
+
+			_printer << " [";
+			printInstruction(constInstr, _grammar, _printer, _options ^ PrintOptionsBits::ResultId, nullptr);
+			_printer << "]";
+		}
+		else if (auto* params = _grammar.getOperandParameters(info.kind, it->getLiteral()); params != nullptr)
+		{
+			auto pit = params->begin();
+			auto pend = params->end();
+
+			for (++it; it != end && pit != pend; ++it, ++pit)
+			{
+				printOperand(_instr, *it, *pit, _grammar, _printer, _options);
+			}
+		}
+		else
+		{
+			++it;
+		}
 	}
+
 	return true;
 }
 
-bool spvgentwo::ModulePrinter::printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _printer, PrintPreamble _printPreamble, PrintInstructionName _printInstrName, PrintOperandName _printOperandNames, const char* _pIndentation)
+bool spvgentwo::ModulePrinter::printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _printer, PrintOptions _options, const char* _pIndentation)
 {
-	if (_printPreamble == PrintPreamble::True)
+	if (_options & PrintOptionsBits::Preamble)
 	{
 		_printer << "# SPIR-V Version " << _module.getMajorVersion() << "." << _module.getMinorVersion() << "\n";
 		_printer << "# Generator " << _module.getSpvGenerator() << "\n";
@@ -246,7 +307,7 @@ bool spvgentwo::ModulePrinter::printModule(const Module& _module, const Grammar&
 
 	auto print = [&](const Instruction& instr) -> bool
 	{
-		if (printInstruction(instr, _grammar, _printer, _printInstrName, _printOperandNames, _pIndentation))
+		if (printInstruction(instr, _grammar, _printer, _options, _pIndentation))
 		{
 			_printer.append("\n");
 			return false; // continue iteration

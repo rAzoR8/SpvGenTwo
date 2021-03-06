@@ -1,5 +1,7 @@
 #pragma once
 
+#include "spvgentwo/Flag.h"
+
 namespace spvgentwo
 {
 	// forward decl
@@ -82,24 +84,21 @@ namespace spvgentwo
 		template <class FuncStr>
 		ModuleSimpleFuncPrinter(FuncStr _strFunc, bool _useColorCodes = false)->ModuleSimpleFuncPrinter<FuncStr>;
 
-		enum class PrintPreamble
+		enum class PrintOptionsBits
 		{
-			False, True
+			Preamble = 1 << 0,
+			InstructionName = 1 << 1,
+			OperandName = 1 << 2,
+			ResultId = 1 << 3,
+			OperationName = 1 << 4,
+			All = OperationName | (OperationName - 1)
 		};
 
-		enum class PrintInstructionName
-		{
-			False, True
-		};
-
-		enum class PrintOperandName
-		{
-			False, True
-		};
+		using PrintOptions = Flag<PrintOptionsBits>;
 
 		// returns false on failure / invalid instruction
-		bool printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _pOutput, PrintInstructionName _printInstrName = PrintInstructionName::True, PrintOperandName _printOperandNames = PrintOperandName::True, const char* _pIndentation = "\t\t");
+		bool printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _pOutput, PrintOptions _options = PrintOptionsBits::All, const char* _pIndentation = "\t\t");
 
-		bool printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _pOutput, PrintPreamble _printPreamble = PrintPreamble::True, PrintInstructionName _printInstrName = PrintInstructionName::True, PrintOperandName _printOperandNames = PrintOperandName::True, const char* _pIndentation = "\t\t");
+		bool printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _pOutput, PrintOptions _options = PrintOptionsBits::All, const char* _pIndentation = "\t\t");
 	} // !ModulePrinter
 }

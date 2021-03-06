@@ -26,9 +26,8 @@ int main(int argc, char* argv[])
 	bool reassignIDs = false;
 	bool callSPIRVDis = false;
 	bool colors = true;
-	PrintInstructionName printInstructionNames = PrintInstructionName::True;
-	PrintOperandName printOperandNames = PrintOperandName::True;
-	PrintPreamble printPreamble = PrintPreamble::True;
+
+	PrintOptions options{ PrintOptionsBits::All };
 
 	for (int i = 1u; i < argc; ++i)
 	{
@@ -51,15 +50,15 @@ int main(int argc, char* argv[])
 		}
 		else if (strcmp(arg, "--noinstrnames") == 0)
 		{
-			printInstructionNames = PrintInstructionName::False;
+			options ^= PrintOptionsBits::InstructionName;
 		}
 		else if (strcmp(arg, "--noopnames") == 0)
 		{
-			printOperandNames = PrintOperandName::False;
+			options ^= PrintOptionsBits::OperandName;
 		}
 		else if (strcmp(arg, "--nopreamble") == 0)
 		{
-			printPreamble = PrintPreamble::False;
+			options ^= PrintOptionsBits::Preamble;
 		}
 		else if (strcmp(arg, "--nocolors") == 0)
 		{
@@ -122,7 +121,7 @@ int main(int argc, char* argv[])
 		}
 
 		auto printer = ModulePrinter::ModuleSimpleFuncPrinter([](const char* _pStr) { printf("%s", _pStr);	}, colors);
-		const bool success = ModulePrinter::printModule(module, gram, printer, printPreamble, printInstructionNames, printOperandNames, tabs);
+		const bool success = ModulePrinter::printModule(module, gram, printer, options, tabs);
 
 		if (success == false)
 		{

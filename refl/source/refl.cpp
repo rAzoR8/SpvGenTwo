@@ -118,20 +118,20 @@ void printFunctions(const Module& _module, const Grammar& _gram)
 	{
 		if (const Instruction* instr = _func.getFunction(); instr != nullptr)
 		{
-			printInstruction(*instr, _gram, g_instrPrinter, PrintInstructionName::False);
+			printInstruction(*instr, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::All) ^ PrintOptionsBits::InstructionName);
 		}
 
 		printf("\n"); // OpTypeFunction
 		if (const Instruction* type = _func.getFunctionType(); type != nullptr)
 		{
-			printInstruction(*type, _gram, g_instrPrinter, PrintInstructionName::True);
+			printInstruction(*type, _gram, g_instrPrinter, PrintOptionsBits::All);
 			printf("\n");
 
 			for (auto it = type->getFirstActualOperand(); it != type->end(); ++it)
 			{
 				if (const Instruction* instr = it->getInstruction(); instr != nullptr)
 				{
-					printInstruction(*instr, _gram, g_instrPrinter, PrintInstructionName::True);
+					printInstruction(*instr, _gram, g_instrPrinter, PrintOptionsBits::All);
 					printf("\n");
 				}
 			}
@@ -147,7 +147,7 @@ void printFunctions(const Module& _module, const Grammar& _gram)
 		}
 		if (const Instruction* instr = ep.getEntryPoint(); instr != nullptr)
 		{
-			printInstruction(*instr, _gram, g_instrPrinter, PrintInstructionName::False, PrintOperandName::False);
+			printInstruction(*instr, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::ResultId));
 		}
 		printf("\n");
 
@@ -157,7 +157,7 @@ void printFunctions(const Module& _module, const Grammar& _gram)
 		{
 			if (const Instruction* var = op.getInstruction(); var != nullptr)
 			{
-				printInstruction(*var, _gram, g_instrPrinter, PrintInstructionName::False, PrintOperandName::True);
+				printInstruction(*var, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId));
 				if (const char* name = var->getName(); name != nullptr)
 				{
 					printf("\t[%s]", name);
@@ -195,7 +195,7 @@ void printVariable(const Instruction& _instr, const Grammar& _gram)
 		printf("[UNNAMED]:\t");
 	}
 
-	printInstruction(_instr, _gram, g_instrPrinter, PrintInstructionName::False, PrintOperandName::True, "\t");
+	printInstruction(_instr, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId), "\t");
 
 	if (_instr == spv::Op::OpVariable)
 	{
@@ -220,7 +220,7 @@ void printDecorationsForTargets(const List<Instruction>& _targets, const Grammar
 
 		for (const Instruction* deco : decorations)
 		{
-			printInstruction(*deco, _gram, g_instrPrinter, PrintInstructionName::False, PrintOperandName::True, "\t\t\t");
+			printInstruction(*deco, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId), "\t\t\t");
 			printf("\n");
 		}
 	}
