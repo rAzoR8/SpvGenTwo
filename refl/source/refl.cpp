@@ -118,7 +118,7 @@ void printFunctions(const Module& _module, const Grammar& _gram)
 	{
 		if (const Instruction* instr = _func.getFunction(); instr != nullptr)
 		{
-			printInstruction(*instr, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::All) ^ PrintOptionsBits::InstructionName);
+			printInstruction(*instr, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId));
 		}
 
 		printf("\n"); // OpTypeFunction
@@ -147,7 +147,7 @@ void printFunctions(const Module& _module, const Grammar& _gram)
 		}
 		if (const Instruction* instr = ep.getEntryPoint(); instr != nullptr)
 		{
-			printInstruction(*instr, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::ResultId));
+			printInstruction(*instr, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId));
 		}
 		printf("\n");
 
