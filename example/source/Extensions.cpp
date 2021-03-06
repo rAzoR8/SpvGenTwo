@@ -22,7 +22,7 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
 
     // void entryPoint();
     {
-        EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, "main");
+        EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, u8"main");
         entry.addExecutionMode(spv::ExecutionMode::OriginUpperLeft);
         BasicBlock& bb = *entry; // get entry block to this function
 
