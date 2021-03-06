@@ -66,6 +66,46 @@ spvgentwo::Function* spvgentwo::Instruction::getFunction() const
 	}
 }
 
+void spvgentwo::Instruction::setParent(Module* _pModule)
+{
+	if (m_parent.pModule == nullptr)
+	{
+		m_parentType = ParentType::Module;
+		m_parent.pModule = _pModule;
+		setAllocator(_pModule->getAllocator());
+	}
+}
+
+void spvgentwo::Instruction::setParent(Function* _pFunction)
+{
+	if (m_parent.pFunction == nullptr)
+	{
+		m_parentType = ParentType::Function;
+		m_parent.pFunction = _pFunction;
+		setAllocator(_pFunction->getAllocator());
+	}
+}
+
+void spvgentwo::Instruction::setParent(BasicBlock* _pBasicBlock)
+{
+	if (m_parent.pBasicBlock == nullptr)
+	{
+		m_parentType = ParentType::BasicBlock;
+		m_parent.pBasicBlock = _pBasicBlock;
+		setAllocator(_pBasicBlock->getAllocator());
+	}
+}
+
+void spvgentwo::Instruction::setParent(const Instruction& _other)
+{
+	if (m_parent.pModule == nullptr)
+	{
+		m_parentType = _other.m_parentType;	
+		m_parent = _other.m_parent;
+		setAllocator(_other.getAllocator());
+	}
+}
+
 spvgentwo::Module* spvgentwo::Instruction::getModule() const
 {
 	switch (m_parentType)

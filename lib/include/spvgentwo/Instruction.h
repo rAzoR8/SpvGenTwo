@@ -70,6 +70,15 @@ namespace spvgentwo
 
 		ParentType getParentType() const { return m_parentType; }
 
+		// set parent if non was set before
+		void setParent(Module* _pModule);
+		// set parent if non was set before
+		void setParent(Function* _pFunction);
+		// set parent if non was set before
+		void setParent(BasicBlock* _pBasicBlock);
+		// set parent if non was set before, copy parent type from _instr
+		void setParent(const Instruction& _other);
+
 		Module* getModule() const;
 		Function* getFunction() const;
 		BasicBlock* getBasicBlock() const;
