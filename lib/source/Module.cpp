@@ -1090,6 +1090,7 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			auto it = ep->getEntryPoint()->getFirstActualOperand(); // get execution model
 			if (it == nullptr || it->isLiteral() == false)
 			{
+				logError("Failed to get execution model operand of EP");
 				return false;
 			}
 			
@@ -1098,6 +1099,7 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			++it; // EntryPoint <id> is second operand of OpEntryPoint
 			if (it == nullptr || it->isId() == false)
 			{
+				logError("Failed to get function ID operand of EP");
 				return false;
 			}
 
@@ -1125,9 +1127,12 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			if (addModuleProccessedInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpDecorate:
 		case spv::Op::OpMemberDecorate:
+		case spv::Op::OpDecorationGroup:
 		case spv::Op::OpGroupDecorate:
 		case spv::Op::OpGroupMemberDecorate:
-		case spv::Op::OpDecorationGroup:
+		case spv::Op::OpDecorateId:
+		case spv::Op::OpDecorateString:
+		case spv::Op::OpMemberDecorateString:
 			if (addDecorationInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpVariable:
 			if (addGlobalVariableInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false;

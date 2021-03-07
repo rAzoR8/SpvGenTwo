@@ -223,7 +223,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 			continue;
 		}
 		
-		if (info.category == Grammar::OperandCategory::Composite && info.quantifier == Grammar::Quantifier::ZeroOrAny)
+		if (info.category == Grammar::OperandCategory::Composite /*&& info.quantifier == Grammar::Quantifier::ZeroOrAny*/)
 		{
 			if (auto* bases = _grammar.getOperandBases(info.kind); bases != nullptr)
 			{

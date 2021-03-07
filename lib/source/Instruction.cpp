@@ -315,53 +315,186 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 		return false;
 	}
 
-	//if (_op == spv::Op::OpSpecConstantOp)
-	//{
-	//	int i = 0;
-	//}
-
 	auto it = info->operands.begin();
 	const auto end = info->operands.end();
-	unsigned int word{ 0u };
 
-	bool trailingIDOperands = false;
-	while (_operandCount != 0u && it != end && _pReader->get(word))
+	auto parseLiteralString = [&](unsigned int& _operands) -> bool
 	{
-		const auto& op = *it;
-
-		if (op.category == Grammar::OperandCategory::Id || trailingIDOperands)
+		unsigned int word{ 0u };
+		while (_operands-- > 0u)
 		{
-			addOperand(static_cast<spv::Id>(word));
+			if (_pReader->get(word) == false)
+			{
+				getModule()->logError("Unexpected end of instruction stream for %s", info->name);
+				return false;
+			}
+
+			addOperand(static_cast<literal_t>(word));
+			if (hasStringTerminator(word)) // reached end of string
+			{
+				return true;
+			}
+		}
+
+		return true;
+	};
+
+	auto parseId = [&](unsigned int& _operands) -> bool
+	{
+		unsigned int word{ 0u };
+		if (_pReader->get(word) == false)
+		{
+			getModule()->logError("Unexpected end of instruction stream for %s", info->name);
+			return false;
+		}
+		--_operands;
+		addOperand(static_cast<spv::Id>(word));
+		return true;
+	};
+
+	auto parseLiteral = [&](unsigned int& _operands) -> bool
+	{
+		unsigned int word{ 0u };
+		if (_pReader->get(word) == false)
+		{
+			getModule()->logError("Unexpected end of instruction stream for %s", info->name);
+			return false;
+		}
+		--_operands;
+		addOperand(static_cast<literal_t>(word));
+		return true;
+	};
+
+	auto parseSimpleOps = [&](unsigned int& _operands, const Grammar::Operand& _op) -> bool
+	{
+		if (_op.category == Grammar::OperandCategory::Id) // this is a simplified categorization
+		{
+			return parseId(_operands);
+		}
+		else if (_op.kind == Grammar::OperandKind::LiteralString)
+		{
+			return parseLiteralString(_operands);
 		}
 		else
 		{
-			addOperand(static_cast<literal_t>(word));
+			return parseLiteral(_operands);
 		}
+	};
 
-		if (op.kind == Grammar::OperandKind::ImageOperands || 
-			op.kind == Grammar::OperandKind::LiteralSpecConstantOpInteger) // next operands are IDs
-		{
-			trailingIDOperands = true;
-		}
+	while (_operandCount != 0u && it != end)
+	{
+		const auto& op = *it;
 
-		if (op.kind != Grammar::OperandKind::ImageOperands && 
-			op.kind != Grammar::OperandKind::LiteralSpecConstantOpInteger &&
-			op.kind != Grammar::OperandKind::Decoration &&
-			op.kind != Grammar::OperandKind::ExecutionMode &&
-			op.kind != Grammar::OperandKind::LiteralString && 
-			op.quantifier != Grammar::Quantifier::ZeroOrAny)
+		if (op.kind == Grammar::OperandKind::LiteralString) 
 		{
+			if (parseLiteralString(_operandCount) == false)
+			{
+				return false;
+			}
+
 			++it;
+			continue; // next operand
 		}
-		else if (op.kind == Grammar::OperandKind::LiteralString && hasStringTerminator(word)) // reached end of string
+		else if (op.kind == Grammar::OperandKind::LiteralSpecConstantOpInteger) // OpSpecConstantOp
 		{
-			++it;
+			if (parseLiteral(_operandCount) == false) // opcode
+			{
+				return false;
+			}
+
+			// remaining operands must be IDs
+			while (_operandCount > 0u)
+			{
+				if (parseId(_operandCount) == false)
+				{
+					return false;
+				}
+			}
+
+			break; // end of instruction
 		}
 
-		--_operandCount;
-	}
+		if (op.category == Grammar::OperandCategory::Composite)
+		{
+			if (it + 1u != end) // all known compisites are trailing args
+			{
+				getModule()->logError("Unexpected end of operands for composite");
+				return false;
+			}
 
-	if (_operandCount > 0u)
+			if (const auto* bases = _grammar.getOperandBases(op.kind); bases != nullptr)
+			{
+				if (_operandCount % bases->size() != 0u)
+				{
+					getModule()->logError("Unexpected end of operands for composite");
+					return false;
+				}
+
+				auto bit = bases->begin();
+				auto bend = bases->end();
+
+				while (_operandCount > 0u && bit != bend)
+				{
+					if (parseSimpleOps(_operandCount, *bit) == false)
+					{
+						return false;
+					}
+
+					if (++bit == bend) // reset
+					{
+						bit = bases->begin();
+					}
+				}
+			}
+			else
+			{
+				getModule()->logError("Faild to fetch operand bases from grammar");
+				return false;
+			}
+
+			break; // end of instruction
+		}
+		else if (op.category == Grammar::OperandCategory::ValueEnum || op.category == Grammar::OperandCategory::BitEnum)
+		{
+			if (parseLiteral(_operandCount) == false) // enum value
+			{
+				return false;
+			}
+
+			const unsigned int enumVal = back().getLiteral(); // last added operand
+
+			if (auto* params = _grammar.getOperandParameters(op.kind, enumVal); params != nullptr)
+			{
+				for (const auto& param : *params)
+				{
+					if (parseSimpleOps(_operandCount, param) == false)
+					{
+						return false;
+					}
+				}
+			}
+		}
+		else if (op.category == Grammar::OperandCategory::Id)
+		{
+			if (parseId(_operandCount) == false) return false;
+		}
+		else if (op.category == Grammar::OperandCategory::Literal)
+		{
+			if (parseLiteral(_operandCount) == false) return false;
+		}
+		else
+		{
+			getModule()->logError("Could not parse all operands of %s [unkown operand category]", info->name);
+			return false;
+		}
+
+		if (op.quantifier != Grammar::Quantifier::ZeroOrAny)
+		{
+			++it; // single quantifier		
+		}
+	} // operand loop
+
+	if (_operandCount > 0u || (it != end && it->quantifier == Grammar::Quantifier::One))
 	{
 		getModule()->logError("Could not parse all operands of %s", info->name);
 		return false;

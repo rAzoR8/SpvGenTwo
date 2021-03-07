@@ -90,12 +90,14 @@ bool spvgentwo::Function::read(IReader* _pReader, const Grammar& _grammar, Instr
 			if (addBasicBlock().read(_pReader, _grammar) == false) return false;
 			break;
 		case spv::Op::OpFunctionEnd:
-			return true; // FunctionEnd as no operands
+			return true; // FunctionEnd has no operands
 		default:
+			getModule()->logError("Unexpected op-code for function");
 			return false; // unexpected op code
 		}
 	}
 
+	getModule()->logError("Unexpected module end for function");
 	return false;
 }
 

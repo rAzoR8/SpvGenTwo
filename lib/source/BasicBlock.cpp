@@ -143,6 +143,7 @@ bool spvgentwo::BasicBlock::read(IReader* _pReader, const Grammar& _grammar)
 		}
 	}
 
+	getModule()->logError("Unexpected module end for basic block");
 	return false;
 }
 
