@@ -740,6 +740,20 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 			case spv::Op::OpTypeNamedBarrier:
 			case spv::Op::OpTypeRayQueryKHR:
 			case spv::Op::OpTypeAccelerationStructureKHR:
+
+			case spv::Op::OpTypeAvcMcePayloadINTEL:
+			case spv::Op::OpTypeAvcImePayloadINTEL:
+			case spv::Op::OpTypeAvcRefPayloadINTEL:
+			case spv::Op::OpTypeAvcSicPayloadINTEL:
+			case spv::Op::OpTypeAvcMceResultINTEL:
+			case spv::Op::OpTypeAvcImeResultINTEL:
+			case spv::Op::OpTypeAvcImeResultSingleReferenceStreamoutINTEL:
+			case spv::Op::OpTypeAvcImeResultDualReferenceStreamoutINTEL:
+			case spv::Op::OpTypeAvcImeSingleReferenceStreaminINTEL:
+			case spv::Op::OpTypeAvcImeDualReferenceStreaminINTEL:
+			case spv::Op::OpTypeAvcRefResultINTEL:
+			case spv::Op::OpTypeAvcSicResultINTEL:
+
 				break; // nothing to do
 			case spv::Op::OpTypeInt:
 				t.setIntWidth(it->getLiteral());
@@ -801,6 +815,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 				break;
 			case spv::Op::OpTypeRuntimeArray:
 			case spv::Op::OpTypeSampledImage:
+			case spv::Op::OpTypeVmeImageINTEL:
 			{
 				const Type* sub = getTypeInfo(it->getInstruction());
 				if (sub == nullptr)
