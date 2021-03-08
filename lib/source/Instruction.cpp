@@ -418,7 +418,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 		{
 			if (it + 1u != end) // all known compisites are trailing args
 			{
-				getModule()->logError("Unexpected end of operands for composite");
+				getModule()->logError("Unexpected end of composite operands for %s", info->name);
 				return false;
 			}
 
@@ -426,7 +426,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 			{
 				if (_operandCount % bases->size() != 0u)
 				{
-					getModule()->logError("Unexpected end of operands for composite");
+					getModule()->logError("Unexpected end of composite operands for %s", info->name);
 					return false;
 				}
 
@@ -448,7 +448,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 			}
 			else
 			{
-				getModule()->logError("Faild to fetch operand bases from grammar");
+				getModule()->logError("Faild to fetch operand bases for %s from grammar", info->name);
 				return false;
 			}
 
@@ -461,15 +461,18 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 				return false;
 			}
 
-			const unsigned int enumVal = back().getLiteral(); // last added operand
-
-			if (auto* params = _grammar.getOperandParameters(op.kind, enumVal); params != nullptr)
+			if (Grammar::hasOperandParameters(op.kind))
 			{
-				for (const auto& param : *params)
+				const unsigned int enumVal = back().getLiteral(); // last added operand
+
+				if (auto* params = _grammar.getOperandParameters(op.kind, enumVal); params != nullptr)
 				{
-					if (parseSimpleOps(_operandCount, param) == false)
+					for (const auto& param : *params)
 					{
-						return false;
+						if (parseSimpleOps(_operandCount, param) == false)
+						{
+							return false;
+						}
 					}
 				}
 			}
@@ -488,7 +491,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 			return false;
 		}
 
-		if (op.quantifier != Grammar::Quantifier::ZeroOrAny)
+		if (op.quantifier != Grammar::Quantifier::ZeroOrAny) // not trailing args
 		{
 			++it; // single quantifier		
 		}
