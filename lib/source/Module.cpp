@@ -491,6 +491,23 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char
 	case spv::Op::OpTypeQueue:
 	case spv::Op::OpTypePipeStorage:
 	case spv::Op::OpTypeNamedBarrier:
+
+	case spv::Op::OpTypeRayQueryKHR:
+	case spv::Op::OpTypeAccelerationStructureKHR:
+
+	case spv::Op::OpTypeAvcMcePayloadINTEL:
+	case spv::Op::OpTypeAvcImePayloadINTEL:
+	case spv::Op::OpTypeAvcRefPayloadINTEL:
+	case spv::Op::OpTypeAvcSicPayloadINTEL:
+	case spv::Op::OpTypeAvcMceResultINTEL:
+	case spv::Op::OpTypeAvcImeResultINTEL:
+	case spv::Op::OpTypeAvcImeResultSingleReferenceStreamoutINTEL:
+	case spv::Op::OpTypeAvcImeResultDualReferenceStreamoutINTEL:
+	case spv::Op::OpTypeAvcImeSingleReferenceStreaminINTEL:
+	case spv::Op::OpTypeAvcImeDualReferenceStreaminINTEL:
+	case spv::Op::OpTypeAvcRefResultINTEL:
+	case spv::Op::OpTypeAvcSicResultINTEL:
+
 		break; // nothing to do
 	case spv::Op::OpTypeInt:
 		pInstr->appendLiterals(_type.getIntWidth(), static_cast<unsigned int>(_type.getIntSign()));
@@ -520,6 +537,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char
 		break;
 	case spv::Op::OpTypeRuntimeArray:
 	case spv::Op::OpTypeSampledImage:
+	case spv::Op::OpTypeVmeImageINTEL:
 		pInstr->addOperand(addType(_type.getSubTypes().front())); // element type
 		break;
 	case spv::Op::OpTypeArray:
@@ -738,6 +756,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 			case spv::Op::OpTypeQueue:
 			case spv::Op::OpTypePipeStorage:
 			case spv::Op::OpTypeNamedBarrier:
+
 			case spv::Op::OpTypeRayQueryKHR:
 			case spv::Op::OpTypeAccelerationStructureKHR:
 
