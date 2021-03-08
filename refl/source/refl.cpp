@@ -240,6 +240,7 @@ int main(int argc, char* argv[])
 	bool listVariables = false;
 	bool listTypeAndConstants = false;
 	bool listDecorations = false;
+	bool printLocalSize = false;
 	spv::Id idToPrint = InvalidId;
 
 	const int end = argc - 1;;
@@ -296,6 +297,10 @@ int main(int argc, char* argv[])
 		{
 			listTypeAndConstants = true;
 		}
+		else if (strcmp(arg, "--localsize") == 0)
+		{
+			printLocalSize = true;
+		}
 	}
 
 	if (spv == nullptr)
@@ -337,6 +342,19 @@ int main(int argc, char* argv[])
 	if (module.reconstructTypeAndConstantInfo() == false)
 	{
 		return -1;
+	}
+
+	if (printLocalSize)
+	{
+		unsigned int x, y, z;
+		if (ReflectionHelper::getLocalSize(module, x, y, z))
+		{
+			printf("LocalSize: x %u y %u z %u\n", x, y, z);
+		}
+		else
+		{
+			logger.logWarning("OpExecutionMode with LocalSize/LocalSizeHint not found in module");
+		}
 	}
 
 	if (listFunctions)

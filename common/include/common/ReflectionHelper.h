@@ -12,7 +12,7 @@ namespace spvgentwo
 
 	namespace ReflectionHelper
 	{
-		// parse OpExecutionMode/Id operands, returns false if LocalSize or LocalSizeHint is present
+		// parse OpExecutionMode/Id operands, returns false if neither LocalSize or LocalSizeHint are present
 		bool getLocalSize(const Module& _module, unsigned int& _x, unsigned int& _y, unsigned int& _z);
 
 		// get all GLOBAL variables by StorageClass, Function variables are not gathered
