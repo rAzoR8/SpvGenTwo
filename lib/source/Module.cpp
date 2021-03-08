@@ -540,7 +540,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char
 		}
 		break;
 	default:
-		logFatal("Type not implemented");
+		logFatal("Type [%u] not implemented", base);
 		break; // unknown type
 	}
 
@@ -716,6 +716,8 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 	m_InstrToConstant.clear();
 	m_ConstantToInstr.clear();
 
+	bool success = true;
+
 	for (Instruction& instr : m_TypesAndConstants)
 	{
 		auto it = instr.getFirstActualOperand(); // TODO: validate number of available operands with Grammar in read() (for now just assume the .spv is valid)
@@ -736,6 +738,8 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 			case spv::Op::OpTypeQueue:
 			case spv::Op::OpTypePipeStorage:
 			case spv::Op::OpTypeNamedBarrier:
+			case spv::Op::OpTypeRayQueryKHR:
+			case spv::Op::OpTypeAccelerationStructureKHR:
 				break; // nothing to do
 			case spv::Op::OpTypeInt:
 				t.setIntWidth(it->getLiteral());
@@ -751,7 +755,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 				if (sub == nullptr)
 				{
 					logError("Component or Column sub type not found");
-					return false;
+					success = false;
 				}
 
 				t.Member(sub); // component / column type
@@ -765,7 +769,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 					if (sub == nullptr)
 					{
 						logError("Pointer base type not found");
-						return false;
+						success = false;
 					}
 					t.Member(sub);
 				}
@@ -776,7 +780,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 				if (sub == nullptr)
 				{
 					logError("Pointer type not found");
-					return false;
+					success = false;
 				}
 				t.Member(sub);
 				t.setStorageClass(static_cast<spv::StorageClass>((++it)->getLiteral().value));
@@ -790,7 +794,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 					if (sub == nullptr)
 					{
 						logError("Member or Parameter sub type not found");
-						return false;
+						success = false;
 					}
 					t.Member(sub); // member or parameter type
 				}
@@ -802,7 +806,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 				if (sub == nullptr)
 				{
 					logError("Element or image type not found");
-					return false;
+					success = false;
 				}
 				t.Member(sub); // element or image type
 			}
@@ -813,7 +817,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 				if (sub == nullptr)
 				{
 					logError("Element type not found");
-					return false;
+					success = false;
 				}
 				t.Member(sub); // element type
 
@@ -821,16 +825,19 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 				if (c == nullptr)
 				{
 					logError("Array length constant not found");
-					return false;
+					success = false;
+					break; // don't deref c
 				}
 
-				if (c->getType().isInt() == false || c->getData().empty())
+				if (c->getType().isInt() && c->getData().empty() == false)
+				{
+					t.setArrayLength(c->getData().front()); // array length
+				}
+				else
 				{
 					logError("Invalid constant data");
-					return false;
+					success = false;
 				}
-
-				t.setArrayLength(c->getData().front()); // array length
 			}
 			break;
 			case spv::Op::OpTypeImage:
@@ -839,7 +846,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 				if (sub == nullptr)
 				{
 					logError("Sampled type not found");
-					return false;
+					success = false;
 				}
 				t.Member(sub); // sampled type
 
@@ -857,8 +864,8 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 			}
 			break;
 			default:
-				logFatal("Type not implemented");
-				return false;
+				logError("Type [%u] not implemented", instr.getOperation());
+				success = false;
 			}
 
 			auto& node = m_TypeToInstr.emplaceUnique(stdrep::move(t), &instr);
@@ -870,14 +877,15 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 
 			c.setOperation(instr.getOperation());
 
-			const Type* t = getTypeInfo(instr.getResultTypeInstr());
-			if (t == nullptr)
+			if (const Type* t = getTypeInfo(instr.getResultTypeInstr()); t != nullptr)
+			{
+				c.getType() = *t;
+			}
+			else
 			{
 				logError("Constant type not found");
-				return false;
+				success = false;
 			}
-
-			c.getType() = *t;
 
 			switch (instr.getOperation())
 			{
@@ -898,23 +906,24 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 			case spv::Op::OpConstantComposite:
 			case spv::Op::OpSpecConstantComposite:
 				for (auto end = instr.end(); it != end; ++it)
-				{
-					const Constant* sub = getConstantInfo(it->getInstruction());
-					if (sub == nullptr)
+				{					
+					if (const Constant* sub = getConstantInfo(it->getInstruction()); sub != nullptr)
+					{
+						c.Component() = *sub;
+					}
+					else
 					{
 						logError("Constituent constant not found");
-						return false;
+						success = false;					
 					}
-
-					c.Component() = *sub;
 				}
 				break;
 			case spv::Op::OpSpecConstantOp:
 				continue; // continue the loop, dont add to lookup
 				//break;
 			default:
-				logFatal("Constant not implemented");
-				return false;
+				logError("Constant [%u] not implemented", instr.getOperation());
+				success = false;
 			}
 
 			auto& node = m_ConstantToInstr.emplaceUnique(stdrep::move(c), &instr);
@@ -948,21 +957,23 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 	for (Function& f : m_Functions)
 	{
 		if (updateFunctionTypes(f) == false)
-			return false;
+			success = false;
 	}
 
 	for (EntryPoint& f : m_EntryPoints)
 	{
 		if (updateFunctionTypes(f) == false)
-			return false;
+			success = false;
 	}
 
-	return true;
+	return success;
 }
 
 bool spvgentwo::Module::reconstructNames()
 {
 	m_NameLookup.clear();
+
+	bool success = true;
 
 	for (const Instruction& instr : m_Names)
 	{
@@ -972,7 +983,8 @@ bool spvgentwo::Module::reconstructNames()
 		if (target == nullptr)
 		{
 			logError("Invalid OpName / OpMemberName target");
-			return false;
+			success = false;
+			continue;
 		}
 
 		unsigned int memberIndex = ~0u;
@@ -982,14 +994,16 @@ bool spvgentwo::Module::reconstructNames()
 			if (++it == nullptr || it->isLiteral() == false)
 			{
 				logError("Invalid member index operand for OpMemberName");
-				return false;
+				success = false;
+				continue;
 			}
 			memberIndex = it->literal.value;
 		}
 		else if (instr.getOperation() != spv::Op::OpName)
 		{
 			logError("Invalid name instructions");
-			return false;
+			success = false;
+			continue;
 		}
 
 		String& name = m_NameLookup.emplace(target, MemberName{ m_pAllocator, memberIndex }).kv.value.name;
@@ -999,11 +1013,11 @@ bool spvgentwo::Module::reconstructNames()
 		if (name.empty() || name.back() != '\0')
 		{
 			logError("Failed to parse name");
-			return false;
+			success = false;
 		}
 	}
 
-	return true;
+	return success;
 }
 
 void spvgentwo::Module::write(IWriter* _pWriter, const bool _assingIDs)
