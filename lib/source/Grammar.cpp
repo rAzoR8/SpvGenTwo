@@ -63,14 +63,6 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		parameters.emplace_back(OperandKind::IdScope, OperandCategory::Id, "", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(0u, 0x0100), _pAllocator).kv.value;
-		parameters.emplace_back(OperandKind::IdScope, OperandCategory::Id, "", Quantifier::One);
-	}
-	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(0u, 0x0200), _pAllocator).kv.value;
-		parameters.emplace_back(OperandKind::IdScope, OperandCategory::Id, "", Quantifier::One);
-	}
-	{
 		auto& parameters = m_operandParameters.emplaceUnique(Hash64(0u, 0x0200), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::IdScope, OperandCategory::Id, "", Quantifier::One);
 	}
@@ -136,14 +128,6 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 	}
 	{
 		auto& parameters = m_operandParameters.emplaceUnique(Hash64(6u, 0x0008), _pAllocator).kv.value;
-		parameters.emplace_back(OperandKind::IdScope, OperandCategory::Id, "", Quantifier::One);
-	}
-	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(6u, 0x0008), _pAllocator).kv.value;
-		parameters.emplace_back(OperandKind::IdScope, OperandCategory::Id, "", Quantifier::One);
-	}
-	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(6u, 0x0010), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::IdScope, OperandCategory::Id, "", Quantifier::One);
 	}
 	{
@@ -379,14 +363,6 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 	{
 		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5634u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Counter Buffer'", Quantifier::One);
-	}
-	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5634u), _pAllocator).kv.value;
-		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Counter Buffer'", Quantifier::One);
-	}
-	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5635u), _pAllocator).kv.value;
-		parameters.emplace_back(OperandKind::LiteralString, OperandCategory::Literal, "'Semantic'", Quantifier::One);
 	}
 	{
 		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5635u), _pAllocator).kv.value;
