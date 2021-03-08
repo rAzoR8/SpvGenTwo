@@ -189,9 +189,9 @@ spvgentwo::Function& spvgentwo::Module::addFunction()
 	return m_Functions.emplace_back(this);
 }
 
-spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Module::remove(const Function* _pFunction, Function* _pReplacementToCall)
+spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Module::remove(const Function* _pFunction, Function* _pReplacementToCall, IAllocator* _pAllocator)
 {
-	List<Instruction*> uses(getAllocator());
+	List<Instruction*> uses(_pAllocator == nullptr ? getAllocator() : _pAllocator);
 
 	if (_pFunction == nullptr)
 	{

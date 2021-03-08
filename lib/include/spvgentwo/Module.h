@@ -105,7 +105,8 @@ namespace spvgentwo
 		Function& addFunction(const char* _pFunctionName = nullptr, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
 
 		// remove Function or EntryPoint, returns list of Instructions which consumed the function (calls outside the function itself)
-		List<Instruction*> remove(const Function* _pFunction, Function* _pReplacementToCall = nullptr);
+		// _pAllocator to use for allocating List<Instruction*> (use modules allocator if nullptr)
+		List<Instruction*> remove(const Function* _pFunction, Function* _pReplacementToCall = nullptr, IAllocator* _pAllocator = nullptr);
 
 		// add empty entry point
 		EntryPoint& addEntryPoint();
@@ -131,6 +132,9 @@ namespace spvgentwo
 		// add a new instruction to m_TypesAndConstants, if _pConstant is not nullptr, also add entry in m_ConstantBuilder map
 		Instruction* addConstantInstr(const Constant* _pConstant = nullptr);
 
+		// construct a new OpType from:
+		// T = type like int, float*, vector_t<float,3>, dyn_sampled_image_t etc.
+		// Props = list of modifiers from spv::StorageClass, spv::Dim, spv::Op, spv::AccessQualifier, SamplerImageAccess, spv::ImageFormat, spv::ImageFormat or even a subtype const Type&
 		template <class T, class ... Props>
 		Instruction* type(const Props& ... _props);
 
