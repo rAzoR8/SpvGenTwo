@@ -223,7 +223,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 			continue;
 		}
 		
-		if (info.category == Grammar::OperandCategory::Composite /*&& info.quantifier == Grammar::Quantifier::ZeroOrAny*/)
+		if (info.category == Grammar::OperandCategory::Composite)
 		{
 			if (auto* bases = _grammar.getOperandBases(info.kind); bases != nullptr)
 			{
@@ -276,14 +276,17 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 			printInstruction(constInstr, _grammar, _printer, _options ^ PrintOptionsBits::ResultId, nullptr);
 			_printer << "]";
 		}
-		else if (auto* params = _grammar.getOperandParameters(info.kind, it->getLiteral()); params != nullptr)
+		else if (Grammar::hasOperandParameters(info.kind))
 		{
-			auto pit = params->begin();
-			auto pend = params->end();
-
-			for (++it; it != end && pit != pend; ++it, ++pit)
+			if (auto* params = _grammar.getOperandParameters(info.kind, it->getLiteral()); params != nullptr)
 			{
-				printOperand(_instr, *it, *pit, _grammar, _printer, _options);
+				auto pit = params->begin();
+				auto pend = params->end();
+
+				for (++it; it != end && pit != pend; ++it, ++pit)
+				{
+					printOperand(_instr, *it, *pit, _grammar, _printer, _options);
+				}
 			}
 		}
 		else
