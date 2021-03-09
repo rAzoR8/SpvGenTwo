@@ -967,23 +967,9 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 
 	auto updateFunctionTypes = [](Function& _fun) -> bool
 	{
-		if (auto it = _fun.getFunction()->getResultTypeOperand(); it != nullptr && it->isInstruction())
+		if (auto it = _fun.getFunction()->last(); it != nullptr && it->isInstruction() && it->instruction->isType()) // last operand is OpTypeFunction
 		{
-			if (Instruction* funcType = _fun.setReturnType(it->instruction); funcType != nullptr)
-			{
-				for (Instruction& param : _fun.getParameters())
-				{
-					if (auto typeIt = param.getResultTypeOperand(); typeIt != nullptr && typeIt->isInstruction())
-					{
-						funcType->addOperand(typeIt->instruction);
-					}
-					else
-					{
-						return false;
-					}
-				}
-				return true;
-			}
+			return _fun.setFunctionType(it->instruction) != nullptr;
 		}
 		return false;
 	};

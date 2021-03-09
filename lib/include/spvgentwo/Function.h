@@ -82,6 +82,9 @@ namespace spvgentwo
 		// creates m_pFunctionType with OpTypeFunction and _pReturnType (opperands are added by addParameters), returns m_pFunctionType
 		Instruction* setReturnType(Instruction* _pReturnType);
 
+		// sets m_pFunctionType to _pFunctionType and extracts return type argument and asigns it to m_pReturnType, returns m_pReturnType
+		Instruction* setFunctionType(Instruction* _pFunctionType);
+
 		// adds opFunctionParameter(_pParamType) to m_parameters and _pParamType to m_pFunctionType, returns last opFunctionParameter generated
 		template <class ... TypeInstr>
 		Instruction* addParameters(Instruction* _pParamType, TypeInstr* ... _paramTypeInstructions);

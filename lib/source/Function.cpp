@@ -198,6 +198,19 @@ spvgentwo::Instruction* spvgentwo::Function::setReturnType(Instruction* _pReturn
 	return m_pFunctionType;
 }
 
+spvgentwo::Instruction* spvgentwo::Function::setFunctionType(Instruction* _pFunctionType)
+{
+	if (m_pFunctionType == nullptr)
+	{
+		m_pFunctionType = _pFunctionType;
+
+		auto it = _pFunctionType->getFirstActualOperand(); // get ReturnType operand
+		m_pReturnType = it != nullptr ? it->getInstruction() : nullptr;
+	}
+
+	return m_pReturnType;
+}
+
 spvgentwo::Instruction* spvgentwo::Function::finalize(const Flag<spv::FunctionControlMask> _control, const char* _pName)
 {
 	if (m_pReturnType == nullptr || m_pFunctionType == nullptr)
