@@ -411,6 +411,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 				}
 			}
 
+			++it; // no more operands after this one
 			break; // end of instruction
 		}
 
