@@ -110,18 +110,29 @@ namespace
 			_printer << "%";
 			if (op.instruction == nullptr)
 			{
-				_printer.append("INVALIDINSTRPTR", "\x1B[33m", "\033[0m");
+				_printer.append("INVALID-INSTRPTR", "\x1B[36m", "\033[0m");
 				return;
 			}
 
 			if (const char* name = op.instruction->getName(); (_options & ModulePrinter::PrintOptionsBits::InstructionName) && name != nullptr && stringLength(name) > 1)
 			{
 				_printer.append(name, "\x1B[33m", "\033[0m");
+				return;
 			}
-			else
+			else if (op.instruction->isType() && (_options & ModulePrinter::PrintOptionsBits::TypeName))
 			{
-				_printer.append(op.instruction->getResultId(), "\x1B[33m", "\033[0m");
+				if (const Type* t = op.instruction->getType(); t != nullptr && (t->isVoid() || t->isScalar() || t->isVector() || t->isMatrix()))
+				{
+					if (const char* str = t->getString(); str != nullptr)
+					{
+						_printer.append(str, "\x1B[33m", "\033[0m");
+						return;
+					}
+				}
 			}
+
+			// fallback
+			_printer.append(op.instruction->getResultId(), "\x1B[33m", "\033[0m");
 		}
 		else if (op.isBranchTarget())
 		{
@@ -129,7 +140,7 @@ namespace
 
 			if (op.branchTarget == nullptr)
 			{
-				_printer.append("INVALIDBASICBLOCKPTR", " \x1B[33m", "\033[0m");
+				_printer.append("INVALID-BASICBLOCKPTR", " \x1B[36m", "\033[0m");
 				return;
 			}
 
@@ -182,7 +193,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 			}
 			else
 			{
-				_printer.append("\nINVALID INSTRUCTION\n");
+				_printer.append("INVALID-ID", "\x1B[36m", "\033[0m");
 				return false; // invalid instruction
 			}
 		}
@@ -205,13 +216,12 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 	{
 		if (it == end)
 		{
-			if (info.quantifier == Grammar::Quantifier::One)
+			if (info.quantifier == Grammar::Quantifier::One) // last operand was not optional
 			{
 				_printer.append("\nINVALID INSTRUCTION\n");
 				return false; // invalid instruction			
 			}
-
-			continue;
+			break;
 		}
 
 		if (info.kind == Grammar::OperandKind::LiteralString)
@@ -289,9 +299,16 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 				}
 			}
 		}
+		else if (info.quantifier == Grammar::Quantifier::ZeroOrAny)
+		{
+			while(++it != end)
+			{
+				printOperand(_instr, *it, info, _grammar, _printer, _options);			
+			}
+		}
 		else
 		{
-			++it;
+			++it;		
 		}
 	}
 

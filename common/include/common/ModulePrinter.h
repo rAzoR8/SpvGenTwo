@@ -91,7 +91,8 @@ namespace spvgentwo
 			OperandName = 1 << 2,
 			ResultId = 1 << 3,
 			OperationName = 1 << 4,
-			All = OperationName | (OperationName - 1)
+			TypeName = 1 << 5,
+			All = TypeName | (TypeName - 1)
 		};
 
 		using PrintOptions = Flag<PrintOptionsBits>;
