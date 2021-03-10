@@ -129,19 +129,90 @@ spvgentwo::Type& spvgentwo::Type::getBaseType()
 
 const char* spvgentwo::Type::getString() const
 {
+#define SGT_RET(t, x) \
+	if (t.isBool()) return "bool" x; \
+	if (t.isS16()) return "int16" x; \
+	if (t.isU16()) return "uint16" x; \
+	if (t.isS32()) return "int32" x; \
+	if (t.isU32()) return "uint32" x; \
+	if (t.isS64()) return "int64" x; \
+	if (t.isU64()) return "uint64" x; \
+	if (t.isF16()) return "half" x; \
+	if (t.isF32()) return "float" x; \
+	if (t.isF64()) return "double" x; 
+
 	if (isVoid()) return "void";
-	if (isBool()) return "bool";
-	if (isS16()) return "int16_t";
-	if (isU16()) return "uint16_t";
-	if (isS32()) return "int32_t";
-	if (isU32()) return "uint32_t";
-	if (isS64()) return "int64_t";
-	if (isU64()) return "uint64_t";
-	if (isF16()) return "half";
-	if (isF32()) return "float";
-	if (isF64()) return "double";
-	if (isVector()) return "vec";
-	if (isMatrix()) return "mat";
+
+	SGT_RET((*this), "")
+
+	if (isVector())
+	{
+		const Type& b = getBaseType();
+		if (m_VecComponentCount == 2)
+		{
+			SGT_RET(b, "_2");
+		}
+		else if (m_VecComponentCount == 3)
+		{
+			SGT_RET(b, "_3");
+		}
+		else if (m_VecComponentCount == 4)
+		{
+			SGT_RET(b, "_3");
+		}		
+	} 
+	if (isMatrix())
+	{
+		const Type& b = getBaseType();
+		const unsigned int rowCount = front().getVectorComponentCount();
+
+		if (m_MatColumnCount == 2)
+		{
+			if (rowCount == 2)
+			{
+				SGT_RET(b, "_2x2");
+			}
+			else if (rowCount == 3)
+			{
+				SGT_RET(b, "_2x3");
+			}
+			else if (rowCount == 4)
+			{
+				SGT_RET(b, "_2x4");
+			}
+		}
+		else if (m_MatColumnCount == 3)
+		{
+			if (rowCount == 2)
+			{
+				SGT_RET(b, "_3x2");
+			}
+			else if (rowCount == 3)
+			{
+				SGT_RET(b, "_3x3");
+			}
+			else if (rowCount == 4)
+			{
+				SGT_RET(b, "_3x4");
+			}
+		}
+		else if (m_MatColumnCount == 4)
+		{
+			if (rowCount == 2)
+			{
+				SGT_RET(b, "_4x2");
+			}
+			else if (rowCount == 3)
+			{
+				SGT_RET(b, "_4x3");
+			}
+			else if (rowCount == 4)
+			{
+				SGT_RET(b, "_4x4");
+			}
+		}
+	}
+
 	if (isArray()) return "array";
 	if (isRuntimeArray()) return "runtime array";
 
@@ -162,7 +233,7 @@ const char* spvgentwo::Type::getString() const
 	if (isPipe()) return "pipe";
 	if (isQueue()) return "queue";
 
-	return "";
+	return nullptr;
 }
 
 spvgentwo::spv::Op spvgentwo::Type::getBaseTypeOp() const
