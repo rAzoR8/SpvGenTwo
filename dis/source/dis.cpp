@@ -8,10 +8,7 @@
 #include "common/ModulePrinter.h"
 
 #include <cstring>
-
-#ifndef NDEBUG
-#include <cstdlib> // system
-#endif // !_NDEBUG
+#include <cstdio>
 
 using namespace spvgentwo;
 using namespace ModulePrinter;
@@ -24,7 +21,6 @@ int main(int argc, char* argv[])
 	const char* tabs = "\t\t";
 	bool serialize = false; // for debugging
 	bool reassignIDs = false;
-	bool callSPIRVDis = false;
 	bool colors = true;
 
 	PrintOptions options{ PrintOptionsBits::All };
@@ -43,10 +39,6 @@ int main(int argc, char* argv[])
 		else if (strcmp(arg, "--assignIDs") == 0 || strcmp(arg, "--assignids") == 0)
 		{
 			reassignIDs = true;
-		}
-		else if (strcmp(arg, "--calldis") == 0)
-		{
-			callSPIRVDis = true;
 		}
 		else if (strcmp(arg, "--noinstrnames") == 0)
 		{
@@ -76,15 +68,6 @@ int main(int argc, char* argv[])
 	}
 
 	HeapAllocator alloc;
-
-#ifndef NDEBUG
-	if (callSPIRVDis)
-	{
-		String cmd(&alloc, "spirv-dis ");
-		cmd += spv;
-		system(cmd.c_str());
-	}
-#endif
 
 	if (BinaryFileReader reader(spv); reader.isOpen())
 	{

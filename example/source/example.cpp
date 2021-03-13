@@ -16,8 +16,9 @@
 #include "example/GeometryShader.h"
 #include "example/FragmentShader.h"
 
-#include <stdarg.h>
-#include <assert.h>
+#include <cstdarg>
+#include <cassert>
+#include <cstdio>
 
 using namespace spvgentwo;
 

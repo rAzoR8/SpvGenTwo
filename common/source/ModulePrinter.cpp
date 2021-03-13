@@ -1,9 +1,10 @@
 #include "common/ModulePrinter.h"
-#include "common/ExternalMemoryAllocator.h"
 
 #include "spvgentwo/String.h"
 #include "spvgentwo/Module.h"
 #include "spvgentwo/Grammar.h"
+
+#include <cstdio>
 
 namespace
 {
@@ -19,6 +20,16 @@ namespace
 			_outBuffer[--len] = '0' + (_value % 10u);
 			_value /= 10u;
 		} while (_value != 0 && len > 0u);
+	}
+
+	template <class T, unsigned int SIZE>
+	bool printConstData(const spvgentwo::Constant& _c, char(&_buffer)[SIZE], const char* _pFormat)
+	{
+		if (const T* data = _c.getDataAs<T>(false); data != nullptr)
+		{
+			return snprintf(_buffer, SIZE, _pFormat, *data) > 0;
+		}
+		return false;
 	}
 
 	spvgentwo::Instruction::Iterator appendLiteralString(spvgentwo::ModulePrinter::IModulePrinter& _printer, spvgentwo::Instruction::Iterator _it, spvgentwo::Instruction::Iterator _end, const char* _pushColor, const char* _popColor)
@@ -128,6 +139,14 @@ namespace
 						_printer.append(str, "\x1B[33m", "\033[0m");
 						return;
 					}
+				}
+			}
+			else if (op.instruction->isSpecOrConstant())
+			{
+				if (const Constant* c = op.instruction->getConstant(); c != nullptr)
+				{
+					if (_printer.append(*c, "\x1B[33m", "\033[0m"))
+						return;
 				}
 			}
 
@@ -339,6 +358,37 @@ bool spvgentwo::ModulePrinter::printModule(const Module& _module, const Grammar&
 	const bool success = !_module.iterateInstructions(print);
 
 	return success;
+}
+
+bool spvgentwo::ModulePrinter::IModulePrinter::append(const Constant& _constant, const char* _pushColor, const char* _popColor)
+{
+	const Type& t = _constant.getType();
+
+	char buf[128]{ '\0' };
+	bool printed = false;
+
+	if (t.isS16()) printed = printConstData<short>(_constant, buf, "%d");
+	if (t.isS32()) printed = printConstData<int>(_constant, buf, "%d");
+	if (t.isS64()) printed = printConstData<long long>(_constant, buf, "%lld");
+
+	if (t.isU16()) printed = printConstData<unsigned short>(_constant, buf, "%u");
+	if (t.isU32()) printed = printConstData<unsigned int>(_constant, buf, "%u");
+	if (t.isU64()) printed = printConstData<unsigned long long>(_constant, buf, "%llu");
+
+	if (t.isF32()) printed = printConstData<float>(_constant, buf, "%f");
+	if (t.isF64()) printed = printConstData<double>(_constant, buf, "%f");
+
+	if (printed)
+	{
+		append(buf, _pushColor, _popColor);
+	}
+
+	if (t.isVector())
+	{
+		// TODO
+	}
+
+	return printed;
 }
 
 void spvgentwo::ModulePrinter::IModulePrinter::append(unsigned int _literal, const char* _pushColor, const char* _popColor)
