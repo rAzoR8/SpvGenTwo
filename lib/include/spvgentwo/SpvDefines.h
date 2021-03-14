@@ -25,8 +25,12 @@ namespace spvgentwo
 
 	constexpr auto wordCount(const decltype(sizeof(spv::Id)) _byteCount)
 	{
+		if (_byteCount <= sizeof(spv::Id)) return decltype(sizeof(spv::Id)){ 1u };
 		return (_byteCount / sizeof(spv::Id)) + (_byteCount % sizeof(spv::Id) != 0u ? 1u : 0u);
 	}
+
+	template <class T>
+	constexpr auto wordCount() { return wordCount(sizeof(T)); }
 
 	constexpr spv::Op getOperation(unsigned int _instrWord)
 	{
