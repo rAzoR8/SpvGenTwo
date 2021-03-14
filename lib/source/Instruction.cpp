@@ -484,7 +484,17 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 		}
 		else if (op.category == Grammar::OperandCategory::Literal)
 		{
-			if (parseLiteral(_operandCount) == false) return false;
+			if (op.kind == Grammar::OperandKind::LiteralContextDependentNumber) // OpConstant
+			{
+				while (_operandCount > 0u)
+				{
+					if (parseLiteral(_operandCount) == false) return false;
+				}
+			}
+			else if (parseLiteral(_operandCount) == false)
+			{
+				return false;			
+			}
 		}
 		else
 		{
