@@ -63,7 +63,7 @@ namespace spvgentwo
 	template<class T>
 	inline void Constant::addData(const T& _data)
 	{
-		m_literalData.reserve(m_literalData.size() + (sizeof(T) / sizeof(unsigned int)));
+		m_literalData.reserve(m_literalData.size() + wordCount<T>());
 		appendLiteralsToContainer(m_literalData, _data);
 	}
 
