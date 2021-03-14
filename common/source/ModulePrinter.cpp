@@ -53,26 +53,101 @@ namespace
 		return _it;
 	}
 
-	void printOperand(const spvgentwo::Instruction& _instr, const spvgentwo::Operand& op, const spvgentwo::Grammar::Operand& _info, const spvgentwo::Grammar& _grammar, spvgentwo::ModulePrinter::IModulePrinter& _printer, spvgentwo::ModulePrinter::PrintOptions _options)
+	bool printOperand(const spvgentwo::Instruction& _instr, const spvgentwo::Operand& op, const spvgentwo::Grammar::Operand& _info, const spvgentwo::Grammar& _grammar, spvgentwo::ModulePrinter::IModulePrinter& _printer, spvgentwo::ModulePrinter::PrintOptions _options)
 	{
 		using namespace spvgentwo;
+		using namespace ModulePrinter::detail;
 
  		if (op.isId() && _info.kind == Grammar::OperandKind::IdResult)  // skip result id
 		{
-			return;
+			return true;
 		}
 
 		_printer << " ";
-		if (op.isId() && _info.kind != Grammar::OperandKind::IdResult)
+		if (op.isId())
 		{
+			if (op.id == InvalidId)
+			{
+				_printer.append("INVALID-INSTRID", PushRedBG, PopGrey);
+				return false;
+			}
+
 			_printer << "%";
-			_printer.append(op.id, "\x1B[33m", "\033[0m");
+			_printer.append(op.id, PushYellow, PopGrey);
+			return true;
+		}
+		else if (op.isInstruction())
+		{
+			if (op.instruction == nullptr)
+			{
+				_printer.append("INVALID-INSTRPTR", PushRedBG, PopGrey);
+				return false;
+			}
+			else if (op.instruction->getResultId() == InvalidId)
+			{
+				_printer.append("INVALID-INSTRID", PushRedBG, PopGrey);
+				return false;
+			}
+
+			if (const char* name = op.instruction->getName(); (_options & ModulePrinter::PrintOptionsBits::InstructionName) && name != nullptr && stringLength(name) > 1)
+			{
+				_printer << "%";
+				_printer.append(name, PushYellow, PopGrey);
+				return true;
+			}
+			else if (op.instruction->isType() && (_options & ModulePrinter::PrintOptionsBits::TypeName))
+			{
+				if (const Type* t = op.instruction->getType(); t != nullptr && (t->isVoid() || t->isScalar() || t->isVector() || t->isMatrix()))
+				{
+					if (const char* str = t->getString(); str != nullptr)
+					{
+						_printer.append(str, PushYellow, PopGrey);
+						return true;
+					}
+				}
+			}
+			else if (op.instruction->isSpecOrConstant() && (_options & ModulePrinter::PrintOptionsBits::ConstantData))
+			{
+				if (const Constant* c = op.instruction->getConstant(); c != nullptr)
+				{
+					if (_printer.append(*c, PushLightBlue, PopGrey))
+						return true;
+				}
+			}
+
+			// fallback
+			_printer << "%";
+			_printer.append(op.instruction->getResultId(), PushYellow, PopGrey);
+			return true;	
+		}
+		else if (op.isBranchTarget())
+		{
+			if (op.branchTarget == nullptr)
+			{
+				_printer.append("INVALID-BASICBLOCKPTR", PushRedBG, PopGrey);
+				return false;
+			}
+			else if (spv::Id id = op.branchTarget->getLabel()->getResultId(); id == InvalidId)
+			{
+				_printer.append("INVALID-INSTRID", PushRedBG, PopGrey);
+				return false;
+			}
+
+			_printer << "%";
+			if (const char* name = op.branchTarget->getName(); _options & ModulePrinter::PrintOptionsBits::OperandName && name != nullptr && stringLength(name) > 1)
+			{
+				_printer.append(name, PushYellow, PopGrey);
+			}
+			else
+			{
+				_printer.append(op.branchTarget->getLabel()->getResultId(), PushYellow, PopGrey);
+			}
+			return true;
 		}
 		else if (op.isLiteral())
 		{
 			if (_instr.getOperation() == spv::Op::OpExtInst)
 			{
-				bool printedName = false;
 				if (auto set = _instr.getFirstActualOperand(); set != nullptr && set->isInstruction() && *set->instruction == spv::Op::OpExtInstImport) // extension set
 				{					
 					Grammar::Extension ext = Grammar::Extension::Core;
@@ -89,88 +164,37 @@ namespace
 					{
 						if (auto* extInfo = _grammar.getInfo(static_cast<unsigned int>(op.literal.value), ext); extInfo != nullptr)
 						{
-							_printer.append(extInfo->name, "\x1B[35m", "\033[0m");
-							printedName = true;
+							_printer.append(extInfo->name, PushPurple, PopGrey);
+							return true;
 						}
 					}
-				}
-
-				if (printedName == false)
-				{
-					_printer.append(op.literal.value, "\x1B[31m", "\033[0m");
 				}
 			}
 			else if (_info.category == Grammar::OperandCategory::BitEnum || _info.category == Grammar::OperandCategory::ValueEnum)
 			{
 				if (const char* name = _grammar.getOperandName(_info.kind, op.literal.value); name != nullptr && (_options & ModulePrinter::PrintOptionsBits::OperandName))
 				{
-					_printer.append(name);				
-				}
-				else
-				{
-					_printer.append(op.literal.value, "\x1B[31m", "\033[0m");
+					_printer.append(name, PushWhite, PopGrey);				
+					return true;
 				}
 			}
-			else
+			else if (_info.kind == Grammar::OperandKind::LiteralContextDependentNumber && _instr.isSpecOrConstant() && (_options & ModulePrinter::PrintOptionsBits::ConstantData))
 			{
-				_printer.append(op.literal.value, "\x1B[31m", "\033[0m");
-			} // TODO: check for OpConstant args like floats
+				if (const Constant* c = _instr.getConstant(); c != nullptr)
+				{
+					if (_printer.append(*c, PushLightBlue, PopGrey))
+						return true;
+				}
+			}
+
+			//fallback
+			_printer.append(op.literal.value, PushRed, PopGrey);
+			return true;
 		}
-		else if (op.isInstruction())
+		else
 		{
-			_printer << "%";
-			if (op.instruction == nullptr)
-			{
-				_printer.append("INVALID-INSTRPTR", "\x1B[36m", "\033[0m");
-				return;
-			}
-
-			if (const char* name = op.instruction->getName(); (_options & ModulePrinter::PrintOptionsBits::InstructionName) && name != nullptr && stringLength(name) > 1)
-			{
-				_printer.append(name, "\x1B[33m", "\033[0m");
-				return;
-			}
-			else if (op.instruction->isType() && (_options & ModulePrinter::PrintOptionsBits::TypeName))
-			{
-				if (const Type* t = op.instruction->getType(); t != nullptr && (t->isVoid() || t->isScalar() || t->isVector() || t->isMatrix()))
-				{
-					if (const char* str = t->getString(); str != nullptr)
-					{
-						_printer.append(str, "\x1B[33m", "\033[0m");
-						return;
-					}
-				}
-			}
-			else if (op.instruction->isSpecOrConstant())
-			{
-				if (const Constant* c = op.instruction->getConstant(); c != nullptr)
-				{
-					if (_printer.append(*c, "\x1B[33m", "\033[0m"))
-						return;
-				}
-			}
-
-			// fallback
-			_printer.append(op.instruction->getResultId(), "\x1B[33m", "\033[0m");
-		}
-		else if (op.isBranchTarget())
-		{
-			_printer << "%";
-
-			if (op.branchTarget == nullptr)
-			{
-				_printer.append("INVALID-BASICBLOCKPTR", " \x1B[36m", "\033[0m");
-				return;
-			}
-
-			if (const char* name = op.branchTarget->getName(); _options & ModulePrinter::PrintOptionsBits::OperandName && name != nullptr && stringLength(name) > 1)
-			{
-				_printer.append(name, "\x1B[33m", "\033[0m");
-			}
-			else
-			{
-				_printer.append(op.branchTarget->getLabel()->getResultId());
-			}
+			_printer.append("UNKNOWN-OPERANDTYPE", PushRedBG, PopGrey);
+			return false;
 		}
 	}
 } // !anonymous
@@ -195,6 +219,7 @@ void spvgentwo::ModulePrinter::ModuleStringPrinter::append(const char* _pStr, co
 
 bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer, PrintOptions _options, const char* _pIndentation)
 {
+	using namespace detail;
 	auto* instrInfo = _grammar.getInfo(static_cast<unsigned int>(_instr.getOperation()));
 
 	if (_instr.hasResult() && ((_options & PrintOptionsBits::InstructionName) || (_options & PrintOptionsBits::ResultId)))
@@ -202,17 +227,17 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 		_printer << "%";
 		if (const char* name = _instr.getName(); (_options & PrintOptionsBits::InstructionName) && name != nullptr && stringLength(name) > 1)
 		{
-			_printer.append(name, "\x1B[34m", "\033[0m");
+			_printer.append(name, PushBlue, PopGrey);
 		}
 		else if (_options & PrintOptionsBits::ResultId)
 		{
 			if (auto id = _instr.getResultId(); id != InvalidId)
 			{
-				_printer.append(id, "\x1B[34m", "\033[0m");
+				_printer.append(id, PushBlue, PopGrey);
 			}
 			else
 			{
-				_printer.append("INVALID-ID", "\x1B[36m", "\033[0m");
+				_printer.append("INVALID-RESULTID", PushRedBG, PopGrey);
 				return false; // invalid instruction
 			}
 		}
@@ -246,7 +271,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 		if (info.kind == Grammar::OperandKind::LiteralString)
 		{
 			_printer << " \"";
-			it = appendLiteralString(_printer, it, end, "\x1B[32m", "\033[0m");
+			it = appendLiteralString(_printer, it, end, PushGreen, PopGrey);
 			_printer << "\"";
 
 			continue;

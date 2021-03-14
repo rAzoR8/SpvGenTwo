@@ -19,6 +19,16 @@ namespace spvgentwo
 			{
 				constexpr bool append([[maybe_unused]] const Constant& _constant, [[maybe_unused]] const char* _pushColor, [[maybe_unused]] const char* _popColor) const { return false; }
 			};
+
+			constexpr auto PushRed = u8"\x1B[31m"; // literals
+			constexpr auto PushGreen = u8"\x1B[32m"; // strings
+			constexpr auto PushYellow = u8"\x1B[33m"; // OperandIDs
+			constexpr auto PushBlue = u8"\x1B[34m"; // Result IDs
+			constexpr auto PushPurple = u8"\x1B[35m"; // ExtInst Instructions names
+			constexpr auto PushLightBlue = u8"\x1B[36m"; // constant data
+			constexpr auto PushWhite = u8"\x1B[97m"; // enum values
+			constexpr auto PushRedBG = u8"\x1B[41m"; // Errors (white on red)
+			constexpr auto PopGrey = u8"\033[0m";
 		}
 
 		class IModulePrinter
