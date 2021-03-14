@@ -130,18 +130,20 @@ spvgentwo::Type& spvgentwo::Type::getBaseType()
 const char* spvgentwo::Type::getString() const
 {
 #define SGT_RET(t, x) \
-	if (t.isBool()) return "bool" x; \
-	if (t.isS16()) return "int16" x; \
-	if (t.isU16()) return "uint16" x; \
-	if (t.isS32()) return "int32" x; \
-	if (t.isU32()) return "uint32" x; \
-	if (t.isS64()) return "int64" x; \
-	if (t.isU64()) return "uint64" x; \
-	if (t.isF16()) return "half" x; \
-	if (t.isF32()) return "float" x; \
-	if (t.isF64()) return "double" x; 
+	if (t.isBool())	return "bool" x; \
+	if (t.isS8())	return "int8" x; \
+	if (t.isU8())	return "uint8" x; \
+	if (t.isS16())	return "int16" x; \
+	if (t.isU16())	return "uint16" x; \
+	if (t.isS32())	return "int32" x; \
+	if (t.isU32())	return "uint32" x; \
+	if (t.isS64())	return "int64" x; \
+	if (t.isU64())	return "uint64" x; \
+	if (t.isF16())	return "half" x; \
+	if (t.isF32())	return "float" x; \
+	if (t.isF64())	return "double" x; 
 
-	if (isVoid()) return "void";
+	if (isVoid())	return "void";
 
 	SGT_RET((*this), "")
 

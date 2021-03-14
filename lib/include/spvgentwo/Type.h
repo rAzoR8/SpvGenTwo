@@ -278,6 +278,9 @@ namespace spvgentwo
 		bool isInt(unsigned int _bitWidth = 0u, Sign _sign = Sign::Any) const { return m_Type == spv::Op::OpTypeInt && (_bitWidth == 0u || _bitWidth == m_IntWidth) && hasSign(_sign); }
 		bool isUInt(unsigned int _bitWidth = 0u) const { return isInt(_bitWidth) && m_IntSign == false; }
 		bool isSInt(unsigned int _bitWidth = 0u) const { return isInt(_bitWidth) && m_IntSign; }
+		bool isI8() const { return isInt(8u); }
+		bool isU8() const { return isUInt(8u); }
+		bool isS8() const { return isSInt(8u); }
 		bool isI16() const { return isInt(16u); }
 		bool isU16() const { return isUInt(16u); }
 		bool isS16() const { return isSInt(16u); }
@@ -779,6 +782,12 @@ namespace spvgentwo
 
 	template <>
 	inline Type& Type::fundamental<bool>(const bool*) { return Bool(); }
+
+	template <>
+	inline Type& Type::fundamental<char>(const char*) { return Int(8u); }
+
+	template <>
+	inline Type& Type::fundamental<unsigned char>(const unsigned char*) { return UInt(8u); }
 
 	template <>
 	inline Type& Type::fundamental<short>(const short*) { return Int(16u); }

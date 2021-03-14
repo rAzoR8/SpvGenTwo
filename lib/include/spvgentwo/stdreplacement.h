@@ -301,6 +301,8 @@ namespace spvgentwo::traits
 {
 	template <class T> inline constexpr bool is_primitive_type_v = false;
 	template <>	inline constexpr bool is_primitive_type_v<bool> = true;
+	template <>	inline constexpr bool is_primitive_type_v<char> = true;
+	template <>	inline constexpr bool is_primitive_type_v<unsigned char> = true;
 	template <>	inline constexpr bool is_primitive_type_v<short> = true;
 	template <>	inline constexpr bool is_primitive_type_v<unsigned short> = true;
 	template <>	inline constexpr bool is_primitive_type_v<int> = true;
