@@ -387,30 +387,45 @@ bool spvgentwo::ModulePrinter::printModule(const Module& _module, const Grammar&
 
 bool spvgentwo::ModulePrinter::IModulePrinter::append(const Constant& _constant, const char* _pushColor, const char* _popColor)
 {
+	switch (_constant.getOperation())
+	{		
+	case spv::Op::OpConstantNull: append("null", _pushColor, _popColor); return true;
+	case spv::Op::OpConstantTrue: append("true", _pushColor, _popColor); return true;
+	case spv::Op::OpSpecConstantTrue: append("true", _pushColor, _popColor); return true;
+	case spv::Op::OpConstantFalse: append("false", _pushColor, _popColor); return true;
+	case spv::Op::OpSpecConstantFalse: append("false", _pushColor, _popColor); return true;
+	case spv::Op::OpConstantSampler: return false; // can't print
+	default: break;
+	}
+
 	const Type& t = _constant.getType();
 
-	char buf[128]{ '\0' };
+	if (t.isBool())
+	{
+		if (const bool* data = _constant.getDataAs<bool>(false); data != nullptr)
+		{
+			append(*data ? "true" : "false", _pushColor, _popColor);
+			return true;
+		}
+	}
+
+	char buf[64]{ '\0' };
 	bool printed = false;
 
-	if (t.isS16()) printed = printConstData<short>(_constant, buf, "%d");
-	if (t.isS32()) printed = printConstData<int>(_constant, buf, "%d");
-	if (t.isS64()) printed = printConstData<long long>(_constant, buf, "%lld");
-
-	if (t.isU16()) printed = printConstData<unsigned short>(_constant, buf, "%u");
-	if (t.isU32()) printed = printConstData<unsigned int>(_constant, buf, "%u");
-	if (t.isU64()) printed = printConstData<unsigned long long>(_constant, buf, "%llu");
-
-	if (t.isF32()) printed = printConstData<float>(_constant, buf, "%f");
-	if (t.isF64()) printed = printConstData<double>(_constant, buf, "%f");
+	if (!printed && t.isS8())	printed = printConstData<char>(_constant, buf, "%d");
+	if (!printed && t.isS16())	printed = printConstData<short>(_constant, buf, "%d");
+	if (!printed && t.isS32())	printed = printConstData<int>(_constant, buf, "%d");
+	if (!printed && t.isS64())	printed = printConstData<long long>(_constant, buf, "%lld");
+	if (!printed && t.isU8())	printed = printConstData<unsigned short>(_constant, buf, "%u");
+	if (!printed && t.isU16())	printed = printConstData<unsigned short>(_constant, buf, "%u");
+	if (!printed && t.isU32())	printed = printConstData<unsigned int>(_constant, buf, "%u");
+	if (!printed && t.isU64())	printed = printConstData<unsigned long long>(_constant, buf, "%llu");
+	if (!printed && t.isF32())	printed = printConstData<float>(_constant, buf, "%f");
+	if (!printed && t.isF64())	printed = printConstData<double>(_constant, buf, "%f");
 
 	if (printed)
 	{
 		append(buf, _pushColor, _popColor);
-	}
-
-	if (t.isVector())
-	{
-		// TODO
 	}
 
 	return printed;
