@@ -351,9 +351,9 @@ const char* spvgentwo::Module::getName(const Instruction* _pTarget, const unsign
 	return nullptr;
 }
 
-spvgentwo::Vector<spvgentwo::Module::MemberNameCStr> spvgentwo::Module::getNames(const Instruction* _pTarget) const
+spvgentwo::Vector<spvgentwo::Module::MemberNameCStr> spvgentwo::Module::getNames(const Instruction* _pTarget, IAllocator* _pAllocator) const
 {
-	Vector<MemberNameCStr> names(getAllocator());
+	Vector<MemberNameCStr> names(_pAllocator == nullptr ? getAllocator() : _pAllocator);
 
 	for (auto& name : m_NameLookup.getRange(_pTarget))
 	{
