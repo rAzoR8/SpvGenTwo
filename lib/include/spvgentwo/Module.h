@@ -193,7 +193,7 @@ namespace spvgentwo
 		struct MemberNameCStr { const char* name; unsigned int memberIndex; };
 
 		// get all names associated to theis instruction
-		Vector<MemberNameCStr> getNames(const Instruction* _pTarget, IAllocator* _pAllocator = nullptr) const;
+		List<MemberNameCStr> getNames(const Instruction* _pTarget, IAllocator* _pAllocator = nullptr) const;
 
 		// for use with opModuleProccessed
 		Instruction* addModuleProccessedInstr();

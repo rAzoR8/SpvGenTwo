@@ -200,6 +200,12 @@ spvgentwo::Instruction* spvgentwo::Function::setReturnType(Instruction* _pReturn
 
 spvgentwo::Instruction* spvgentwo::Function::setFunctionType(Instruction* _pFunctionType)
 {
+	if (_pFunctionType->getOperation() != spv::Op::OpTypeFunction)
+	{
+		getModule()->logInfo("_pFunctionType is not OpTypeFunction");
+		return getModule()->getErrorInstr();
+	}
+
 	if (m_pFunctionType == nullptr)
 	{
 		m_pFunctionType = _pFunctionType;

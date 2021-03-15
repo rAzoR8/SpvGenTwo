@@ -33,6 +33,9 @@ spvgentwo::Module examples::constants(spvgentwo::IAllocator* _pAllocator, spvgen
 		// make infers type, data and operation based on value passed
 		myConst.make(1337.f);
 		inst = module.addConstant(myConst);	
+
+		// extract constant data 1337.f
+		const float* val = inst->getConstant()->getDataAs<float>();
 	}
 
 	// use module constant()
