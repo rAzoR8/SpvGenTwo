@@ -128,12 +128,13 @@ Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
 
 # Project Structure
 
-SpvGenTwo is split into 4 folders:
+SpvGenTwo is split into 5 folders:
 
-* `lib` contains the foundation to generate SPIR-V code. SpvGenTwo makes excessive use of its abstract Allocator, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those are not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :).
-* `common` contains some convenience implementations of abstract interfaces: HeapAllocator uses C malloc and free, BindaryFileWriter uses fopen, ConsoleLogger uses vprintf. It also has some additional container classes like Callable (std::function replacement), Graph, ControlFlowGraph, Expression and ExprGraph, they follow the same design principles and might sooner or later be moved to `lib` if needed.
+* `lib` contains the foundation to generate SPIR-V code. SpvGenTwo makes excessive use of its allocator interface, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those are not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :). Everything within this folders is pure C++17, no other dependencies (given that SPVGENTWO_REPLACE_PLACEMENTNEW and SPVGENTWO_REPLACE_TRAITS are used).
+* `common` contains some convenience implementations of abstract interfaces: HeapAllocator uses C malloc and free, BindaryFileWriter uses fopen, ConsoleLogger uses vprintf, ModulePrinter uses snprintf. It also has some additional classes like Callable (std::function replacement), Graph, ControlFlowGraph, Expression and ExprGraph, they follow the same design principles and might sooner or later be moved to `lib` if needed.
 * `example` contains small, self-contained code snippets that each generate a SPIR-V module to show some of the fundamental mechanics and APIs of SpvGenTwo.
 * `dis` is a [spirv-dis](https://github.com/KhronosGroup/SPIRV-Tools#disassembler-tool)-like tool to print assembly language text.
+* `refl` is a [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect)-like tool to extract descriptor bindings and other relevant info from SPIR-V binary modules.
 
 # Building
 
