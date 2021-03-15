@@ -167,10 +167,12 @@ CLI: ```SpvGenTwoDisassembler [file] <option> <option>```
 * `--noinstrnames` don't replace result IDs with OpNames
 * `--noopnames` don't replace operand IDs with OpNames
 * `--nopreamble` don't print SPIR-V preamble
-* `--nocolors` don't use [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) color codes
+* `--colors` use [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) color codes
 * `--tabs "    "` example: use 4 spaces instead of 2 tabs
 
 ## Reflector
+
+![SpvGenTwoReflect](/misc/refl.PNG)
 
 SpvGenTwoReflect source can be found at [refl/source/refl.cpp](refl/source/refl.cpp)
 
@@ -188,6 +190,7 @@ CLI: SpvGenTwoReflect ```[file] <option> <option>```
 * `--types` list types and constatns in the module
 * `--id Id` print SPIR-V assembly text for the instruction with result Id
     * `--id 24`
+* `--colors` use [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) color codes
 
 # Documentation
 
