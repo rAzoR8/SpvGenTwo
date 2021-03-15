@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 	const char* tabs = "\t\t";
 	bool serialize = false; // for debugging
 	bool reassignIDs = false;
-	bool colors = true;
+	bool colors = false;
 
 	PrintOptions options{ PrintOptionsBits::All };
 
@@ -52,9 +52,9 @@ int main(int argc, char* argv[])
 		{
 			options ^= PrintOptionsBits::Preamble;
 		}
-		else if (strcmp(arg, "--nocolors") == 0)
+		else if (strcmp(arg, "--colors") == 0)
 		{
-			colors = false;
+			colors = true;
 		}
 		else if (i+1 < argc && strcmp(arg, "--tabs") == 0)
 		{
