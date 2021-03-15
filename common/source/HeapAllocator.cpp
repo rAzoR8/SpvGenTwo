@@ -14,7 +14,7 @@ void* spvgentwo::HeapAllocator::allocate(const sgt_size_t _bytes, const unsigned
 #if defined(_WIN32) || defined(__CYGWIN__)
 	void* ptr = _aligned_malloc(_bytes, _aligment);
 #else	
-	void* ptr = std::aligned_alloc(_aligment, _bytes);
+	void* ptr = aligned_alloc(_aligment, _bytes);
 #endif
 
 #ifdef SPVGENTWO_DEBUG_HEAP_ALLOC
@@ -57,7 +57,7 @@ void spvgentwo::HeapAllocator::deallocate(void* _ptr, const sgt_size_t _bytes)
 #if defined(_WIN32) || defined(__CYGWIN__)
 	 _aligned_free(_ptr);
 #else	
-	std::free(_ptr);
+	free(_ptr);
 #endif
 }
 
