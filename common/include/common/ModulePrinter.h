@@ -20,20 +20,34 @@ namespace spvgentwo
 				constexpr bool append([[maybe_unused]] const Constant& _constant, [[maybe_unused]] const char* _pushColor, [[maybe_unused]] const char* _popColor) const { return false; }
 			};
 
-			constexpr auto PushRed = u8"\x1B[31m"; // literals
-			constexpr auto PushGreen = u8"\x1B[32m"; // strings
-			constexpr auto PushYellow = u8"\x1B[33m"; // OperandIDs
-			constexpr auto PushBlue = u8"\x1B[34m"; // Result IDs
-			constexpr auto PushPurple = u8"\x1B[35m"; // ExtInst Instructions names
-			constexpr auto PushLightBlue = u8"\x1B[36m"; // constant data
-			constexpr auto PushWhite = u8"\x1B[97m"; // enum values
-			constexpr auto PushRedBG = u8"\x1B[41m"; // Errors (white on red)
+			constexpr auto PushRed = u8"\x1B[31m";
+			constexpr auto PushGreen = u8"\x1B[32m";
+			constexpr auto PushYellow = u8"\x1B[33m";
+			constexpr auto PushBlue = u8"\x1B[34m";
+			constexpr auto PushPurple = u8"\x1B[35m"; 
+			constexpr auto PushLightBlue = u8"\x1B[36m";
+			constexpr auto PushWhite = u8"\x1B[97m";
+			constexpr auto PushRedBG = u8"\x1B[41m";
 			constexpr auto PopGrey = u8"\033[0m";
 		}
+
+		struct ColorScheme
+		{
+			const char* literal = detail::PushRed;
+			const char* string = detail::PushGreen;
+			const char* operandId = detail::PushYellow;
+			const char* resultId = detail::PushBlue;
+			const char* extinst = detail::PushPurple; // ExtInst Instructions names
+			const char* constant = detail::PushLightBlue;
+			const char* enumValue = detail::PushWhite;
+			const char* error = detail::PushRedBG;
+			const char* defaultText = detail::PopGrey;
+		};
 
 		class IModulePrinter
 		{
 		public:
+
 			// expects ANSI color codes, nullptr does nothing
 			virtual void append(const char* _pText, const char* _pushColor = nullptr, const char* _popColor = nullptr) = 0;
 			// print contents of _constants, returns false if implementation unable to print this type
@@ -42,9 +56,15 @@ namespace spvgentwo
 			// append a literal value as base10 ascii string
 			void append(unsigned int _literal, const char* _pushColor = nullptr, const char* _popColor = nullptr);
 
+			void setColorScheme(const ColorScheme& _colors) { m_colors = _colors; }
+			const ColorScheme& getColorScheme() const { return m_colors; }
+
 			IModulePrinter& operator<<(const char* _pStr) { append(_pStr); return *this; }
 			IModulePrinter& operator<<(unsigned int _literal) { append(_literal); return *this; }
 			IModulePrinter& operator<<(const Constant& _constant) { append(_constant); return *this; }
+
+		private:
+			ColorScheme m_colors{};
 		};
 
 		// void FuncStr(const char* _pStr, const char* _pushColor, const char* _popColor)

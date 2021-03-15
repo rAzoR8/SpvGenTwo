@@ -56,7 +56,7 @@ namespace
 	bool printOperand(const spvgentwo::Instruction& _instr, const spvgentwo::Operand& op, const spvgentwo::Grammar::Operand& _info, const spvgentwo::Grammar& _grammar, spvgentwo::ModulePrinter::IModulePrinter& _printer, spvgentwo::ModulePrinter::PrintOptions _options)
 	{
 		using namespace spvgentwo;
-		using namespace ModulePrinter::detail;
+		const auto& colors = _printer.getColorScheme();
 
  		if (op.isId() && _info.kind == Grammar::OperandKind::IdResult)  // skip result id
 		{
@@ -68,31 +68,31 @@ namespace
 		{
 			if (op.id == InvalidId)
 			{
-				_printer.append("INVALID-INSTRID", PushRedBG, PopGrey);
+				_printer.append("INVALID-INSTRID", colors.error, colors.defaultText);
 				return false;
 			}
 
 			_printer << "%";
-			_printer.append(op.id, PushYellow, PopGrey);
+			_printer.append(op.id, colors.operandId, colors.defaultText);
 			return true;
 		}
 		else if (op.isInstruction())
 		{
 			if (op.instruction == nullptr)
 			{
-				_printer.append("INVALID-INSTRPTR", PushRedBG, PopGrey);
+				_printer.append("INVALID-INSTRPTR", colors.error, colors.defaultText);
 				return false;
 			}
 			else if (op.instruction->getResultId() == InvalidId)
 			{
-				_printer.append("INVALID-INSTRID", PushRedBG, PopGrey);
+				_printer.append("INVALID-INSTRID", colors.error, colors.defaultText);
 				return false;
 			}
 
 			if (const char* name = op.instruction->getName(); (_options & ModulePrinter::PrintOptionsBits::InstructionName) && name != nullptr && stringLength(name) > 1)
 			{
 				_printer << "%";
-				_printer.append(name, PushYellow, PopGrey);
+				_printer.append(name, colors.operandId, colors.defaultText);
 				return true;
 			}
 			else if (op.instruction->isType() && (_options & ModulePrinter::PrintOptionsBits::TypeName))
@@ -101,7 +101,7 @@ namespace
 				{
 					if (const char* str = t->getString(); str != nullptr)
 					{
-						_printer.append(str, PushYellow, PopGrey);
+						_printer.append(str, colors.operandId, colors.defaultText);
 						return true;
 					}
 				}
@@ -110,37 +110,37 @@ namespace
 			{
 				if (const Constant* c = op.instruction->getConstant(); c != nullptr)
 				{
-					if (_printer.append(*c, PushLightBlue, PopGrey))
+					if (_printer.append(*c, colors.constant, colors.defaultText))
 						return true;
 				}
 			}
 
 			// fallback
 			_printer << "%";
-			_printer.append(op.instruction->getResultId(), PushYellow, PopGrey);
+			_printer.append(op.instruction->getResultId(), colors.operandId, colors.defaultText);
 			return true;	
 		}
 		else if (op.isBranchTarget())
 		{
 			if (op.branchTarget == nullptr)
 			{
-				_printer.append("INVALID-BASICBLOCKPTR", PushRedBG, PopGrey);
+				_printer.append("INVALID-BASICBLOCKPTR", colors.error, colors.defaultText);
 				return false;
 			}
 			else if (spv::Id id = op.branchTarget->getLabel()->getResultId(); id == InvalidId)
 			{
-				_printer.append("INVALID-INSTRID", PushRedBG, PopGrey);
+				_printer.append("INVALID-INSTRID", colors.error, colors.defaultText);
 				return false;
 			}
 
 			_printer << "%";
 			if (const char* name = op.branchTarget->getName(); _options & ModulePrinter::PrintOptionsBits::OperandName && name != nullptr && stringLength(name) > 1)
 			{
-				_printer.append(name, PushYellow, PopGrey);
+				_printer.append(name, colors.operandId, colors.defaultText);
 			}
 			else
 			{
-				_printer.append(op.branchTarget->getLabel()->getResultId(), PushYellow, PopGrey);
+				_printer.append(op.branchTarget->getLabel()->getResultId(), colors.operandId, colors.defaultText);
 			}
 			return true;
 		}
@@ -164,7 +164,7 @@ namespace
 					{
 						if (auto* extInfo = _grammar.getInfo(static_cast<unsigned int>(op.literal.value), ext); extInfo != nullptr)
 						{
-							_printer.append(extInfo->name, PushPurple, PopGrey);
+							_printer.append(extInfo->name, colors.extinst, colors.defaultText);
 							return true;
 						}
 					}
@@ -174,7 +174,7 @@ namespace
 			{
 				if (const char* name = _grammar.getOperandName(_info.kind, op.literal.value); name != nullptr && (_options & ModulePrinter::PrintOptionsBits::OperandName))
 				{
-					_printer.append(name, PushWhite, PopGrey);				
+					_printer.append(name, colors.enumValue, colors.defaultText);				
 					return true;
 				}
 			}
@@ -182,18 +182,18 @@ namespace
 			{
 				if (const Constant* c = _instr.getConstant(); c != nullptr)
 				{
-					if (_printer.append(*c, PushLightBlue, PopGrey))
+					if (_printer.append(*c, colors.constant, colors.defaultText))
 						return true;
 				}
 			}
 
 			//fallback
-			_printer.append(op.literal.value, PushRed, PopGrey);
+			_printer.append(op.literal.value, colors.literal, colors.defaultText);
 			return true;
 		}
 		else
 		{
-			_printer.append("UNKNOWN-OPERANDTYPE", PushRedBG, PopGrey);
+			_printer.append("UNKNOWN-OPERANDTYPE", colors.error, colors.defaultText);
 			return false;
 		}
 	}
@@ -219,25 +219,25 @@ void spvgentwo::ModulePrinter::ModuleStringPrinter::append(const char* _pStr, co
 
 bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer, PrintOptions _options, const char* _pIndentation)
 {
-	using namespace detail;
 	auto* instrInfo = _grammar.getInfo(static_cast<unsigned int>(_instr.getOperation()));
+	const auto& colors = _printer.getColorScheme();
 
 	if (_instr.hasResult() && ((_options & PrintOptionsBits::InstructionName) || (_options & PrintOptionsBits::ResultId)))
 	{
 		_printer << "%";
 		if (const char* name = _instr.getName(); (_options & PrintOptionsBits::InstructionName) && name != nullptr && stringLength(name) > 1)
 		{
-			_printer.append(name, PushBlue, PopGrey);
+			_printer.append(name, colors.resultId, colors.defaultText);
 		}
 		else if (_options & PrintOptionsBits::ResultId)
 		{
 			if (auto id = _instr.getResultId(); id != InvalidId)
 			{
-				_printer.append(id, PushBlue, PopGrey);
+				_printer.append(id, colors.resultId, colors.defaultText);
 			}
 			else
 			{
-				_printer.append("INVALID-RESULTID", PushRedBG, PopGrey);
+				_printer.append("INVALID-RESULTID", colors.error, colors.defaultText);
 				return false; // invalid instruction
 			}
 		}
@@ -262,7 +262,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 		{
 			if (info.quantifier == Grammar::Quantifier::One) // last operand was not optional
 			{
-				_printer.append("\nINVALID INSTRUCTION\n");
+				_printer.append("\nINVALID INSTRUCTION\n", colors.error, colors.defaultText);
 				return false; // invalid instruction			
 			}
 			break;
@@ -271,7 +271,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 		if (info.kind == Grammar::OperandKind::LiteralString)
 		{
 			_printer << " \"";
-			it = appendLiteralString(_printer, it, end, PushGreen, PopGrey);
+			it = appendLiteralString(_printer, it, end, colors.string, colors.defaultText);
 			_printer << "\"";
 
 			continue;
@@ -298,7 +298,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 			}
 			else
 			{
-				_printer.append("\nINVALID INSTRUCTION\n");
+				_printer.append("\nINVALID INSTRUCTION\n", colors.error, colors.defaultText);
 				return false; // invalid instruction
 			}
 		}
