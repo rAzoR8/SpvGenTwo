@@ -101,8 +101,6 @@ const HeapHashMap<vk::DescriptorType, const char*> DescriptorTypeNames(
 	vk::DescriptorType::VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV, (const char*)"VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV"
 );
 
-auto g_instrPrinter = ModuleSimpleFuncPrinter([](const char* _pStr) { printf("%s", _pStr); });
-
 template <template <class> class Container>
 void getList(const Container<Instruction>& _container, List<const Instruction*>& _instructions)
 {
@@ -112,26 +110,26 @@ void getList(const Container<Instruction>& _container, List<const Instruction*>&
 	}
 }
 
-void printFunctions(const Module& _module, const Grammar& _gram)
+void printFunctions(IModulePrinter& _printer, const Module& _module, const Grammar& _gram)
 {
 	auto printFnType = [&](const Function& _func)
 	{
 		if (const Instruction* instr = _func.getFunction(); instr != nullptr)
 		{
-			printInstruction(*instr, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId));
+			printInstruction(*instr, _gram, _printer, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId));
 		}
 
 		printf("\n"); // OpTypeFunction
 		if (const Instruction* type = _func.getFunctionType(); type != nullptr)
 		{
-			printInstruction(*type, _gram, g_instrPrinter, PrintOptionsBits::All);
+			printInstruction(*type, _gram, _printer, PrintOptionsBits::All);
 			printf("\n");
 
 			for (auto it = type->getFirstActualOperand(); it != type->end(); ++it)
 			{
 				if (const Instruction* instr = it->getInstruction(); instr != nullptr)
 				{
-					printInstruction(*instr, _gram, g_instrPrinter, PrintOptionsBits::All);
+					printInstruction(*instr, _gram, _printer, PrintOptionsBits::All);
 					printf("\n");
 				}
 			}
@@ -147,7 +145,7 @@ void printFunctions(const Module& _module, const Grammar& _gram)
 		}
 		if (const Instruction* instr = ep.getEntryPoint(); instr != nullptr)
 		{
-			printInstruction(*instr, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId));
+			printInstruction(*instr, _gram, _printer, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId));
 		}
 		printf("\n");
 
@@ -157,7 +155,7 @@ void printFunctions(const Module& _module, const Grammar& _gram)
 		{
 			if (const Instruction* var = op.getInstruction(); var != nullptr)
 			{
-				printInstruction(*var, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId));
+				printInstruction(*var, _gram, _printer, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId));
 				if (const char* name = var->getName(); name != nullptr)
 				{
 					printf("\t[%s]", name);
@@ -177,7 +175,7 @@ void printFunctions(const Module& _module, const Grammar& _gram)
 	printf("\n");
 }
 
-void printVariable(const Instruction& _instr, const Grammar& _gram)
+void printVariable(IModulePrinter& _printer, const Instruction& _instr, const Grammar& _gram)
 {
 	if (const char* name = _instr.getName(); name != nullptr)
 	{
@@ -195,7 +193,7 @@ void printVariable(const Instruction& _instr, const Grammar& _gram)
 		printf("[UNNAMED]:\t");
 	}
 
-	printInstruction(_instr, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId), "\t");
+	printInstruction(_instr, _gram, _printer, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId), "\t");
 
 	if (_instr == spv::Op::OpVariable)
 	{
@@ -206,7 +204,7 @@ void printVariable(const Instruction& _instr, const Grammar& _gram)
 	}
 }
 
-void printDecorationsForTargets(const List<Instruction>& _targets, const Grammar& _gram)
+void printDecorationsForTargets(IModulePrinter& _printer, const List<Instruction>& _targets, const Grammar& _gram)
 {
 	HeapList<const Instruction*> decorations;
 
@@ -215,12 +213,12 @@ void printDecorationsForTargets(const List<Instruction>& _targets, const Grammar
 		decorations.clear();
 		ReflectionHelper::getDecorations(&target, decorations);
 
-		printVariable(target, _gram);
+		printVariable(_printer, target, _gram);
 		printf("\n");
 
 		for (const Instruction* deco : decorations)
 		{
-			printInstruction(*deco, _gram, g_instrPrinter, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId), "\t\t\t");
+			printInstruction(*deco, _gram, _printer, PrintOptions(PrintOptionsBits::OperationName, PrintOptionsBits::ResultId), "\t\t\t");
 			printf("\n");
 		}
 	}
@@ -242,6 +240,7 @@ int main(int argc, char* argv[])
 	bool listDecorations = false;
 	bool printLocalSize = false;
 	spv::Id idToPrint = InvalidId;
+	bool colors = false;
 
 	const int end = argc - 1;;
 
@@ -301,6 +300,10 @@ int main(int argc, char* argv[])
 		{
 			printLocalSize = true;
 		}
+		else if (strcmp(arg, "--colors") == 0)
+		{
+			colors = true;
+		}
 	}
 
 	if (spv == nullptr)
@@ -357,22 +360,24 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	auto printer = ModuleSimpleFuncPrinter([](const char* _pStr) { printf("%s", _pStr); }, colors);
+
 	if (listFunctions)
 	{
 		printf("Functions:\n");
-		printFunctions(module, gram);
+		printFunctions(printer, module, gram);
 	}
 
 	if (listVariables)
 	{
 		printf("Global Variables:\n");
-		printDecorationsForTargets(module.getGlobalVariables(), gram);
+		printDecorationsForTargets(printer, module.getGlobalVariables(), gram);
 	}
 
 	if (listTypeAndConstants)
 	{
 		printf("Types and Constants:\n");
-		printDecorationsForTargets(module.getTypesAndConstants(), gram);
+		printDecorationsForTargets(printer, module.getTypesAndConstants(), gram);
 	}
 
 	const Instruction* instr = nullptr;
@@ -400,13 +405,13 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	auto printDecorations = [&decorationsToPrint, &gram](const List<const Instruction*>& _decorations)
+	auto printDecorations = [&decorationsToPrint, &gram, &printer](const List<const Instruction*>& _decorations)
 	{
 		for (const Instruction* decoInstr : _decorations)
 		{
 			if (decorationsToPrint.empty())
 			{
-				printInstruction(*decoInstr, gram, g_instrPrinter); printf("\n");
+				printInstruction(*decoInstr, gram, printer); printf("\n");
 			}
 
 			for (spv::Decoration decoToPrint : decorationsToPrint)
@@ -415,7 +420,7 @@ int main(int argc, char* argv[])
 				unsigned int value = sgt_uint32_max;
 				if (ReflectionHelper::getSpvDecorationAndLiteralFromDecoration(decoInstr, outDeco, value) && outDeco == decoToPrint)
 				{
-					printInstruction(*decoInstr, gram, g_instrPrinter); printf("\n");
+					printInstruction(*decoInstr, gram, printer); printf("\n");
 				}
 			}
 		}
@@ -436,14 +441,14 @@ int main(int argc, char* argv[])
 
 	if (instr != nullptr)
 	{
-		printVariable(*instr, gram);
+		printVariable(printer, *instr, gram);
 		printf("\n");
 
 		if (instr->hasResultType())
 		{
 			if (const Instruction* type = instr->getResultTypeInstr(); type != nullptr && type->isErrorInstr() == false)
 			{
-				printInstruction(*type, gram, g_instrPrinter); printf("\n");
+				printInstruction(*type, gram, printer); printf("\n");
 			}
 		}
 
