@@ -5,24 +5,25 @@
 #include "common/BinaryFileWriter.h"
 #include "common/BinaryFileReader.h"
 #include "common/ConsoleLogger.h"
-#include "common/ModuleToString.h"
+#include "common/ModulePrinter.h"
 
 #include <cstring>
-
-#ifndef NDEBUG
-#include <cstdlib> // system
-#endif // !_NDEBUG
+#include <cstdio>
 
 using namespace spvgentwo;
+using namespace ModulePrinter;
 
 int main(int argc, char* argv[])
 {
 	ConsoleLogger logger;
 
 	const char* spv = nullptr;
+	const char* tabs = "\t\t";
 	bool serialize = false; // for debugging
 	bool reassignIDs = false;
-	bool callSPIRVDis = false;
+	bool colors = false;
+
+	PrintOptions options{ PrintOptionsBits::All };
 
 	for (int i = 1u; i < argc; ++i)
 	{
@@ -39,9 +40,25 @@ int main(int argc, char* argv[])
 		{
 			reassignIDs = true;
 		}
-		else if (strcmp(arg, "--calldis") == 0)
+		else if (strcmp(arg, "--noinstrnames") == 0)
 		{
-			callSPIRVDis = true;
+			options ^= PrintOptionsBits::InstructionName;
+		}
+		else if (strcmp(arg, "--noopnames") == 0)
+		{
+			options ^= PrintOptionsBits::OperandName;
+		}
+		else if (strcmp(arg, "--nopreamble") == 0)
+		{
+			options ^= PrintOptionsBits::Preamble;
+		}
+		else if (strcmp(arg, "--colors") == 0)
+		{
+			colors = true;
+		}
+		else if (i+1 < argc && strcmp(arg, "--tabs") == 0)
+		{
+			tabs = argv[++i];
 		}
 	}
 
@@ -51,15 +68,6 @@ int main(int argc, char* argv[])
 	}
 
 	HeapAllocator alloc;
-
-#ifndef NDEBUG
-	if (callSPIRVDis)
-	{
-		String cmd(&alloc, "spirv-dis ");
-		cmd += spv;
-		system(cmd.c_str());
-	}
-#endif
 
 	if (BinaryFileReader reader(spv); reader.isOpen())
 	{
@@ -95,12 +103,8 @@ int main(int argc, char* argv[])
 			module.assignIDs(); // compact ids
 		}
 
-		String buffer(&alloc, 2048u);
-		ModuleStringPrinter printer(buffer, true);
-
-		const bool success = moduleToString(module, gram, &alloc, &printer, false);
-
-		printf("%s", buffer.c_str());
+		auto printer = ModulePrinter::ModuleSimpleFuncPrinter([](const char* _pStr) { printf("%s", _pStr);	}, colors);
+		const bool success = ModulePrinter::printModule(module, gram, printer, options, tabs);
 
 		if (success == false)
 		{

@@ -11,8 +11,8 @@ namespace spvgentwo
 	template <class Node, class Data = EmptyEdge>
 	struct Edge
 	{
-		Node* pTarget;
-		Data data;
+		Node* pTarget{};
+		Data data{};
 	};
 
 	// N = node data, E = edge data

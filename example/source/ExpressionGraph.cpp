@@ -1,4 +1,4 @@
-#include "example/ExpressionGraph.h"
+﻿#include "example/ExpressionGraph.h"
 #include "common/ExprGraph.h"
 
 using namespace spvgentwo;
@@ -22,8 +22,7 @@ struct MyExpr
 	//Instruction* constnt = nullptr;
 	Instruction* result = nullptr;
 
-	//template<class Node>
-	void operator()(const List<MyExpr*>& _inputs, const List<MyExpr*>& _outputs)
+	void operator()(const List<MyExpr*>& _inputs, [[maybe_unused]] const List<MyExpr*>& _outputs)
 	{
 		Instruction* lhs = _inputs.empty() ? nullptr : _inputs.front()->result;
 		Instruction* rhs = _inputs.size() == 2u ? _inputs.back()->result : nullptr;
@@ -67,7 +66,7 @@ spvgentwo::Module examples::expressionGraph(spvgentwo::IAllocator* _pAllocator, 
 
 	Module module(_pAllocator, spv::Version, _pLogger);
 	module.addCapability(spv::Capability::Shader);
-	Function& main = module.addEntryPoint<void>(spv::ExecutionModel::Vertex, "main");
+	Function& main = module.addEntryPoint<void>(spv::ExecutionModel::Vertex, u8"mainÜmlautß"); //test utf-8
 	BasicBlock& bb = *main;
 
 	ExprGraph<MyExpr> exprgraph(_pAllocator);

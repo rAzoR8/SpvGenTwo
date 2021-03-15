@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SpvDefines.h"
+#include "stdreplacement.h"
 
 namespace spvgentwo
 {
@@ -22,6 +23,8 @@ namespace spvgentwo
 		operator unsigned int() const { return value; }
 	};
 	
+	static_assert(sizeof(literal_t) == sizeof(unsigned int), "literal_t padded");
+
 	struct Operand
 	{
 		enum class Type : unsigned int
@@ -30,13 +33,14 @@ namespace spvgentwo
 			BranchTarget,
 			Literal,
 			Id
-		} type;
+		} type{};
 
-		union {
-			BasicBlock* branchTarget = nullptr; 
-			Instruction* instruction; // intermediate or type
+		union
+		{
+			Instruction* instruction = nullptr; // intermediate or type
 			literal_t literal;
 			spv::Id id;
+			BasicBlock* branchTarget; 
 		};
 
 		bool isBranchTarget() const { return type == Type::BranchTarget; }
@@ -46,8 +50,13 @@ namespace spvgentwo
 
 		BasicBlock* getBranchTarget() const { return isBranchTarget() ? branchTarget : nullptr; }
 		Instruction* getInstruction() const { return isInstruction() ? instruction : nullptr; }
-		const literal_t getLiteral() const { return isLiteral() ? literal : literal_t{}; }
-		const spv::Id getId() const { return isId() ? id : InvalidId; }
+		literal_t getLiteral() const { return isLiteral() ? literal : literal_t{}; }
+		spv::Id getId() const { return isId() ? id : InvalidId; }
+
+		explicit operator Instruction*() const { return getInstruction(); }
+		explicit operator spv::Id() const { return getId(); }
+		explicit operator literal_t() const { return getLiteral(); }
+		explicit operator BasicBlock* () const { return getBranchTarget(); }
 
 		Operand(const Operand& _other);
 		Operand(Operand&& _other) noexcept;
@@ -79,7 +88,7 @@ namespace spvgentwo
 	void appendLiteralsToContainer(Container& _out, T first, Args ..._args)
 	{
 		constexpr auto bytes = sizeof(T);
-		constexpr auto words = wordCount(bytes) - (bytes % sizeof(unsigned int) == 0 ? 0 : 1);
+		constexpr auto words = bytes / sizeof(unsigned int);
 
 		for (auto w = 0u; w < words; ++w)
 		{
@@ -88,11 +97,18 @@ namespace spvgentwo
 
 		if constexpr (bytes % sizeof(unsigned int) != 0)
 		{
+			using S = stdrep::decay_t<T>;
 			literal_t lastWord{ 0u };
-			const auto offset = words * sizeof(unsigned int);
-			for (auto b = offset; b < bytes; ++b)
+			if constexpr (stdrep::is_same_v<S, short> || stdrep::is_same_v<S, char>) // int16_t and int8_t must be sign extended
 			{
-				reinterpret_cast<char*>(&lastWord)[b - offset] = reinterpret_cast<const char*>(&first)[b];
+				// The high-order bits of a literal number must be 0 for a floating-point type, or 0 for an integer type with Signedness of 0, or sign extended when Signedness is 1
+				lastWord = first < 0 ? ~0u : 0u;
+			}
+
+			auto offset = words * sizeof(unsigned int);
+			for (auto i = 0u; offset < bytes; ++offset, ++i)
+			{
+				reinterpret_cast<unsigned char*>(&lastWord)[i] = reinterpret_cast<const unsigned char*>(&first)[offset];
 			}
 			_out.emplace_back(lastWord);
 		}

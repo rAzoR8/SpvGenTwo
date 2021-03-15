@@ -68,7 +68,7 @@ namespace spvgentwo
 		operator bool() const { return pFn != nullptr; }
 
 		template <typename ... OtherArgs>
-		ReturnType operator()(OtherArgs... _args) const { return (pObj->*pMemberFn)(_args...); }
+		ReturnType operator()(OtherArgs... _args) const { return (pObj->*pFn)(_args...); }
 	};
 
 	template <typename Obj, typename ReturnType, typename... Args>
@@ -119,6 +119,8 @@ namespace spvgentwo
 		ICallable* m_pCallable = nullptr;
 
 	public:
+
+		using FuncType = ReturnType(Args...);
 
 		Callable(IAllocator* _pAllocator = nullptr) : 
 			m_pAllocator(_pAllocator)
@@ -227,7 +229,7 @@ namespace spvgentwo
 	class Callable<ReturnType(Obj::*)(Args...)> : public Callable<ReturnType(Args...)>
 	{
 		using Callable<ReturnType(Args...)>::Callable;
-		virtual ~Callable() { reset(); }
+		virtual ~Callable() { Callable::reset(); }
 	};
 
 	// variadic variant
@@ -237,6 +239,8 @@ namespace spvgentwo
 		VariadicFunc<ReturnType, Args...> m_func{};
 
 	public:
+		using FuncType = ReturnType(Args..., ...);
+
 		Callable(const Callable& _other) : m_func{ _other.m_func } {}
 		Callable(Callable&& _other) : m_func{ stdrep::move(_other.m_func) } {}
 		Callable(ReturnType(*_func)(Args..., ...)) : m_func{ _func }{}

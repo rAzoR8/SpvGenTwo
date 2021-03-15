@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="spvgentwo::Operand">
+    <DisplayString Condition="type == spvgentwo::Operand::Type::Instruction &amp;&amp; instruction != 0">{{ instr={*instruction} }}</DisplayString>
+    <DisplayString Condition="type == spvgentwo::Operand::Type::Instruction &amp;&amp; instruction == 0">{{ instr={instruction} }}</DisplayString>
+
+    <DisplayString Condition="type == spvgentwo::Operand::Type::BranchTarget &amp;&amp; branchTarget != 0">{{ label={*branchTarget} }}</DisplayString>
+    <DisplayString Condition="type == spvgentwo::Operand::Type::BranchTarget &amp;&amp; branchTarget == 0">{{ label={branchTarget} }}</DisplayString>
+
+    <DisplayString Condition="type == spvgentwo::Operand::Type::Literal">{{ literal={literal.value} }}</DisplayString>
+    <DisplayString Condition="type == spvgentwo::Operand::Type::Id">{{ ID={id} }}</DisplayString>
+  </Type>
+
+  <Type Name="spvgentwo::Type">
+    <DisplayString>{m_Type}</DisplayString>
+    <Expand>
+      <Item Name="[length]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeArray">m_ArrayLength</Item>
+
+      <Item Name="[format]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeImage">m_ImgFormat</Item>
+      <Item Name="[dimension]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeImage">m_ImgDimension</Item>
+      <Item Name="[depth]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeImage">m_ImgDepth</Item>
+      <Item Name="[array]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeImage">m_ImgArray</Item>
+      <Item Name="[multisampled]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeImage">m_ImgMultiSampled</Item>
+      <Item Name="[sampleraccess]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeImage">m_ImgSamplerAccess</Item>
+      <Item Name="[accessqualifier]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeImage">m_AccessQualifier</Item>
+
+      <Item Name="[components]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeVector">m_VecComponentCount</Item>
+      
+      <Item Name="[columns]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeMatrix">m_VecComponentCount</Item>
+      <Item Name="[rows]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeMatrix">m_subTypes.m_pBegin->m_data.m_VecComponentCount</Item>
+
+      <Item Name="[IntWidth]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeInt">m_IntWidth</Item>
+      <Item Name="[IntSign]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeInt">m_IntSign</Item>
+      
+      <Item Name="[FloatWidth]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypeFloat">m_FloatWidth</Item>
+      
+      <Item Name="[storageclass]" ExcludeView="simple" Condition="m_Type == spvgentwo::spv::Op::OpTypePointer || m_Type == spvgentwo::spv::Op::OpTypeForwardPointer">m_subTypes</Item>
+
+      <Item Name="[subtypes]" ExcludeView="simple" Condition="m_subTypes.m_Elements != 0">m_subTypes</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="spvgentwo::Constant">
+    <DisplayString Condition="m_Type.m_Type == spvgentwo::spv::Op::OpTypeInt">{{ {m_Operation} value={*(int*)m_literalData.m_pData} type={m_Type} }}</DisplayString>
+    <DisplayString Condition="m_Type.m_Type == spvgentwo::spv::Op::OpTypeFloat">{{ {m_Operation} value={*(float*)m_literalData.m_pData} type={m_Type} }}</DisplayString>
+    <DisplayString >{{ {m_Operation} {m_Type} }}</DisplayString>
+  </Type>
+
+  <Type Name="spvgentwo::List&lt;*&gt;" Inheritable="false">
+    <DisplayString>{{ size={m_Elements} }}</DisplayString>
+    <Expand>
+          <Item Name="[allocator]" ExcludeView="simple">m_pAllocator</Item>
+          <LinkedListItems>
+              <Size>m_Elements</Size>
+              <HeadPointer>m_pBegin</HeadPointer>
+              <NextPointer>m_pNext</NextPointer>
+              <ValueNode>m_data</ValueNode>
+          </LinkedListItems>
+      </Expand>
+  </Type>
+
+  <Type Name="spvgentwo::Vector&lt;*&gt;" Inheritable="false">
+    <DisplayString>{{ size={m_elements} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">m_elements</Item>
+      <Item Name="[capacity]" ExcludeView="simple">m_capacity</Item>
+      <ArrayItems>
+        <Size>m_elements</Size>
+        <ValuePointer>m_pData</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="spvgentwo::String">
+    <DisplayString Condition="m_pData != 0">{m_pData}</DisplayString>
+    <DisplayString Condition="m_pData == 0">empty</DisplayString>
+
+    <Expand>
+      <Item Name="[string]">m_pData</Item>
+      <Item Name="[size]" ExcludeView="simple">m_elements</Item>
+      <Item Name="[capacity]" ExcludeView="simple">m_capacity</Item>
+      <ArrayItems>
+        <Size>m_elements</Size>
+        <ValuePointer>m_pData</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+</AutoVisualizer>

@@ -7,6 +7,9 @@
 #include "spvgentwo/TypeInferenceAndValiation.h"
 #include "spvgentwo/Grammar.h"
 
+#include "spvgentwo/InstructionTemplate.inl"
+#include "spvgentwo/ModuleTemplate.inl"
+
 spvgentwo::Instruction::Instruction(Module* _pModule, Instruction&& _other) noexcept :
 	List(stdrep::move(_other)),
 	m_Operation(_other.m_Operation),
@@ -60,6 +63,46 @@ spvgentwo::Function* spvgentwo::Instruction::getFunction() const
 		return m_parent.pFunction;
 	default:
 		return nullptr;
+	}
+}
+
+void spvgentwo::Instruction::setParent(Module* _pModule)
+{
+	if (m_parent.pModule == nullptr)
+	{
+		m_parentType = ParentType::Module;
+		m_parent.pModule = _pModule;
+		setAllocator(_pModule->getAllocator());
+	}
+}
+
+void spvgentwo::Instruction::setParent(Function* _pFunction)
+{
+	if (m_parent.pFunction == nullptr)
+	{
+		m_parentType = ParentType::Function;
+		m_parent.pFunction = _pFunction;
+		setAllocator(_pFunction->getAllocator());
+	}
+}
+
+void spvgentwo::Instruction::setParent(BasicBlock* _pBasicBlock)
+{
+	if (m_parent.pBasicBlock == nullptr)
+	{
+		m_parentType = ParentType::BasicBlock;
+		m_parent.pBasicBlock = _pBasicBlock;
+		setAllocator(_pBasicBlock->getAllocator());
+	}
+}
+
+void spvgentwo::Instruction::setParent(const Instruction& _other)
+{
+	if (m_parent.pModule == nullptr)
+	{
+		m_parentType = _other.m_parentType;	
+		m_parent = _other.m_parent;
+		setAllocator(_other.getAllocator());
 	}
 }
 
@@ -130,7 +173,7 @@ spvgentwo::spv::Id spvgentwo::Instruction::getResultId() const
 	return it->getId();
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::getTypeInstr() const
+spvgentwo::Instruction* spvgentwo::Instruction::getResultTypeInstr() const
 {
 	if (hasResultType())
 	{
@@ -149,8 +192,24 @@ const spvgentwo::Type* spvgentwo::Instruction::getType() const
 	{
 		return pModule->getTypeInfo(this);
 	}
+	else if (hasResultType())
+	{
+		return pModule->getTypeInfo(getResultTypeInstr());	
+	}
 
-	return pModule->getTypeInfo(getTypeInstr());
+	return nullptr;
+}
+
+const spvgentwo::Constant* spvgentwo::Instruction::getConstant() const
+{
+	if (isSpecOrConstant())
+	{
+		return getModule()->getConstantInfo(this);
+	}
+
+	getModule()->logError("Instruction is not a constant");
+
+	return nullptr;
 }
 
 spvgentwo::Instruction::Iterator spvgentwo::Instruction::getResultTypeOperand() const
@@ -256,53 +315,200 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 		return false;
 	}
 
-	//if (_op == spv::Op::OpSpecConstantOp)
-	//{
-	//	int i = 0;
-	//}
-
 	auto it = info->operands.begin();
 	const auto end = info->operands.end();
-	unsigned int word{ 0u };
 
-	bool trailingIDOperands = false;
-	while (_operandCount != 0u && it != end && _pReader->get(word))
+	auto parseLiteralString = [&](unsigned int& _operands) -> bool
 	{
-		const auto& op = *it;
-
-		if (op.category == Grammar::OperandCategory::Id || trailingIDOperands)
+		unsigned int word{ 0u };
+		while (_operands-- > 0u)
 		{
-			addOperand(static_cast<spv::Id>(word));
+			if (_pReader->get(word) == false)
+			{
+				getModule()->logError("Unexpected end of instruction stream for %s", info->name);
+				return false;
+			}
+
+			addOperand(static_cast<literal_t>(word));
+			if (hasStringTerminator(word)) // reached end of string
+			{
+				return true;
+			}
+		}
+
+		return true;
+	};
+
+	auto parseId = [&](unsigned int& _operands) -> bool
+	{
+		unsigned int word{ 0u };
+		if (_pReader->get(word) == false)
+		{
+			getModule()->logError("Unexpected end of instruction stream for %s", info->name);
+			return false;
+		}
+		--_operands;
+		addOperand(static_cast<spv::Id>(word));
+		return true;
+	};
+
+	auto parseLiteral = [&](unsigned int& _operands) -> bool
+	{
+		unsigned int word{ 0u };
+		if (_pReader->get(word) == false)
+		{
+			getModule()->logError("Unexpected end of instruction stream for %s", info->name);
+			return false;
+		}
+		--_operands;
+		addOperand(static_cast<literal_t>(word));
+		return true;
+	};
+
+	auto parseSimpleOps = [&](unsigned int& _operands, const Grammar::Operand& _op) -> bool
+	{
+		if (_op.category == Grammar::OperandCategory::Id) // this is a simplified categorization
+		{
+			return parseId(_operands);
+		}
+		else if (_op.kind == Grammar::OperandKind::LiteralString)
+		{
+			return parseLiteralString(_operands);
 		}
 		else
 		{
-			addOperand(static_cast<literal_t>(word));
+			return parseLiteral(_operands);
 		}
+	};
 
-		if (op.kind == Grammar::OperandKind::ImageOperands || 
-			op.kind == Grammar::OperandKind::LiteralSpecConstantOpInteger) // next operands are IDs
-		{
-			trailingIDOperands = true;
-		}
+	while (_operandCount != 0u && it != end)
+	{
+		const auto& op = *it;
 
-		if (op.kind != Grammar::OperandKind::ImageOperands && 
-			op.kind != Grammar::OperandKind::LiteralSpecConstantOpInteger &&
-			op.kind != Grammar::OperandKind::Decoration &&
-			op.kind != Grammar::OperandKind::ExecutionMode &&
-			op.kind != Grammar::OperandKind::LiteralString && 
-			op.quantifier != Grammar::Quantifier::ZeroOrAny)
+		if (op.kind == Grammar::OperandKind::LiteralString) 
 		{
+			if (parseLiteralString(_operandCount) == false)
+			{
+				return false;
+			}
+
 			++it;
+			continue; // next operand
 		}
-		else if (op.kind == Grammar::OperandKind::LiteralString && hasStringTerminator(word)) // reached end of string
+		else if (op.kind == Grammar::OperandKind::LiteralSpecConstantOpInteger) // OpSpecConstantOp
 		{
-			++it;
+			if (parseLiteral(_operandCount) == false) // opcode
+			{
+				return false;
+			}
+
+			// remaining operands must be IDs
+			while (_operandCount > 0u)
+			{
+				if (parseId(_operandCount) == false)
+				{
+					return false;
+				}
+			}
+
+			++it; // no more operands after this one
+			break; // end of instruction
 		}
 
-		--_operandCount;
-	}
+		if (op.category == Grammar::OperandCategory::Composite)
+		{
+			if (it + 1u != end) // all known compisites are trailing args
+			{
+				getModule()->logError("Unexpected end of composite operands for %s", info->name);
+				return false;
+			}
 
-	if (_operandCount > 0u)
+			if (const auto* bases = _grammar.getOperandBases(op.kind); bases != nullptr)
+			{
+				if (_operandCount % bases->size() != 0u)
+				{
+					getModule()->logError("Unexpected end of composite operands for %s", info->name);
+					return false;
+				}
+
+				auto bit = bases->begin();
+				auto bend = bases->end();
+
+				while (_operandCount > 0u && bit != bend)
+				{
+					if (parseSimpleOps(_operandCount, *bit) == false)
+					{
+						return false;
+					}
+
+					if (++bit == bend) // reset
+					{
+						bit = bases->begin();
+					}
+				}
+			}
+			else
+			{
+				getModule()->logError("Faild to fetch operand bases for %s from grammar", info->name);
+				return false;
+			}
+
+			break; // end of instruction
+		}
+		else if (op.category == Grammar::OperandCategory::ValueEnum || op.category == Grammar::OperandCategory::BitEnum)
+		{
+			if (parseLiteral(_operandCount) == false) // enum value
+			{
+				return false;
+			}
+
+			if (Grammar::hasOperandParameters(op.kind))
+			{
+				const unsigned int enumVal = back().getLiteral(); // last added operand
+
+				if (auto* params = _grammar.getOperandParameters(op.kind, enumVal); params != nullptr)
+				{
+					for (const auto& param : *params)
+					{
+						if (parseSimpleOps(_operandCount, param) == false)
+						{
+							return false;
+						}
+					}
+				}
+			}
+		}
+		else if (op.category == Grammar::OperandCategory::Id)
+		{
+			if (parseId(_operandCount) == false) return false;
+		}
+		else if (op.category == Grammar::OperandCategory::Literal)
+		{
+			if (op.kind == Grammar::OperandKind::LiteralContextDependentNumber) // OpConstant
+			{
+				while (_operandCount > 0u)
+				{
+					if (parseLiteral(_operandCount) == false) return false;
+				}
+			}
+			else if (parseLiteral(_operandCount) == false)
+			{
+				return false;			
+			}
+		}
+		else
+		{
+			getModule()->logError("Could not parse all operands of %s [unkown operand category]", info->name);
+			return false;
+		}
+
+		if (op.quantifier != Grammar::Quantifier::ZeroOrAny) // not trailing args
+		{
+			++it; // single quantifier		
+		}
+	} // operand loop
+
+	if (_operandCount > 0u || (it != end && it->quantifier == Grammar::Quantifier::One))
 	{
 		getModule()->logError("Could not parse all operands of %s", info->name);
 		return false;
@@ -685,7 +891,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opPhiDynamic(const List<Instruct
 		return error();
 	}
 
-	Instruction* type = _variables.front()->getTypeInstr();
+	Instruction* type = _variables.front()->getResultTypeInstr();
 
 	if (type == nullptr) return error();
 
@@ -694,7 +900,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opPhiDynamic(const List<Instruct
 	for (auto it = _variables.begin().next(); it != _variables.end(); ++it)
 	{
 		Instruction* var = *it;
-		if (var == nullptr || (var->getTypeInstr() != type) || (var->getBasicBlock() == nullptr))
+		if (var == nullptr || (var->getResultTypeInstr() != type) || (var->getBasicBlock() == nullptr))
 		{
 			getModule()->logError("Invalid variable (type or null) passed to opPhiDynamic");
 			return error();
@@ -800,8 +1006,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLe
 
 spvgentwo::Instruction* spvgentwo::Instruction::opDot(Instruction* _pLeft, Instruction* _pRight)
 {
-	Instruction* pLeftTypeInstr = _pLeft->getTypeInstr();
-	Instruction* pRightTypeInstr = _pRight->getTypeInstr();
+	Instruction* pLeftTypeInstr = _pLeft->getResultTypeInstr();
+	Instruction* pRightTypeInstr = _pRight->getResultTypeInstr();
 
 	if (pLeftTypeInstr == nullptr || pRightTypeInstr == nullptr) return error();
 
@@ -907,7 +1113,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opCompositeExtractDynamic(Instru
 
 spvgentwo::Instruction* spvgentwo::Instruction::opCopyObject(Instruction* _pObject)
 {
-	return makeOp(spv::Op::OpCopyObject, _pObject->getTypeInstr(), InvalidId, _pObject);
+	return makeOp(spv::Op::OpCopyObject, _pObject->getResultTypeInstr(), InvalidId, _pObject);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatrix)
@@ -933,7 +1139,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instructi
 
 	if (vecType->isVector() && indexType->isInt())
 	{
-		auto component = _pVector->getTypeInstr()->getFirstActualOperand();
+		auto component = _pVector->getResultTypeInstr()->getFirstActualOperand();
 		return makeOp(spv::Op::OpVectorExtractDynamic, component->getInstruction(), InvalidId, _pVector, _pIndexInt);	
 	}
 
@@ -974,7 +1180,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 		if (trueType->isScalar() || trueType->isVector() || trueType->isPointer() ||
 			(getModule()->getSpvVersion() >= makeVersion(1u, 4u) && trueType->isComposite()))
 		{
-			return makeOp(spv::Op::OpSelect, _pTrueObj->getTypeInstr(), InvalidId, _pCondBool, _pTrueObj, _pFalseObj);
+			return makeOp(spv::Op::OpSelect, _pTrueObj->getResultTypeInstr(), InvalidId, _pCondBool, _pTrueObj, _pFalseObj);
 		}
 
 		getModule()->logError("Object arguments of opSelect are not of type Scalar|Vector|Pointer|Composite");
@@ -996,7 +1202,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorTimesScalar(Instruction*
 
 	if (pScalarType->isFloat() && pVecType->isVectorOfFloat(0u, pScalarType->getFloatWidth()))
 	{
-		return makeOp(spv::Op::OpVectorTimesScalar, _pVector->getTypeInstr(), InvalidId, _pVector, _pScalar);
+		return makeOp(spv::Op::OpVectorTimesScalar, _pVector->getResultTypeInstr(), InvalidId, _pVector, _pScalar);
 	}
 
 	getModule()->logError("Operand of OpVectorTimesScalar is not a scalar or vector of float type");
@@ -1013,7 +1219,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opMatrixTimesScalar(Instruction*
 
 	if (pScalarType->isFloat() && pMatType->hasSameBase(*pScalarType) && pMatType->isMatrix())
 	{
-		return makeOp(spv::Op::OpMatrixTimesScalar, _pMatrix->getTypeInstr(), InvalidId, _pMatrix, _pScalar);
+		return makeOp(spv::Op::OpMatrixTimesScalar, _pMatrix->getResultTypeInstr(), InvalidId, _pMatrix, _pScalar);
 	}
 
 	getModule()->logError("Operand of OpMatrixTimesScalar is not a scalar or matrix of float type");
@@ -1030,7 +1236,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorTimesMatrix(Instruction*
 
 	if (pVecType->isVectorOfFloat() && pMatType->isMatrix() && pMatType->hasSameBase(*pVecType) && pMatType->front().getVectorComponentCount() == pVecType->getVectorComponentCount())
 	{
-		return makeOp(spv::Op::OpVectorTimesMatrix, _pVector->getTypeInstr(), InvalidId, _pVector, _pMatrix);
+		return makeOp(spv::Op::OpVectorTimesMatrix, _pVector->getResultTypeInstr(), InvalidId, _pVector, _pMatrix);
 	}
 
 	getModule()->logError("Operand of OpVectorTimesMatrix is not a vector or matrix of float type");
@@ -1152,7 +1358,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opQuantizeToF16(Instruction* _pF
 
 	if (type->isScalarOrVectorOf(spv::Op::OpTypeFloat, 0u, 32u))
 	{
-		return makeOp(spv::Op::OpQuantizeToF16, _pFloatVec->getTypeInstr(), InvalidId, _pFloatVec);
+		return makeOp(spv::Op::OpQuantizeToF16, _pFloatVec->getResultTypeInstr(), InvalidId, _pFloatVec);
 	}
 
 	getModule()->logError("Operand of OpQuantizeToF16 is not a float type with 32 bit component width");
@@ -1446,4 +1652,37 @@ spvgentwo::Instruction::Iterator spvgentwo::getLiteralString(String& _out, Instr
 	}
 
 	return _it;
+}
+
+spvgentwo::Instruction::Iterator spvgentwo::skipLiteralString(Instruction::Iterator _begin)
+{
+	for (; _begin != nullptr && _begin->isLiteral(); ++_begin)
+	{ 
+		if (hasStringTerminator(_begin->literal))
+		{
+			return _begin.next();
+		}
+	}
+	return _begin;
+}
+
+bool spvgentwo::compareLiteralString(const char* _pStr, Instruction::Iterator _begin, Instruction::Iterator _end, sgt_size_t _StrLength)
+{
+	sgt_size_t j = 0u;
+	for (auto it = _begin; it != _end && it->isLiteral() && j < _StrLength; ++it)
+	{
+		const char* str = reinterpret_cast<const char*>(&it->literal.value);
+		for (unsigned int i = 0u; i < sizeof(unsigned int); ++i)
+		{
+			if (str[i] == '\0' && _pStr[j] == '\0')
+			{
+				return true;
+			}
+			else if (str[i] != _pStr[j++])
+			{
+				return false;
+			}
+		}
+	};
+	return true;
 }

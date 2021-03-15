@@ -1,7 +1,6 @@
 #pragma once
 
 #include "spvgentwo/Reader.h"
-#include <cstdio>
 
 namespace spvgentwo
 {
@@ -20,6 +19,6 @@ namespace spvgentwo
 		void close();
 
 	private:
-		FILE* m_pFile = nullptr;
+		void* m_pFile = nullptr;
 	};
 } //!spvgentwo

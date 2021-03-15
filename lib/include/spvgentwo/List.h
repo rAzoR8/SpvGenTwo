@@ -33,7 +33,9 @@ namespace spvgentwo
 		bool operator==(const List<T>&  other) const;
 		bool operator!=(const List<T>& _other) const { return !operator==(_other); }
 
-		IAllocator* getAllocator()  const{ return m_pAllocator; }
+		IAllocator* getAllocator()  const { return m_pAllocator; }
+		// set allocator if non was set earlier
+		void setAllocator(IAllocator* _pAllocator);
 
 		void clear(); // destroy entries
 
@@ -149,6 +151,15 @@ namespace spvgentwo
 	{
 		clear();
 		m_pAllocator = nullptr;
+	}
+
+	template<class T>
+	inline void List<T>::setAllocator(IAllocator* _pAllocator)
+	{
+		if (m_pAllocator == nullptr)
+		{
+			m_pAllocator = _pAllocator;
+		}
 	}
 
 	template<class T>

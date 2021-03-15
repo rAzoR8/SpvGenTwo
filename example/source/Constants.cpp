@@ -1,4 +1,5 @@
 #include "example/Constants.h"
+#include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 
@@ -8,8 +9,11 @@ spvgentwo::Module examples::constants(spvgentwo::IAllocator* _pAllocator, spvgen
 	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::GenericPointer);
 	module.addCapability(spv::Capability::LiteralSampler);
+	module.addCapability(spv::Capability::Float64);
+	module.addCapability(spv::Capability::Int16);
+	module.addCapability(spv::Capability::Int8);
 
-	Function& main = module.addEntryPoint<void>(spv::ExecutionModel::Vertex, "main");
+	Function& main = module.addEntryPoint<void>(spv::ExecutionModel::Vertex, u8"main");
 	BasicBlock& bb = *main;
 
 	// using addConstant() manually:
@@ -29,12 +33,16 @@ spvgentwo::Module examples::constants(spvgentwo::IAllocator* _pAllocator, spvgen
 		// make infers type, data and operation based on value passed
 		myConst.make(1337.f);
 		inst = module.addConstant(myConst);	
+
+		// extract constant data 1337.f
+		const float* val = inst->getConstant()->getDataAs<float>();
 	}
 
 	// use module constant()
 	{
 		// create a vec3
 		Instruction* vecconst = module.constant(make_vector(1.f, 2.f, 3.f));
+		vecconst = module.constant(make_vector(-1.0, 32.0));
 
 		// create a literal sampler constant
 		Instruction* samplerconst = module.constant(const_sampler_t{ spv::SamplerAddressingMode::ClampToEdge, ConstantSamplerCoordMode::UnNormalized, spv::SamplerFilterMode::Linear});
@@ -58,6 +66,16 @@ spvgentwo::Module examples::constants(spvgentwo::IAllocator* _pAllocator, spvgen
 
 		// same as above but with explicit opSpecConstantOp
 		specOp = module.addConstantInstr()->opSpecConstantOp(module.type<unsigned int>(), spv::Op::OpIMul, s2, intconst);
+
+		// two short 'short' vectors
+		Instruction* vecconst1 = module.constant(make_vector((short)8, (short)-16), true);
+		Instruction* vecconst2 = module.constant(make_vector((short)-32, (short)64), true);
+		specOp = module.addConstantInstr()->opIMul(vecconst1, vecconst2)->toSpecOp();
+
+		// test 8-bit integers
+		Instruction* const1 = module.constant((char)4, true);
+		Instruction* const2 = module.constant((char)-3, true);
+		specOp = module.addConstantInstr()->opIMul(const1, const2)->toSpecOp();
 	}
 
 	bb.returnValue();

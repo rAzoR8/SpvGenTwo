@@ -6,6 +6,6 @@ namespace spvgentwo
 	{
 	public:
 		// append spv word to the output stream
-		virtual void put(unsigned int word) = 0;
+		virtual bool put(unsigned int word) = 0;
 	};
 } // !spvgentwo

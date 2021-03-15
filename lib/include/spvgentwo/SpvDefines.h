@@ -6,8 +6,8 @@ namespace spvgentwo
 {
 	constexpr unsigned int makeGeneratorId(unsigned short _gen, unsigned short _ver) { return _gen << 16 | _ver; }
 	constexpr unsigned int makeVersion(unsigned char _major, unsigned char _minor) { return _major << 16 | (_minor << 8); }
-	constexpr unsigned char getMajorVersion(unsigned int _version) { return (_version & 0x00FF0000) >> 16; }
-	constexpr unsigned char getMinorVersion(unsigned int _version) { return (_version & 0x0000FF00) >> 8; }
+	constexpr unsigned char getMajorVersion(unsigned int _version) { return static_cast<unsigned char>( (_version & 0x00FF0000) >> 16 ); }
+	constexpr unsigned char getMinorVersion(unsigned int _version) { return static_cast<unsigned char>( (_version & 0x0000FF00) >> 8 ); }
 
 	// Sampled indicates whether or not this image will be accessed in combination with a sampler, and must be one of the following values:
 	enum class SamplerImageAccess : unsigned int
@@ -25,8 +25,12 @@ namespace spvgentwo
 
 	constexpr auto wordCount(const decltype(sizeof(spv::Id)) _byteCount)
 	{
+		if (_byteCount <= sizeof(spv::Id)) return decltype(sizeof(spv::Id)){ 1u };
 		return (_byteCount / sizeof(spv::Id)) + (_byteCount % sizeof(spv::Id) != 0u ? 1u : 0u);
 	}
+
+	template <class T>
+	constexpr auto wordCount() { return wordCount(sizeof(T)); }
 
 	constexpr spv::Op getOperation(unsigned int _instrWord)
 	{

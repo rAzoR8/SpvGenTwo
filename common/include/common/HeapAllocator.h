@@ -14,7 +14,7 @@ namespace spvgentwo
 	public:
 		void* allocate(const sgt_size_t _bytes, const unsigned int _aligment = 1u) final;
 		void deallocate(void* _ptr, const sgt_size_t _bytes) final;
-		~HeapAllocator();
+		~HeapAllocator() override;
 
 		static HeapAllocator* instance();
 
@@ -24,11 +24,25 @@ namespace spvgentwo
 		sgt_size_t m_Deallocated = 0u;
 
 #ifdef SPVGENTWO_DEBUG_HEAP_ALLOC
-		struct entry { unsigned int id; unsigned int size; operator sgt_size_t() const { return sgt_size_t(id) | sgt_size_t(size) << 32u; } };
+		struct entry { unsigned int id; unsigned int size; operator sgt_uint64_t() const { return sgt_uint64_t(id) | sgt_uint64_t(size) << 32u; } };
 
 		std::unordered_map<void*, entry> m_allocations;
 		std::unordered_set<unsigned int> m_breakpoints;
 #endif
 	};
+
+	template <class Container>
+	class HeapContainer : public Container
+	{
+	public:
+		template <class ... ContainerArgs>
+		HeapContainer(ContainerArgs&& ... _args) : Container(HeapAllocator::instance(), stdrep::forward<ContainerArgs>(_args)...) {}
+	};
+
+	template <class Container, class ... ContainerArgs>
+	auto make_heap_container(ContainerArgs&& ... _args)
+	{
+		return HeapContainer<Container>(stdrep::forward<ContainerArgs>(_args)...);
+	}
 
 } //! spvgentwo

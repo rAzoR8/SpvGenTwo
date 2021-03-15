@@ -87,6 +87,9 @@ namespace spvgentwo
 		bool operator==(const Type& _other) const;
 		bool operator!=(const Type& _other) const { return !operator==(_other); }
 
+		bool operator==(spv::Op _type) const { return m_Type == _type; }
+		bool operator!=(spv::Op _type) const { return m_Type != _type; }
+
 		void reset();
 
 		spv::Op getType() const { return m_Type; }
@@ -251,14 +254,14 @@ namespace spvgentwo
 		const Type& back() const { return m_subTypes.back(); }
 
 		template <class T>
-		Type& fundamental(const T* _typeInfo = nullptr) { /*static_assert(false, "incompatible type"); GCC doesnt like this*/ return *this; }
+		Type& fundamental([[maybe_unused]] const T* _typeInfo = nullptr) { /*static_assert(false, "incompatible type"); GCC doesnt like this*/ return *this; }
 
 		template <class T, class ... Props>
 		Type& make(const Props& ... _props);
 
 		// set Properties by type: spv::Dim -> image Dimension etc
 		template <class Prop, class ...Props>
-		const void setProperties(const Prop& _first, const Props& ... _props);
+		void setProperties(const Prop& _first, const Props& ... _props);
 
 		bool isVoid() const { return m_Type == spv::Op::OpTypeVoid; }
 		bool isBool() const { return m_Type == spv::Op::OpTypeBool;	}
@@ -275,6 +278,9 @@ namespace spvgentwo
 		bool isInt(unsigned int _bitWidth = 0u, Sign _sign = Sign::Any) const { return m_Type == spv::Op::OpTypeInt && (_bitWidth == 0u || _bitWidth == m_IntWidth) && hasSign(_sign); }
 		bool isUInt(unsigned int _bitWidth = 0u) const { return isInt(_bitWidth) && m_IntSign == false; }
 		bool isSInt(unsigned int _bitWidth = 0u) const { return isInt(_bitWidth) && m_IntSign; }
+		bool isI8() const { return isInt(8u); }
+		bool isU8() const { return isUInt(8u); }
+		bool isS8() const { return isSInt(8u); }
 		bool isI16() const { return isInt(16u); }
 		bool isU16() const { return isUInt(16u); }
 		bool isS16() const { return isSInt(16u); }
@@ -609,7 +615,7 @@ namespace spvgentwo
 	}
 
 	template<class Prop, class ...Props>
-	inline const void Type::setProperties(const Prop& _first, const Props& ..._props)
+	inline void Type::setProperties([[maybe_unused]] const Prop& _first, const Props& ..._props)
 	{
 		// check for properties first
 		if constexpr (stdrep::is_same_v<Prop, spv::StorageClass>)
@@ -776,6 +782,12 @@ namespace spvgentwo
 
 	template <>
 	inline Type& Type::fundamental<bool>(const bool*) { return Bool(); }
+
+	template <>
+	inline Type& Type::fundamental<char>(const char*) { return Int(8u); }
+
+	template <>
+	inline Type& Type::fundamental<unsigned char>(const unsigned char*) { return UInt(8u); }
 
 	template <>
 	inline Type& Type::fundamental<short>(const short*) { return Int(16u); }

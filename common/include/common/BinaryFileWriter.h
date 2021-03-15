@@ -1,7 +1,6 @@
 #pragma once
 
 #include "spvgentwo/Writer.h"
-#include <cstdio>
 
 namespace spvgentwo
 {
@@ -11,7 +10,7 @@ namespace spvgentwo
 		BinaryFileWriter(const char* _path = nullptr);
 		~BinaryFileWriter();
 
-		void put(unsigned int _word) final;
+		bool put(unsigned int _word) final;
 
 		bool open(const char* _path);
 		bool isOpen() const { return m_pFile != nullptr; }
@@ -20,6 +19,6 @@ namespace spvgentwo
 		void close();
 
 	private:
-		FILE* m_pFile = nullptr;
+		void* m_pFile = nullptr;
 	};
 } //!spvgentwo

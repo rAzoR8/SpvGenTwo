@@ -1,5 +1,7 @@
 #include "example/FragmentShader.h"
 #include "spvgentwo/TypeAlias.h"
+#include "spvgentwo/Templates.h"
+
 using namespace spvgentwo;
 
 spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
@@ -11,9 +13,9 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
     module.addCapability(spv::Capability::Shader);
 
     // global variables
-    Instruction* uniColor = module.uniform<glsl::vec4>("u_color", module.constant(make_vector(0.f, 0.f, 0.f, 1.f))); // use initializer
-    Instruction* uniTex = module.uniform("u_baseColor", dyn_sampled_image_t{}); //default 2d float texture
-    Instruction* inUV = module.input<glsl::vec2>("v_inUV"); // varying input UVs
+    Instruction* uniColor = module.uniform<glsl::vec4>(u8"u_color", module.constant(make_vector(0.f, 0.f, 0.f, 1.f))); // use initializer
+    Instruction* uniTex = module.uniform(u8"u_baseColor", dyn_sampled_image_t{}); //default 2d float texture
+    Instruction* inUV = module.input<glsl::vec2>(u8"v_inUV"); // varying input UVs
 
     // void main(); entry point
     {

@@ -2,6 +2,9 @@
 #include "spvgentwo/Module.h"
 #include "spvgentwo/Reader.h"
 
+#include "spvgentwo/InstructionTemplate.inl"
+#include "spvgentwo/ModuleTemplate.inl"
+
 spvgentwo::Function::Function(Module* _pModule) : 
 	List(_pModule->getAllocator()),
 	m_pModule(_pModule),
@@ -41,7 +44,6 @@ spvgentwo::Function& spvgentwo::Function::operator=(Function&& _other) noexcept
 		bb.m_pFunction = this;
 	}
 
-	//m_pModule = _other.m_pModule;
 	m_pReturnType = _other.m_pReturnType;
 	m_Function = stdrep::move(_other.m_Function);
 	//m_FunctionEnd(this, spv::Op::OpFunctionEnd), // no need to move
@@ -88,12 +90,14 @@ bool spvgentwo::Function::read(IReader* _pReader, const Grammar& _grammar, Instr
 			if (addBasicBlock().read(_pReader, _grammar) == false) return false;
 			break;
 		case spv::Op::OpFunctionEnd:
-			return true; // FunctionEnd as no operands
+			return true; // FunctionEnd has no operands
 		default:
+			getModule()->logError("Unexpected op-code for function");
 			return false; // unexpected op code
 		}
 	}
 
+	getModule()->logError("Unexpected module end for function");
 	return false;
 }
 
@@ -194,6 +198,25 @@ spvgentwo::Instruction* spvgentwo::Function::setReturnType(Instruction* _pReturn
 	return m_pFunctionType;
 }
 
+spvgentwo::Instruction* spvgentwo::Function::setFunctionType(Instruction* _pFunctionType)
+{
+	if (_pFunctionType->getOperation() != spv::Op::OpTypeFunction)
+	{
+		getModule()->logInfo("_pFunctionType is not OpTypeFunction");
+		return getModule()->getErrorInstr();
+	}
+
+	if (m_pFunctionType == nullptr)
+	{
+		m_pFunctionType = _pFunctionType;
+
+		auto it = _pFunctionType->getFirstActualOperand(); // get ReturnType operand
+		m_pReturnType = it != nullptr ? it->getInstruction() : nullptr;
+	}
+
+	return m_pReturnType;
+}
+
 spvgentwo::Instruction* spvgentwo::Function::finalize(const Flag<spv::FunctionControlMask> _control, const char* _pName)
 {
 	if (m_pReturnType == nullptr || m_pFunctionType == nullptr)
@@ -204,10 +227,97 @@ spvgentwo::Instruction* spvgentwo::Function::finalize(const Flag<spv::FunctionCo
 
 	Instruction* pFunc = m_Function.opFunction(_control, m_pReturnType, m_pFunctionType);
 
-	if (_pName != nullptr)
+	if (_pName != nullptr && pFunc->isErrorInstr() == false)
 	{
 		m_pModule->addName(pFunc, _pName);
 	}
 
 	return pFunc;
+}
+
+void spvgentwo::collectReferencedVariables(const Function& _func, List<Operand>& _outVarInstr, const GlobalInterfaceVersion _version, IAllocator* _pAllocator)
+{
+	struct VisitedBB
+	{
+		VisitedBB(BasicBlock* _pBB) : pBB(_pBB), visited(false) {}
+		BasicBlock* pBB = nullptr;
+		bool visited = false;
+		bool operator==(const BasicBlock* _pBB) const { return pBB == _pBB; }
+	};
+
+	List<VisitedBB> BBs(_pAllocator);
+
+	// entry points own basic blocks
+	for (BasicBlock& bb : _func)
+	{
+		BBs.emplace_back(&bb);
+	}
+
+	// go through all basicblocks (including called functions)
+	auto size = 0ull;
+	do
+	{
+		size = BBs.size();
+
+		for (VisitedBB& bb : BBs)
+		{
+			if (bb.visited == false)
+			{
+				bb.visited = true;
+
+				// find calls to other functions and add those functions basic blocks
+				for (Instruction& instr : *bb.pBB)
+				{
+					if (instr.getOperation() == spv::Op::OpFunctionCall)
+					{
+						// 3rd arg of opFunctionCall is OpFunction whos parent Function class holds the BBs were looking for
+						Instruction* pOpFunc = (instr.begin() + 2u)->getInstruction();
+						Function* pFunction = pOpFunc->getFunction();
+
+						// add unvisited function BBs
+						for (BasicBlock& funcBB : *pFunction)
+						{
+							if (BBs.contains(&funcBB) == false) // skip recursive calls
+							{
+								BBs.emplace_back(&funcBB);
+							}
+						}
+					}
+				}
+			}
+		}
+	} while (size < BBs.size());
+
+	// go through the instructions of the collected basic blocks and look for use of op variable operands
+	for (VisitedBB& bb : BBs)
+	{
+		for (Instruction& instr : *bb.pBB)
+		{
+			// go through operands that are Instructions which consume OpVariable
+			for (Operand& operand : instr)
+			{
+				// find valid OpVariable (resultType, resultId, Storage Class)
+				Instruction* pArg = operand.getInstruction();
+				if (pArg != nullptr && pArg->getOperation() == spv::Op::OpVariable)
+				{
+					const spv::StorageClass storage = pArg->getStorageClass();
+					if (_version == GlobalInterfaceVersion::SpirV1_3 && storage != spv::StorageClass::Input && storage != spv::StorageClass::Output)
+					{
+						continue;
+					}
+					else if (_version == GlobalInterfaceVersion::SpirV14_x && storage == spv::StorageClass::Function)
+					{
+						continue;
+					}
+
+					// uniquely add the instruction to the interface list
+					if (_outVarInstr.contains(pArg) == false)
+					{
+						_outVarInstr.emplace_back(pArg);
+					}
+					break;
+				}
+			}
+		}
+	}
 }

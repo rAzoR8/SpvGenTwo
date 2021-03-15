@@ -2,6 +2,7 @@
 
 #include "Type.h"
 #include "Operand.h" // for appendLiteralsToContainer
+#include "Vector.h"
 
 namespace spvgentwo
 {
@@ -24,8 +25,8 @@ namespace spvgentwo
 		template <class T>
 		Type& setType();
 
-		const List<unsigned int>& getData() const { return m_literalData; }
-		List<unsigned int>& getData() { return m_literalData; }
+		const Vector<unsigned int>& getData() const { return m_literalData; }
+		Vector<unsigned int>& getData() { return m_literalData; }
 
 		template <class T>
 		void addData(const T& _data);
@@ -41,12 +42,16 @@ namespace spvgentwo
 
 		void reset();
 
+		// get top-level data (would be empty for structs)
+		template <class T>
+		const T* getDataAs(bool _checkType = true) const;
+
 	private:
 		spv::Op m_Operation = spv::Op::OpConstantNull;
 		Type m_Type;
 
 		List<Constant> m_Components;
-		List<unsigned int> m_literalData;
+		Vector<unsigned int> m_literalData;
 	};
 
 	template<class T>
@@ -58,6 +63,7 @@ namespace spvgentwo
 	template<class T>
 	inline void Constant::addData(const T& _data)
 	{
+		m_literalData.reserve(m_literalData.size() + wordCount<T>());
 		appendLiteralsToContainer(m_literalData, _data);
 	}
 
@@ -68,13 +74,13 @@ namespace spvgentwo
 		{
 			m_Operation = _value ? (_spec ? spv::Op::OpSpecConstantTrue : spv::Op::OpConstantTrue) : (_spec ? spv::Op::OpSpecConstantFalse : spv::Op::OpConstantFalse);
 			m_Type.make<bool>();
-			appendLiteralsToContainer(m_literalData, _value);
+			addData(_value);
 		}
 		else if constexpr (traits::is_primitive_type_v<traits::remove_cvref_t<T>>)
 		{
 			m_Operation = _spec ? spv::Op::OpSpecConstant : spv::Op::OpConstant;
 			m_Type.make<T>();
-			appendLiteralsToContainer(m_literalData, _value);
+			addData(_value);
 		}
 		else if constexpr (is_const_null_v<T>)
 		{
@@ -112,9 +118,9 @@ namespace spvgentwo
 		{
 			m_Operation = spv::Op::OpConstantSampler;
 			m_Type.make<typename T::const_sampler_type>();
-			appendLiteralsToContainer(m_literalData, _value.addressMode);
-			appendLiteralsToContainer(m_literalData, _value.coordMode);
-			appendLiteralsToContainer(m_literalData, _value.filterMode);
+			addData(_value.addressMode);
+			addData(_value.coordMode);
+			addData(_value.filterMode);
 		}
 		else
 		{
@@ -132,6 +138,25 @@ namespace spvgentwo
 		}
 
 		return *this;
+	}
+
+	template<class T>
+	inline const T* Constant::getDataAs(bool _checkType) const
+	{
+		if (sizeof(T) <= m_literalData.size() * sizeof(unsigned int)) 
+		{
+			if (_checkType) 
+			{
+				Type t(m_literalData.getAllocator());
+				if (t.make<T>() != m_Type)
+				{
+					return nullptr;
+				}
+			}
+
+			return reinterpret_cast<const T*>(m_literalData.data());
+		}
+		return nullptr;
 	}
 
 	template <>

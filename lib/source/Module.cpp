@@ -3,6 +3,9 @@
 #include "spvgentwo/Reader.h"
 #include "spvgentwo/Logger.h"
 
+#include "spvgentwo/InstructionTemplate.inl"
+#include "spvgentwo/ModuleTemplate.inl"
+
 spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersion, ILogger* _pLogger, ITypeInferenceAndVailation* _pTypeInferenceAndVailation) :
 	Module(_pAllocator, _spvVersion, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger, _pTypeInferenceAndVailation) // use delegate constructor
 {
@@ -21,6 +24,7 @@ spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersio
 	m_Extensions(_pAllocator),
 	m_ExtInstrImport(_pAllocator),
 	m_MemoryModel(this),
+	m_ExecutionModes(_pAllocator),
 	m_SourceStrings(_pAllocator),
 	m_Names(_pAllocator),
 	m_ModuleProccessed(_pAllocator),
@@ -52,6 +56,7 @@ spvgentwo::Module::Module(Module&& _other) noexcept:
 	m_Extensions(stdrep::move(_other.m_Extensions)),
 	m_ExtInstrImport(stdrep::move(_other.m_ExtInstrImport)),
 	m_MemoryModel(this, stdrep::move(_other.m_MemoryModel)),
+	m_ExecutionModes(stdrep::move(_other.m_ExecutionModes)),
 	m_SourceStrings(stdrep::move(_other.m_SourceStrings)),
 	m_Names(stdrep::move(_other.m_Names)),
 	m_ModuleProccessed(stdrep::move(_other.m_ModuleProccessed)),
@@ -86,6 +91,7 @@ spvgentwo::Module& spvgentwo::Module::operator=(Module&& _other) noexcept
 	m_Extensions = stdrep::move(_other.m_Extensions);
 	m_ExtInstrImport = stdrep::move(_other.m_ExtInstrImport);
 	m_MemoryModel = stdrep::move(m_MemoryModel);
+	m_ExecutionModes = stdrep::move(m_ExecutionModes);
 	m_SourceStrings = stdrep::move(_other.m_SourceStrings);
 	m_Names = stdrep::move(_other.m_Names);
 	m_ModuleProccessed = stdrep::move(_other.m_ModuleProccessed);
@@ -132,6 +138,7 @@ void spvgentwo::Module::updateParentPointers()
 		instr.m_parent.pModule = this;
 	}
 
+	fixList(m_ExecutionModes);
 	fixList(m_SourceStrings);
 	fixList(m_Names);
 	fixList(m_ModuleProccessed);
@@ -157,6 +164,7 @@ void spvgentwo::Module::reset()
 
 	setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::Simple);
 
+	m_ExecutionModes.clear();
 	m_SourceStrings.clear();
 	m_Names.clear();
 	m_ModuleProccessed.clear();
@@ -181,9 +189,9 @@ spvgentwo::Function& spvgentwo::Module::addFunction()
 	return m_Functions.emplace_back(this);
 }
 
-spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Module::remove(const Function* _pFunction, Function* _pReplacementToCall)
+spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Module::remove(const Function* _pFunction, Function* _pReplacementToCall, IAllocator* _pAllocator)
 {
-	List<Instruction*> uses(getAllocator());
+	List<Instruction*> uses(_pAllocator == nullptr ? getAllocator() : _pAllocator);
 
 	if (_pFunction == nullptr)
 	{
@@ -343,9 +351,9 @@ const char* spvgentwo::Module::getName(const Instruction* _pTarget, const unsign
 	return nullptr;
 }
 
-spvgentwo::Vector<spvgentwo::Module::MemberNameCStr> spvgentwo::Module::getNames(const Instruction* _pTarget) const
+spvgentwo::List<spvgentwo::Module::MemberNameCStr> spvgentwo::Module::getNames(const Instruction* _pTarget, IAllocator* _pAllocator) const
 {
-	Vector<MemberNameCStr> names(getAllocator());
+	List<MemberNameCStr> names(_pAllocator == nullptr ? getAllocator() : _pAllocator);
 
 	for (auto& name : m_NameLookup.getRange(_pTarget))
 	{
@@ -483,9 +491,26 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char
 	case spv::Op::OpTypeQueue:
 	case spv::Op::OpTypePipeStorage:
 	case spv::Op::OpTypeNamedBarrier:
+
+	case spv::Op::OpTypeRayQueryKHR:
+	case spv::Op::OpTypeAccelerationStructureKHR:
+
+	case spv::Op::OpTypeAvcMcePayloadINTEL:
+	case spv::Op::OpTypeAvcImePayloadINTEL:
+	case spv::Op::OpTypeAvcRefPayloadINTEL:
+	case spv::Op::OpTypeAvcSicPayloadINTEL:
+	case spv::Op::OpTypeAvcMceResultINTEL:
+	case spv::Op::OpTypeAvcImeResultINTEL:
+	case spv::Op::OpTypeAvcImeResultSingleReferenceStreamoutINTEL:
+	case spv::Op::OpTypeAvcImeResultDualReferenceStreamoutINTEL:
+	case spv::Op::OpTypeAvcImeSingleReferenceStreaminINTEL:
+	case spv::Op::OpTypeAvcImeDualReferenceStreaminINTEL:
+	case spv::Op::OpTypeAvcRefResultINTEL:
+	case spv::Op::OpTypeAvcSicResultINTEL:
+
 		break; // nothing to do
 	case spv::Op::OpTypeInt:
-		pInstr->appendLiterals(_type.getIntWidth(), (unsigned int) _type.getIntSign());
+		pInstr->appendLiterals(_type.getIntWidth(), static_cast<unsigned int>(_type.getIntSign()));
 		break;
 	case spv::Op::OpTypeFloat:
 		pInstr->appendLiterals(_type.getFloatWidth());
@@ -512,6 +537,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char
 		break;
 	case spv::Op::OpTypeRuntimeArray:
 	case spv::Op::OpTypeSampledImage:
+	case spv::Op::OpTypeVmeImageINTEL:
 		pInstr->addOperand(addType(_type.getSubTypes().front())); // element type
 		break;
 	case spv::Op::OpTypeArray:
@@ -532,7 +558,7 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char
 		}
 		break;
 	default:
-		logFatal("Type not implemented");
+		logFatal("Type [%u] not implemented", base);
 		break; // unknown type
 	}
 
@@ -708,6 +734,8 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 	m_InstrToConstant.clear();
 	m_ConstantToInstr.clear();
 
+	bool success = true;
+
 	for (Instruction& instr : m_TypesAndConstants)
 	{
 		auto it = instr.getFirstActualOperand(); // TODO: validate number of available operands with Grammar in read() (for now just assume the .spv is valid)
@@ -728,6 +756,23 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 			case spv::Op::OpTypeQueue:
 			case spv::Op::OpTypePipeStorage:
 			case spv::Op::OpTypeNamedBarrier:
+
+			case spv::Op::OpTypeRayQueryKHR:
+			case spv::Op::OpTypeAccelerationStructureKHR:
+
+			case spv::Op::OpTypeAvcMcePayloadINTEL:
+			case spv::Op::OpTypeAvcImePayloadINTEL:
+			case spv::Op::OpTypeAvcRefPayloadINTEL:
+			case spv::Op::OpTypeAvcSicPayloadINTEL:
+			case spv::Op::OpTypeAvcMceResultINTEL:
+			case spv::Op::OpTypeAvcImeResultINTEL:
+			case spv::Op::OpTypeAvcImeResultSingleReferenceStreamoutINTEL:
+			case spv::Op::OpTypeAvcImeResultDualReferenceStreamoutINTEL:
+			case spv::Op::OpTypeAvcImeSingleReferenceStreaminINTEL:
+			case spv::Op::OpTypeAvcImeDualReferenceStreaminINTEL:
+			case spv::Op::OpTypeAvcRefResultINTEL:
+			case spv::Op::OpTypeAvcSicResultINTEL:
+
 				break; // nothing to do
 			case spv::Op::OpTypeInt:
 				t.setIntWidth(it->getLiteral());
@@ -743,7 +788,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 				if (sub == nullptr)
 				{
 					logError("Component or Column sub type not found");
-					return false;
+					success = false;
 				}
 
 				t.Member(sub); // component / column type
@@ -757,7 +802,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 					if (sub == nullptr)
 					{
 						logError("Pointer base type not found");
-						return false;
+						success = false;
 					}
 					t.Member(sub);
 				}
@@ -768,7 +813,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 				if (sub == nullptr)
 				{
 					logError("Pointer type not found");
-					return false;
+					success = false;
 				}
 				t.Member(sub);
 				t.setStorageClass(static_cast<spv::StorageClass>((++it)->getLiteral().value));
@@ -782,19 +827,20 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 					if (sub == nullptr)
 					{
 						logError("Member or Parameter sub type not found");
-						return false;
+						success = false;
 					}
 					t.Member(sub); // member or parameter type
 				}
 				break;
 			case spv::Op::OpTypeRuntimeArray:
 			case spv::Op::OpTypeSampledImage:
+			case spv::Op::OpTypeVmeImageINTEL:
 			{
 				const Type* sub = getTypeInfo(it->getInstruction());
 				if (sub == nullptr)
 				{
 					logError("Element or image type not found");
-					return false;
+					success = false;
 				}
 				t.Member(sub); // element or image type
 			}
@@ -805,7 +851,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 				if (sub == nullptr)
 				{
 					logError("Element type not found");
-					return false;
+					success = false;
 				}
 				t.Member(sub); // element type
 
@@ -813,16 +859,19 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 				if (c == nullptr)
 				{
 					logError("Array length constant not found");
-					return false;
+					success = false;
+					break; // don't deref c
 				}
 
-				if (c->getType().isInt() == false || c->getData().empty())
+				if (c->getType().isInt() && c->getData().empty() == false)
+				{
+					t.setArrayLength(c->getData().front()); // array length
+				}
+				else
 				{
 					logError("Invalid constant data");
-					return false;
+					success = false;
 				}
-
-				t.setArrayLength(c->getData().front()); // array length
 			}
 			break;
 			case spv::Op::OpTypeImage:
@@ -831,7 +880,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 				if (sub == nullptr)
 				{
 					logError("Sampled type not found");
-					return false;
+					success = false;
 				}
 				t.Member(sub); // sampled type
 
@@ -849,8 +898,8 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 			}
 			break;
 			default:
-				logFatal("Type not implemented");
-				return false;
+				logError("Type [%u] not implemented", instr.getOperation());
+				success = false;
 			}
 
 			auto& node = m_TypeToInstr.emplaceUnique(stdrep::move(t), &instr);
@@ -862,14 +911,15 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 
 			c.setOperation(instr.getOperation());
 
-			const Type* t = getTypeInfo(instr.getTypeInstr());
-			if (t == nullptr)
+			if (const Type* t = getTypeInfo(instr.getResultTypeInstr()); t != nullptr)
+			{
+				c.getType() = *t;
+			}
+			else
 			{
 				logError("Constant type not found");
-				return false;
+				success = false;
 			}
-
-			c.getType() = *t;
 
 			switch (instr.getOperation())
 			{
@@ -890,23 +940,24 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 			case spv::Op::OpConstantComposite:
 			case spv::Op::OpSpecConstantComposite:
 				for (auto end = instr.end(); it != end; ++it)
-				{
-					const Constant* sub = getConstantInfo(it->getInstruction());
-					if (sub == nullptr)
+				{					
+					if (const Constant* sub = getConstantInfo(it->getInstruction()); sub != nullptr)
+					{
+						c.Component() = *sub;
+					}
+					else
 					{
 						logError("Constituent constant not found");
-						return false;
+						success = false;					
 					}
-
-					c.Component() = *sub;
 				}
 				break;
 			case spv::Op::OpSpecConstantOp:
 				continue; // continue the loop, dont add to lookup
 				//break;
 			default:
-				logFatal("Constant not implemented");
-				return false;
+				logError("Constant [%u] not implemented", instr.getOperation());
+				success = false;
 			}
 
 			auto& node = m_ConstantToInstr.emplaceUnique(stdrep::move(c), &instr);
@@ -916,23 +967,9 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 
 	auto updateFunctionTypes = [](Function& _fun) -> bool
 	{
-		if (auto it = _fun.getFunction()->getResultTypeOperand(); it != nullptr && it->isInstruction())
+		if (auto it = _fun.getFunction()->last(); it != nullptr && it->isInstruction() && it->instruction->isType()) // last operand is OpTypeFunction
 		{
-			if (Instruction* funcType = _fun.setReturnType(it->instruction); funcType != nullptr)
-			{
-				for (Instruction& param : _fun.getParameters())
-				{
-					if (auto typeIt = param.getResultTypeOperand(); typeIt != nullptr && typeIt->isInstruction())
-					{
-						funcType->addOperand(typeIt->instruction);
-					}
-					else
-					{
-						return false;
-					}
-				}
-				return true;
-			}
+			return _fun.setFunctionType(it->instruction) != nullptr;
 		}
 		return false;
 	};
@@ -940,21 +977,23 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 	for (Function& f : m_Functions)
 	{
 		if (updateFunctionTypes(f) == false)
-			return false;
+			success = false;
 	}
 
 	for (EntryPoint& f : m_EntryPoints)
 	{
 		if (updateFunctionTypes(f) == false)
-			return false;
+			success = false;
 	}
 
-	return true;
+	return success;
 }
 
 bool spvgentwo::Module::reconstructNames()
 {
 	m_NameLookup.clear();
+
+	bool success = true;
 
 	for (const Instruction& instr : m_Names)
 	{
@@ -964,7 +1003,8 @@ bool spvgentwo::Module::reconstructNames()
 		if (target == nullptr)
 		{
 			logError("Invalid OpName / OpMemberName target");
-			return false;
+			success = false;
+			continue;
 		}
 
 		unsigned int memberIndex = ~0u;
@@ -974,14 +1014,16 @@ bool spvgentwo::Module::reconstructNames()
 			if (++it == nullptr || it->isLiteral() == false)
 			{
 				logError("Invalid member index operand for OpMemberName");
-				return false;
+				success = false;
+				continue;
 			}
 			memberIndex = it->literal.value;
 		}
 		else if (instr.getOperation() != spv::Op::OpName)
 		{
 			logError("Invalid name instructions");
-			return false;
+			success = false;
+			continue;
 		}
 
 		String& name = m_NameLookup.emplace(target, MemberName{ m_pAllocator, memberIndex }).kv.value.name;
@@ -991,11 +1033,11 @@ bool spvgentwo::Module::reconstructNames()
 		if (name.empty() || name.back() != '\0')
 		{
 			logError("Failed to parse name");
-			return false;
+			success = false;
 		}
 	}
 
-	return true;
+	return success;
 }
 
 void spvgentwo::Module::write(IWriter* _pWriter, const bool _assingIDs)
@@ -1079,9 +1121,10 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 				return false;
 			}
 
-			auto it = ep->getEntryPoint()->getFirstActualOperand();
+			auto it = ep->getEntryPoint()->getFirstActualOperand(); // get execution model
 			if (it == nullptr || it->isLiteral() == false)
 			{
+				logError("Failed to get execution model operand of EP");
 				return false;
 			}
 			
@@ -1090,37 +1133,22 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			++it; // EntryPoint <id> is second operand of OpEntryPoint
 			if (it == nullptr || it->isId() == false)
 			{
+				logError("Failed to get function ID operand of EP");
 				return false;
 			}
 
 			const spv::Id id = it->id; // function result id
+
+			// copy name form LiteralString of OpEntryPoint to name storage for getName query
+			ep->getNameStorage().clear();
+			getLiteralString(ep->getNameStorage(), ++it, ep->getEntryPoint()->end());
 
 			entryPoints.emplaceUnique(id, ep);
 		}
 			break;
 		case spv::Op::OpExecutionMode:
 		case spv::Op::OpExecutionModeId:
-		{
-			Instruction execMode(this);
-			execMode.readOperands(_pReader, _grammar, op, operands);
-
-			auto it = execMode.getFirstActualOperand();
-			if (it == nullptr || it->isId() == false)
-			{
-				return false; // TODO: log
-			}
-
-			const spv::Id id = it->id;
-			
-			EntryPoint** epp = entryPoints.get(id);
-			if (epp == nullptr)
-			{
-				return false;
-			}
-			
-			(*epp)->getExecutionModes().emplace_back(*epp, stdrep::move(execMode));
-		}
-			break;
+			if (addExtensionModeInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpString:
 		case spv::Op::OpSourceExtension:
 		case spv::Op::OpSource:
@@ -1133,14 +1161,24 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			if (addModuleProccessedInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpDecorate:
 		case spv::Op::OpMemberDecorate:
+		case spv::Op::OpDecorationGroup:
 		case spv::Op::OpGroupDecorate:
 		case spv::Op::OpGroupMemberDecorate:
-		case spv::Op::OpDecorationGroup:
+		case spv::Op::OpDecorateId:
+		case spv::Op::OpDecorateString:
+		case spv::Op::OpMemberDecorateString:
 			if (addDecorationInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpVariable:
-			// TODO: check if storage type != function
-			// TODO: add to m_TypeToInstr and m_InstrToType after pointer resolve
-			if (addGlobalVariableInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+			if (addGlobalVariableInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false;
+			
+			// check if storage type != function
+			if (m_GlobalVariables.last()->getStorageClass() == spv::StorageClass::Function)
+			{
+				logError("Found OpVariable with StorageClass 'Function in global scope");
+				return false;
+			}
+
+			break;
 		case spv::Op::OpUndef:
 			if(addUndefInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpLine:
@@ -1149,14 +1187,19 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 		case spv::Op::OpFunction:
 		{
 			Instruction opFunc(this);
-			opFunc.readOperands(_pReader, _grammar, op, operands);
-
-			const spv::Id id = opFunc.getResultId();
-			if (id == InvalidId)
+			if (opFunc.readOperands(_pReader, _grammar, op, operands) == false)
 			{
-				return false; // TODO: log
+				return false;
 			}
 
+			const spv::Id id = opFunc.getResultId();
+			if (id == InvalidId || id >= m_spvBound)
+			{
+				logError("Invalid result ID for OpFunction");
+				return false;
+			}
+
+			// check if this function is an existing entrypoint, otherwise create new function
 			Function* func = nullptr;
 			if (EntryPoint** epp = entryPoints.get(id); epp != nullptr)
 			{
@@ -1180,6 +1223,11 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 	}
 
 	return true;
+}
+
+spvgentwo::Instruction* spvgentwo::Module::addExtensionModeInstr()
+{
+	return &m_ExecutionModes.emplace_back(this);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, const char* _pName, Instruction* _pInitialzer)
@@ -1211,7 +1259,7 @@ spvgentwo::Instruction* spvgentwo::Module::addLineInstr()
 	return &m_Lines.emplace_back(this);
 }
 
-spvgentwo::Instruction* spvgentwo::Module::findInstructionById(const spv::Id _resultId)
+spvgentwo::Instruction* spvgentwo::Module::getInstructionById(const spv::Id _resultId)
 {
 	Instruction* instr = nullptr;
 
@@ -1366,4 +1414,21 @@ bool spvgentwo::Module::remove(const Instruction* _pInstr)
 	logError("Invalid instruction parent");
 
 	return false;
+}
+
+spvgentwo::Instruction* spvgentwo::Module::getInstructionByName(const char* _pName) const
+{
+	for (Instruction& instr : m_Names) 
+	{
+		auto it = instr.getFirstActualOperand();
+
+		if (Instruction* target = it->getInstruction(); target != nullptr)
+		{
+			if (compareLiteralString(_pName, it.next(), instr.end()))
+			{
+				return target;
+			} 
+		}
+	}
+	return nullptr;
 }

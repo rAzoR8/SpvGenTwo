@@ -6,10 +6,24 @@ namespace spvgentwo
 {
 	using sgt_size_t = decltype(sizeof(int));
 	using sgt_nullptr_t = decltype(nullptr);
+
+	constexpr sgt_size_t sgt_size_max = ~(sgt_size_t)0;
+	constexpr auto sgt_uint32_max = ~0u;
+	constexpr auto sgt_uint64_max = ~0ull;
+
+	using sgt_uint32_t = decltype(sgt_uint32_max);
+	using sgt_uint64_t = decltype(sgt_uint64_max);
+
+	static_assert(sizeof(sgt_uint32_t) == 4, "32bit integer type size mismatch");
+	static_assert(sizeof(sgt_uint64_t) == 8, "63bit integer type size mismatch");
 }
 
 #ifdef SPVGENTWO_REPLACE_PLACEMENTNEW
+
+#if _MSC_VER && !__INTEL_COMPILER
 #pragma warning(disable: 4291)
+#endif
+
 template <class T>
 inline void* operator new(spvgentwo::sgt_size_t size, T* ptr) noexcept { (void)size; return ptr; }
 #else
@@ -175,6 +189,15 @@ namespace spvgentwo::stdrep
 	template <class T>
 	inline constexpr bool is_const_v<const T> = true;
 
+	template <class>
+	inline constexpr bool is_reference_v = false;
+
+	template <class T>
+	inline constexpr bool is_reference_v<T&> = true;
+
+	template <class T>
+	inline constexpr bool is_reference_v<T&&> = true;
+
 	namespace detail {
 
 		template <class T>
@@ -189,6 +212,11 @@ namespace spvgentwo::stdrep
 		auto try_add_rvalue_reference(int)->type_identity<T&&>;
 		template <class T>
 		auto try_add_rvalue_reference(...)->type_identity<T>;
+
+		template <class T>
+		auto try_add_pointer(int)->type_identity<typename remove_reference<T>::type*>;
+		template <class T>
+		auto try_add_pointer(...)->type_identity<T>;
 
 	} // namespace detail
 
@@ -207,6 +235,9 @@ namespace spvgentwo::stdrep
 	template<class T>
 	typename add_rvalue_reference<T>::type declval() noexcept;
 
+	template <class T>
+	struct add_pointer : decltype(detail::try_add_pointer<T>(0)) {};
+
 	namespace detail
 	{
 		template <class, class T, class... Args>
@@ -221,6 +252,47 @@ namespace spvgentwo::stdrep
 
 	template <class T, class... Args>
 	inline constexpr bool is_constructible_v = is_constructible<T, Args...>::value;
+
+	template<class T>
+	struct is_function : integral_constant<bool, !is_const_v<const T> && !is_reference_v<T>> {};
+
+	template<class T>
+	inline constexpr bool is_function_v = is_function<T>::value;
+
+	template<class T>
+	struct remove_extent { typedef T type; };
+
+	template<class T>
+	struct remove_extent<T[]> { typedef T type; };
+
+	template<class T, sgt_size_t N>
+	struct remove_extent<T[N]> { typedef T type; };
+
+	template <class>
+	inline constexpr bool is_array_v = false;
+
+	template <class T>
+	inline constexpr bool is_array_v<T[]> = true;
+
+	template< class T >
+	struct decay
+	{
+	private:
+		typedef typename remove_reference<T>::type U;
+	public:
+		typedef typename conditional<
+			is_array_v<U>,
+			typename remove_extent<U>::type*,
+			typename conditional<
+			is_function_v<U>,
+			typename add_pointer<U>::type,
+			typename remove_cv<U>::type
+			>::type
+		>::type type;
+	};
+
+	template< class T >
+	using decay_t = typename decay<T>::type;
 } // !spvgentwo::stdrep
 #endif
 
@@ -229,6 +301,8 @@ namespace spvgentwo::traits
 {
 	template <class T> inline constexpr bool is_primitive_type_v = false;
 	template <>	inline constexpr bool is_primitive_type_v<bool> = true;
+	template <>	inline constexpr bool is_primitive_type_v<char> = true;
+	template <>	inline constexpr bool is_primitive_type_v<unsigned char> = true;
 	template <>	inline constexpr bool is_primitive_type_v<short> = true;
 	template <>	inline constexpr bool is_primitive_type_v<unsigned short> = true;
 	template <>	inline constexpr bool is_primitive_type_v<int> = true;
@@ -273,7 +347,7 @@ namespace spvgentwo::traits
 	const T* selectTypeFromArgs() { return nullptr; }
 
 	template <class T, class First, class... Args>
-	const T* selectTypeFromArgs(First& _first, Args&... _tail)
+	const T* selectTypeFromArgs([[maybe_unused]] First& _first, [[maybe_unused]] Args&... _tail)
 	{
 		if constexpr (is_same_base_type_v<First, T>)
 		{
@@ -320,4 +394,4 @@ namespace spvgentwo::traits
 			return new(_ptr) T{ stdrep::forward<Args>(_args)... };
 		}
 	}
-} // !spvgentw
+} // !spvgentwo::traits

@@ -4,6 +4,7 @@
 #include "common/ConsoleLogger.h"
 #include "spvgentwo/Operators.h"
 #include "spvgentwo/GLSL450Instruction.h"
+#include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 using namespace ops;
@@ -21,11 +22,11 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 	module.addCapability(spv::Capability::Int64);
 	module.addCapability(spv::Capability::DerivativeControl);
 
-	module.addExtension("SPV_KHR_vulkan_memory_model");
-	Instruction* ext = module.getExtensionInstructionImport("GLSL.std.450");
+	module.addExtension(u8"SPV_KHR_vulkan_memory_model");
+	Instruction* ext = module.getExtensionInstructionImport(u8"GLSL.std.450");
 	module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
 
-	Instruction* uniformVar = module.uniform<vector_t<float, 3>>("u_Position");
+	Instruction* uniformVar = module.uniform<vector_t<float, 3>>(u8"u_Position");
 
 	dyn_sampled_image_t img{ spv::Op::OpTypeFloat };
 
@@ -33,31 +34,31 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 	img.imageType.samplerAccess = SamplerImageAccess::Sampled;
 
-	Instruction* uniImage = module.uniform<dyn_image_t>("u_someImage", img.imageType);
+	Instruction* uniImage = module.uniform<dyn_image_t>(u8"u_someImage", img.imageType);
 
-	Instruction* str = module.addSourceStringInstr()->opString("Hallo from SpvGenTwo");
+	Instruction* str = module.addSourceStringInstr()->opString(u8"Hallo from SpvGenTwo");
 
 	module.addSourceStringInstr()->opSource(spv::SourceLanguage::GLSL, 3, str, // some random source code
-		"template<class Key, class Value> "
-		"inline Value * HashMap<Key, Value>::get(const Hash64 _hash) const"
-		"{"
-		"const auto index = _hash % m_Buckets;"
+		u8"template<class Key, class Value> "
+		u8"inline Value * HashMap<Key, Value>::get(const Hash64 _hash) const"
+		u8"{"
+		u8"const auto index = _hash % m_Buckets;"
 
-		"for (Node& n : m_pBuckets[index])"
-		"{"
-		"if (n.hash == _hash)"
-		"		return &n.kv.value;"
-		"}"
+		u8"for (Node& n : m_pBuckets[index])"
+		u8"{"
+		u8"if (n.hash == _hash)"
+		u8"		return &n.kv.value;"
+		u8"}"
 
-		"return nullptr;"
-		"}");
+		u8"return nullptr;"
+		u8"}");
 
-	module.addSourceStringInstr()->opSourceContinued("Some more 'source code'");
-	module.addSourceStringInstr()->opSourceExtension("MySuperAwesomeEXT");
+	module.addSourceStringInstr()->opSourceContinued(u8"Some more 'source code'");
+	module.addSourceStringInstr()->opSourceExtension(u8"MySuperAwesomeEXT");
 
 	// void entryPoint();
 	{
-		EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, "main");
+		EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, u8"main");
 		entry.addExecutionMode(spv::ExecutionMode::OriginUpperLeft);
 
 		BasicBlock& bb = *entry;
@@ -74,7 +75,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* abs = bb.ext<GLSL>()->opSAbs(signs);
 		Instruction* smin = bb.ext<GLSL>()->opSMin(abs, signs);
 
-		bb->opLine("OldInstrTest.cpp", 60u, 0u); // could use c++20 std::source_location
+		bb->opLine(u8"OldInstrTest.cpp", 60u, 0u); // could use c++20 std::source_location
 		bb->opConvertSToF(smin);
 		bb->opNoLine();
 
@@ -108,7 +109,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 		Instruction* uniY = bb->opCompositeExtract(uniVec, 1u);
 
-		Instruction* index = entry.variable<int>(2, "index");
+		Instruction* index = entry.variable<int>(2, u8"index");
 		index = bb->opLoad(index);
 
 		Instruction* uInt = module.constant(22u);

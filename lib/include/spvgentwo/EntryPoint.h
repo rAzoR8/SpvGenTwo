@@ -1,15 +1,10 @@
 #pragma once
 
 #include "Function.h"
+#include "String.h"
 
 namespace spvgentwo
 {
-	enum class GlobalInterfaceVersion
-	{
-		SpirV1_3, // 1.0 - 1.3 Input and Output StorageClass
-		SpirV14_x // 1.4 - 1.x any StorageClass != Function
-	};
-
 	class EntryPoint : public Function
 	{
 		friend class Module;
@@ -25,10 +20,9 @@ namespace spvgentwo
 		
 		~EntryPoint() override;
 
-		// TODO: move constructor & asignment
+		const char* getName() const;
 
-		// get all the global OpVariables with StorageClass != Function used in this function
-		void getGlobalVariableInterface(List<Operand>& _outVarinstr, const GlobalInterfaceVersion _version) const;
+		// TODO: move constructor & asignment
 
 		spv::ExecutionModel getExecutionModel() const { return m_ExecutionModel; }
 		void setExecutionModel(const spv::ExecutionModel _model) { m_ExecutionModel = _model; }
@@ -39,42 +33,23 @@ namespace spvgentwo
 
 		template <class ... Args>
 		Instruction* addExecutionMode(const spv::ExecutionMode _mode, Args ... _args);
-		Instruction* addExecutionModeInstr();
-
-		const List<Instruction>& getExecutionModes() const { return m_ExecutionModes; }
-		List<Instruction>& getExecutionModes() { return m_ExecutionModes; }
 
 		// overrides Functions finalize (used internally), _pEntryPointName is mandatory parameter, returns opFunction
 		Instruction* finalize(const spv::ExecutionModel _model, const Flag<spv::FunctionControlMask> _control, const char* _pEntryPointName);
+
+		// get Variable interface (instructions) operands of OpEntryPoint
+		Range<Instruction::Iterator> getInterfaceVariables() const;
 
 	private:
 		// only to be called by the Module before serialization
 		void finalizeGlobalInterface(const GlobalInterfaceVersion _version);
 
+		String& getNameStorage();
+
 	private:
 		Instruction m_EntryPoint; // OpEntryPoint
-		List<Instruction> m_ExecutionModes;
 		spv::ExecutionModel m_ExecutionModel = spv::ExecutionModel::Max;
+		String m_nameStorage; // literal string of EP name that was encoded in OpEntryPoint
 		bool m_finalized = false;
 	};
-
-	template<class ...TypeInstr>
-	inline EntryPoint::EntryPoint(Module* _pModule, const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ..._paramTypeInstructions) :
-		Function(_pModule, _pEntryPointName, _control, _pReturnType, _paramTypeInstructions...),
-		m_EntryPoint(this),
-		m_ExecutionModes(_pModule->getAllocator()),
-		m_ExecutionModel(_model)
-	{
-		m_EntryPoint.opEntryPoint(_model, &m_Function, _pEntryPointName);
-	}
-
-	template<class ...Args>
-	inline Instruction* EntryPoint::addExecutionMode(const spv::ExecutionMode _mode, Args ..._args)
-	{
-		Instruction* pInstr = &m_ExecutionModes.emplace_back(this);
-
-		pInstr->makeOp(getExecutionModeOp(_mode), &m_Function, _mode, _args...);
-
-		return pInstr;
-	}
 } // !spvgentwo

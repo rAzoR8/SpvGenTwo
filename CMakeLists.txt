@@ -32,6 +32,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+if (MSVC)
+	#enforce strictness on msvc
+    add_compile_options(/W4 /permissive-)
+endif()
+
 #this project
 project(SpvGenTwo VERSION 1.0 DESCRIPTION "SPIR-V codegen library")
 
@@ -41,11 +46,14 @@ cmake_option(SPVGENTWO_REPLACE_PLACEMENTNEW "Don't use replacement new from <new
 cmake_option(SPVGENTWO_REPLACE_TRAITS "Use custom traits instead of <type_traits>" TRUE)
 cmake_option(SPVGENTWO_BUILD_EXAMPLES "Build examples" FALSE)
 cmake_option(SPVGENTWO_BUILD_DISASSEMBLER "Build disassembler" FALSE)
+cmake_option(SPVGENTWO_BUILD_REFLECT "Build reflect" FALSE)
 cmake_option(SPVGENTWO_DEBUG_HEAP_ALLOC "Log heap allocations" FALSE)
 
 #lib sources
+add_sources("misc/*.natvis" "lib_sources")
 add_sources("lib/source/*.cpp" "lib_sources")
 add_sources("lib/include/spvgentwo/*.h" "lib_sources")
+add_sources("lib/include/spvgentwo/*.inl" "lib_sources")
 add_include_folder("lib/include" "lib_includes")
 
 #lib project
@@ -55,11 +63,13 @@ target_include_directories(SpvGenTwoLib PUBLIC "${lib_includes}")
 #common sources - shared between examples and tests
 add_sources("common/source/*.cpp" "common_sources")
 add_sources("common/include/common/*.h" "common_sources")
+add_sources("common/include/common/*.inl" "common_sources")
 add_include_folder("common/include" "common_includes")
 
 add_library(SpvGenTwoCommon "${common_sources}")
 target_include_directories(SpvGenTwoCommon PRIVATE "${lib_includes}")
 target_include_directories(SpvGenTwoCommon PUBLIC "${common_includes}")
+target_link_libraries(SpvGenTwoCommon PRIVATE SpvGenTwoLib)
 
 #example project
 if(${SPVGENTWO_BUILD_EXAMPLES})
@@ -69,7 +79,7 @@ if(${SPVGENTWO_BUILD_EXAMPLES})
 
 	add_executable(SpvGenTwoExample "${example_sources}")
 	target_include_directories(SpvGenTwoExample PUBLIC "${example_includes};${common_includes}")
-	target_link_libraries(SpvGenTwoExample PUBLIC SpvGenTwoLib SpvGenTwoCommon)
+	target_link_libraries(SpvGenTwoExample PRIVATE SpvGenTwoLib SpvGenTwoCommon)
 endif()
 
 #disassembler project
@@ -80,7 +90,18 @@ if(${SPVGENTWO_BUILD_DISASSEMBLER})
 
 	add_executable(SpvGenTwoDisassembler "${dis_sources}")
 	target_include_directories(SpvGenTwoDisassembler PUBLIC "${dis_includes};${common_includes}")
-	target_link_libraries(SpvGenTwoDisassembler PUBLIC SpvGenTwoLib SpvGenTwoCommon)
+	target_link_libraries(SpvGenTwoDisassembler PRIVATE SpvGenTwoLib SpvGenTwoCommon)
+endif()
+
+#reflection project
+if(${SPVGENTWO_BUILD_REFLECT})
+	add_sources("refl/source/*.cpp" "refl_sources")
+	add_sources("refl/include/refl/*.h" "refl_sources")
+	add_include_folder("refl/include" "refl_includes")
+
+	add_executable(SpvGenTwoReflect "${refl_sources}")
+	target_include_directories(SpvGenTwoReflect PUBLIC "${refl_includes};${common_includes}")
+	target_link_libraries(SpvGenTwoReflect PRIVATE SpvGenTwoLib SpvGenTwoCommon)
 endif()
 
 message(STATUS "")

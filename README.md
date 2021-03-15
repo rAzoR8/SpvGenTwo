@@ -36,15 +36,15 @@ Module module(&alloc, spv::Version, &log);
 // configure capabilities and extensions
 module.addCapability(spv::Capability::Shader);
 module.addCapability(spv::Capability::VulkanMemoryModelKHR);
-module.addExtension("SPV_KHR_vulkan_memory_model");
-Instruction* ext = module.getExtensionInstructionImport("GLSL.std.450");
+module.addExtension(u8"SPV_KHR_vulkan_memory_model");
+Instruction* ext = module.getExtensionInstructionImport(u8"GLSL.std.450");
 module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
 
 // global variables
-Instruction* uniformVar = module.uniform<vector_t<float, 3>>("u_Position");
+Instruction* uniformVar = module.uniform<vector_t<float, 3>>(u8"u_Position");
 
 // float add(float x, float y)
-Function& funcAdd = module.addFunction<float, float, float>("add", spv::FunctionControlMask::Const);
+Function& funcAdd = module.addFunction<float, float, float>(u8"add", spv::FunctionControlMask::Const);
 {
     BasicBlock& bb = *funcAdd; // get entry block to this function
 
@@ -57,7 +57,7 @@ Function& funcAdd = module.addFunction<float, float, float>("add", spv::Function
 
 // void entryPoint();
 {
-    EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, "main");
+    EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, u8"main");
     entry.addExecutionMode(spv::ExecutionMode::OriginUpperLeft);
     BasicBlock& bb = *entry; // get entry block to this function
 
@@ -128,25 +128,27 @@ Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
 
 # Project Structure
 
-SpvGenTwo is split into 4 folders:
+SpvGenTwo is split into 5 folders:
 
-* `lib` contains the foundation to generate SPIR-V code. SpvGenTwo makes excessive use of its abstract Allocator, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those are not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :).
-* `common` contains some convenience implementations of abstract interfaces: HeapAllocator uses C malloc and free, BindaryFileWriter uses fopen, ConsoleLogger uses vprintf. It also has some additional container classes like Callable (std::function replacement), Graph, ControlFlowGraph, Expression and ExprGraph, they follow the same design principles and might sooner or later be moved to `lib` if needed.
+* `lib` contains the foundation to generate SPIR-V code. SpvGenTwo makes excessive use of its allocator interface, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those are not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :). Everything within this folders is pure C++17, no other dependencies (given that SPVGENTWO_REPLACE_PLACEMENTNEW and SPVGENTWO_REPLACE_TRAITS are used).
+* `common` contains some convenience implementations of abstract interfaces: HeapAllocator uses C malloc and free, BindaryFileWriter uses fopen, ConsoleLogger uses vprintf, ModulePrinter uses snprintf. It also has some additional classes like Callable (std::function replacement), Graph, ControlFlowGraph, Expression and ExprGraph, they follow the same design principles and might sooner or later be moved to `lib` if needed.
 * `example` contains small, self-contained code snippets that each generate a SPIR-V module to show some of the fundamental mechanics and APIs of SpvGenTwo.
 * `dis` is a [spirv-dis](https://github.com/KhronosGroup/SPIRV-Tools#disassembler-tool)-like tool to print assembly language text.
+* `refl` is a [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect)-like tool to extract descriptor bindings and other relevant info from SPIR-V binary modules.
 
 # Building
 
 Use the supplied CMakeLists.txt to generate project files for your build system. SpvGenTwo allows the user to use STL headers (`<type_traits>`, `<new>` etc) instead of my hand-made replacements (see `stdreplament.h`).
 
-* `SPVGENTWO_BUILD_EXAMPLES` is set to FALSE by default. If TRUE, an executable with sources from the 'example' will be built.
+* `SPVGENTWO_BUILD_EXAMPLES` is set to FALSE by default. If TRUE, an executable with sources from the 'example' folder will be built.
     * Note that the SpvGenTwoExample executable project requires the Vulkan SDK to be installed as it calls spirv-val and spriv-dis.
-* `SPVGENTWO_BUILD_DISASSEMBLER` is set to FALSE by default. If TRUE, an executable with sources from the 'dis' will be built.
+* `SPVGENTWO_BUILD_DISASSEMBLER` is set to FALSE by default. If TRUE, an executable with sources from the 'dis' folder will be built.
+* `SPVGENTWO_BUILD_REFLECT` is set to FALSE by default. If TRUE, an executable with sources from the 'refl' folder will be built.
 * `SPVGENTWO_REPLACE_PLACEMENTNEW` is set to TRUE by default. If FALSE, placement-new will be included from `<new>` header.
 * `SPVGENTWO_REPLACE_TRAITS` is set to TRUE by default. If FALSE, `<type_traits>` and `<utility>` header will be included under `spvgentwo::stdrep` namespace.
 * `SPVGENTWO_LOGGING` is set to TRUE by default, calls to module.log() will have not effect if FALSE.
 
-Note that I mainly develop on windows using clang and MSVC but I'll also try to support GCC/linux. No efforts for apple-clang, sorry!
+Note that I mainly develop on windows using clang and MSVC but I'll also try to support GCC/linux.
 
 # Tools
 
@@ -163,6 +165,33 @@ CLI: ```SpvGenTwoDisassembler [file] <option> <option>```
 ### Options
 * `--assignids` re-assigns instruction result IDs starting from 1. Some SPIR-V compilers emit IDs in a very high range, making it hard to read and trace data flow in assembly language text, `assignIDs` helps with that.
 * `--serialize` writes the parsed SPIR-V program to a `serialized.spv` file in the working directory (this is a debug feature).
+* `--noinstrnames` don't replace result IDs with OpNames
+* `--noopnames` don't replace operand IDs with OpNames
+* `--nopreamble` don't print SPIR-V preamble
+* `--colors` use [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) color codes
+* `--tabs "    "` example: use 4 spaces instead of 2 tabs
+
+## Reflector
+
+![SpvGenTwoReflect](/misc/refl.PNG)
+
+SpvGenTwoReflect source can be found at [refl/source/refl.cpp](refl/source/refl.cpp)
+
+CLI: SpvGenTwoReflect ```[file] <option> <option>```
+
+### Options
+* `--var name` select variable by name (if OpVariable was annotated by OpName) for DescriptorType & Decoration printing (`name` has to be a UTF-8 string)
+    * `--var MyBuffer`
+* `--deco decoration` select [decoration](https://github.com/KhronosGroup/SPIRV-Headers/blob/75b30a659c8a4979104986652c54cc421fc51129/include/spirv/unified1/spirv.core.grammar.json#L9486) to query for in the module
+    * `--deco` print all decorations in the module
+    * `--deco DescriptorSet` to print only DescriptorSets
+    * `--deco DescriptorSet --deco Binding` to print only DescriptorSets & Bindings
+* `--funcs` list functions names in the module
+* `--vars` list global variables in the module (StorageClass != Function)
+* `--types` list types and constatns in the module
+* `--id Id` print SPIR-V assembly text for the instruction with result Id
+    * `--id 24`
+* `--colors` use [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) color codes
 
 # Documentation
 
@@ -231,6 +260,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpEntryPoint | &#10004; |
 | opExecutionMode | &#10004; |
 | OpCapability | &#10004; |
+| OpExecutionModeId | &#10004; |
 | OpTypeXXX | via `Module::addType()` |
 | OpConstantXXX | via `Module::addConstant()` |
 | OpSpecConstantXXX | via `Module::addConstant()` |

@@ -1,18 +1,21 @@
 #include "common/HeapAllocator.h"
 
-#include <stdlib.h>
-#include <cassert>
+#include <cstdlib>
 
 #ifdef SPVGENTWO_DEBUG_HEAP_ALLOC
+	#include <cassert>
 	#include <stdio.h>
 #endif
 
 void* spvgentwo::HeapAllocator::allocate(const sgt_size_t _bytes, const unsigned int _aligment)
 {
-	(void)_aligment;
 	m_Allocated += _bytes;
 
-	void* ptr = malloc(_bytes);
+#if defined(_WIN32) || defined(__CYGWIN__)
+	void* ptr = _aligned_malloc(_bytes, _aligment);
+#else	
+	void* ptr = aligned_alloc(_aligment, _bytes);
+#endif
 
 #ifdef SPVGENTWO_DEBUG_HEAP_ALLOC
 	entry alloc{ (uint32_t)m_allocations.size(), (uint32_t)_bytes };
@@ -51,7 +54,11 @@ void spvgentwo::HeapAllocator::deallocate(void* _ptr, const sgt_size_t _bytes)
 	m_allocations.erase(_ptr);
 #endif
 
+#if defined(_WIN32) || defined(__CYGWIN__)
+	 _aligned_free(_ptr);
+#else	
 	free(_ptr);
+#endif
 }
 
 spvgentwo::HeapAllocator::~HeapAllocator()
@@ -75,7 +82,7 @@ spvgentwo::HeapAllocator* spvgentwo::HeapAllocator::instance()
 	return &alloc;
 }
 
-void spvgentwo::HeapAllocator::setHeapAllocBreakpoint(unsigned int _id)
+void spvgentwo::HeapAllocator::setHeapAllocBreakpoint([[maybe_unused]] unsigned int _id)
 {
 #ifdef SPVGENTWO_DEBUG_HEAP_ALLOC
 	m_breakpoints.insert(_id);

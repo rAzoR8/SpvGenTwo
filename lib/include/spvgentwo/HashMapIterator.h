@@ -16,8 +16,8 @@ namespace spvgentwo
 
 		struct KV
 		{
-			Key key;
-			Value value;
+			Key key{};
+			Value value{};
 		} kv;
 
 	private:

@@ -21,7 +21,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -30,7 +30,7 @@ jobs:
       
     # Runs a single command using the runners shell
     - name: CMake
-      run: cmake -S . -B build -DSPVGENTWO_BUILD_EXAMPLES=TRUE -DSPVGENTWO_BUILD_DISASSEMBLER=TRUE
+      run: cmake -S . -B build -DSPVGENTWO_BUILD_EXAMPLES=TRUE -DSPVGENTWO_BUILD_DISASSEMBLER=TRUE -DSPVGENTWO_BUILD_REFLECT=TRUE
     
     - name: Build
       run: cmake --build build -j4
