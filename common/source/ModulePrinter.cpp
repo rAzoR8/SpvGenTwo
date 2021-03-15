@@ -224,15 +224,16 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 
 	if (_instr.hasResult() && ((_options & PrintOptionsBits::InstructionName) || (_options & PrintOptionsBits::ResultId)))
 	{
-		_printer << "%";
 		if (const char* name = _instr.getName(); (_options & PrintOptionsBits::InstructionName) && name != nullptr && stringLength(name) > 1)
 		{
+			_printer << "%";
 			_printer.append(name, colors.resultId, colors.defaultText);
 		}
 		else if (_options & PrintOptionsBits::ResultId)
 		{
 			if (auto id = _instr.getResultId(); id != InvalidId)
 			{
+				_printer << "%";
 				_printer.append(id, colors.resultId, colors.defaultText);
 			}
 			else
