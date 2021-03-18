@@ -253,7 +253,7 @@ int main(int argc, char* argv[])
 		}
 		else if (i < end && strcmp(arg, "--id") == 0)
 		{
-			idToPrint = strtoul(argv[++i], nullptr, 10);
+			idToPrint = spv::Id{ strtoul(argv[++i], nullptr, 10) };
 		}
 		else if (i < end && strcmp(arg, "--var") == 0)
 		{

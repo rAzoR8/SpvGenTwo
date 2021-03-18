@@ -342,7 +342,7 @@ namespace spvgentwo
 		ITypeInferenceAndVailation* m_pTypeInferenceAndVailation = nullptr;
 		unsigned int m_spvVersion = spv::Version;
 		unsigned int m_spvGenerator = GeneratorId;
-		unsigned int m_spvBound = InvalidId;
+		unsigned int m_spvBound = 0u;
 		unsigned int m_spvSchema = 0u;
 		List<Function> m_Functions;
 		List<EntryPoint> m_EntryPoints;

@@ -638,19 +638,19 @@ void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel,
 
 spvgentwo::spv::Id spvgentwo::Module::assignIDs()
 {
-	spv::Id maxId = 0;
+	unsigned int maxId = 0u;
 
 	iterateInstructions([&maxId](Instruction& instr)
 	{
 		if (auto it = instr.getResultIdOperand(); it != nullptr)
 		{
-			*it = ++maxId;
+			*it = spv::Id{ ++maxId };
 		}
 	});
 
 	m_spvBound = maxId + 1u;
 
-	return maxId;
+	return spv::Id{ maxId };
 }
 
 bool spvgentwo::Module::resolveIDs()
@@ -1193,7 +1193,7 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			}
 
 			const spv::Id id = opFunc.getResultId();
-			if (id == InvalidId || id >= m_spvBound)
+			if (id == InvalidId || id >= spv::Id{ m_spvBound })
 			{
 				logError("Invalid result ID for OpFunction");
 				return false;

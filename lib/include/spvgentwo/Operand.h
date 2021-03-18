@@ -10,7 +10,7 @@ namespace spvgentwo
 	class BasicBlock;
 	class IWriter;
 
-	static constexpr spv::Id InvalidId = 0u;
+	static constexpr spv::Id InvalidId{ 0u };
 	static constexpr Instruction* InvalidInstr = nullptr;
 
 	struct literal_t

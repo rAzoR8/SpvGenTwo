@@ -26,7 +26,7 @@
 
 namespace spvgentwo::spv
 {
-	using Id = unsigned int;
+	enum class Id : unsigned int;
 	static constexpr unsigned int MagicNumber = 0x07230203;
 	static constexpr unsigned int Version = 66816;
 	static constexpr unsigned int Revision = 4;

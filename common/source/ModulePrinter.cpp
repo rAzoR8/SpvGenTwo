@@ -73,7 +73,7 @@ namespace
 			}
 
 			_printer << "%";
-			_printer.append(op.id, colors.operandId, colors.defaultText);
+			_printer.append(static_cast<unsigned int>(op.id), colors.operandId, colors.defaultText);
 			return true;
 		}
 		else if (op.isInstruction())
@@ -117,7 +117,7 @@ namespace
 
 			// fallback
 			_printer << "%";
-			_printer.append(op.instruction->getResultId(), colors.operandId, colors.defaultText);
+			_printer.append(static_cast<unsigned int>(op.instruction->getResultId()), colors.operandId, colors.defaultText);
 			return true;	
 		}
 		else if (op.isBranchTarget())
@@ -140,7 +140,7 @@ namespace
 			}
 			else
 			{
-				_printer.append(op.branchTarget->getLabel()->getResultId(), colors.operandId, colors.defaultText);
+				_printer.append(static_cast<unsigned int>(op.branchTarget->getLabel()->getResultId()), colors.operandId, colors.defaultText);
 			}
 			return true;
 		}
@@ -234,7 +234,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 			if (auto id = _instr.getResultId(); id != InvalidId)
 			{
 				_printer << "%";
-				_printer.append(id, colors.resultId, colors.defaultText);
+				_printer.append(static_cast<unsigned int>(id), colors.resultId, colors.defaultText);
 			}
 			else
 			{

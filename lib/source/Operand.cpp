@@ -8,16 +8,16 @@ void spvgentwo::Operand::write(IWriter* _pWriter) const
 	switch (type)
 	{
 	case Type::Instruction:
-		_pWriter->put(instruction->getResultId());
+		_pWriter->put(static_cast<unsigned int>(instruction->getResultId()));
 		break;
 	case Type::BranchTarget:
-		_pWriter->put(branchTarget->getLabel()->getResultId());
+		_pWriter->put(static_cast<unsigned int>(branchTarget->getLabel()->getResultId()));
 		break;
 	case Type::Literal:
 		_pWriter->put(literal.value);
 		break;
 	case Type::Id:
-		_pWriter->put(id);
+		_pWriter->put(static_cast<unsigned int>(id));
 	default:
 		break;
 	}
