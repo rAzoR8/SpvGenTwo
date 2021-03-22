@@ -47,6 +47,7 @@ cmake_option(SPVGENTWO_REPLACE_TRAITS "Use custom traits instead of <type_traits
 cmake_option(SPVGENTWO_BUILD_EXAMPLES "Build examples" FALSE)
 cmake_option(SPVGENTWO_BUILD_DISASSEMBLER "Build disassembler" FALSE)
 cmake_option(SPVGENTWO_BUILD_REFLECT "Build reflect" FALSE)
+cmake_option(SPVGENTWO_BUILD_LINKER "Build linker" FALSE)
 cmake_option(SPVGENTWO_DEBUG_HEAP_ALLOC "Log heap allocations" FALSE)
 
 #lib sources
@@ -102,6 +103,17 @@ if(${SPVGENTWO_BUILD_REFLECT})
 	add_executable(SpvGenTwoReflect "${refl_sources}")
 	target_include_directories(SpvGenTwoReflect PUBLIC "${refl_includes};${common_includes}")
 	target_link_libraries(SpvGenTwoReflect PRIVATE SpvGenTwoLib SpvGenTwoCommon)
+endif()
+
+#reflection project
+if(${SPVGENTWO_BUILD_LINKER})
+	add_sources("link/source/*.cpp" "linker_sources")
+	add_sources("link/include/refl/*.h" "linker_sources")
+	add_include_folder("link/include" "linker_includes")
+
+	add_executable(SpvGenTwoLinker "${linker_sources}")
+	target_include_directories(SpvGenTwoLinker PUBLIC "${linker_includes};${common_includes}")
+	target_link_libraries(SpvGenTwoLinker PRIVATE SpvGenTwoLib SpvGenTwoCommon)
 endif()
 
 message(STATUS "")

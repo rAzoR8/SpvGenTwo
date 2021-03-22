@@ -75,25 +75,7 @@ int main(int argc, char* argv[])
 		Grammar gram(&alloc);
 
 		// parse the binary instructions & operands
-		if (module.read(&reader, gram) == false)
-		{
-			return -1;
-		}
-
-		// turn <id> operands into instruction pointers
-		if (module.resolveIDs() == false)
-		{
-			return -1;
-		}
-
-		// creates type & constant infos for lookup (needed for codegen)
-		if (module.reconstructTypeAndConstantInfo() == false)
-		{
-			return -1;
-		}
-
-		// parses strings for lookup of named instructions, needed for printing
-		if (module.reconstructNames() == false)
+		if (module.readAndInit(&reader, gram) == false)
 		{
 			return -1;
 		}
