@@ -176,6 +176,9 @@ namespace spvgentwo
 		// parse a binary SPIR-V program from IReader using _grammer generated from SPIR-V machinereadable grammer json
 		bool read(IReader* _pReader, const Grammar& _grammar);
 
+		// calls read(), resolveIDs, reconstructNames and reconstrucTypesAndConstantInfo
+		bool readAndInit(IReader* _pReader, const Grammar& _grammar);
+
 		// for use with opExtensionMode, opExtensionModeId
 		Instruction* addExtensionModeInstr();
 

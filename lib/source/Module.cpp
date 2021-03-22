@@ -1225,6 +1225,11 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 	return true;
 }
 
+bool spvgentwo::Module::readAndInit(IReader* _pReader, const Grammar& _grammar)
+{
+	return read(_pReader, _grammar) && resolveIDs() && reconstructNames() && reconstructTypeAndConstantInfo();
+}
+
 spvgentwo::Instruction* spvgentwo::Module::addExtensionModeInstr()
 {
 	return &m_ExecutionModes.emplace_back(this);
