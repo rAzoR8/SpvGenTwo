@@ -338,9 +338,19 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 				auto pit = params->begin();
 				auto pend = params->end();
 
-				for (++it; it != end && pit != pend; ++it, ++pit)
+				for (++it; it != end && pit != pend; ++pit)
 				{
+					if (pit->kind == Grammar::OperandKind::LiteralString)
+					{
+						_printer << " \"";
+						it = appendLiteralString(_printer, it, end, colors.string, colors.defaultText);
+						_printer << "\"";
+
+						continue;
+					}
+
 					printOperand(_instr, *it, *pit, _grammar, _printer, _options);
+					++it;
 				}
 			}
 		}
