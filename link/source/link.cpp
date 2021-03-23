@@ -17,9 +17,10 @@ using namespace ModulePrinter;
 
 int main(int argc, char* argv[])
 {
-	const char* spv = nullptr;
 	const char* out = nullptr;
+	const char* patchspv = nullptr;
 
+	// import/export target
 	struct Target
 	{
 		Instruction* instr = nullptr;
@@ -28,27 +29,35 @@ int main(int argc, char* argv[])
 	};
 	
 	HeapList<Target> targets;
+	HeapList<Module> libs;
+
 	HeapAllocator alloc;
 	ConsoleLogger logger;
-	Module module(&alloc, spv::Version, &logger);
 	Grammar gram(&alloc);
 
-	const int end = argc - 1;;
-	int i = 1u;
+	Module patchModule(&alloc, spv::Version, &logger);
 
+	int i = 1u;
 	auto addTarget = [&](spv::LinkageType type)
 	{
 		Instruction* instr = nullptr;
-		if (auto id = strtoul(argv[++i], nullptr, 10); id != 0 && id != sgt_uint32_max)
+		const char* target = argv[++i];
+		if (auto id = strtoul(target, nullptr, 10); id != 0 && id != sgt_uint32_max)
 		{
-			instr = module.getInstructionById(spv::Id{ id });
+			instr = patchModule.getInstructionById(spv::Id{ id });
 		}
 		else
 		{
-			instr = module.getInstructionByName(argv[i]);
+			instr = patchModule.getInstructionByName(target);
 		}
 
-		if (const char* name = argv[++i]; instr != nullptr)
+		if (instr == nullptr)
+		{
+			logger.logError("Could not find %s in %s", target, patchspv);
+			return;
+		}
+
+		if (const char* name = argv[++i]; name != nullptr)
 		{
 			targets.emplace_back(instr, name, type);
 		}
@@ -57,61 +66,75 @@ int main(int argc, char* argv[])
 	for (; i < argc; ++i)
 	{
 		const char* arg = argv[i];
-		if (spv == nullptr)
+		if (i + 1 < argc && strcmp(arg, "--patchspv") == 0)
 		{
-			spv = arg;
-			BinaryFileReader reader(spv);
+			patchspv = argv[++i];
+			BinaryFileReader reader(patchspv);
 			if (reader.isOpen() == false)
 			{
-				logger.logError("Failed to open %s", spv);
+				logger.logError("Failed to open %s", patchspv);
 				return -1;
 			}
-			else if (module.readAndInit(&reader, gram) == false)
+			else if (patchModule.readAndInit(&reader, gram) == false)
 			{
 				return -1;
 			}
 		}
-		else if (i + 1 < end && strcmp(arg, "--out") == 0)
+		else if (i + 1 < argc && strcmp(arg, "--l") == 0)
+		{
+			const char* file = argv[++i];
+			BinaryFileReader reader(file);
+			if (reader.isOpen() == false)
+			{
+				logger.logError("Failed to open %s", file);
+				return -1;
+			}
+			else if (libs.emplace_back(&alloc, spv::Version, &logger).readAndInit(&reader, gram) == false)
+			{
+				return -1;
+			}
+		}
+		else if (i + 1 < argc && strcmp(arg, "--out") == 0)
 		{
 			out = argv[++i];
 		}
-		else if (spv != nullptr && i + 1 < end && strcmp(arg, "--export") == 0)
+		else if (i + 1 < argc && strcmp(arg, "--export") == 0)
 		{
 			addTarget(spv::LinkageType::Export);
 		}
-		else if (spv != nullptr && i + 1 < end && strcmp(arg, "--import") == 0)
+		else if (i + 1 < argc && strcmp(arg, "--import") == 0)
 		{
 			addTarget(spv::LinkageType::Import);
 		}
-	}
-
-	if (spv == nullptr)
-	{
-		return -1;
 	}
 
 	auto printer = ModuleSimpleFuncPrinter([](const char* _pStr) { printf("%s", _pStr); });
 
 	if (targets.empty() == false)
 	{
-		module.checkAddCapability(spv::Capability::Linkage);
-	}
+		patchModule.checkAddCapability(spv::Capability::Linkage);
 
-	for (auto& t : targets)
-	{
-		Instruction* instr = module.addDecorationInstr();
-		instr->opDecorate(t.instr, spv::Decoration::LinkageAttributes, t.name, t.type);
-		printer << "Added "; printInstruction(*instr, gram, printer); printer << "\n";
-	}
-	
-	BinaryFileWriter writer(out);
-	if (writer.isOpen() == false) 
-	{
-		logger.logError("Failed to open %s", out);
-		return -1;
-	}
+		for (auto& t : targets)
+		{
+			Instruction* instr = patchModule.addDecorationInstr();
+			instr->opDecorate(t.instr, spv::Decoration::LinkageAttributes, t.name, t.type);
+			printer << "Added "; printInstruction(*instr, gram, printer); printer << "\n";
+		}
 
-	module.write(&writer);
+		if (out == nullptr)
+		{
+			out = patchspv;
+		}
+
+		BinaryFileWriter writer(out);
+		if (writer.isOpen() == false)
+		{
+			logger.logError("Failed to open %s", out);
+			return -1;
+		}
+
+		patchModule.write(&writer);
+	}
 
 	return 0;
 }
