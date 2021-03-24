@@ -8,6 +8,7 @@ namespace spvgentwo
 		m_EntryPoint(this),
 		m_ExecutionModel(_model)
 	{
+		m_isEntryPoint = true;
 		m_EntryPoint.opEntryPoint(_model, &m_Function, _pEntryPointName);
 	}
 

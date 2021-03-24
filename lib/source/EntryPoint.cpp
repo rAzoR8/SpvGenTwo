@@ -2,11 +2,17 @@
 
 #include "spvgentwo/InstructionTemplate.inl"
 
+spvgentwo::EntryPoint::EntryPoint()
+{
+	m_isEntryPoint = true;
+}
+
 spvgentwo::EntryPoint::EntryPoint(Module* _pModule) :
 	Function(_pModule),
 	m_EntryPoint(this),
 	m_nameStorage(_pModule->getAllocator())
 {
+	m_isEntryPoint = true;
 }
 
 spvgentwo::EntryPoint::~EntryPoint()

@@ -7,6 +7,7 @@ namespace spvgentwo
 	// forward delcs
 	class Module;
 	class IAllocator;
+	class EntryPoint;
 
 	enum class GlobalInterfaceVersion
 	{
@@ -49,6 +50,10 @@ namespace spvgentwo
 
 		// get name assigned by OpName (if any). Calls Module::getName(&m_Function)
 		const char* getName() const;
+
+		bool isEntryPoint() const { return m_isEntryPoint; }
+		EntryPoint* asEntryPoint() { return m_isEntryPoint ? reinterpret_cast<EntryPoint*>(this) : nullptr; }
+		const EntryPoint* asEntryPoint() const { return m_isEntryPoint ? reinterpret_cast<const EntryPoint*>(this) : nullptr; }
 
 		BasicBlock& addBasicBlock(const char* _pName = nullptr) { return emplace_back(this, _pName); }
 
@@ -109,6 +114,8 @@ namespace spvgentwo
 		Instruction* m_pFunctionType = nullptr;
 
 		List<Instruction> m_Parameters; // OpFunctionParameters
+
+		bool m_isEntryPoint = false;
 	};
 
 	// get all the global OpVariables with StorageClass != Function used in this function
