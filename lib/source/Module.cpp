@@ -295,8 +295,6 @@ void spvgentwo::Module::checkAddCapability(const spv::Capability _capability)
 	if (checkCapability(_capability) == false)
 	{
 		addCapability(_capability);
-
-		logInfo("Implictly adding capablity");
 	}
 }
 
