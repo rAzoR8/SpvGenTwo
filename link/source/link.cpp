@@ -8,6 +8,7 @@
 #include "common/HeapList.h"
 #include "common/HeapString.h"
 #include "common/ModulePrinter.h"
+#include "common/LinkerHelper.h"
 
 #include <cstring> // strcmp
 #include <cstdio> // printf, note windows console, and others too, don't print SPIR-V's UTF-8 strings properly
@@ -45,7 +46,7 @@ int patch(Module& _module, const HeapList<Target>& _targets, const char* _out)
 				if (func->empty() == false)
 				{
 					g_logger.logInfo("Functions marked for IMPORT must not contain any basic blocks, removing %u blocks", func->size());
-					func->clear();
+					LinkerHelper::removeFunctionBody(*func);
 				}
 			}
 			else if (t.type == spv::LinkageType::Export && t.exportAllReferencedVars)
