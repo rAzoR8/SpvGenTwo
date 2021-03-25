@@ -45,32 +45,15 @@ int patch(Module& _module, const HeapList<Target>& _targets, const char* _out)
 			{
 				if (func->empty() == false)
 				{
-					g_logger.logInfo("Functions marked for IMPORT must not contain any basic blocks, removing %u blocks", func->size());
+					g_logger.logInfo("Functions marked for Import must not contain any basic blocks, removing %u blocks", func->size());
 					LinkerHelper::removeFunctionBody(*func);
 				}
 			}
 			else if (t.type == spv::LinkageType::Export && t.exportAllReferencedVars)
 			{
-				HeapList<Operand> vars;
-				collectReferencedVariables(*func, vars, GlobalInterfaceVersion::SpirV14_x, &g_alloc);
-
-				for (const Operand& op : vars)
+				if (LinkerHelper::addLinkageDecorateForUsedGlobalVariables(*func, t.type, &g_alloc) == false)
 				{
-					if (Instruction* var = op.getInstruction(); var != nullptr)
-					{
-						Instruction* instr = _module.addDecorationInstr();
-
-						if (const char* name = var->getName(); name != nullptr)
-						{
-							instr->opDecorate(var, spv::Decoration::LinkageAttributes, name, t.type);
-							g_printer << "Added "; printInstruction(*instr, g_gram, g_printer); g_printer << "\n";
-						}
-						else
-						{
-							g_logger.logError("OpVariable Id %u has no OpName for exporting");
-							return -1;
-						}
-					}
+					return -1;
 				}
 			}
 		}
