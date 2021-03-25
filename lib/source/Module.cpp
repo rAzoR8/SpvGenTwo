@@ -1383,6 +1383,7 @@ bool spvgentwo::Module::remove(const Instruction* _pInstr)
 			return false;
 		}
 
+		if (erase(m_ExecutionModes)) return true;
 		if (erase(m_SourceStrings)) return true;
 		if (erase(m_Names)) return true;
 		if (erase(m_ModuleProccessed)) return true;
@@ -1391,6 +1392,9 @@ bool spvgentwo::Module::remove(const Instruction* _pInstr)
 		if (erase(m_GlobalVariables)) return true;
 		if (erase(m_Undefs)) return true;
 		if (erase(m_Lines)) return true;
+
+		logError("Failed to remove instruction from module");
+		return false;
 	}
 	else if (_pInstr->getParentType() == Instruction::ParentType::Function && _pInstr->getFunction() != nullptr)
 	{
