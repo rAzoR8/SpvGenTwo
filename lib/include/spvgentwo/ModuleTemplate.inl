@@ -1,7 +1,20 @@
+#include "Module.h"
 #pragma once
 
 namespace spvgentwo
 {
+	template<class Func>
+	inline bool Module::iterateInstructions(Func _func)
+	{
+		return iterateModuleInstructions(*this, _func);
+	}
+
+	template<class Func>
+	inline bool Module::iterateInstructions(Func _func) const
+	{
+		return iterateModuleInstructions(*this, _func);
+	}
+
 	template<typename ...Args>
 	inline bool Module::log(bool _pred, const LogLevel _level, const char* _pFormat, Args ..._args) const
 	{
@@ -113,5 +126,119 @@ namespace spvgentwo
 		{
 			return variable<T>(_storageClass, _pName, constant(_initialValue));		
 		}
+	}
+
+	// returns TRUE if Func has bool return value and returned true (to exit loop)
+	template<class Func, class Container>
+	inline bool iterateInstructionContainer(Func _func, Container& _container)
+	{
+		static_assert(traits::is_invocable_v<Func, Instruction&>, "Func _func is not invocable: _func(Instruction& _instr)");
+		using Ret = decltype(stdrep::declval<Func>()(stdrep::declval<Instruction&>()));
+
+		for (auto& instr : _container)
+		{
+			if constexpr (stdrep::is_same_v<Ret, bool>)
+			{
+				if (_func(traits::to_ref(instr)))
+					return true;
+			}
+			else
+			{
+				_func(traits::to_ref(instr));
+			}
+		}
+
+		return false;
+	}
+
+	// if func returns a bool, TRUE indecates to abort iterating
+	// iterateModuleInstructions returns TRUE if not all instructions were enumarated because _func returned TRUE
+	template<class ModuleT, class Func>
+	inline bool iterateModuleInstructions(ModuleT& _module, Func _func)
+	{
+		static_assert(traits::is_invocable_v<Func, Instruction&>, "Func _func is not invocable: _func(Instruction& _instr)");
+		using Ret = decltype(stdrep::declval<Func>()(stdrep::declval<Instruction&>()));
+
+		if (iterateInstructionContainer(_func, _module.getCapabilities())) return true;
+		if (iterateInstructionContainer(_func, _module.getExtensions())) return true;
+
+		auto pred = [&_func](auto& instr) -> bool
+		{
+			if constexpr (stdrep::is_same_v<Ret, bool>)
+			{
+				return _func(instr);
+			}
+			else
+			{
+				_func(instr);
+				return false;
+			}
+		};
+
+		for (auto& [key, value] : _module.getExtInstrImports())
+		{
+			if (pred(value)) return true;
+		}
+
+		if (pred(_module.getMemoryModel())) return true;
+
+		for (auto& ep : _module.getEntryPoints())
+		{
+			if (pred(*ep.getEntryPoint())) return true;
+		}
+
+		if (iterateInstructionContainer(_func, _module.getExecutionModes())) return true;
+		if (iterateInstructionContainer(_func, _module.getSourceStrings())) return true;
+		if (iterateInstructionContainer(_func, _module.getNames())) return true;
+		if (iterateInstructionContainer(_func, _module.getModulesProcessed())) return true;
+		if (iterateInstructionContainer(_func, _module.getDecorations())) return true;
+		if (iterateInstructionContainer(_func, _module.getTypesAndConstants())) return true;
+		if (iterateInstructionContainer(_func, _module.getGlobalVariables())) return true;
+		if (iterateInstructionContainer(_func, _module.getUndefs())) return true;
+		if (iterateInstructionContainer(_func, _module.getLines())) return true;
+
+		auto iterateFuncion = [&_module, &pred, &_func](auto& f) -> bool
+		{
+			if (pred(*f.getFunction())) return true;
+			if (iterateInstructionContainer(_func, f.getParameters())) return true;
+			for (auto& bb : f)
+			{
+				if (pred(*bb.getLabel())) return true;
+				if (iterateInstructionContainer(_func, bb)) return true;
+				if (bb.getTerminator() == nullptr)
+				{
+					_module.logError("BasicBlock %s has no terminator instruction, missing opReturn?", bb.getName());
+					return true;
+				}
+			}
+			if (pred(*f.getFunctionEnd())) return true;
+			return false;
+		};
+
+		for (auto& fun : _module.getFunctions())
+		{
+			if (fun.empty())
+			{
+				if (iterateFuncion(fun)) return true;
+			}
+		}
+
+		// write functions with bodies
+		for (auto& fun : _module.getFunctions())
+		{
+			if (fun.empty() == false)
+			{
+				if (iterateFuncion(fun)) return true;
+			}
+		}
+		for (auto& ep : _module.getEntryPoints())
+		{
+			if (ep.empty() == false) // can entry points be empty forward decls?
+			{
+				if (iterateFuncion(ep)) return true;
+			}
+		}
+
+		return false;
 	}
 } // !spvgentwo

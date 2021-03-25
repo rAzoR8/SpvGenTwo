@@ -2,6 +2,7 @@
 
 #include "spvgentwo/String.h"
 #include "spvgentwo/Module.h"
+#include "spvgentwo/ModuleTemplate.inl"
 #include "spvgentwo/Grammar.h"
 
 #include <cstdio>
