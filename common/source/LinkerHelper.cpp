@@ -89,6 +89,64 @@ namespace spvgentwo
 
 	namespace LinkerHelper
 	{
+		bool transferInstruction(const Instruction* _pLibInstr, Instruction* _pTarget, HashMap<const Instruction*, Instruction*>& _cache)
+		{
+			Module* module = _pTarget->getModule();
+			if (module == nullptr) { return false; }
+
+			auto error = [&](auto&& ... args) {module->logError(args...); };
+
+			// instruction parent must be be set before calling this function
+			_pTarget->setOperation(_pLibInstr->getOperation());
+	
+			auto lookup = [&](const Instruction* lib) -> bool
+			{
+				if (Instruction** ppTarget = _cache[lib]; ppTarget != nullptr)
+				{
+					_pTarget->addOperand(*ppTarget);
+					return true;
+				}
+				else
+				{
+					error("Operand instruction not found");
+					return false;
+				}
+			};
+
+			if (_pTarget->hasResultType())
+			{
+				lookup(_pLibInstr->getResultTypeInstr());
+			}
+			if (_pTarget->hasResult())
+			{
+				_pTarget->addOperand(InvalidId);
+			}
+
+			for (auto it = _pLibInstr->getFirstActualOperand(), end = _pLibInstr->end(); it != end; ++it)
+			{
+				if (it->isLiteral())
+				{
+					_pTarget->addOperand(*it);
+				}
+				else if (it->isInstruction())
+				{
+					if (lookup(it->getInstruction()) == false) return false;
+				}
+				else if (it->isBranchTarget())
+				{
+					if (lookup(it->getBranchTarget()->getLabel()) == false) return false;
+				}
+				else
+				{
+					error("Instruction has unresolved ID operand, module needs to be resolved by resolveIDs() before importing a using it as import library.");
+					return false;
+				}
+			}
+
+			_cache.emplaceUnique(_pLibInstr, _pTarget);
+			return true;
+		}
+
 		bool importSymbolImpl(const Module& _lib, Module& _consumer, const Instruction* _libSymbol, Instruction* _consumerSymbol, const String& _name)
 		{
 			auto error = [&](auto&& ... args) {_consumer.logError(args...); };
