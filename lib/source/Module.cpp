@@ -155,6 +155,11 @@ spvgentwo::Module::~Module()
 
 void spvgentwo::Module::reset()
 {
+	m_spvVersion = spv::Version;
+	m_spvGenerator = GeneratorId;
+	m_spvBound = 0u;
+	m_spvSchema = 0u;
+
 	m_Functions.clear();
 	m_EntryPoints.clear();
 
