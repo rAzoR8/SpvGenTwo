@@ -4,6 +4,8 @@
 #include "spvgentwo/Module.h"
 #include "spvgentwo/ModuleTemplate.inl"
 
+#include "spvgentwo/HashMap.h"
+
 bool spvgentwo::LinkerHelper::removeFunctionBody(Function& _func)
 {
 	Module* module = _func.getModule();
@@ -79,4 +81,127 @@ bool spvgentwo::LinkerHelper::addLinkageDecorateForUsedGlobalVariables(const Fun
 	}
 
 	return result;
+}
+
+namespace spvgentwo 
+{
+	template<> struct Hasher<String> { Hash64 operator()(const String& _str, Hash64 _seed = detail::Offset) const noexcept { FNV1aHasher h(_seed); h(_str.data(), _str.size()); return h; } };
+
+	namespace LinkerHelper
+	{
+		bool importSymbolImpl(const Module& _lib, Module& _consumer, const Instruction* _libSymbol, Instruction* _consumerSymbol, const String& _name)
+		{
+			auto error = [&](auto&& ... args) {_consumer.logError(args...); };
+			auto warning = [&](auto&& ... args) {_consumer.logWarning(args...); };
+			auto info = [&](auto&& ... args) {_consumer.logInfo(args...); };
+			auto debug = [&](auto&& ... args) {_consumer.logDebug(args...); };
+
+			if (_libSymbol->getOperation() != _consumerSymbol->getOperation())
+			{
+				return false;
+			}
+
+			// TODO: copy types, decorates (bindings etc), names
+
+			if (*_libSymbol == spv::Op::OpVariable)
+			{
+			
+			}
+			else if (*_libSymbol == spv::Op::OpFunction)
+			{
+			
+			}
+			else
+			{
+				error("%s symbol must be OpVariable or OpFunction", _name.c_str());
+				return false;
+			}
+
+			return true;
+		}
+	} // !LinkerHelper
+} // !spvgentwo
+
+bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, const LinkerOptions& _options, IAllocator* _pAllocator)
+{
+	if(_pAllocator == nullptr)
+	{
+		_pAllocator = _consumer.getAllocator();
+	}
+
+	auto info = [&](auto&& ... args) {_consumer.logInfo(args...); };
+	auto debug = [&](auto&& ... args) {_consumer.logDebug(args...); };
+
+	const auto version = _lib.getSpvVersion() > _consumer.getSpvVersion() ? _lib.getSpvVersion() : _consumer.getSpvVersion();
+	_consumer.setSpvVersion(version);
+
+	HashMap<String, const Instruction*> exportTable(_pAllocator);
+
+	// build import table
+	for (const Instruction& deco : _lib.getDecorations())
+	{
+		if (auto it = deco.getFirstActualOperand(); it != nullptr && deco == spv::Op::OpDecorate && it->isInstruction())
+		{
+			const Instruction* symbol{ it->getInstruction() };
+			if (static_cast<spv::Decoration>((++it)->getLiteral().value) == spv::Decoration::LinkageAttributes)
+			{
+				if (spv::LinkageType{ (++it)->getLiteral().value } == spv::LinkageType::Export) 
+				{
+					String name(_pAllocator);
+					getLiteralString(name, ++it, deco.end());
+					debug("Add export symbol %s [%llu]", name.c_str(), hash(name));
+					exportTable.emplace(stdrep::move(name), symbol);
+				}
+			}			
+		}
+	}
+
+	bool removedAllLinkageDecorates = true;
+	// consume inputs
+	for (auto it = _consumer.getDecorations().begin(), end = _consumer.getDecorations().end(); it != end;)
+	{
+		if (auto op = it->getFirstActualOperand(); *it == spv::Op::OpDecorate && op != nullptr && op->isInstruction())
+		{
+			Instruction* importSymbol{ op->getInstruction() };
+			if (static_cast<spv::Decoration>((++op)->getLiteral().value) == spv::Decoration::LinkageAttributes)
+			{
+				const spv::LinkageType type{ (++op)->getLiteral().value };
+				if (type == spv::LinkageType::Import)
+				{
+					String name(_pAllocator);
+					getLiteralString(name, ++op, it->end());
+					debug("Trying to resolve import symbol %s [%llu]", name.c_str(), hash(name));
+
+					if (auto ppSymbol = exportTable[name]; ppSymbol != nullptr)
+					{
+						const Instruction* exportSymbol = *ppSymbol;
+
+						if (importSymbolImpl(_lib, _consumer, exportSymbol, importSymbol, name))
+						{
+							// remove if successful
+							it = _consumer.getDecorations().erase(it);
+							continue;
+						}
+					}
+					else
+					{
+						info("Symbol %s not found in import module", name.c_str());
+						removedAllLinkageDecorates = false;
+					}
+				}
+				else // module has exports on its own, so we need to preserve linkage capabilities
+				{
+					removedAllLinkageDecorates = false;
+				}
+			}
+		}
+		++it;
+	}
+
+	if (removedAllLinkageDecorates) 
+	{
+		// TODO: remove Linkage capabilities from _consumer if it does not export any symbols itself
+	}
+
+	return false;
 }

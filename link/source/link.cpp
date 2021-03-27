@@ -80,15 +80,40 @@ int patch(Module& _module, const HeapList<Target>& _targets, const char* _out)
 	return 0;
 }
 
+int link(HeapList<Module>& _libs, Module& _target, const LinkerHelper::LinkerOptions& _options, const char* _out)
+{
+	for (const Module& lib : _libs)
+	{
+		if (LinkerHelper::import(lib, _target, _options) == false)
+		{
+			return -1;
+		}
+	}
+
+	BinaryFileWriter writer(_out);
+	if (writer.isOpen() == false)
+	{
+		g_logger.logError("Failed to open %s", _out);
+		return -1;
+	}
+
+	_target.write(&writer);
+
+	return 0;
+}
+
 int main(int argc, char* argv[])
 {
 	const char* out = nullptr;
 	const char* patchspv = nullptr;
+	const char* targetspv = nullptr;
 	
 	HeapList<Target> targets;
 	HeapList<Module> libs;
+	LinkerHelper::LinkerOptions options{};
 
 	Module patchModule(&g_alloc, spv::Version, &g_logger);
+	Module targetModule(&g_alloc, spv::Version, &g_logger);
 
 	int i = 1u;
 	auto addTarget = [&](spv::LinkageType type)
@@ -153,6 +178,20 @@ int main(int argc, char* argv[])
 				return -1;
 			}
 		}
+		else if (i + 1 < argc && strcmp(arg, "--target") == 0)
+		{
+			targetspv = argv[++i];
+			BinaryFileReader reader(targetspv);
+			if (reader.isOpen() == false)
+			{
+				g_logger.logError("Failed to open %s", targetspv);
+				return -1;
+			}
+			else if (targetModule.readAndInit(&reader, g_gram) == false)
+			{
+				return -1;
+			}
+		}
 		else if (i + 1 < argc && strcmp(arg, "--out") == 0)
 		{
 			out = argv[++i];
@@ -170,6 +209,11 @@ int main(int argc, char* argv[])
 	if (targets.empty() == false)
 	{
 		return patch(patchModule, targets, out != nullptr ? out : patchspv);
+	}
+
+	if (libs.empty() == false)
+	{
+		return link(libs, targetModule, options, out != nullptr ? out : targetspv);
 	}
 
 	return 0;
