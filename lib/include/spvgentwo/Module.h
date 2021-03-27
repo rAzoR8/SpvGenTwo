@@ -33,11 +33,19 @@ namespace spvgentwo
 		void reset();
 
 		unsigned int getSpvVersion() const { return m_spvVersion; }
+		void setSpvVersion(unsigned int _version) { m_spvVersion = _version; }
+
 		unsigned int getMajorVersion() const { return spvgentwo::getMajorVersion(m_spvVersion); }
 		unsigned int getMinorVersion() const { return spvgentwo::getMinorVersion(m_spvVersion); }
+
 		unsigned int getSpvGenerator() const { return m_spvGenerator; }
+		void setSpvGenerator(unsigned int _generator) { m_spvGenerator = _generator; }
+
 		unsigned int getSpvBound() const { return m_spvBound; }
+		void setSpvBound(unsigned int _bound) { m_spvBound = _bound; }
+
 		unsigned int getSpvSchema() const { return m_spvSchema; }
+		void setSpvSchema(unsigned int _schema) { m_spvSchema = _schema; }
 
 		IAllocator* getAllocator() const { return m_pAllocator; }
 
@@ -363,6 +371,7 @@ namespace spvgentwo
 		List<Instruction> m_Decorations; // opDecorate, opMemberDecorate
 		
 		List<Instruction> m_TypesAndConstants;
+
 		HashMap<Type, Instruction*> m_TypeToInstr;
 		HashMap<const Instruction*, const Type*> m_InstrToType;
 		HashMap<Constant, Instruction*> m_ConstantToInstr;
