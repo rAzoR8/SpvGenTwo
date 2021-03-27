@@ -168,14 +168,14 @@ namespace spvgentwo
 
 		// converts any spv::Id operand to Instruction pointer operands
 		// resets resultId to InvalidId for new assignment
-		bool resolveIDs();
+		bool resolveIDs(IAllocator* _pAllocator = nullptr);
 
 		// create 'Type' and 'Constant' infos from OpType### and OpConstant### instructions in m_TypesAndConstants and add them to m_TypeToInstr and m_InstrToType
 		// resolveIDs() must have been called before to allow sub type lookup
-		bool reconstructTypeAndConstantInfo();
+		bool reconstructTypeAndConstantInfo(IAllocator* _pAllocator = nullptr);
 
 		// recover the strings from OpName instructions for m_NameLookup
-		bool reconstructNames();
+		bool reconstructNames(IAllocator* _pAllocator = nullptr);
 
 		// automatically assigns IDs if _assingIDs (otherwise m_Bounds must be set) and serializes module to IWriter
 		// IDs dont need to be assigned if the module was parsed using read()

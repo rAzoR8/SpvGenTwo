@@ -656,11 +656,11 @@ spvgentwo::spv::Id spvgentwo::Module::assignIDs()
 	return spv::Id{ maxId };
 }
 
-bool spvgentwo::Module::resolveIDs()
+bool spvgentwo::Module::resolveIDs(IAllocator* _pAllocator)
 {
 	bool success = true;
 
-	HashMap<spv::Id, Instruction*> idToPtr(m_pAllocator);
+	HashMap<spv::Id, Instruction*> idToPtr(_pAllocator != nullptr ? _pAllocator : m_pAllocator);
 
 	auto populate = [&idToPtr, &success, this](Instruction& _instr) -> bool
 	{
@@ -730,7 +730,7 @@ bool spvgentwo::Module::resolveIDs()
 	return success;
 }
 
-bool spvgentwo::Module::reconstructTypeAndConstantInfo()
+bool spvgentwo::Module::reconstructTypeAndConstantInfo(IAllocator* _pAllocator)
 {
 	m_InstrToType.clear();
 	m_TypeToInstr.clear();
@@ -745,7 +745,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 
 		if (instr.isType())
 		{
-			Type t(m_pAllocator);
+			Type t(_pAllocator != nullptr ? _pAllocator: m_pAllocator);
 			t.setType(instr.getOperation());
 
 			switch (instr.getOperation())
@@ -910,7 +910,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 		}
 		else if (instr.isSpecOrConstant())
 		{
-			Constant c(m_pAllocator);
+			Constant c(_pAllocator != nullptr ? _pAllocator : m_pAllocator);
 
 			c.setOperation(instr.getOperation());
 
@@ -992,7 +992,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo()
 	return success;
 }
 
-bool spvgentwo::Module::reconstructNames()
+bool spvgentwo::Module::reconstructNames(IAllocator* _pAllocator)
 {
 	m_NameLookup.clear();
 
@@ -1029,7 +1029,7 @@ bool spvgentwo::Module::reconstructNames()
 			continue;
 		}
 
-		String& name = m_NameLookup.emplace(target, MemberName{ m_pAllocator, memberIndex }).kv.value.name;
+		String& name = m_NameLookup.emplace(target, MemberName{ _pAllocator != nullptr ? _pAllocator : m_pAllocator, memberIndex }).kv.value.name;
 
 		getLiteralString(name, it.next(), instr.end());
 
