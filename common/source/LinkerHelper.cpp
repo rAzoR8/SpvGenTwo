@@ -1,4 +1,5 @@
 #include "common/LinkerHelper.h"
+#include "common/ReflectionHelper.h" // getDecorations
 
 #include "spvgentwo/Function.h"
 #include "spvgentwo/Module.h"
@@ -167,7 +168,9 @@ namespace spvgentwo
 			}
 			else if (*_libSymbol == spv::Op::OpFunction)
 			{
-			
+				// When resolving imported functions, the Function Control and all Function Parameter Attributes are taken from the function
+				// definition, and not from the function declaration.
+
 			}
 			else
 			{
@@ -189,13 +192,14 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 	auto info = [&](auto&& ... args) {_consumer.logInfo(args...); };
 	auto debug = [&](auto&& ... args) {_consumer.logDebug(args...); };
+	auto error = [&](auto&& ... args) {_consumer.logError(args...); };
 
 	const auto version = _lib.getSpvVersion() > _consumer.getSpvVersion() ? _lib.getSpvVersion() : _consumer.getSpvVersion();
 	_consumer.setSpvVersion(version);
 
 	HashMap<String, const Instruction*> exportTable(_pAllocator);
 
-	// build import table
+	// build export table
 	for (const Instruction& deco : _lib.getDecorations())
 	{
 		if (auto it = deco.getFirstActualOperand(); it != nullptr && deco == spv::Op::OpDecorate && it->isInstruction())
@@ -214,9 +218,20 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		}
 	}
 
-	bool removedAllLinkageDecorates = true;
+	struct ImportSymbol
+	{
+		String name;
+		const Instruction* lib = nullptr;
+		Instruction* consume = nullptr;
+		BasicBlock::Iterator decoIt = nullptr;
+	};
+
+	List<ImportSymbol> iVars(_pAllocator);
+	List<ImportSymbol> iFuncs(_pAllocator);
+
+	bool hasExports = true;
 	// consume inputs
-	for (auto it = _consumer.getDecorations().begin(), end = _consumer.getDecorations().end(); it != end;)
+	for (auto it = _consumer.getDecorations().begin(), end = _consumer.getDecorations().end(); it != end; ++it)
 	{
 		if (auto op = it->getFirstActualOperand(); *it == spv::Op::OpDecorate && op != nullptr && op->isInstruction())
 		{
@@ -234,29 +249,54 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 					{
 						const Instruction* exportSymbol = *ppSymbol;
 
-						if (importSymbolImpl(_lib, _consumer, exportSymbol, importSymbol, name))
+						if (*exportSymbol == spv::Op::OpVariable)
 						{
-							// remove if successful
-							it = _consumer.getDecorations().erase(it);
-							continue;
+							iVars.emplace_back(stdrep::move(name), exportSymbol, importSymbol, it);
+						}
+						else if (*exportSymbol == spv::Op::OpFunction)
+						{
+							iFuncs.emplace_back(stdrep::move(name), exportSymbol, importSymbol, it);
+						}
+						else
+						{
+							error("%s symbol must be OpVariable or OpFunction", name.c_str());
+							return false;
 						}
 					}
 					else
 					{
 						info("Symbol %s not found in import module", name.c_str());
-						removedAllLinkageDecorates = false;
 					}
 				}
 				else // module has exports on its own, so we need to preserve linkage capabilities
 				{
-					removedAllLinkageDecorates = false;
+					hasExports = false;
 				}
 			}
 		}
-		++it;
 	}
 
-	if (removedAllLinkageDecorates) 
+	bool allImportsResolved = true;
+	// import variables first in case they are used in the imported function
+	for (const ImportSymbol& var : iVars)
+	{
+		if (importSymbolImpl(_lib, _consumer, var.lib, var.consume, var.name))
+		{
+			_consumer.getDecorations().erase(var.decoIt); // remove if successful
+		}
+		else { allImportsResolved = false; }
+	}
+
+	for (const ImportSymbol& func : iFuncs)
+	{
+		if (importSymbolImpl(_lib, _consumer, func.lib, func.consume, func.name))
+		{
+			_consumer.getDecorations().erase(func.decoIt); // remove if successful
+		}
+		else { allImportsResolved = false; }
+	}
+
+	if (hasExports && allImportsResolved) 
 	{
 		// TODO: remove Linkage capabilities from _consumer if it does not export any symbols itself
 	}
