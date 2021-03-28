@@ -101,10 +101,10 @@ const HeapHashMap<vk::DescriptorType, const char*> DescriptorTypeNames(
 	vk::DescriptorType::VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV, (const char*)"VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV"
 );
 
-template <template <class> class Container>
-void getList(const Container<Instruction>& _container, List<const Instruction*>& _instructions)
+template <template <class> class Container, class Instr>
+void getList(const Container<Instruction>& _container, List<Instr*>& _instructions)
 {
-	for (const Instruction& instr : _container)
+	for (auto& instr : _container)
 	{
 		_instructions.emplace_back(&instr);
 	}
@@ -206,7 +206,7 @@ void printVariable(IModulePrinter& _printer, const Instruction& _instr, const Gr
 
 void printDecorationsForTargets(IModulePrinter& _printer, const List<Instruction>& _targets, const Grammar& _gram)
 {
-	HeapList<const Instruction*> decorations;
+	HeapList<Instruction*> decorations;
 
 	for (const Instruction& target : _targets)
 	{
@@ -387,7 +387,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	auto printDecorations = [&decorationsToPrint, &gram, &printer](const List<const Instruction*>& _decorations)
+	auto printDecorations = [&decorationsToPrint, &gram, &printer](const List<Instruction*>& _decorations)
 	{
 		for (const Instruction* decoInstr : _decorations)
 		{
@@ -408,7 +408,7 @@ int main(int argc, char* argv[])
 		}
 	};
 
-	List<const Instruction*> decorations(&alloc);
+	List<Instruction*> decorations(&alloc);
 
 	if (listDecorations)
 	{
