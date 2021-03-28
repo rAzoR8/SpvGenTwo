@@ -21,12 +21,16 @@ namespace spvgentwo
 		// get all instructions which have been decorated with _decoration & _value
 		void getVariablesWithDecoration(const Module& _module, spv::Decoration _decoration, List<const Instruction*>& _outTargets, const unsigned int* _pValue = nullptr);
 
-		// get call func with instructions which have been decorated with _decoration & _value (implemented in ReflectionHelperTemplate.inl)
+		// call func with instructions which have been decorated with _decoration & _value (implemented in ReflectionHelperTemplate.inl)
 		template <class Func>
 		void getVariablesWithDecorationFunc(const Module& _module, spv::Decoration _decoration, Func _func, const unsigned int* _pValue = nullptr);
 
 		// get list of OpDecorate, OpMemberDecorate etc that target _pTarget in the instruction's module
-		void getDecorations(const Instruction* _pTarget, List<const Instruction*>& _outDecorations);
+		void getDecorations(const Instruction* _pTarget, List<Instruction*>& _outDecorations);
+
+		// call _func for every OpDecorate# with _pTarget
+		template <class Func>
+		void getDecorationsFunc(const Instruction* _pTarget, Func _func);
 
 		// given OpDecorate or OpMemberDecorate, returns spv::Decorations, returns Decoration::Max if invalid input parameter
 		spv::Decoration getSpvDecorationKindFromDecoration(const Instruction* _pDecoration);

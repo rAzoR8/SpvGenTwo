@@ -1,6 +1,7 @@
 #pragma once
 
 #include "spvgentwo/Module.h"
+#include "ReflectionHelper.h"
 
 // get call func with instructions which have been decorated with _decoration & _value
 template <class Func>
@@ -36,6 +37,21 @@ void spvgentwo::ReflectionHelper::getVariablesWithDecorationFunc(const Module& _
 			{
 				_func(target->getInstruction());
 			}
+		}
+	}
+}
+
+template<class Func>
+void spvgentwo::ReflectionHelper::getDecorationsFunc(const Instruction* _pTarget, Func _func)
+{
+	if (_pTarget == nullptr || _pTarget->getModule() == nullptr)
+		return;
+
+	for (Instruction& decoration : _pTarget->getModule()->getDecorations())
+	{
+		if (*decoration.getFirstActualOperand() == _pTarget) // check target
+		{
+			_func(&decoration);
 		}
 	}
 }
