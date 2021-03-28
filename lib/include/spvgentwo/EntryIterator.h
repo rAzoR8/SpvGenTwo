@@ -39,11 +39,9 @@ namespace spvgentwo
 		T* operator->() { return m_pEntry->operator->(); }
 		const T* operator->() const { return m_pEntry->operator->(); }
 
-		Entry<T>* entry() { return m_pEntry; }
-		const Entry<T>* entry()  const { return m_pEntry; }
+		Entry<T>* entry() const { return m_pEntry; }
 
-		operator Entry<T>* () { return m_pEntry; }
-		operator const Entry<T>* ()  const { return m_pEntry; }
+		operator Entry<T>* () const { return m_pEntry; }
 
 	private:
 		Entry<T>* m_pEntry = nullptr;
