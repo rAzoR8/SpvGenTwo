@@ -1,5 +1,6 @@
 #include "common/LinkerHelper.h"
 #include "common/ReflectionHelper.h" // getDecorations
+#include "common/ReflectionHelperTemplate.inl"
 
 #include "spvgentwo/Function.h"
 #include "spvgentwo/Module.h"
@@ -148,7 +149,7 @@ namespace spvgentwo
 			return true;
 		}
 
-		bool importSymbolImpl(const Module& _lib, Module& _consumer, const Instruction* _libSymbol, Instruction* _consumerSymbol, const String& _name)
+		bool importSymbolImpl(const Module& _lib, Module& _consumer, const Instruction* _libSymbol, Instruction* _consumerSymbol, const String& _name, HashMap<const Instruction*, Instruction*>& _cache)
 		{
 			auto error = [&](auto&& ... args) {_consumer.logError(args...); };
 			auto warning = [&](auto&& ... args) {_consumer.logWarning(args...); };
@@ -160,17 +161,68 @@ namespace spvgentwo
 				return false;
 			}
 
-			// TODO: copy types, decorates (bindings etc), names
+			const Type* libType = _libSymbol->getType();
+			const Type* consumerType = _consumerSymbol->getType();
 
-			if (*_libSymbol == spv::Op::OpVariable)
+			if (libType == nullptr || consumerType == nullptr) return false;
+
+			if (*libType != *consumerType)
 			{
-			
+				error("Type mismatch for symbol %s", _name.c_str());
+				return false;
 			}
-			else if (*_libSymbol == spv::Op::OpFunction)
+
+			// TODO: auto import decorations, names etc
+			auto importGlobalDependencies = [&](const Instruction* _libInstr) -> bool
+			{
+				// for Names, Decorates etc referencing _libInstr:
+				// transferInstruction(instr, new _consumerInstr, cache);
+				bool success = true;
+
+				ReflectionHelper::getDecorationsFunc(_libSymbol, [&](const Instruction* deco) {
+					if (transferInstruction(deco, _consumer.addDecorationInstr(), _cache) == false)
+					{
+						success = false;
+					}
+				});
+
+				ReflectionHelper::getNamesFunc(_libSymbol, [&](const Instruction* name) {
+					if (transferInstruction(name, _consumer.addNameInstr(), _cache) == false)
+					{
+						success = false;
+					}
+				});
+
+				return success;
+			};
+
+			if (*_libSymbol == spv::Op::OpVariable) // && _options.importDecorationsAndNames
+			{
+				return importGlobalDependencies(_libSymbol);
+			}
+			else if (*_libSymbol == spv::Op::OpFunction && _libSymbol->getFunction() != nullptr && _consumerSymbol->getFunction() != nullptr)
 			{
 				// When resolving imported functions, the Function Control and all Function Parameter Attributes are taken from the function
 				// definition, and not from the function declaration.
 
+				Function& cosumerFunc = *_consumerSymbol->getFunction();
+				for (const BasicBlock& bbLib : *_libSymbol->getFunction())
+				{
+					BasicBlock& bbConsumer = cosumerFunc.addBasicBlock(bbLib.getName());
+					for (const Instruction& iLib : bbLib)
+					{
+						if (iLib == spv::Op::OpFunctionCall)
+						{
+							// TODO: check if function was imported
+						}
+
+						if (importGlobalDependencies(&iLib) == false)
+							return false;
+
+						if (transferInstruction(&iLib, bbConsumer.addInstruction(), _cache) == false) 
+							return false;
+					}
+				}
 			}
 			else
 			{
@@ -276,11 +328,14 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		}
 	}
 
+	// lib -> consumer
+	HashMap<const Instruction*, Instruction*> cache(_pAllocator);
+
 	bool allImportsResolved = true;
 	// import variables first in case they are used in the imported function
 	for (const ImportSymbol& var : iVars)
 	{
-		if (importSymbolImpl(_lib, _consumer, var.lib, var.consume, var.name))
+		if (importSymbolImpl(_lib, _consumer, var.lib, var.consume, var.name, cache))
 		{
 			_consumer.getDecorations().erase(var.decoIt); // remove if successful
 		}
@@ -289,7 +344,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 	for (const ImportSymbol& func : iFuncs)
 	{
-		if (importSymbolImpl(_lib, _consumer, func.lib, func.consume, func.name))
+		if (importSymbolImpl(_lib, _consumer, func.lib, func.consume, func.name, cache))
 		{
 			_consumer.getDecorations().erase(func.decoIt); // remove if successful
 		}
