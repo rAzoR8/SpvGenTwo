@@ -28,9 +28,13 @@ namespace spvgentwo
 		// get list of OpDecorate, OpMemberDecorate etc that target _pTarget in the instruction's module
 		void getDecorations(const Instruction* _pTarget, List<Instruction*>& _outDecorations);
 
-		// call _func for every OpDecorate# with _pTarget
+		// call _func(Instruction*) for every OpDecorate# with _pTarget
 		template <class Func>
 		void getDecorationsFunc(const Instruction* _pTarget, Func _func);
+
+		// call _func(Instruction*) for every OpName# with _pTarget
+		template <class Func>
+		void getNamesFunc(const Instruction* _pTarget, Func _func);
 
 		// given OpDecorate or OpMemberDecorate, returns spv::Decorations, returns Decoration::Max if invalid input parameter
 		spv::Decoration getSpvDecorationKindFromDecoration(const Instruction* _pDecoration);

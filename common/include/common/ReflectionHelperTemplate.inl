@@ -55,3 +55,18 @@ void spvgentwo::ReflectionHelper::getDecorationsFunc(const Instruction* _pTarget
 		}
 	}
 }
+
+template<class Func>
+void spvgentwo::ReflectionHelper::getNamesFunc(const Instruction* _pTarget, Func _func)
+{
+	if (_pTarget == nullptr || _pTarget->getModule() == nullptr)
+		return;
+
+	for (Instruction& name : _pTarget->getModule()->getNames())
+	{
+		if (*name.getFirstActualOperand() == _pTarget) // check target
+		{
+			_func(&name);
+		}
+	}
+}
