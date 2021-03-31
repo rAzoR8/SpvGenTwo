@@ -5,6 +5,7 @@
 #include "spvgentwo/Function.h"
 #include "spvgentwo/Module.h"
 #include "spvgentwo/ModuleTemplate.inl"
+#include "spvgentwo/InstructionTemplate.inl"
 
 #include "spvgentwo/HashMap.h"
 
@@ -49,6 +50,28 @@ bool spvgentwo::LinkerHelper::removeFunctionBody(Function& _func)
 	_func.clear();
 
 	return true;
+}
+
+spvgentwo::Instruction* spvgentwo::LinkerHelper::addLinkageDecoration(Instruction* _varOrFunc, spv::LinkageType _linkage, const char* name)
+{
+	if (_varOrFunc == nullptr)
+		return nullptr;
+
+	Module* module = _varOrFunc->getModule();
+
+	if (module == nullptr || _linkage == spv::LinkageType::Max)
+	{
+		return nullptr;
+	}
+
+	if (*_varOrFunc == spv::Op::OpFunction || *_varOrFunc == spv::Op::OpVariable)
+	{
+		Instruction* deco = module->addDecorationInstr();
+		deco->opDecorate(_varOrFunc, spv::Decoration::LinkageAttributes, name, _linkage);
+		return deco;
+	}
+
+	return nullptr;
 }
 
 bool spvgentwo::LinkerHelper::addLinkageDecorateForUsedGlobalVariables(const Function& _func, spv::LinkageType _linkage, IAllocator* _pAllocator)
