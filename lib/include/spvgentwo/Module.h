@@ -16,9 +16,7 @@ namespace spvgentwo
 	public:
 		struct MemberName { String name; unsigned int member = 0u; };
 
-		Module() = default;
-
-		Module(IAllocator* _pAllocator, const unsigned int _spvVersion = spv::Version,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
+		Module(IAllocator* _pAllocator = nullptr, const unsigned int _spvVersion = spv::Version,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
 		Module(IAllocator* _pAllocator, const unsigned int _spvVersion, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
 
 		Module(Module&& _other) noexcept;
@@ -177,9 +175,18 @@ namespace spvgentwo
 		// recover the strings from OpName instructions for m_NameLookup
 		bool reconstructNames(IAllocator* _pAllocator = nullptr);
 
-		// automatically assigns IDs if _assingIDs (otherwise m_Bounds must be set) and serializes module to IWriter
+		// serializes module to IWriter, IDs must have been assigned using assignIDs()
 		// IDs dont need to be assigned if the module was parsed using read()
-		void write(IWriter* _pWriter, const bool _assingIDs = true);
+		// returns false if IWriter::put failed
+		bool write(IWriter* _pWriter) const;
+
+		// calls finalizeGlobalInterface() on EntryPoints
+		// automatically assigns IDs if _assingIDs (otherwise m_Bounds must be set & result IDs properly enumerated)
+		// serializes module to IWriter
+		bool finalizeAndWrite(IWriter* _pWriter, const bool _assingIDs = true);
+
+		// calls finalizeGlobalInterface() on all EntryPoints, adds referenced global variables to OpEntryPoint parameters
+		void finalizeEntryPoints();
 
 		// parse a binary SPIR-V program from IReader using _grammer generated from SPIR-V machinereadable grammer json
 		bool read(IReader* _pReader, const Grammar& _grammar);

@@ -23,7 +23,7 @@ spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersio
 	m_Capabilities(_pAllocator),
 	m_Extensions(_pAllocator),
 	m_ExtInstrImport(_pAllocator),
-	m_MemoryModel(this),
+	m_MemoryModel(this, spv::Op::OpMemoryModel),
 	m_ExecutionModes(_pAllocator),
 	m_SourceStrings(_pAllocator),
 	m_Names(_pAllocator),
@@ -40,7 +40,10 @@ spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersio
 	m_Lines(_pAllocator),
 	m_errorInstr(this)
 {
-	setMemoryModel(_addressModel, _memoryModel);
+	if (_pAllocator != nullptr)
+	{
+		setMemoryModel(_addressModel, _memoryModel);	
+	}
 }
 
 spvgentwo::Module::Module(Module&& _other) noexcept:
@@ -90,8 +93,8 @@ spvgentwo::Module& spvgentwo::Module::operator=(Module&& _other) noexcept
 	m_Capabilities = stdrep::move(_other.m_Capabilities);
 	m_Extensions = stdrep::move(_other.m_Extensions);
 	m_ExtInstrImport = stdrep::move(_other.m_ExtInstrImport);
-	m_MemoryModel = stdrep::move(m_MemoryModel);
-	m_ExecutionModes = stdrep::move(m_ExecutionModes);
+	m_MemoryModel = stdrep::move(_other.m_MemoryModel);
+	m_ExecutionModes = stdrep::move(_other.m_ExecutionModes);
 	m_SourceStrings = stdrep::move(_other.m_SourceStrings);
 	m_Names = stdrep::move(_other.m_Names);
 	m_ModuleProccessed = stdrep::move(_other.m_ModuleProccessed);
@@ -1043,7 +1046,37 @@ bool spvgentwo::Module::reconstructNames(IAllocator* _pAllocator)
 	return success;
 }
 
-void spvgentwo::Module::write(IWriter* _pWriter, const bool _assingIDs)
+bool spvgentwo::Module::write(IWriter* _pWriter) const
+{
+	// write header
+	if (_pWriter->put(spv::MagicNumber) == false) return false;
+	if (_pWriter->put(m_spvVersion) == false) return false;
+	if (_pWriter->put(GeneratorId) == false) return false;
+	if (_pWriter->put(m_spvBound) == false) return false;
+	if (_pWriter->put(m_spvSchema) == false) return false;
+
+	auto writeInstr = [_pWriter](const Instruction& instr) -> bool
+	{
+		return instr.write(_pWriter) == false;
+	};
+
+	// iterateModuleInstructions returns TRUE if not all instructions were enumarated because _func returned TRUE
+	return !iterateInstructions(writeInstr);
+}
+
+bool spvgentwo::Module::finalizeAndWrite(IWriter* _pWriter, const bool _assingIDs)
+{
+	finalizeEntryPoints();
+
+	if (_assingIDs)
+	{
+		assignIDs(); // overwrites m_spvBound
+	}
+
+	return write(_pWriter);
+}
+
+void spvgentwo::Module::finalizeEntryPoints()
 {
 	// finalize entry points interfaces
 	for (EntryPoint& ep : m_EntryPoints)
@@ -1057,25 +1090,6 @@ void spvgentwo::Module::write(IWriter* _pWriter, const bool _assingIDs)
 			ep.finalizeGlobalInterface(GlobalInterfaceVersion::SpirV14_x);
 		}
 	}
-
-	if (_assingIDs)
-	{
-		assignIDs(); // overwrites m_spvBound
-	}
-
-	// write header
-	_pWriter->put(spv::MagicNumber);
-	_pWriter->put(m_spvVersion);
-	_pWriter->put(GeneratorId);
-	_pWriter->put(m_spvBound);
-	_pWriter->put(m_spvSchema);
-
-	auto writeInstr = [_pWriter](Instruction& instr)
-	{
-		instr.write(_pWriter);
-	};
-
-	iterateInstructions(writeInstr);
 }
 
 bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
