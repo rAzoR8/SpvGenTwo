@@ -66,7 +66,7 @@ namespace spvgentwo
 		Operand(const literal_t _value) : type(Type::Literal), instruction(nullptr) { literal = _value; }
 		Operand(const spv::Id _resutlId) : type(Type::Id), instruction(nullptr) { id = _resutlId; }
 
-		void write(IWriter* _pWriter) const;
+		bool write(IWriter* _pWriter) const;
 
 		Operand& operator=(const Operand& _other);
 		Operand& operator=(Operand&& _other) noexcept;
