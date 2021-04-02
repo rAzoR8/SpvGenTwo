@@ -132,8 +132,8 @@ namespace spvgentwo
 		// get opcode encoded with instruction word count [16 bit op code, 16 bit number of operand words] 
 		unsigned int getOpCode() const;
 
-		// serialize instruction operands to the IWriter
-		void write(IWriter* _pWriter);
+		// serialize instruction operands to the IWriter, returns false if IWriter::put returned false 
+		bool write(IWriter* _pWriter) const;
 
 		// deserialize instruction operands from this IReader
 		bool readOperands(IReader* _pReader, const Grammar& _grammar, spv::Op _op, unsigned int _operandCount);

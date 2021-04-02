@@ -286,14 +286,18 @@ bool spvgentwo::Instruction::isSpecOrConstant() const
 	return isSpecOrConstantOp(m_Operation);
 }
 
-void spvgentwo::Instruction::write(IWriter* _pWriter)
+bool spvgentwo::Instruction::write(IWriter* _pWriter) const
 {
-	_pWriter->put(getOpCode());
+	if (_pWriter->put(getOpCode()) == false)
+		return false;
 	
 	for (const Operand& operand : *this)
 	{
-		operand.write(_pWriter);
+		if (operand.write(_pWriter) == false)
+			return false;
 	}
+
+	return true;
 }
 
 bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _grammar, spv::Op _op, unsigned int _operandCount)
