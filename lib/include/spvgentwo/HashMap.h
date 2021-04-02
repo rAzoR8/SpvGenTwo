@@ -102,10 +102,13 @@ namespace spvgentwo
 	inline HashMap<Key, Value>::HashMap(IAllocator* _pAllocator, unsigned int _buckets) :
 		m_pAllocator(_pAllocator), m_Buckets(_buckets)
 	{
-		m_pBuckets = reinterpret_cast<Bucket*>(m_pAllocator->allocate(m_Buckets * sizeof(Bucket)));
-		for (auto i = 0u; i < m_Buckets; ++i)
+		if (m_pAllocator != nullptr)
 		{
-			new(m_pBuckets + i) Bucket(m_pAllocator);
+			m_pBuckets = reinterpret_cast<Bucket*>(m_pAllocator->allocate(m_Buckets * sizeof(Bucket)));
+			for (auto i = 0u; i < m_Buckets; ++i)
+			{
+				new(m_pBuckets + i) Bucket(m_pAllocator);
+			}
 		}
 	}
 
@@ -117,7 +120,7 @@ namespace spvgentwo
 		m_Elements(_other.m_Elements)
 	{
 		_other.m_pAllocator = nullptr;
-		_other.m_pBuckets = 0u;
+		_other.m_pBuckets = nullptr;
 		_other.m_Buckets = 0u;
 		_other.m_Elements = 0u;
 	}
@@ -160,7 +163,7 @@ namespace spvgentwo
 	template<class Key, class Value>
 	inline HashMap<Key, Value>& HashMap<Key, Value>::operator=(HashMap&& _other) noexcept
 	{
-		if (this != &_other) return *this;
+		if (this == &_other) return *this;
 
 		// free left side
 		destroy();
