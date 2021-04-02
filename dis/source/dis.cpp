@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
 		{
 			if (BinaryFileWriter writer("serialized.spv"); writer.isOpen())
 			{
-				module.write(&writer);
+				module.finalizeAndWrite(&writer);
 			}
 		}
 	}

@@ -7,9 +7,10 @@ using namespace spvgentwo;
 spvgentwo::Module examples::linkageLib(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
 	// create a new spir-v module
-	Module module(_pAllocator, spv::Version, spv::AddressingModel::Logical, spv::MemoryModel::GLSL450, _pLogger);
+	Module module(_pAllocator, spv::Version, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger);
 
 	// configure capabilities and extensions
+	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::Linkage);
 
 	Instruction* uniformVar = module.uniform<float>(u8"u_Time");
@@ -43,10 +44,11 @@ spvgentwo::Module examples::linkageLib(spvgentwo::IAllocator* _pAllocator, spvge
 	// void main();
 	{
 		EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, u8"main");
+		entry.addExecutionMode(spv::ExecutionMode::OriginUpperLeft);
 
 		Instruction* someValue = module.constant(16.f);
 
-		entry->call(&funcAddGlobalTime, someValue ); // call add(s, s)
+		entry->call(&funcAddGlobalTime, someValue); // call add(s, s)
 		entry->opReturn();
 	}
 
@@ -56,9 +58,10 @@ spvgentwo::Module examples::linkageLib(spvgentwo::IAllocator* _pAllocator, spvge
 spvgentwo::Module examples::linkageConsumer(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
 	// create a new spir-v module
-	Module module(_pAllocator, spv::Version, spv::AddressingModel::Logical, spv::MemoryModel::GLSL450, _pLogger);
+	Module module(_pAllocator, spv::Version, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger);
 
 	// configure capabilities and extensions
+	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::Linkage);
 
 	Instruction* uniformVar = module.uniform<float>(u8"u_Time");
@@ -75,7 +78,7 @@ spvgentwo::Module examples::linkageConsumer(spvgentwo::IAllocator* _pAllocator, 
 	// void main();
 	{
 		EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, u8"main");
-		BasicBlock& bb = *entry; // get entry block to this function
+		entry.addExecutionMode(spv::ExecutionMode::OriginUpperLeft);
 
 		Instruction* someValue = module.constant(16.f);
 
@@ -86,7 +89,8 @@ spvgentwo::Module examples::linkageConsumer(spvgentwo::IAllocator* _pAllocator, 
 	return module;
 }
 
-spvgentwo::Module examples::linkageLinked(const spvgentwo::Module& _lib, spvgentwo::Module& _consumer, spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
+bool examples::linkageLinked(const spvgentwo::Module& _lib, spvgentwo::Module& _consumer)
 {
-	return spvgentwo::Module();
+	LinkerHelper::LinkerOptions options{};
+	return LinkerHelper::import(_lib, _consumer, options);
 }

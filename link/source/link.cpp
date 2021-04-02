@@ -76,7 +76,7 @@ int patch(Module& _module, const HeapList<Target>& _targets, const char* _out)
 		return -1;
 	}
 
-	_module.write(&writer);
+	_module.finalizeAndWrite(&writer);
 	return 0;
 }
 
@@ -97,7 +97,7 @@ int link(HeapList<Module>& _libs, Module& _target, const LinkerHelper::LinkerOpt
 		return -1;
 	}
 
-	_target.write(&writer);
+	_target.finalizeAndWrite(&writer);
 
 	return 0;
 }
