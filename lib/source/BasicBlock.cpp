@@ -110,7 +110,7 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::returnValue(Instruction* _pValue)
 	return pRet;
 }
 
-void spvgentwo::BasicBlock::write(IWriter* _pWriter)
+void spvgentwo::BasicBlock::write(IWriter* _pWriter) const
 {
 	m_Label.write(_pWriter);
 

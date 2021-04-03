@@ -61,7 +61,7 @@ namespace spvgentwo
 		// return last operation
 		operator Instruction* () const { return m_pLast != nullptr ? m_pLast->operator->() : nullptr; };
 
-		void write(IWriter* _pWriter);
+		void write(IWriter* _pWriter) const;
 
 		bool read(IReader* _pReader, const Grammar& _grammar);
 
