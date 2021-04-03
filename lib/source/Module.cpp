@@ -104,6 +104,7 @@ spvgentwo::Module& spvgentwo::Module::operator=(Module&& _other) noexcept
 	m_InstrToType = stdrep::move(_other.m_InstrToType);
 	m_ConstantToInstr = stdrep::move(_other.m_ConstantToInstr);
 	m_InstrToConstant= stdrep::move(_other.m_InstrToConstant);
+	m_NameLookup = stdrep::move(_other.m_NameLookup);
 	m_GlobalVariables = stdrep::move(_other.m_GlobalVariables);
 	m_Undefs = stdrep::move(_other.m_Undefs);
 	m_Lines = stdrep::move(_other.m_Lines);
@@ -975,7 +976,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo(IAllocator* _pAllocator)
 	{
 		if (auto it = _fun.getFunction()->last(); it != nullptr && it->isInstruction() && it->instruction->isType()) // last operand is OpTypeFunction
 		{
-			return _fun.setFunctionType(it->instruction) != nullptr;
+			return _fun.setFunctionType(it->instruction);
 		}
 		return false;
 	};
