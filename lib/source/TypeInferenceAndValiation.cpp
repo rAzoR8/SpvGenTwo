@@ -417,12 +417,12 @@ bool spvgentwo::defaultimpl::validateImageOperandType(const Instruction& _instr)
 	if (drefCompoOrMask && drefCompoOrMask->isLiteral())
 	{
 		imageOp1 = drefCompoOrMask.next();
-		opMask = drefCompoOrMask->getLiteral().value;
+		opMask = static_cast<spv::ImageOperandsMask>(drefCompoOrMask->getLiteral().value);
 	}
 	else if(drefCompoOrMask && drefCompoOrMask->isInstruction())
 	{
 		imageOp1 = drefCompoOrMask + 2u;
-		if (drefCompoOrMask.next()) opMask = drefCompoOrMask.next()->getLiteral().value;
+		if (drefCompoOrMask.next()) opMask = static_cast<spv::ImageOperandsMask>(drefCompoOrMask.next()->getLiteral().value);
 	}
 
 	Instruction* op1 = imageOp1 != nullptr ? imageOp1->getInstruction() : nullptr;
