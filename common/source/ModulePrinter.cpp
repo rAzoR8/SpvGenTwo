@@ -84,11 +84,6 @@ namespace
 				_printer.append("INVALID-INSTRPTR", colors.error, colors.defaultText);
 				return false;
 			}
-			else if (op.instruction->getResultId() == InvalidId)
-			{
-				_printer.append("INVALID-INSTRID", colors.error, colors.defaultText);
-				return false;
-			}
 
 			if (const char* name = op.instruction->getName(); (_options & ModulePrinter::PrintOptionsBits::InstructionName) && name != nullptr && stringLength(name) > 1)
 			{
@@ -116,6 +111,12 @@ namespace
 				}
 			}
 
+			if (op.instruction->getResultId() == InvalidId)
+			{
+				_printer.append("INVALID-INSTRID", colors.error, colors.defaultText);
+				return false;
+			}
+
 			// fallback
 			_printer << "%";
 			_printer.append(static_cast<unsigned int>(op.instruction->getResultId()), colors.operandId, colors.defaultText);
@@ -128,12 +129,7 @@ namespace
 				_printer.append("INVALID-BASICBLOCKPTR", colors.error, colors.defaultText);
 				return false;
 			}
-			else if (spv::Id id = op.branchTarget->getLabel()->getResultId(); id == InvalidId)
-			{
-				_printer.append("INVALID-INSTRID", colors.error, colors.defaultText);
-				return false;
-			}
-
+	
 			_printer << "%";
 			if (const char* name = op.branchTarget->getName(); _options & ModulePrinter::PrintOptionsBits::OperandName && name != nullptr && stringLength(name) > 1)
 			{
@@ -141,6 +137,12 @@ namespace
 			}
 			else
 			{
+				if (spv::Id id = op.branchTarget->getLabel()->getResultId(); id == InvalidId)
+				{
+					_printer.append("INVALID-INSTRID", colors.error, colors.defaultText);
+					return false;
+				}
+
 				_printer.append(static_cast<unsigned int>(op.branchTarget->getLabel()->getResultId()), colors.operandId, colors.defaultText);
 			}
 			return true;
@@ -220,6 +222,8 @@ void spvgentwo::ModulePrinter::ModuleStringPrinter::append(const char* _pStr, co
 
 bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer, PrintOptions _options, const char* _pIndentation)
 {
+	bool success = true;
+
 	auto* instrInfo = _grammar.getInfo(static_cast<unsigned int>(_instr.getOperation()));
 	const auto& colors = _printer.getColorScheme();
 
@@ -240,7 +244,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 			else
 			{
 				_printer.append("INVALID-RESULTID", colors.error, colors.defaultText);
-				return false; // invalid instruction
+				success = false; // invalid instruction
 			}
 		}
 	}
@@ -293,7 +297,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 						bit = bases->begin();
 					}
 
-					printOperand(_instr, *it, *bit, _grammar, _printer, _options);
+					success &= printOperand(_instr, *it, *bit, _grammar, _printer, _options);
 				}
 
 				continue;
@@ -305,7 +309,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 			}
 		}
 
-		printOperand(_instr, *it, info, _grammar, _printer, _options);
+		success &= printOperand(_instr, *it, info, _grammar, _printer, _options);
 		// need to increment 'it' after this part
 
 		if (info.kind == Grammar::OperandKind::LiteralSpecConstantOpInteger)
@@ -329,7 +333,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 			}
 
 			_printer << " [";
-			printInstruction(constInstr, _grammar, _printer, _options ^ PrintOptionsBits::ResultId, nullptr);
+			success &= printInstruction(constInstr, _grammar, _printer, _options ^ PrintOptionsBits::ResultId, nullptr);
 			_printer << "]";
 		}
 		else if (Grammar::hasOperandParameters(info.kind))
@@ -350,7 +354,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 						continue;
 					}
 
-					printOperand(_instr, *it, *pit, _grammar, _printer, _options);
+					success &= printOperand(_instr, *it, *pit, _grammar, _printer, _options);
 					++it;
 				}
 			}
@@ -359,7 +363,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 		{
 			while(++it != end)
 			{
-				printOperand(_instr, *it, info, _grammar, _printer, _options);			
+				success &= printOperand(_instr, *it, info, _grammar, _printer, _options);			
 			}
 		}
 		else
@@ -368,7 +372,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 		}
 	}
 
-	return true;
+	return success;
 }
 
 bool spvgentwo::ModulePrinter::printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _printer, PrintOptions _options, const char* _pIndentation)
