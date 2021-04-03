@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BasicBlock.h"
+#include "Type.h"
 
 namespace spvgentwo
 {
@@ -40,8 +41,19 @@ namespace spvgentwo
 		// OpFunction 
 		Instruction* getFunction() { return &m_Function; }
 		const Instruction* getFunction() const { return &m_Function; }
-		Instruction* getReturnType() const { return m_pReturnType; }
-		Instruction* getFunctionType() const { return m_pFunctionType; }
+
+		// returns void by default
+		const Type& getReturnType() const { return m_FunctionType.front(); }
+		Type& getReturnType() { return m_FunctionType.front(); }
+
+		// calling this function will materialize the result type operand of OpTypeFunction (add it to the module type lookup)
+		Instruction* getReturnTypeInstr() const;
+
+		const Type& getFunctionType() const { return m_FunctionType; }
+		Type& getFunctionType() { return m_FunctionType; }
+
+		// calling this function will materialize the OpTypeFunction. It should only be called after finalizing
+		Instruction* getFunctionTypeInstr() const;
 
 		Instruction* getFunctionEnd() { return &m_FunctionEnd; }
 		const Instruction* getFunctionEnd() const { return &m_FunctionEnd; }
@@ -67,7 +79,7 @@ namespace spvgentwo
 		BasicBlock& operator*() { return m_pBegin->inner(); }
 
 		// write OpFunction OpFunctionParameters <BasicBlocks> OpFunctionEnd to IWriter
-		void write(IWriter* _pWriter);
+		void write(IWriter* _pWriter) const;
 
 		// read function from IReader user _grammer, assuming OpFunction was already parsed/consumed by module::read(Reader* _pReader)
 		bool read(IReader* _pReader, const Grammar& _grammar, Instruction&& _opFunc);
@@ -85,10 +97,10 @@ namespace spvgentwo
 		Instruction* variable(const T& _initialValue, const char* _pName = nullptr);
 
 		// creates m_pFunctionType with OpTypeFunction and _pReturnType (opperands are added by addParameters), returns m_pFunctionType
-		Instruction* setReturnType(Instruction* _pReturnType);
+		bool setReturnType(Instruction* _pReturnType);
 
 		// sets m_pFunctionType to _pFunctionType (OpTypeFunction) and extracts return type argument and asigns it to m_pReturnType, returns m_pReturnType
-		Instruction* setFunctionType(Instruction* _pFunctionType);
+		bool setFunctionType(Instruction* _pFunctionType);
 
 		// adds opFunctionParameter(_pParamType) to m_parameters and _pParamType to m_pFunctionType, returns last opFunctionParameter generated
 		template <class ... TypeInstr>
@@ -106,12 +118,11 @@ namespace spvgentwo
 
 	protected:
 		Module* m_pModule = nullptr; // parent
-		Instruction* m_pReturnType = nullptr;
 
 		Instruction m_Function; // OpFunction
 		Instruction m_FunctionEnd;
 
-		Instruction* m_pFunctionType = nullptr;
+		Type m_FunctionType;
 
 		List<Instruction> m_Parameters; // OpFunctionParameters
 

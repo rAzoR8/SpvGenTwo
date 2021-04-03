@@ -130,7 +130,7 @@ namespace spvgentwo
 	inline Instruction* Instruction::call(Function* _pFunction, ArgInstr* ..._args)
 	{
 		if (_pFunction == nullptr) return error();
-		return opFunctionCall(_pFunction->getReturnType(), _pFunction->getFunction(), _args...);
+		return opFunctionCall(_pFunction->getReturnTypeInstr(), _pFunction->getFunction(), _args...);
 	}
 
 	template<class ...Instr>
