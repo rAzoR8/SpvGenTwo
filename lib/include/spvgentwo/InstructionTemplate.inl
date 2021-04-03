@@ -307,7 +307,7 @@ namespace spvgentwo
 		// Result Type is the type of the loaded object.It must be a type with ﬁxed size; i.e., it cannot be, nor include, any OpTypeRuntimeArray types.
 		// Pointer is the pointer to load through.Its type must be an OpTypePointer whose Type operand is the same as Result Type.
 		Instruction* pResultType = getModule()->addType(ptrType->front());
-		return makeOp(spv::Op::OpLoad, pResultType, InvalidId, _pPointerToVar, _memOperands.mask, _operands...);
+		return makeOp(spv::Op::OpLoad, pResultType, InvalidId, _pPointerToVar, literal_t{ _memOperands }, _operands...);
 	}
 
 	template<class ...Operands>
@@ -324,7 +324,7 @@ namespace spvgentwo
 
 		if (ptrtype->isPointer() && ptrtype->front() == *valtype)
 		{
-			makeOp(spv::Op::OpStore, _pPointerToVar, _valueToStore, _memOperands.mask, _operands...);		
+			makeOp(spv::Op::OpStore, _pPointerToVar, _valueToStore, literal_t{ _memOperands }, _operands...);
 		}
 		else
 		{
@@ -613,7 +613,7 @@ namespace spvgentwo
 			}
 			else
 			{
-				makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate, literal_t{ _imageOperands.mask }, _operands...);
+				makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate, literal_t{ _imageOperands }, _operands...);
 			}
 		}
 		else
@@ -624,7 +624,7 @@ namespace spvgentwo
 			}
 			else
 			{
-				makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate, _pDrefOrCompnent, literal_t{ _imageOperands.mask }, _operands...);
+				makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate, _pDrefOrCompnent, literal_t{ _imageOperands }, _operands...);
 			}
 		}
 

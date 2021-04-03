@@ -729,7 +729,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFunction(const Flag<spv::Funct
 {
 	if (_pResultType->isType() && _pFuncType->getOperation() == spv::Op::OpTypeFunction)
 	{
-		return makeOp(spv::Op::OpFunction, _pResultType, InvalidId, literal_t{ _functionControl.mask }, _pFuncType);
+		return makeOp(spv::Op::OpFunction, _pResultType, InvalidId, literal_t{ _functionControl }, _pFuncType);
 	}
 	getModule()->logError("ResultType operand of opFunction must type instruction, function type instruction must be OpTypeFunction");
 	return error();
