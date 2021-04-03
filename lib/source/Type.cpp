@@ -1,6 +1,7 @@
 #include "spvgentwo/Type.h"
 
-spvgentwo::Type::Type(IAllocator* _pAllocator) :
+spvgentwo::Type::Type(IAllocator* _pAllocator, const spv::Op _type) :
+	m_Type(_type),
 	m_subTypes(_pAllocator)
 {
 }

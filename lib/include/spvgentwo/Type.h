@@ -73,7 +73,7 @@ namespace spvgentwo
 	public:
 		using Iterator = List<Type>::Iterator;
 
-		Type(IAllocator* _pAllocator = nullptr);
+		Type(IAllocator* _pAllocator = nullptr, const spv::Op _type = spv::Op::OpTypeVoid);
 		Type(IAllocator* _pAllocator, const Type& _subType, const spv::Op _baseType = spv::Op::OpTypeVoid);
 		Type(IAllocator* _pAllocator, Type&& _subType, const spv::Op _baseType = spv::Op::OpTypeVoid);
 
