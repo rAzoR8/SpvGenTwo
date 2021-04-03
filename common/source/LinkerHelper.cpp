@@ -282,7 +282,8 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 			const Instruction* symbol{ it->getInstruction() };
 			if (static_cast<spv::Decoration>((++it)->getLiteral().value) == spv::Decoration::LinkageAttributes)
 			{
-				if (spv::LinkageType{ (++it)->getLiteral().value } == spv::LinkageType::Export) 
+				it = skipLiteralString(it);
+				if ( it != nullptr && spv::LinkageType{ (it)->getLiteral().value } == spv::LinkageType::Export) 
 				{
 					String name(_pAllocator);
 					getLiteralString(name, ++it, deco.end());
@@ -313,13 +314,12 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 			Instruction* importSymbol{ op->getInstruction() };
 			if (static_cast<spv::Decoration>((++op)->getLiteral().value) == spv::Decoration::LinkageAttributes)
 			{
-				const spv::LinkageType type{ (++op)->getLiteral().value };
-				if (type == spv::LinkageType::Import)
-				{
-					String name(_pAllocator);
-					getLiteralString(name, ++op, it->end());
-					debug("Trying to resolve import symbol %s [%llu]", name.c_str(), hash(name));
+				String name(_pAllocator);
+				op = getLiteralString(name, ++op, it->end());
+				debug("Trying to resolve import symbol %s [%llu]", name.c_str(), hash(name));
 
+				if (op != nullptr && spv::LinkageType{ (op)->getLiteral().value } == spv::LinkageType::Import)
+				{
 					if (auto ppSymbol = exportTable[name]; ppSymbol != nullptr)
 					{
 						const Instruction* exportSymbol = *ppSymbol;
