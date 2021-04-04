@@ -68,7 +68,6 @@ bool spvgentwo::LinkerHelper::removeFunctionBody(Function& _func)
 
 	erase(module->getNames());
 	erase(module->getDecorations());
-	erase(module->getUndefs());
 
 	_func.clear();
 
@@ -133,17 +132,6 @@ bool spvgentwo::LinkerHelper::addLinkageDecorateForUsedGlobalVariables(const Fun
 
 namespace spvgentwo 
 {
-	template<> 
-	struct Hasher<String>
-	{
-		Hash64 operator()(const String& _str, Hash64 _seed = detail::Offset) const noexcept
-		{ 
-			FNV1aHasher h(_seed);
-			h.add(_str.data(), _str.size());
-			return h;
-		}
-	};
-
 	namespace LinkerHelper
 	{
 		bool transferInstruction(const Instruction* _pLibInstr, Instruction* _pTarget, HashMap<const Instruction*, Instruction*>& _cache)
@@ -251,7 +239,6 @@ namespace spvgentwo
 				return false;
 			}
 
-			// TODO: auto import decorations, names etc
 			auto importGlobalDependencies = [&](const Instruction* _lInstr, const Instruction* _cInstr = nullptr) -> bool
 			{
 				// for Names, Decorates etc referencing _libInstr:
