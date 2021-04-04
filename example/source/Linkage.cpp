@@ -18,7 +18,6 @@ spvgentwo::Module examples::linkageLib(spvgentwo::IAllocator* _pAllocator, spvge
 
 	// float add(float x, float y)
 	Function& funcAdd = module.addFunction<float, float, float>(u8"add", spv::FunctionControlMask::Const);
-	LinkerHelper::addLinkageDecoration(funcAdd.getFunction(), spv::LinkageType::Export, "@add");
 	{
 		BasicBlock& bb = *funcAdd; // get entry block to this function
 
@@ -66,10 +65,6 @@ spvgentwo::Module examples::linkageConsumer(spvgentwo::IAllocator* _pAllocator, 
 
 	Instruction* uniformVar = module.uniform<float>(u8"u_Time");
 	LinkerHelper::addLinkageDecoration(uniformVar, spv::LinkageType::Import, "@u_Time");
-
-	// float add(float x, float y)
-	Function& funcAdd = module.addFunction<float, float, float>(u8"add", spv::FunctionControlMask::Const, false);
-	LinkerHelper::addLinkageDecoration(funcAdd.getFunction(), spv::LinkageType::Import, "@add");
 
 	// float addGlobalTime(float x);
 	Function& funcAddGlobalTime = module.addFunction<float, float>(u8"addGlobalTime", spv::FunctionControlMask::Const, false);
