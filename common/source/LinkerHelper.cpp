@@ -1,12 +1,12 @@
 #include "common/LinkerHelper.h"
 #include "common/ReflectionHelper.h" // getDecorations
 #include "common/ReflectionHelperTemplate.inl"
+#include "common/FunctionCallGraph.h"
 
-#include "spvgentwo/Function.h"
 #include "spvgentwo/Module.h"
 #include "spvgentwo/ModuleTemplate.inl"
 #include "spvgentwo/InstructionTemplate.inl"
-#include "spvgentwo/HashMap.h"
+#include "spvgentwo/FunctionTemplate.inl"
 
 #define SPVGENTWO_DEBUG_LINKER
 #if defined(SPVGENTWO_DEBUG_LINKER) && defined (_DEBUG) && defined(_WIN32)
@@ -214,6 +214,34 @@ namespace spvgentwo
 			return true;
 		}
 
+		bool importGlobalDependencies (Module& _consumer, const Instruction* _lInstr, const Instruction* _cInstr, HashMap<const Instruction*, Instruction*>& _cache, LinkerOptions _options)
+		{
+			// for Names, Decorates etc referencing _libInstr:
+			// transferInstruction(instr, new _consumerInstr, cache);
+			bool success = true;
+
+			// decorates except linkage
+			if (_options & LinkerOptionBits::ImportReferencedDecorations)
+			{
+				ReflectionHelper::getDecorationsFunc(_lInstr, [&](const Instruction* deco) {
+					if (ReflectionHelper::getSpvDecorationKindFromDecoration(deco) != spv::Decoration::LinkageAttributes)
+					{
+						success &= transferInstruction(deco, _consumer.addDecorationInstr(), _cache, _options);
+					}
+					});
+			}
+
+			// OpNames
+			if (_options & LinkerOptionBits::ImportReferencedNames && (_cInstr == nullptr || _cInstr->getName() == nullptr)) // check if a name is already present
+			{
+				ReflectionHelper::getNamesFunc(_lInstr, [&](const Instruction* name) {
+					success &= transferInstruction(name, _consumer.addNameInstr(), _cache, _options);
+					});
+			}
+
+			return success;
+		};
+
 		bool importSymbolImpl(Module& _consumer, const Instruction* _libSymbol, Instruction* _consumerSymbol, const String& _name, HashMap<const Instruction*, Instruction*>& _cache, LinkerOptions _options)
 		{
 			auto error = [&](auto&& ... args) {_consumer.logError(args...); };
@@ -239,38 +267,10 @@ namespace spvgentwo
 				return false;
 			}
 
-			auto importGlobalDependencies = [&](const Instruction* _lInstr, const Instruction* _cInstr = nullptr) -> bool
-			{
-				// for Names, Decorates etc referencing _libInstr:
-				// transferInstruction(instr, new _consumerInstr, cache);
-				bool success = true;
-
-				// decorates except linkage
-				if (_options & LinkerOptionBits::ImportReferencedDecorations) 
-				{
-					ReflectionHelper::getDecorationsFunc(_lInstr, [&](const Instruction* deco) {
-						if (ReflectionHelper::getSpvDecorationKindFromDecoration(deco) != spv::Decoration::LinkageAttributes)
-						{
-							success &= transferInstruction(deco, _consumer.addDecorationInstr(), _cache, _options);
-						}
-					});				
-				}
-
-				// OpNames
-				if (_options & LinkerOptionBits::ImportReferencedNames && (_cInstr == nullptr || _cInstr->getName() == nullptr)) // check if a name is already present
-				{
-					ReflectionHelper::getNamesFunc(_lInstr, [&](const Instruction* name) {
-						success &= transferInstruction(name, _consumer.addNameInstr(), _cache, _options);
-					});				
-				}
-
-				return success;
-			};
-
 			if (*_libSymbol == spv::Op::OpVariable) // && _options.importDecorationsAndNames
 			{
 				_cache.emplaceUnique(_libSymbol, _consumerSymbol);
-				return importGlobalDependencies(_libSymbol, _consumerSymbol);
+				return importGlobalDependencies(_consumer, _libSymbol, _consumerSymbol, _cache, _options);
 			}
 			else if (*_libSymbol == spv::Op::OpFunction && _libSymbol->getFunction() != nullptr && _consumerSymbol->getFunction() != nullptr)
 			{
@@ -311,12 +311,12 @@ namespace spvgentwo
 					BasicBlock& bbConsumer = cosumerFunc.addBasicBlock(bbLib.getName());
 					for (const Instruction& iLib : bbLib)
 					{
-						if (iLib == spv::Op::OpFunctionCall&& (_options & LinkerOptionBits::ImportReferencedFunctions))
+						if (iLib == spv::Op::OpFunctionCall)
 						{
 							// TODO: check if function was imported
 						}
 
-						if (importGlobalDependencies(&iLib) == false)
+						if (importGlobalDependencies(_consumer, &iLib, nullptr, _cache, _options) == false)
 							return false;
 
 						if (transferInstruction(&iLib, bbConsumer.addInstruction(), _cache, _options) == false) 
@@ -428,6 +428,62 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 	// lib -> consumer
 	HashMap<const Instruction*, Instruction*> cache(_pAllocator);
+
+	if (_options & LinkerOptionBits::ImportReferencedFunctions)
+	{
+		// gather all functions called from all the iFuncs we want to import
+		HashMap <Function*, Instruction*> calledFuncs(_pAllocator, static_cast<unsigned int>(_lib.getFunctions().size())); // Func -> OpFunctionCall
+		for (const ImportSymbol& func : iFuncs)
+		{
+			Function* target = func.lib->getFunction();
+			FunctionCallGraph fcg(*target, _pAllocator);
+
+			for (auto& src : fcg)
+			{
+				for (auto& [node, call] : src.outputs())
+				{
+					if (node->data() != target) // not interested in the exported function
+					{
+						calledFuncs.emplaceUnique(node->data(), call); // dont really care about the call
+					}
+				}
+			}
+		}
+
+		// transfer subroutine from lib to consumer
+		for (auto& [lFunc, call] : calledFuncs)
+		{
+			Function& cFunc = _consumer.addFunction();
+			cache.emplaceUnique(lFunc->getFunction(), cFunc.getFunction()); // OpFunction
+
+			for (const Instruction& lParam : lFunc->getParameters()) // OpFunctionCall
+			{
+				Instruction* cType = _consumer.addType(*lParam.getType(), lParam.getName());
+				cache.emplaceUnique(lParam.getResultTypeInstr(), cType);
+				
+				Instruction* cParam = cFunc.addParameters(cType);
+				cache.emplaceUnique(&lParam, cParam);
+			}
+
+			for (const BasicBlock& lBB : *lFunc) 
+			{
+				BasicBlock& cBB = cFunc.addBasicBlock(lBB.getName());
+
+				for (const Instruction& lInstr : lBB)
+				{
+					Instruction* cInstr = cBB.addInstruction(lInstr.getName());
+
+					if (importGlobalDependencies(_consumer, &lInstr, cInstr, cache, _options) == false)
+						return false;
+
+					if (transferInstruction(&lInstr, cInstr, cache, _options) == false)
+						return false;
+				}
+			}
+
+			cFunc.finalize(lFunc->getFunctionControl(), lFunc->getName());
+		}
+	}
 
 	bool allImportsResolved = true;
 	// import variables first in case they are used in the imported function
