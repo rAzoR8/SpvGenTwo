@@ -120,7 +120,7 @@ void printFunctions(IModulePrinter& _printer, const Module& _module, const Gramm
 		}
 
 		printf("\n"); // OpTypeFunction
-		if (const Instruction* type = _func.getFunctionType(); type != nullptr)
+		if (const Instruction* type = _func.getFunctionTypeInstr(); type != nullptr)
 		{
 			printInstruction(*type, _gram, _printer, PrintOptionsBits::All);
 			printf("\n");
