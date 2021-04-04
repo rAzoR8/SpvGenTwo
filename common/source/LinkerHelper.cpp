@@ -6,8 +6,30 @@
 #include "spvgentwo/Module.h"
 #include "spvgentwo/ModuleTemplate.inl"
 #include "spvgentwo/InstructionTemplate.inl"
-
 #include "spvgentwo/HashMap.h"
+
+#if defined (_DEBUG) && defined(_WIN32)
+// for debugging
+#include "common/HeapAllocator.h"
+#include "common/ModulePrinter.h"
+#include "spvgentwo/Grammar.h"
+
+#define WIN32_MEAN_AND_LEAN
+#include <Windows.h>
+
+namespace dbg
+{
+	auto g_printer = spvgentwo::ModulePrinter::ModuleSimpleFuncPrinter([](const char* str) { OutputDebugStringA(str); });
+	const spvgentwo::Grammar g_gram(spvgentwo::HeapAllocator::instance());
+	void printInstruction(const spvgentwo::Instruction* instr, const char* end = "\n")
+	{
+		spvgentwo::ModulePrinter::printInstruction(*instr, g_gram, g_printer);
+		OutputDebugStringA(end);
+	}
+}
+#else
+namespace dbg { printInstruction(const spvgentwo::Instruction* instr, const char* end) {} }
+#endif
 
 bool spvgentwo::LinkerHelper::removeFunctionBody(Function& _func)
 {
@@ -110,7 +132,16 @@ bool spvgentwo::LinkerHelper::addLinkageDecorateForUsedGlobalVariables(const Fun
 
 namespace spvgentwo 
 {
-	template<> struct Hasher<String> { Hash64 operator()(const String& _str, Hash64 _seed = detail::Offset) const noexcept { FNV1aHasher h(_seed); h(_str.data(), _str.size()); return h; } };
+	template<> 
+	struct Hasher<String>
+	{
+		Hash64 operator()(const String& _str, Hash64 _seed = detail::Offset) const noexcept
+		{ 
+			FNV1aHasher h(_seed);
+			h.add(_str.data(), _str.size());
+			return h;
+		}
+	};
 
 	namespace LinkerHelper
 	{
@@ -118,6 +149,8 @@ namespace spvgentwo
 		{
 			Module* module = _pTarget->getModule();
 			if (module == nullptr) { return false; }
+
+			dbg::printInstruction(_pLibInstr, " -> ");
 
 			auto error = [&](auto&& ... args) {module->logError(args...); };
 
@@ -133,7 +166,7 @@ namespace spvgentwo
 				}
 				else
 				{
-					error("Operand instruction not found");
+					error("Operand instruction not found for");
 					return false;
 				}
 			};
@@ -168,6 +201,8 @@ namespace spvgentwo
 				}
 			}
 
+			dbg::printInstruction(_pTarget);
+
 			_cache.emplaceUnique(_pLibInstr, _pTarget);
 			return true;
 		}
@@ -178,6 +213,8 @@ namespace spvgentwo
 			auto warning = [&](auto&& ... args) {_consumer.logWarning(args...); };
 			auto info = [&](auto&& ... args) {_consumer.logInfo(args...); };
 			auto debug = [&](auto&& ... args) {_consumer.logDebug(args...); };
+
+			debug("Resolving import symbol [%llu] %s", hash(_name), _name.c_str());
 
 			if (_libSymbol->getOperation() != _consumerSymbol->getOperation())
 			{
@@ -202,18 +239,16 @@ namespace spvgentwo
 				// transferInstruction(instr, new _consumerInstr, cache);
 				bool success = true;
 
-				ReflectionHelper::getDecorationsFunc(_libSymbol, [&](const Instruction* deco) {
-					if (transferInstruction(deco, _consumer.addDecorationInstr(), _cache) == false)
+				ReflectionHelper::getDecorationsFunc(_libInstr, [&](const Instruction* deco)
+				{
+					if(ReflectionHelper::getSpvDecorationKindFromDecoration(deco) != spv::Decoration::LinkageAttributes)
 					{
-						success = false;
+						success &= transferInstruction(deco, _consumer.addDecorationInstr(), _cache);					
 					}
 				});
 
-				ReflectionHelper::getNamesFunc(_libSymbol, [&](const Instruction* name) {
-					if (transferInstruction(name, _consumer.addNameInstr(), _cache) == false)
-					{
-						success = false;
-					}
+				ReflectionHelper::getNamesFunc(_libInstr, [&](const Instruction* name) {
+					success &= transferInstruction(name, _consumer.addNameInstr(), _cache);
 				});
 
 				return success;
@@ -221,10 +256,13 @@ namespace spvgentwo
 
 			if (*_libSymbol == spv::Op::OpVariable) // && _options.importDecorationsAndNames
 			{
+				_cache.emplaceUnique(_libSymbol, _consumerSymbol);
 				return importGlobalDependencies(_libSymbol);
 			}
 			else if (*_libSymbol == spv::Op::OpFunction && _libSymbol->getFunction() != nullptr && _consumerSymbol->getFunction() != nullptr)
 			{
+				_cache.emplaceUnique(_libSymbol, _consumerSymbol);
+
 				// When resolving imported functions, the Function Control and all Function Parameter Attributes are taken from the function
 				// definition, and not from the function declaration.
 
@@ -282,12 +320,11 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 			const Instruction* symbol{ it->getInstruction() };
 			if (static_cast<spv::Decoration>((++it)->getLiteral().value) == spv::Decoration::LinkageAttributes)
 			{
-				it = skipLiteralString(it);
+				String name(_pAllocator);
+				it = getLiteralString(name, ++it, deco.end());
 				if ( it != nullptr && spv::LinkageType{ (it)->getLiteral().value } == spv::LinkageType::Export) 
 				{
-					String name(_pAllocator);
-					getLiteralString(name, ++it, deco.end());
-					debug("Add export symbol %s [%llu]", name.c_str(), hash(name));
+					debug("Add export symbol [%llu] %s", hash(name), name.c_str());
 					exportTable.emplace(stdrep::move(name), symbol);
 				}
 			}			
@@ -316,7 +353,6 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 			{
 				String name(_pAllocator);
 				op = getLiteralString(name, ++op, it->end());
-				debug("Trying to resolve import symbol %s [%llu]", name.c_str(), hash(name));
 
 				if (op != nullptr && spv::LinkageType{ (op)->getLiteral().value } == spv::LinkageType::Import)
 				{

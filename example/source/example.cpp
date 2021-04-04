@@ -23,6 +23,11 @@
 
 using namespace spvgentwo;
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
+
 class TestLogger : public ILogger 
 {
 public:
@@ -45,11 +50,19 @@ public:
 			break;
 		}
 
+		char buf[256]{ '\0' };
+
 		va_list args;
 		va_start(args, _pFormat);
-		vprintf(_pFormat, args);
+		vsnprintf(buf, sizeof(buf), _pFormat, args);
 		va_end(args);
-		printf("\n");
+
+		printf("%s\n", buf);
+
+#ifdef _WIN32
+		OutputDebugStringA(buf);
+		OutputDebugStringA("\n");
+#endif
 
 		assert(_level == LogLevel::Debug || _level == LogLevel::Info);
 	}
@@ -60,6 +73,39 @@ int main(int argc, char* argv[])
 {
 	TestLogger log;
 	HeapAllocator alloc; // custom user allocator
+
+	{
+		Module lib, consumer;
+		// linkage export lib example
+		if (BinaryFileWriter writer("export.spv"); writer.isOpen())
+		{
+			lib = examples::linkageLib(&alloc, &log);
+			lib.finalizeAndWrite(&writer);
+			writer.close();
+			system("spirv-dis export.spv");
+			assert(system("spirv-val export.spv") == 0);
+		}
+
+		// linkage import lib example
+		if (BinaryFileWriter writer("import.spv"); writer.isOpen())
+		{
+			consumer = examples::linkageConsumer(&alloc, &log);
+			consumer.finalizeAndWrite(&writer);
+			writer.close();
+			system("spirv-dis import.spv");
+			assert(system("spirv-val import.spv") == 0);
+		}
+
+		// linkage importing example
+		if (BinaryFileWriter writer("linkageOutput.spv"); writer.isOpen())
+		{
+			assert(examples::linkageLinked(lib, consumer));
+			consumer.finalizeAndWrite(&writer);
+			writer.close();
+			system("spirv-dis linkageOutput.spv");
+			assert(system("spirv-val linkageOutput.spv") == 0);
+		}
+	}
 
 	// expression graph example
 	if (BinaryFileWriter writer("expressionGraph.spv"); writer.isOpen())
@@ -142,37 +188,5 @@ int main(int argc, char* argv[])
 		assert(system("spirv-val fragment.spv") == 0);
 	}
 
-	{
-		Module lib, consumer;
-		// linkage export lib example
-		if (BinaryFileWriter writer("export.spv"); writer.isOpen())
-		{
-			lib = examples::linkageLib(&alloc, &log);
-			lib.finalizeAndWrite(&writer);
-			writer.close();
-			system("spirv-dis export.spv");
-			assert(system("spirv-val export.spv") == 0);
-		}
-
-		// linkage import lib example
-		if (BinaryFileWriter writer("import.spv"); writer.isOpen())
-		{
-			consumer = examples::linkageConsumer(&alloc, &log);
-			consumer.finalizeAndWrite(&writer);
-			writer.close();
-			system("spirv-dis import.spv");
-			assert(system("spirv-val import.spv") == 0);
-		}
-
-		// linkage importing example
-		if (BinaryFileWriter writer("linkageOutput.spv"); writer.isOpen())
-		{
-			assert(examples::linkageLinked(lib, consumer));
-			consumer.finalizeAndWrite(&writer);
-			writer.close();
-			system("spirv-dis linkageOutput.spv");
-			assert(system("spirv-val linkageOutput.spv") == 0);
-		}
-	}
 	return 0;
 }
