@@ -266,6 +266,16 @@ spvgentwo::Instruction* spvgentwo::Function::finalize(const Flag<spv::FunctionCo
 	return pFunc;
 }
 
+spvgentwo::Flag<spvgentwo::spv::FunctionControlMask> spvgentwo::Function::getFunctionControl() const
+{
+	if (auto it = m_Function.getFirstActualOperand(); it != nullptr && it->isLiteral())
+	{
+		return Flag<spv::FunctionControlMask>{ it->literal.value };
+	}
+
+	return Flag<spv::FunctionControlMask>();
+}
+
 void spvgentwo::collectReferencedVariables(const Function& _func, List<Operand>& _outVarInstr, const GlobalInterfaceVersion _version, IAllocator* _pAllocator)
 {
 	struct VisitedBB

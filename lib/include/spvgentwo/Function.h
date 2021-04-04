@@ -116,6 +116,8 @@ namespace spvgentwo
 		// creates opFunction, m_pFunctionType must have been completed (all parameters added via addParameters), returns opFunction
 		Instruction* finalize(const Flag<spv::FunctionControlMask> _control, const char* _pName = nullptr);
 
+		Flag<spv::FunctionControlMask> getFunctionControl() const;
+
 	protected:
 		Module* m_pModule = nullptr; // parent
 
