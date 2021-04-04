@@ -50,6 +50,5 @@ namespace spvgentwo
 		Instruction m_EntryPoint; // OpEntryPoint
 		spv::ExecutionModel m_ExecutionModel = spv::ExecutionModel::Max;
 		String m_nameStorage; // literal string of EP name that was encoded in OpEntryPoint
-		bool m_finalized = false;
 	};
 } // !spvgentwo

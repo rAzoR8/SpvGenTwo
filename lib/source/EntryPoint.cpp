@@ -26,12 +26,15 @@ const char* spvgentwo::EntryPoint::getName() const
 
 void spvgentwo::EntryPoint::finalizeGlobalInterface(const GlobalInterfaceVersion _version)
 {
-	if (m_finalized == false)
+	// remove old interface IDs
+	auto interface = getInterfaceVariables();
+	for (auto it = interface.begin(); it != interface.end();)
 	{
-		collectReferencedVariables(*this, m_EntryPoint, _version, m_pAllocator);
-		
-		m_finalized = true;
+		it = m_EntryPoint.erase(it);
 	}
+
+	// collect new interface
+	collectReferencedVariables(*this, m_EntryPoint, _version, m_pAllocator);
 }
 
 spvgentwo::String& spvgentwo::EntryPoint::getNameStorage()
