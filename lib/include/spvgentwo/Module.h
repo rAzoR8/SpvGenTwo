@@ -45,6 +45,9 @@ namespace spvgentwo
 		unsigned int getSpvSchema() const { return m_spvSchema; }
 		void setSpvSchema(unsigned int _schema) { m_spvSchema = _schema; }
 
+		// get next free Id for use as ResultId operand
+		spv::Id getNextId() { return spv::Id{ m_spvBound++ }; }
+
 		IAllocator* getAllocator() const { return m_pAllocator; }
 
 		ILogger* getLogger() const { return m_pLogger; }
