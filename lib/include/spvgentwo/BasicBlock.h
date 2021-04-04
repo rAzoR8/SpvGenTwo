@@ -48,7 +48,7 @@ namespace spvgentwo
 		bool getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const;
 
 		// manual instruction add
-		Instruction* addInstruction() { return &emplace_back(this); }
+		Instruction* addInstruction(const char* _pName = nullptr);
 
 		Instruction* operator->() { return &emplace_back(this); }
 

@@ -83,6 +83,18 @@ const spvgentwo::Instruction* spvgentwo::BasicBlock::getTerminator() const
 	return nullptr;
 }
 
+spvgentwo::Instruction* spvgentwo::BasicBlock::addInstruction(const char* _pName)
+{
+	Instruction* instr = &emplace_back(this);
+
+	if (_pName != nullptr)
+	{
+		getModule()->addName(instr, _pName);
+	}
+
+	return instr;
+}
+
 bool spvgentwo::BasicBlock::getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const
 {
 	if (empty() == false) // there is more then just initial opLabel
