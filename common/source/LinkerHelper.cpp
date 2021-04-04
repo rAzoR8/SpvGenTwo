@@ -330,8 +330,6 @@ namespace spvgentwo
 
 						if (transferInstruction(&iLib, bbConsumer.addInstruction(), _cache) == false) 
 							return false;
-
-						// TODO: add used global variables to EntryPoint interface
 					}
 				}
 			}
@@ -464,6 +462,9 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	{
 		// TODO: remove Linkage capabilities from _consumer if it does not export any symbols itself
 	}
+
+	// update global variable interface in case it changed and the user forgets to finalize the module
+	_consumer.finalizeEntryPoints();
 
 	return true;
 }
