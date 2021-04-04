@@ -25,7 +25,7 @@ namespace spvgentwo
 	struct Hasher
 	{
 		// default implementation
-		Hash64 operator()(const Key& _key, Hash64 _seed = detail::Offset)
+		constexpr Hash64 operator()(const Key& _key, Hash64 _seed = detail::Offset)
 		{
 			const unsigned char* pBytes = reinterpret_cast<const unsigned char*>(&_key);
 			for (detail::hash_size_t i = 0u; i < sizeof(Key); ++i)
@@ -41,7 +41,7 @@ namespace spvgentwo
 	class FNV1aHasher
 	{
 	public:
-		explicit FNV1aHasher(Hash64 _seed = detail::Offset);
+		constexpr explicit FNV1aHasher(Hash64 _seed = detail::Offset);
 
 		template<class T>
 		FNV1aHasher(const T& _data);
@@ -60,8 +60,8 @@ namespace spvgentwo
 		template <class T>
 		FNV1aHasher& operator<<(const T* _ptr);
 
-		Hash64 get() const { return m_Hash; }
-		operator Hash64() const { return m_Hash; }
+		constexpr Hash64 get() const { return m_Hash; }
+		constexpr operator Hash64() const { return m_Hash; }
 
 		template <class T>
 		Hash64 operator()(const T& _data);
@@ -78,7 +78,7 @@ namespace spvgentwo
 		Hash64 m_Hash = detail::Offset;
 	};
 
-	inline FNV1aHasher::FNV1aHasher(Hash64 _seed) :
+	inline constexpr FNV1aHasher::FNV1aHasher(Hash64 _seed) :
 		m_Hash(_seed)
 	{
 	}
