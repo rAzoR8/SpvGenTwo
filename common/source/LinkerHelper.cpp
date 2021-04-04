@@ -134,7 +134,7 @@ namespace spvgentwo
 {
 	namespace LinkerHelper
 	{
-		bool transferInstruction(const Instruction* _pLibInstr, Instruction* _pTarget, HashMap<const Instruction*, Instruction*>& _cache)
+		bool transferInstruction(const Instruction* _pLibInstr, Instruction* _pTarget, HashMap<const Instruction*, Instruction*>& _cache, LinkerOptions _options)
 		{
 			Module* module = _pTarget->getModule();
 			if (module == nullptr) { return false; }
@@ -182,9 +182,9 @@ namespace spvgentwo
 			{
 				lookup(_pLibInstr->getResultTypeInstr());
 			}
-			if (_pTarget->hasResult()) // TODO check for immediate ID resovle
+			if (_pTarget->hasResult())
 			{
-				_pTarget->addOperand(module->getNextId());
+				_pTarget->addOperand((_options & LinkerOptionBits::AssignResultIDs) ? module->getNextId() : InvalidId);
 			}
 
 			for (auto it = _pLibInstr->getFirstActualOperand(), end = _pLibInstr->end(); it != end; ++it)
@@ -214,7 +214,7 @@ namespace spvgentwo
 			return true;
 		}
 
-		bool importSymbolImpl(const Module& _lib, Module& _consumer, const Instruction* _libSymbol, Instruction* _consumerSymbol, const String& _name, HashMap<const Instruction*, Instruction*>& _cache)
+		bool importSymbolImpl(Module& _consumer, const Instruction* _libSymbol, Instruction* _consumerSymbol, const String& _name, HashMap<const Instruction*, Instruction*>& _cache, LinkerOptions _options)
 		{
 			auto error = [&](auto&& ... args) {_consumer.logError(args...); };
 			auto warning = [&](auto&& ... args) {_consumer.logWarning(args...); };
@@ -246,18 +246,21 @@ namespace spvgentwo
 				bool success = true;
 
 				// decorates except linkage
-				ReflectionHelper::getDecorationsFunc(_lInstr, [&](const Instruction* deco) {
-					if(ReflectionHelper::getSpvDecorationKindFromDecoration(deco) != spv::Decoration::LinkageAttributes)
-					{
-						success &= transferInstruction(deco, _consumer.addDecorationInstr(), _cache);					
-					}
-				});
+				if (_options & LinkerOptionBits::ImportReferencedDecorations) 
+				{
+					ReflectionHelper::getDecorationsFunc(_lInstr, [&](const Instruction* deco) {
+						if (ReflectionHelper::getSpvDecorationKindFromDecoration(deco) != spv::Decoration::LinkageAttributes)
+						{
+							success &= transferInstruction(deco, _consumer.addDecorationInstr(), _cache, _options);
+						}
+					});				
+				}
 
 				// OpNames
-				if (_cInstr == nullptr || _cInstr->getName() == nullptr) // check if a name is already present
+				if (_options & LinkerOptionBits::ImportReferencedNames && (_cInstr == nullptr || _cInstr->getName() == nullptr)) // check if a name is already present
 				{
 					ReflectionHelper::getNamesFunc(_lInstr, [&](const Instruction* name) {
-						success &= transferInstruction(name, _consumer.addNameInstr(), _cache);
+						success &= transferInstruction(name, _consumer.addNameInstr(), _cache, _options);
 					});				
 				}
 
@@ -308,7 +311,7 @@ namespace spvgentwo
 					BasicBlock& bbConsumer = cosumerFunc.addBasicBlock(bbLib.getName());
 					for (const Instruction& iLib : bbLib)
 					{
-						if (iLib == spv::Op::OpFunctionCall)
+						if (iLib == spv::Op::OpFunctionCall&& (_options & LinkerOptionBits::ImportReferencedFunctions))
 						{
 							// TODO: check if function was imported
 						}
@@ -316,7 +319,7 @@ namespace spvgentwo
 						if (importGlobalDependencies(&iLib) == false)
 							return false;
 
-						if (transferInstruction(&iLib, bbConsumer.addInstruction(), _cache) == false) 
+						if (transferInstruction(&iLib, bbConsumer.addInstruction(), _cache, _options) == false) 
 							return false;
 					}
 				}
@@ -430,7 +433,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	// import variables first in case they are used in the imported function
 	for (const ImportSymbol& var : iVars)
 	{
-		if (importSymbolImpl(_lib, _consumer, var.lib, var.consume, var.name, cache))
+		if (importSymbolImpl(_consumer, var.lib, var.consume, var.name, cache, _options))
 		{
 			_consumer.getDecorations().erase(var.decoIt); // remove if successful
 		}
@@ -439,14 +442,14 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 	for (const ImportSymbol& func : iFuncs)
 	{
-		if (importSymbolImpl(_lib, _consumer, func.lib, func.consume, func.name, cache))
+		if (importSymbolImpl(_consumer, func.lib, func.consume, func.name, cache, _options))
 		{
 			_consumer.getDecorations().erase(func.decoIt); // remove if successful
 		}
 		else { allImportsResolved = false; }
 	}
 
-	if (hasExports && allImportsResolved) 
+	if (hasExports && allImportsResolved && (_options & LinkerOptionBits::RemoveLinkageCapability)) 
 	{
 		// TODO: remove Linkage capabilities from _consumer if it does not export any symbols itself
 	}
