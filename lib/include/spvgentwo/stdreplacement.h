@@ -7,7 +7,7 @@ namespace spvgentwo
 	using sgt_size_t = decltype(sizeof(int));
 	using sgt_nullptr_t = decltype(nullptr);
 
-	constexpr sgt_size_t sgt_size_max = ~(sgt_size_t)0;
+	constexpr sgt_size_t sgt_size_max = ~(sgt_size_t)0u;
 	constexpr auto sgt_uint32_max = ~0u;
 	constexpr auto sgt_uint64_max = ~0ull;
 

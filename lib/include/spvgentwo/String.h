@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vector.h"
+#include "Hasher.h"
 
 namespace spvgentwo
 {
@@ -72,4 +73,15 @@ namespace spvgentwo
 
 		return *this;
 	}
+
+	template<>
+	struct Hasher<String>
+	{
+		Hash64 operator()(const String& _str, Hash64 _seed = detail::Offset) const noexcept
+		{
+			FNV1aHasher h(_seed);
+			h.add(_str.data(), _str.size());
+			return h;
+		}
+	};
 }
