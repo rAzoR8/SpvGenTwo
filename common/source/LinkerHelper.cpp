@@ -8,7 +8,8 @@
 #include "spvgentwo/InstructionTemplate.inl"
 #include "spvgentwo/HashMap.h"
 
-#if defined (_DEBUG) && defined(_WIN32)
+#define SPVGENTWO_DEBUG_LINKER
+#if defined(SPVGENTWO_DEBUG_LINKER) && defined (_DEBUG) && defined(_WIN32)
 // for debugging
 #include "common/HeapAllocator.h"
 #include "common/ModulePrinter.h"
@@ -28,7 +29,7 @@ namespace dbg
 	}
 }
 #else
-namespace dbg { printInstruction(const spvgentwo::Instruction* instr, const char* end) {} }
+namespace dbg { void printInstruction(const spvgentwo::Instruction* instr, const char* end = nullptr) {} }
 #endif
 
 bool spvgentwo::LinkerHelper::removeFunctionBody(Function& _func)
