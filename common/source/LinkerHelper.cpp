@@ -164,20 +164,38 @@ namespace spvgentwo
 					_pTarget->addOperand(*ppTarget);
 					return true;
 				}
-				else
+				else if (lib->isSpecOrConstant()) // TODO: check for auto import
 				{
-					error("Operand instruction not found for");
-					return false;
+					if (const Constant* c = lib->getConstant(); c != nullptr)
+					{
+						Instruction* cInstr = module->addConstant(*c, lib->getName());
+						_cache.emplaceUnique(lib, cInstr);
+						_pTarget->addOperand(cInstr);
+						return true;
+					}
 				}
+				else if (lib->isType())
+				{
+					if (const Type* t = lib->getType(); t != nullptr)
+					{
+						Instruction* cInstr = module->addType(*t, lib->getName());
+						_cache.emplaceUnique(lib, cInstr);
+						_pTarget->addOperand(cInstr);
+						return true;
+					}
+				}
+				
+				error("Operand instruction not found for");
+				return false;
 			};
 
 			if (_pTarget->hasResultType())
 			{
 				lookup(_pLibInstr->getResultTypeInstr());
 			}
-			if (_pTarget->hasResult())
+			if (_pTarget->hasResult()) // TODO check for immediate ID resovle
 			{
-				_pTarget->addOperand(InvalidId);
+				_pTarget->addOperand(module->getNextId());
 			}
 
 			for (auto it = _pLibInstr->getFirstActualOperand(), end = _pLibInstr->end(); it != end; ++it)
@@ -233,23 +251,27 @@ namespace spvgentwo
 			}
 
 			// TODO: auto import decorations, names etc
-			auto importGlobalDependencies = [&](const Instruction* _libInstr) -> bool
+			auto importGlobalDependencies = [&](const Instruction* _lInstr, const Instruction* _cInstr = nullptr) -> bool
 			{
 				// for Names, Decorates etc referencing _libInstr:
 				// transferInstruction(instr, new _consumerInstr, cache);
 				bool success = true;
 
-				ReflectionHelper::getDecorationsFunc(_libInstr, [&](const Instruction* deco)
-				{
+				// decorates except linkage
+				ReflectionHelper::getDecorationsFunc(_lInstr, [&](const Instruction* deco) {
 					if(ReflectionHelper::getSpvDecorationKindFromDecoration(deco) != spv::Decoration::LinkageAttributes)
 					{
 						success &= transferInstruction(deco, _consumer.addDecorationInstr(), _cache);					
 					}
 				});
 
-				ReflectionHelper::getNamesFunc(_libInstr, [&](const Instruction* name) {
-					success &= transferInstruction(name, _consumer.addNameInstr(), _cache);
-				});
+				// OpNames
+				if (_cInstr == nullptr || _cInstr->getName() == nullptr) // check if a name is already present
+				{
+					ReflectionHelper::getNamesFunc(_lInstr, [&](const Instruction* name) {
+						success &= transferInstruction(name, _consumer.addNameInstr(), _cache);
+					});				
+				}
 
 				return success;
 			};
@@ -257,16 +279,42 @@ namespace spvgentwo
 			if (*_libSymbol == spv::Op::OpVariable) // && _options.importDecorationsAndNames
 			{
 				_cache.emplaceUnique(_libSymbol, _consumerSymbol);
-				return importGlobalDependencies(_libSymbol);
+				return importGlobalDependencies(_libSymbol, _consumerSymbol);
 			}
 			else if (*_libSymbol == spv::Op::OpFunction && _libSymbol->getFunction() != nullptr && _consumerSymbol->getFunction() != nullptr)
 			{
-				_cache.emplaceUnique(_libSymbol, _consumerSymbol);
+				const Function& libFunc = *_libSymbol->getFunction();
+				Function& cosumerFunc = *_consumerSymbol->getFunction();
 
+				// add function signature to cache
+				{
+					_cache.emplaceUnique(_libSymbol, _consumerSymbol); // cache OpFunction
+
+					const auto& libParams = libFunc.getParameters();
+					const auto& consumerParams = cosumerFunc.getParameters();
+
+					if (libParams.size() != consumerParams.size())
+					{
+						error("Number of function parameters does not match for %s", _name.c_str());
+						return false;
+					}
+
+					// cache OpFunctionParameter
+					for (auto lit = libParams.begin(), lend = libParams.end(), cit = consumerParams.begin(); lit != lend; ++lit, ++cit)
+					{
+						if ((lit->getType() == nullptr || cit->getType() == nullptr) || *lit->getType() != *cit->getType())
+						{
+							error("Type of function parameter does not match for %s", _name.c_str());
+							return false;
+						}
+
+						_cache.emplaceUnique(lit.operator->(), cit.operator->()); 
+					}
+				}
+				
 				// When resolving imported functions, the Function Control and all Function Parameter Attributes are taken from the function
 				// definition, and not from the function declaration.
 
-				Function& cosumerFunc = *_consumerSymbol->getFunction();
 				for (const BasicBlock& bbLib : *_libSymbol->getFunction())
 				{
 					BasicBlock& bbConsumer = cosumerFunc.addBasicBlock(bbLib.getName());
@@ -282,6 +330,8 @@ namespace spvgentwo
 
 						if (transferInstruction(&iLib, bbConsumer.addInstruction(), _cache) == false) 
 							return false;
+
+						// TODO: add used global variables to EntryPoint interface
 					}
 				}
 			}
@@ -415,5 +465,5 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		// TODO: remove Linkage capabilities from _consumer if it does not export any symbols itself
 	}
 
-	return false;
+	return true;
 }
