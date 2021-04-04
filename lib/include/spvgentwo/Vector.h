@@ -10,7 +10,9 @@ namespace spvgentwo
 	public:
 		using T = typename stdrep::remove_cv_t<U>;
 
-		Vector(IAllocator* _pAllocator = nullptr, sgt_size_t _size = 0u);
+		constexpr Vector(IAllocator* _pAllocator);
+
+		Vector(IAllocator* _pAllocator, sgt_size_t _size);
 
 		// copy from array
 		Vector(IAllocator* _pAllocator, const T* _pData, sgt_size_t _size = 0u);
@@ -18,7 +20,7 @@ namespace spvgentwo
 		template <sgt_size_t Size>
 		Vector(IAllocator* _pAllocator, const T(&_array)[Size]);
 
-		Vector(Vector<U>&& _other) noexcept;
+		constexpr Vector(Vector<U>&& _other) noexcept;
 
 		Vector(const Vector<U>& _other);
 
@@ -31,10 +33,10 @@ namespace spvgentwo
 
 		Vector<U>& operator=(const Vector<U>& _other);
 
-		IAllocator* getAllocator() const { return m_pAllocator; }
+		constexpr IAllocator* getAllocator() const { return m_pAllocator; }
 
-		T& operator[](sgt_size_t _idx);
-		const T& operator[](sgt_size_t _idx) const;
+		constexpr T& operator[](sgt_size_t _idx) { return m_pData[_idx]; };
+		constexpr const T& operator[](sgt_size_t _idx) const { return m_pData[_idx]; }
 
 		// reserve can only grow
 		bool reserve(sgt_size_t _size);
@@ -48,19 +50,19 @@ namespace spvgentwo
 		// only resets elements counter, no destructor or deallocation invoked, only use with primitive types
 		void reset(sgt_size_t _elements = 0u);
 
-		T* data() const noexcept{ return m_pData; }
-		sgt_size_t size() const noexcept { return m_elements; }
-		sgt_size_t capacity() const noexcept { return m_capacity; }
-		bool empty() const { return m_elements == 0; }
+		constexpr T* data() const noexcept{ return m_pData; }
+		constexpr sgt_size_t size() const noexcept { return m_elements; }
+		constexpr sgt_size_t capacity() const noexcept { return m_capacity; }
+		constexpr bool empty() const { return m_elements == 0; }
 		
-		T* begin() const noexcept { return m_pData; }
-		T* end() const noexcept { return m_pData + m_elements; }
+		constexpr T* begin() const noexcept { return m_pData; }
+		constexpr T* end() const noexcept { return m_pData + m_elements; }
 
-		T& front() { return *m_pData; }
-		const T& front() const{ return *m_pData; }
+		constexpr T& front() { return *m_pData; }
+		constexpr const T& front() const{ return *m_pData; }
 		
-		T& back() { return m_pData[m_elements-1u]; }
-		const T& back() const { return m_pData[m_elements-1u]; }
+		constexpr T& back() { return m_pData[m_elements-1u]; }
+		constexpr const T& back() const { return m_pData[m_elements-1u]; }
 
 		template <class ...Args>
 		T* emplace_back(Args&& ..._args);
@@ -70,6 +72,7 @@ namespace spvgentwo
 
 		// assign _data to elements, _count == max means all
 		void assign(const T& _data, sgt_size_t _offset = 0u, sgt_size_t _count = ~(sgt_size_t{ 0 }));
+
 	protected:
 		void deallocate();
 
@@ -80,6 +83,12 @@ namespace spvgentwo
 		sgt_size_t m_elements = 0u;
 		sgt_size_t m_capacity = 0u;
 	};
+
+	template<class U>
+	inline constexpr Vector<U>::Vector(IAllocator* _pAllocator) :
+		m_pAllocator(_pAllocator)
+	{
+	}
 
 	template<class U>
 	inline Vector<U>::Vector(IAllocator* _pAllocator, sgt_size_t _size) :
@@ -105,7 +114,7 @@ namespace spvgentwo
 	}
 
 	template<class U>
-	inline Vector<U>::Vector(Vector<U>&& _other) noexcept :
+	inline constexpr Vector<U>::Vector(Vector<U>&& _other) noexcept :
 		m_pAllocator(_other.m_pAllocator),
 		m_pData(_other.m_pData),
 		m_elements(_other.m_elements),
@@ -179,18 +188,6 @@ namespace spvgentwo
 		}
 
 		return *this;
-	}
-
-	template<class U>
-	inline typename Vector<U>::T& Vector<U>::operator[](sgt_size_t _idx)
-	{
-		return m_pData[_idx];
-	}
-
-	template<class U>
-	inline const typename Vector<U>::T& Vector<U>::operator[](sgt_size_t _idx) const
-	{
-		return m_pData[_idx];
 	}
 
 	template<class U>
