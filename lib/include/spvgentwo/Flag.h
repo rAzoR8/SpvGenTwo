@@ -28,7 +28,7 @@ namespace spvgentwo
 	{
 		static_assert(sizeof(Enum) <= sizeof(unsigned int), "Enum type does not fit into mask");
 
-		constexpr Flag() : mask{ 0u } {}
+		explicit constexpr Flag(unsigned int _mask = 0u) : mask{ _mask } {}
 
 		template <class ... TEnum>
 		constexpr Flag(Enum _first, TEnum ... _enums) : mask{ detail::bit_or(_first, _enums...) } { }
@@ -45,7 +45,7 @@ namespace spvgentwo
 		template <class ... TEnum>
 		void set(Enum _first, TEnum ... _enums)
 		{
-			mask |= detail::bitor(_first, _enums);
+			mask |= detail::bit_or(_first, _enums);
 		}
 
 		constexpr operator bool() const { return mask != 0u; }
