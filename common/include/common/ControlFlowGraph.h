@@ -5,9 +5,6 @@
 
 namespace spvgentwo
 {
-	// forward decl
-	//class BasicBlock;
-
 	template <class E = EmptyEdge>
 	class ControlFlowGraph : public Graph<BasicBlock*, E>
 	{
@@ -15,15 +12,22 @@ namespace spvgentwo
 		using Graph<BasicBlock*, E>::Graph;
 		using NodeType = typename Graph<BasicBlock*, E>::NodeType;
 
-		ControlFlowGraph(const Function& _func);
+		ControlFlowGraph(const Function& _func, IAllocator*_pAllocator = nullptr);
 	};
 
 	template<class E>
-	inline ControlFlowGraph<E>::ControlFlowGraph(const Function& _func) : Graph<BasicBlock*, E>(_func.getAllocator())
+	inline ControlFlowGraph<E>::ControlFlowGraph(const Function& _func, IAllocator* _pAllocator) :
+		Graph<BasicBlock*, E>(_pAllocator != nullptr ? _pAllocator : _func.getAllocator())
 	{
 		auto addEdge = [&](NodeType* src, Instruction::Iterator target)
 		{
-			if (BasicBlock* bb = target->getBranchTarget(); bb != nullptr)
+			BasicBlock* bb = target->getBranchTarget();
+			if (Instruction* label = target->getInstruction(); bb == nullptr && label != nullptr && *label == spv::Op::OpLabel)
+			{
+				bb = label->getBasicBlock();
+			}
+
+			if (bb != nullptr)
 			{
 				auto it = this->m_nodes.find_if([bb](NodeType& n) {return n.data() == bb; });
 				NodeType* targetNode = it == this->m_nodes.end() ? this->emplace(bb) : it.operator->();
