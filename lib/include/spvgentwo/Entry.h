@@ -8,11 +8,11 @@ namespace spvgentwo
 	{
 	public:
 		template <class ...Args>
-		Entry(Args&& ..._args);
+		constexpr Entry(Args&& ..._args);
 
-		Entry(Entry&& _other) noexcept;
+		constexpr Entry(Entry&& _other) noexcept;
 
-		~Entry();
+		~Entry() = default;
 
 		Entry& operator=(Entry&& _other) noexcept;
 
@@ -43,30 +43,25 @@ namespace spvgentwo
 		// removes this entry from the list (and destroys it if allocator is provieded), returns next entry
 		Entry* remove(IAllocator* _pAlloc);
 
-		Entry* first(); // head
+		constexpr const Entry* first() const; // head
+		constexpr Entry* first() { return const_cast<Entry*>(static_cast<const Entry*>(this)->first()); }
 
-		Entry* last(); // tail
+		constexpr const Entry* last() const ; // tail
+		constexpr Entry* last() { return const_cast<Entry*>(static_cast<const Entry*>(this)->last()); }
 
-		Entry* prev() { return m_pPrev; }
-		const Entry* prev() const { return m_pPrev; }
-
-		Entry* next() { return m_pNext;}
-		const Entry* next() const { return m_pNext; }
+		constexpr Entry* prev() const { return m_pPrev; }
+		constexpr Entry* next() const { return m_pNext; }
 
 		void destroyList(IAllocator* _pAlloc);
 
-		// TODO: checks for identity, not equality
-		bool operator==(const Entry<T>& _other) const;
-		bool operator!=(const Entry<T>& _other) const;
-
 		T& inner() { return m_data; }
-		const T& inner() const { return m_data; }
+		constexpr const T& inner() const { return m_data; }
 
 		T& operator*() { return m_data; }
-		const T& operator*() const { return m_data; }
+		constexpr const T& operator*() const { return m_data; }
 
 		T* operator->() { return &m_data; }
-		const T* operator->() const { return &m_data; }
+		constexpr const T* operator->() const { return &m_data; }
 
 	private:
 		T m_data{};
@@ -76,24 +71,19 @@ namespace spvgentwo
 
 	template<class T>
 	template<class ...Args>
-	inline Entry<T>::Entry(Args&& ..._args) :
+	inline constexpr Entry<T>::Entry(Args&& ..._args) :
 		m_data{ stdrep::forward<Args>(_args)... }
 	{
 	}
 
 	template<class T>
-	inline Entry<T>::Entry(Entry&& _other) noexcept :
+	inline constexpr Entry<T>::Entry(Entry&& _other) noexcept :
 		m_data{ stdrep::move(_other.m_data) },
 		m_pNext(_other.m_pNext),
 		m_pPrev(_other.m_pPrev)
 	{
 		_other.m_pPrev = nullptr;
 		_other.m_pNext = nullptr;
-	}
-
-	template<class T>
-	inline Entry<T>::~Entry()
-	{		
 	}
 
 	// only move data, prev an next links stay the same so the original list stays intact
@@ -228,9 +218,9 @@ namespace spvgentwo
 		return next;
 	}
 	template<class T>
-	inline Entry<T>* Entry<T>::last()
+	inline constexpr const Entry<T>* Entry<T>::last() const
 	{
-		Entry<T>* next = this;
+		const Entry<T>* next = this;
 		while (true){
 			if (next->m_pNext == nullptr) { return next; }
 			next = next->m_pNext;
@@ -238,9 +228,9 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	inline Entry<T>* Entry<T>::first()
+	inline constexpr const Entry<T>* Entry<T>::first() const
 	{
-		Entry<T>* prev = this;
+		const Entry<T>* prev = this;
 		while (true) {
 			if (prev->m_pPrev == nullptr) { return prev; }
 			prev = prev->m_pPrev;
@@ -258,15 +248,5 @@ namespace spvgentwo
 			_pAlloc->destruct(entry);
 			entry = next;
 		}
-	}
-	template<class T>
-	inline bool Entry<T>::operator==(const Entry<T>& _other) const
-	{
-		return this == &_other;
-	}
-	template<class T>
-	inline bool Entry<T>::operator!=(const Entry<T>& _other) const
-	{
-		return this != &_other;
 	}
 } // !spvgentwo
