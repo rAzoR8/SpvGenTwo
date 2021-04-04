@@ -37,7 +37,7 @@ namespace spvgentwo
 
 		struct LinkerOptions 
 		{
-			Flag<LinkerOptionBits> flags{};
+			Flag<LinkerOptionBits> flags{ LinkerOptionBits::All };
 			const IModulePrinter* printer = nullptr;
 			const Grammar* grammar = nullptr;
 		};
