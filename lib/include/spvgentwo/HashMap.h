@@ -22,7 +22,8 @@ namespace spvgentwo
 		using TRange = Range<typename Bucket::Iterator>;
 	public:
 
-		HashMap(IAllocator* _pAllocator = nullptr, unsigned int _buckets = DefaultBucktCount);
+		constexpr HashMap() = default;
+		HashMap(IAllocator* _pAllocator, unsigned int _buckets = DefaultBucktCount);
 		HashMap(HashMap&& _other) noexcept;
 
 		// computes bucket size as sizeof..(_keyvals) * 2 + 1 (number of nodes construected from args passed)
@@ -78,15 +79,15 @@ namespace spvgentwo
 		unsigned int count(const Hash64 _hash) const;
 		unsigned int count(const Key& _key) const { return count(hash(_key)); }
 
-		const Bucket& getBucket(const unsigned int _index) const { return m_pBuckets[_index]; }
-		unsigned int getBucketCount() const { return m_Buckets; }
+		constexpr const Bucket& getBucket(const unsigned int _index) const { return m_pBuckets[_index]; }
+		constexpr unsigned int getBucketCount() const { return m_Buckets; }
 
-		Iterator begin() const;
-		Iterator end() const { return Iterator(m_pBuckets + m_Buckets, m_pBuckets + m_Buckets, nullptr); }
+		constexpr Iterator begin() const;
+		constexpr Iterator end() const { return Iterator(m_pBuckets + m_Buckets, m_pBuckets + m_Buckets, nullptr); }
 
 		void clear();
 
-		unsigned int elements() const { return m_Elements; }
+		constexpr unsigned int elements() const { return m_Elements; }
 
 	private:
 		void destroy();
@@ -104,7 +105,7 @@ namespace spvgentwo
 	{
 		if (m_pAllocator != nullptr)
 		{
-			m_pBuckets = reinterpret_cast<Bucket*>(m_pAllocator->allocate(m_Buckets * sizeof(Bucket)));
+			m_pBuckets = static_cast<Bucket*>(m_pAllocator->allocate(m_Buckets * sizeof(Bucket)));
 			for (auto i = 0u; i < m_Buckets; ++i)
 			{
 				new(m_pBuckets + i) Bucket(m_pAllocator);
@@ -470,7 +471,7 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline typename HashMap<Key, Value>::Iterator HashMap<Key, Value>::begin() const
+	inline constexpr typename HashMap<Key, Value>::Iterator HashMap<Key, Value>::begin() const
 	{
 		for (unsigned int i = 0u; i < m_Buckets; ++i)
 		{
