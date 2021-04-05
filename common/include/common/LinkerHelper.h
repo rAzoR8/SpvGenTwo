@@ -9,9 +9,13 @@ namespace spvgentwo
 	class Function;
 	class IAllocator;
 	class Instruction;
-	class IModulePrinter;
 	class Grammar;
 	class String;
+
+	namespace ModulePrinter
+	{
+		class IModulePrinter;	
+	}
 
 	namespace LinkerHelper
 	{
@@ -34,15 +38,16 @@ namespace spvgentwo
 			ImportReferencedDecorations = 1 << 2, // referencing imported symbol
 			ImportReferencedNames = 1 << 3, // referencing imported symbol
 			ImportReferencedFunctions = 1 << 4, // functions called from an imported function, but were not exported themselves
-			AssignResultIDs = 1 << 5,
-			RemoveLinkageCapability = 1 << 6,
-			All = RemoveLinkageCapability | (RemoveLinkageCapability -1)
+			ImportReferencedVariables = 1 << 5, // global variables referenced in (auto) imported functions
+			AssignResultIDs = 1 << 6,
+			RemoveLinkageCapability = 1 << 7,
+			All = RemoveLinkageCapability | (RemoveLinkageCapability - 1)
 		};
 
 		struct LinkerOptions 
 		{
 			Flag<LinkerOptionBits> flags{ LinkerOptionBits::All };
-			const IModulePrinter* printer = nullptr;
+			ModulePrinter::IModulePrinter* printer = nullptr;
 			const Grammar* grammar = nullptr;
 		};
 

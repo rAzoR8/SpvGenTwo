@@ -2,35 +2,12 @@
 #include "common/ReflectionHelper.h" // getDecorations
 #include "common/ReflectionHelperTemplate.inl"
 #include "common/FunctionCallGraph.h"
+#include "common/ModulePrinter.h"
 
 #include "spvgentwo/Module.h"
 #include "spvgentwo/ModuleTemplate.inl"
 #include "spvgentwo/InstructionTemplate.inl"
 #include "spvgentwo/FunctionTemplate.inl"
-
-#define SPVGENTWO_DEBUG_LINKER
-#if defined(SPVGENTWO_DEBUG_LINKER) && defined (_DEBUG) && defined(_WIN32)
-// for debugging
-#include "common/HeapAllocator.h"
-#include "common/ModulePrinter.h"
-#include "spvgentwo/Grammar.h"
-
-#define WIN32_MEAN_AND_LEAN
-#include <Windows.h>
-
-namespace dbg
-{
-	auto g_printer = spvgentwo::ModulePrinter::ModuleSimpleFuncPrinter([](const char* str) { OutputDebugStringA(str); });
-	const spvgentwo::Grammar g_gram(spvgentwo::HeapAllocator::instance());
-	void printInstruction(const spvgentwo::Instruction* instr, const char* end = "\n")
-	{
-		spvgentwo::ModulePrinter::printInstruction(*instr, g_gram, g_printer);
-		OutputDebugStringA(end);
-	}
-}
-#else
-namespace dbg { void printInstruction(const spvgentwo::Instruction* instr, const char* end = nullptr) {} }
-#endif
 
 bool spvgentwo::LinkerHelper::removeFunctionBody(Function& _func)
 {
@@ -169,12 +146,21 @@ namespace spvgentwo
 {
 	namespace LinkerHelper
 	{
+		void printInstruction(const LinkerOptions& _options, const spvgentwo::Instruction* _instr, const char* _end = "\n")
+		{
+			if(_options.printer != nullptr && _options.grammar != nullptr)
+			{
+				spvgentwo::ModulePrinter::printInstruction(*_instr, *_options.grammar, *_options.printer);
+				*_options.printer << _end;
+			}
+		}
+
 		bool transferInstruction(const Instruction* _pLibInstr, Instruction* _pTarget, HashMap<const Instruction*, Instruction*>& _cache, LinkerOptions _options)
 		{
 			Module* module = _pTarget->getModule();
 			if (module == nullptr) { return false; }
 
-			dbg::printInstruction(_pLibInstr, " -> ");
+			printInstruction(_options, _pLibInstr, " -> ");
 
 			auto error = [&](auto&& ... args) {module->logError(args...); };
 
@@ -183,42 +169,44 @@ namespace spvgentwo
 	
 			auto lookup = [&](const Instruction* lib) -> bool
 			{
+				Instruction* cInstr = nullptr;
+
 				if (Instruction** ppTarget = _cache[lib]; ppTarget != nullptr)
 				{
-					Instruction* pTarget = *ppTarget;
-					if(_options & LinkerOptionBits::AssignResultIDs)
-					{
-						if (auto it = pTarget->getResultIdOperand(); it != nullptr && it->getId() == InvalidId)
-						{
-							*it = module->getNextId();
-						}					
-					}
-
-					_pTarget->addOperand(pTarget);
-					return true;
+					cInstr = *ppTarget;
 				}
-				else if (lib->isSpecOrConstant()) // TODO: check for auto import
+				else if (lib->isSpecOrConstant() && (_options & LinkerOptionBits::ImportMissingConstants))
 				{
 					if (const Constant* c = lib->getConstant(); c != nullptr)
 					{
-						Instruction* cInstr = module->addConstant(*c, lib->getName());
+						cInstr = module->addConstant(*c, lib->getName());
 						_cache.emplaceUnique(lib, cInstr);
-						_pTarget->addOperand(cInstr);
-						return true;
 					}
 				}
-				else if (lib->isType())
+				else if (lib->isType() && (_options & LinkerOptionBits::ImportMissingTypes))
 				{
 					if (const Type* t = lib->getType(); t != nullptr)
 					{
-						Instruction* cInstr = module->addType(*t, lib->getName());
+						cInstr = module->addType(*t, lib->getName());
 						_cache.emplaceUnique(lib, cInstr);
-						_pTarget->addOperand(cInstr);
-						return true;
 					}
 				}
+
+				if (cInstr != nullptr)
+				{
+					if (_options & LinkerOptionBits::AssignResultIDs)
+					{
+						if (auto it = cInstr->getResultIdOperand(); it != nullptr && it->getId() == InvalidId)
+						{
+							*it = module->getNextId();
+						}
+					}
+
+					_pTarget->addOperand(cInstr);
+					return true;
+				}
 				
-				error("Operand instruction not found for");
+				error("Operand instruction not found");
 				return false;
 			};
 
@@ -252,7 +240,7 @@ namespace spvgentwo
 				}
 			}
 
-			dbg::printInstruction(_pTarget);
+			printInstruction(_options, _pTarget);
 
 			_cache.emplaceUnique(_pLibInstr, _pTarget);
 			return true;
@@ -260,6 +248,11 @@ namespace spvgentwo
 
 		bool importGlobalDependencies (Module& _consumer, const Instruction* _lInstr, const Instruction* _cInstr, HashMap<const Instruction*, Instruction*>& _cache, LinkerOptions _options)
 		{
+			if (_cache.find(_lInstr) != _cache.end())
+			{
+				return true; // already imported
+			}
+
 			// for Names, Decorates etc referencing _libInstr:
 			// transferInstruction(instr, new _consumerInstr, cache);
 			bool success = true;
@@ -283,15 +276,32 @@ namespace spvgentwo
 				});
 			}
 
+			// OpVariables
+			if ((_options & LinkerOptionBits::ImportReferencedVariables))
+			{
+				// look for global variable operands
+				for(auto it = _lInstr->getFirstActualOperand(); it != nullptr; ++it)
+				{
+					if (const Instruction* op = it->getInstruction(); op != nullptr && *op == spv::Op::OpVariable && op->getStorageClass() != spv::StorageClass::Function)
+					{
+						if (_cache.find(op) == _cache.end())
+						{
+							Instruction* cVar = _consumer.addGlobalVariableInstr(op->getName());
+							success &= importGlobalDependencies(_consumer, op, cVar, _cache, _options);
+							success &= transferInstruction(op, cVar, _cache, _options);						
+						}
+					}
+				}
+			}
+
+
 			return success;
 		};
 
 		bool importSymbolImpl(Module& _consumer, const Instruction* _libSymbol, Instruction* _consumerSymbol, const String& _name, HashMap<const Instruction*, Instruction*>& _cache, LinkerOptions _options)
 		{
 			auto error = [&](auto&& ... args) {_consumer.logError(args...); };
-			auto warning = [&](auto&& ... args) {_consumer.logWarning(args...); };
 			auto info = [&](auto&& ... args) {_consumer.logInfo(args...); };
-			auto debug = [&](auto&& ... args) {_consumer.logDebug(args...); };
 
 			info("Resolving import symbol [%llu] %s", hash(_name), _name.c_str());
 
@@ -313,8 +323,10 @@ namespace spvgentwo
 
 			if (*_libSymbol == spv::Op::OpVariable) // && _options.importDecorationsAndNames
 			{
+				if (importGlobalDependencies(_consumer, _libSymbol, _consumerSymbol, _cache, _options) == false)
+					return false;
+
 				_cache.emplaceUnique(_libSymbol, _consumerSymbol);
-				return importGlobalDependencies(_consumer, _libSymbol, _consumerSymbol, _cache, _options);
 			}
 			else if (*_libSymbol == spv::Op::OpFunction && _libSymbol->getFunction() != nullptr && _consumerSymbol->getFunction() != nullptr)
 			{
@@ -387,7 +399,6 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	}
 
 	auto info = [&](auto&& ... args) {_consumer.logInfo(args...); };
-	auto debug = [&](auto&& ... args) {_consumer.logDebug(args...); };
 	auto error = [&](auto&& ... args) {_consumer.logError(args...); };
 
 	const auto version = _lib.getSpvVersion() > _consumer.getSpvVersion() ? _lib.getSpvVersion() : _consumer.getSpvVersion();
