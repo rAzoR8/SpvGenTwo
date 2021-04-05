@@ -204,6 +204,11 @@ int main(int argc, char* argv[])
 		{
 			addTarget(spv::LinkageType::Import);
 		}
+		else if (strcmp(arg, "--printInstructions") == 0)
+		{
+			options.grammar = &g_gram;
+			options.printer = &g_printer;
+		}
 	}
 
 	if (targets.empty() == false)
