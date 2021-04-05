@@ -233,7 +233,7 @@ namespace spvgentwo
 		Constant newConstant();
 
 		// add empty instruction which must be OpVarible with StorageClass != function
-		Instruction* addGlobalVariableInstr();
+		Instruction* addGlobalVariableInstr(const char* _pName = nullptr);
 
 		// _pPtrType needs to be in the same StorageClass as _storageClass
 		Instruction* variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, const char* _pName = nullptr, Instruction* _pInitialzer = nullptr);

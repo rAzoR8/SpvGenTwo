@@ -276,9 +276,17 @@ spvgentwo::Constant spvgentwo::Module::newConstant()
 	return Constant(m_pAllocator);
 }
 
-spvgentwo::Instruction* spvgentwo::Module::addGlobalVariableInstr()
+spvgentwo::Instruction* spvgentwo::Module::addGlobalVariableInstr(const char* _pName)
 {
-	return &m_GlobalVariables.emplace_back(this);
+	Instruction* pVar = &m_GlobalVariables.emplace_back(this);
+	pVar->setOperation(spv::Op::OpVariable);
+
+	if (_pName != nullptr)
+	{
+		addName(pVar, _pName);
+	}
+
+	return pVar;
 }
 
 void spvgentwo::Module::addCapability(const spv::Capability _capability)
