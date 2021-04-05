@@ -14,7 +14,7 @@ namespace spvgentwo
 
 		~Entry() = default;
 
-		Entry& operator=(Entry&& _other) noexcept;
+		 constexpr Entry& operator=(Entry&& _other) noexcept;
 
 		template<class ...Args>
 		static Entry* create(IAllocator* _pAlloc, Args&& ..._args);
@@ -54,13 +54,13 @@ namespace spvgentwo
 
 		void destroyList(IAllocator* _pAlloc);
 
-		T& inner() { return m_data; }
+		constexpr T& inner() { return m_data; }
 		constexpr const T& inner() const { return m_data; }
 
-		T& operator*() { return m_data; }
+		constexpr T& operator*() { return m_data; }
 		constexpr const T& operator*() const { return m_data; }
 
-		T* operator->() { return &m_data; }
+		constexpr T* operator->() { return &m_data; }
 		constexpr const T* operator->() const { return &m_data; }
 
 	private:
@@ -88,7 +88,7 @@ namespace spvgentwo
 
 	// only move data, prev an next links stay the same so the original list stays intact
 	template<class T>
-	inline Entry<T>& Entry<T>::operator=(Entry&& _other) noexcept
+	inline constexpr Entry<T>& Entry<T>::operator=(Entry&& _other) noexcept
 	{
 		if (this == &_other) return *this;
 		m_data = stdrep::move(_other.m_data);
