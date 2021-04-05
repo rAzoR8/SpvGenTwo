@@ -1,11 +1,5 @@
 #include "spvgentwo/Type.h"
 
-spvgentwo::Type::Type(IAllocator* _pAllocator, const spv::Op _type) :
-	m_Type(_type),
-	m_subTypes(_pAllocator)
-{
-}
-
 spvgentwo::Type::Type(IAllocator* _pAllocator, const Type& _subType, const spv::Op _baseType) :
 	m_Type(_baseType),
 	m_subTypes(_pAllocator)
@@ -106,26 +100,6 @@ bool spvgentwo::Type::operator==(const Type& _other) const
 		m_StorageClass == _other.m_StorageClass &&
 		m_AccessQualifier == _other.m_AccessQualifier &&
 		m_subTypes == _other.m_subTypes;
-}
-
-const spvgentwo::Type& spvgentwo::Type::getBaseType() const
-{
-	if (m_subTypes.empty())
-	{
-		return *this;
-	}
-
-	return front().getBaseType();
-}
-
-spvgentwo::Type& spvgentwo::Type::getBaseType()
-{
-	if (m_subTypes.empty())
-	{
-		return *this;
-	}
-
-	return front().getBaseType();
 }
 
 const char* spvgentwo::Type::getString() const
@@ -237,24 +211,6 @@ const char* spvgentwo::Type::getString() const
 	if (isQueue()) return "queue";
 
 	return nullptr;
-}
-
-spvgentwo::spv::Op spvgentwo::Type::getBaseTypeOp() const
-{
-	return getBaseType().m_Type;
-}
-
-bool spvgentwo::Type::isBaseTypeOf(const spv::Op _type) const
-{
-	return getBaseType().getType() == _type;
-}
-
-bool spvgentwo::Type::hasSameBase(const Type& _other, const bool _onlyCheckTyeOp) const
-{
-	const Type& lBase = getBaseType();
-	const Type& rBase = _other.getBaseType();
-
-	return _onlyCheckTyeOp ? lBase.m_Type == rBase.m_Type : lBase == rBase;
 }
 
 void spvgentwo::Type::setType(const spv::Op _type)
