@@ -1,6 +1,15 @@
 #include "example/Linkage.h"
 #include "common/LinkerHelper.h"
 #include "spvgentwo/Templates.h"
+#include "common/ModulePrinter.h"
+#include "spvgentwo/Grammar.h"
+
+#include <stdio.h>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
 
 using namespace spvgentwo;
 
@@ -14,7 +23,7 @@ spvgentwo::Module examples::linkageLib(spvgentwo::IAllocator* _pAllocator, spvge
 	module.addCapability(spv::Capability::Linkage);
 
 	Instruction* uniformVar = module.uniform<float>(u8"u_Time");
-	LinkerHelper::addLinkageDecoration(uniformVar, spv::LinkageType::Export, "@u_Time");
+	//LinkerHelper::addLinkageDecoration(uniformVar, spv::LinkageType::Export, "@u_Time");
 
 	// float add(float x, float y)
 	Function& funcAdd = module.addFunction<float, float, float>(u8"add", spv::FunctionControlMask::Const);
@@ -63,8 +72,8 @@ spvgentwo::Module examples::linkageConsumer(spvgentwo::IAllocator* _pAllocator, 
 	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::Linkage);
 
-	Instruction* uniformVar = module.uniform<float>(u8"u_Time");
-	LinkerHelper::addLinkageDecoration(uniformVar, spv::LinkageType::Import, "@u_Time");
+	//Instruction* uniformVar = module.uniform<float>(u8"u_Time");
+	//LinkerHelper::addLinkageDecoration(uniformVar, spv::LinkageType::Import, "@u_Time");
 
 	// float addGlobalTime(float x);
 	Function& funcAddGlobalTime = module.addFunction<float, float>(u8"addGlobalTime", spv::FunctionControlMask::Const, false);
@@ -84,8 +93,20 @@ spvgentwo::Module examples::linkageConsumer(spvgentwo::IAllocator* _pAllocator, 
 	return module;
 }
 
-bool examples::linkageLinked(const spvgentwo::Module& _lib, spvgentwo::Module& _consumer)
+bool examples::linkageLinked(const spvgentwo::Module& _lib, spvgentwo::Module& _consumer, spvgentwo::IAllocator* _pAllocator)
 {
+	const Grammar gram(_pAllocator);
+	auto printer = ModulePrinter::ModuleSimpleFuncPrinter([](const char* str) {
+		printf("%s", str);
+
+#ifdef _WIN32
+		OutputDebugStringA(str);
+#endif
+	});
+
 	LinkerHelper::LinkerOptions options{};
-	return LinkerHelper::import(_lib, _consumer, options);
+	options.grammar = &gram;
+	options.printer = &printer;
+
+	return LinkerHelper::import(_lib, _consumer, options, _pAllocator);
 }

@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
 		// linkage importing example
 		if (BinaryFileWriter writer("linkageOutput.spv"); writer.isOpen())
 		{
-			assert(examples::linkageLinked(lib, consumer));
+			assert(examples::linkageLinked(lib, consumer, &alloc));
 			consumer.finalizeAndWrite(&writer);
 			writer.close();
 			system("spirv-dis linkageOutput.spv");
