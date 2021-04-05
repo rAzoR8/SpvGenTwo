@@ -11,7 +11,7 @@ namespace spvgentwo
 		constexpr EntryIterator(Entry<T>* _pEntry = nullptr) : m_pEntry(_pEntry) {}
 		constexpr EntryIterator(const EntryIterator<T>& _other) : m_pEntry(_other.m_pEntry) {}
 
-		EntryIterator& operator=(const EntryIterator<T>& _other);
+		constexpr EntryIterator& operator=(const EntryIterator<T>& _other);
 
 		constexpr bool operator==(const EntryIterator<T>& _other) const;
 		constexpr bool operator!=(const EntryIterator<T>& _other) const;
@@ -26,18 +26,18 @@ namespace spvgentwo
 		constexpr EntryIterator<T> next() const;
 
 		// pre
-		EntryIterator<T>& operator++();
-		EntryIterator<T>& operator--();
+		constexpr EntryIterator<T>& operator++();
+		constexpr EntryIterator<T>& operator--();
 
 		// post
-		EntryIterator<T> operator++(int);
-		EntryIterator<T> operator--(int);
+		constexpr EntryIterator<T> operator++(int);
+		constexpr EntryIterator<T> operator--(int);
 
-		T& operator*() { return m_pEntry->inner(); }
-		const T& operator*() const { return m_pEntry->inner(); }
+		constexpr T& operator*() { return m_pEntry->inner(); }
+		constexpr const T& operator*() const { return m_pEntry->inner(); }
 
-		T* operator->() { return m_pEntry->operator->(); }
-		const T* operator->() const { return m_pEntry->operator->(); }
+		constexpr T* operator->() { return m_pEntry->operator->(); }
+		constexpr const T* operator->() const { return m_pEntry->operator->(); }
 
 		constexpr Entry<T>* entry() const { return m_pEntry; }
 
@@ -58,7 +58,7 @@ namespace spvgentwo
 	};
 
 	template<class T>
-	inline EntryIterator<T>& EntryIterator<T>::operator=(const EntryIterator<T>& _other)
+	inline constexpr EntryIterator<T>& EntryIterator<T>::operator=(const EntryIterator<T>& _other)
 	{
 		m_pEntry = _other.m_pEntry;
 		return *this;
@@ -89,19 +89,19 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	inline EntryIterator<T>& EntryIterator<T>::operator++()
+	inline  constexpr EntryIterator<T>& EntryIterator<T>::operator++()
 	{
 		if(m_pEntry != nullptr) m_pEntry = m_pEntry->next();
 		return *this;
 	}
 	template<class T>
-	inline EntryIterator<T>& EntryIterator<T>::operator--()
+	inline constexpr EntryIterator<T>& EntryIterator<T>::operator--()
 	{
 		if (m_pEntry != nullptr) m_pEntry = m_pEntry->prev();
 		return *this;
 	}
 	template<class T>
-	inline EntryIterator<T> EntryIterator<T>::operator++(int)
+	inline constexpr EntryIterator<T> EntryIterator<T>::operator++(int)
 	{
 		EntryIterator<T> ret(m_pEntry);
 		if (m_pEntry != nullptr) m_pEntry = m_pEntry->next();
@@ -109,7 +109,7 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	inline EntryIterator<T> EntryIterator<T>::operator--(int)
+	inline constexpr EntryIterator<T> EntryIterator<T>::operator--(int)
 	{
 		EntryIterator<T> ret(m_pEntry);
 		if (m_pEntry != nullptr) m_pEntry = m_pEntry->prev();
@@ -117,7 +117,7 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	constexpr EntryIterator<T> EntryIterator<T>::operator+(unsigned int n) const
+	inline constexpr EntryIterator<T> EntryIterator<T>::operator+(unsigned int n) const
 	{
 		EntryIterator<T> ret(m_pEntry);
 		for (unsigned int i = 0; i < n && ret != nullptr; ++i, ++ret) {}
@@ -125,7 +125,7 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	constexpr EntryIterator<T> EntryIterator<T>::operator-(unsigned int n) const
+	inline constexpr EntryIterator<T> EntryIterator<T>::operator-(unsigned int n) const
 	{
 		EntryIterator<T> ret(m_pEntry);
 		for (unsigned int i = 0; i < n && ret != nullptr; ++i, --ret) {}
