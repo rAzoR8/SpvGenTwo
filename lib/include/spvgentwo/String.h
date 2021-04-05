@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vector.h"
-#include "Hasher.h"
+#include "FNV1aHasher.h"
 
 namespace spvgentwo
 {
@@ -27,7 +27,7 @@ namespace spvgentwo
 
 		String(String&& _other) noexcept : Vector(stdrep::move(_other)) {}
 
-		String(IAllocator* _pAllocator = nullptr, const char* _pStr = nullptr, sgt_size_t _length = 0u) : Vector(_pAllocator, _pStr, _length == 0u ? stringLength(_pStr) : _length) {};
+		String(IAllocator* _pAllocator, const char* _pStr = nullptr, sgt_size_t _length = 0u) : Vector(_pAllocator, _pStr, _length == 0u ? stringLength(_pStr) : _length) {};
 
 		template <sgt_size_t N>
 		String(IAllocator* _pAllocator, const char(&_pStr)[N]) : Vector(_pAllocator, _pStr) {};
@@ -40,8 +40,7 @@ namespace spvgentwo
 		template <sgt_size_t N>
 		String& operator=(const char(&_pStr)[N]);
 
-		auto c_str() const { return data(); }
-
+		constexpr const char* c_str() const { return data(); }
 		operator const char* () const { return data(); }
 
 		String substr(sgt_size_t _offset, sgt_size_t _length);
