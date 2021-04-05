@@ -76,11 +76,11 @@ namespace spvgentwo
 		constexpr Iterator end() const { return Iterator(nullptr); }
 		constexpr Iterator last() const { return Iterator(m_pLast); }
 
-		T& front() { return m_pBegin->inner(); }
-		const T& front() const { return m_pBegin->inner(); }
+		constexpr T& front() { return m_pBegin->inner(); }
+		constexpr const T& front() const { return m_pBegin->inner(); }
 
-		T& back() { return m_pLast->inner(); }
-		const T& back() const { return m_pLast->inner(); }
+		constexpr T& back() { return m_pLast->inner(); }
+		constexpr const T& back() const { return m_pLast->inner(); }
 
 		constexpr Entry<T>* lastEntry() const{ return m_pLast; }
 
