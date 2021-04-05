@@ -444,21 +444,24 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 				{
 					if (node->data() != target) // not interested in the exported function
 					{
+						// TODO: check if callee is NOT marked for export
 						calledFuncs.emplaceUnique(node->data(), call); // dont really care about the call
 					}
 				}
 			}
 		}
 
-		// transfer subroutine from lib to consumer
+		// transfer functions from lib to consumer
 		for (auto& [lFunc, call] : calledFuncs)
 		{
 			Function& cFunc = _consumer.addFunction();
 			cache.emplaceUnique(lFunc->getFunction(), cFunc.getFunction()); // OpFunction
 
+			cFunc.setReturnType(_consumer.addType(lFunc->getReturnType()));
+
 			for (const Instruction& lParam : lFunc->getParameters()) // OpFunctionCall
 			{
-				Instruction* cType = _consumer.addType(*lParam.getType(), lParam.getName());
+				Instruction* cType = _consumer.addType(*lParam.getType());
 				cache.emplaceUnique(lParam.getResultTypeInstr(), cType);
 				
 				Instruction* cParam = cFunc.addParameters(cType);
