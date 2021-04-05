@@ -11,6 +11,7 @@ namespace spvgentwo
 	class Instruction;
 	class IModulePrinter;
 	class Grammar;
+	class String;
 
 	namespace LinkerHelper
 	{
@@ -22,6 +23,9 @@ namespace spvgentwo
 
 		// adds OpDecorateLinkage to global variables referenced in _func, use variable names (from OpName) as export name, if no name is present, it can't be exportet
 		bool addLinkageDecorateForUsedGlobalVariables(const Function& _func, spv::LinkageType _linkage, IAllocator* _pAllocator = nullptr);
+
+		// extract linkage type, symbol (optional) and name (optional) from OpDecorate, returns LinkageType::Max on error
+		spv::LinkageType getLinkageTypeFromDecoration(const Instruction* _pDecoration, Instruction** _ppOutSymbol = nullptr, String* _pOutName = nullptr);
 
 		enum class LinkerOptionBits
 		{

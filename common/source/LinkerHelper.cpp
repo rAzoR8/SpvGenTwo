@@ -130,6 +130,41 @@ bool spvgentwo::LinkerHelper::addLinkageDecorateForUsedGlobalVariables(const Fun
 	return result;
 }
 
+spvgentwo::spv::LinkageType spvgentwo::LinkerHelper::getLinkageTypeFromDecoration(const Instruction* _pDecoration, Instruction** _ppOutSymbol, String* _pOutName)
+{
+	if (_pDecoration == nullptr || *_pDecoration != spv::Op::OpDecorate)
+	{
+		return spv::LinkageType::Max;	
+	}
+
+	if (auto it = _pDecoration->getFirstActualOperand(); it != nullptr && it->isInstruction())
+	{
+		if (_ppOutSymbol != nullptr)
+		{
+			*_ppOutSymbol = it->getInstruction();
+		}
+
+		if (it.next() != nullptr && static_cast<spv::Decoration>((++it)->getLiteral().value) == spv::Decoration::LinkageAttributes)
+		{
+			if (_pOutName != nullptr)
+			{
+				it = getLiteralString(*_pOutName, ++it, _pDecoration->end());			
+			}
+			else
+			{
+				it = skipLiteralString(++it);
+			}
+			
+			if (it != nullptr)
+			{
+				return spv::LinkageType{ it->getLiteral().value };			
+			}
+		}
+	}
+
+	return spv::LinkageType::Max;
+}
+
 namespace spvgentwo 
 {
 	namespace LinkerHelper
@@ -150,7 +185,16 @@ namespace spvgentwo
 			{
 				if (Instruction** ppTarget = _cache[lib]; ppTarget != nullptr)
 				{
-					_pTarget->addOperand(*ppTarget);
+					Instruction* pTarget = *ppTarget;
+					if(_options & LinkerOptionBits::AssignResultIDs)
+					{
+						if (auto it = pTarget->getResultIdOperand(); it != nullptr && it->getId() == InvalidId)
+						{
+							*it = module->getNextId();
+						}					
+					}
+
+					_pTarget->addOperand(pTarget);
 					return true;
 				}
 				else if (lib->isSpecOrConstant()) // TODO: check for auto import
@@ -228,7 +272,7 @@ namespace spvgentwo
 					{
 						success &= transferInstruction(deco, _consumer.addDecorationInstr(), _cache, _options);
 					}
-					});
+				});
 			}
 
 			// OpNames
@@ -236,7 +280,7 @@ namespace spvgentwo
 			{
 				ReflectionHelper::getNamesFunc(_lInstr, [&](const Instruction* name) {
 					success &= transferInstruction(name, _consumer.addNameInstr(), _cache, _options);
-					});
+				});
 			}
 
 			return success;
@@ -249,7 +293,7 @@ namespace spvgentwo
 			auto info = [&](auto&& ... args) {_consumer.logInfo(args...); };
 			auto debug = [&](auto&& ... args) {_consumer.logDebug(args...); };
 
-			debug("Resolving import symbol [%llu] %s", hash(_name), _name.c_str());
+			info("Resolving import symbol [%llu] %s", hash(_name), _name.c_str());
 
 			if (_libSymbol->getOperation() != _consumerSymbol->getOperation())
 			{
@@ -354,19 +398,13 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	// build export table
 	for (const Instruction& deco : _lib.getDecorations())
 	{
-		if (auto it = deco.getFirstActualOperand(); it != nullptr && deco == spv::Op::OpDecorate && it->isInstruction())
+		Instruction* symbol = nullptr;
+		String name(_pAllocator);
+
+		if (getLinkageTypeFromDecoration(&deco, &symbol, &name) == spv::LinkageType::Export)
 		{
-			const Instruction* symbol{ it->getInstruction() };
-			if (static_cast<spv::Decoration>((++it)->getLiteral().value) == spv::Decoration::LinkageAttributes)
-			{
-				String name(_pAllocator);
-				it = getLiteralString(name, ++it, deco.end());
-				if ( it != nullptr && spv::LinkageType{ (it)->getLiteral().value } == spv::LinkageType::Export) 
-				{
-					debug("Add export symbol [%llu] %s", hash(name), name.c_str());
-					exportTable.emplace(stdrep::move(name), symbol);
-				}
-			}			
+			info("Add export symbol [%llu] %s", hash(name), name.c_str());
+			exportTable.emplace(stdrep::move(name), symbol);
 		}
 	}
 
@@ -381,48 +419,43 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	List<ImportSymbol> iVars(_pAllocator);
 	List<ImportSymbol> iFuncs(_pAllocator);
 
-	bool hasExports = true;
+	bool hasExports = false;
+
 	// consume inputs
 	for (auto it = _consumer.getDecorations().begin(), end = _consumer.getDecorations().end(); it != end; ++it)
 	{
-		if (auto op = it->getFirstActualOperand(); *it == spv::Op::OpDecorate && op != nullptr && op->isInstruction())
+		Instruction* importSymbol = nullptr;
+		String name(_pAllocator);
+		const spv::LinkageType type = getLinkageTypeFromDecoration(it.operator->(), &importSymbol, &name);
+
+		if (type == spv::LinkageType::Import)
 		{
-			Instruction* importSymbol{ op->getInstruction() };
-			if (static_cast<spv::Decoration>((++op)->getLiteral().value) == spv::Decoration::LinkageAttributes)
+			if (const Instruction** ppSymbol = exportTable[name]; ppSymbol != nullptr)
 			{
-				String name(_pAllocator);
-				op = getLiteralString(name, ++op, it->end());
+				const Instruction* exportSymbol = *ppSymbol;
 
-				if (op != nullptr && spv::LinkageType{ (op)->getLiteral().value } == spv::LinkageType::Import)
+				if (*exportSymbol == spv::Op::OpVariable)
 				{
-					if (auto ppSymbol = exportTable[name]; ppSymbol != nullptr)
-					{
-						const Instruction* exportSymbol = *ppSymbol;
-
-						if (*exportSymbol == spv::Op::OpVariable)
-						{
-							iVars.emplace_back(stdrep::move(name), exportSymbol, importSymbol, it);
-						}
-						else if (*exportSymbol == spv::Op::OpFunction)
-						{
-							iFuncs.emplace_back(stdrep::move(name), exportSymbol, importSymbol, it);
-						}
-						else
-						{
-							error("%s symbol must be OpVariable or OpFunction", name.c_str());
-							return false;
-						}
-					}
-					else
-					{
-						info("Symbol %s not found in import module", name.c_str());
-					}
+					iVars.emplace_back(stdrep::move(name), exportSymbol, importSymbol, it);
 				}
-				else // module has exports on its own, so we need to preserve linkage capabilities
+				else if (*exportSymbol == spv::Op::OpFunction)
 				{
-					hasExports = false;
+					iFuncs.emplace_back(stdrep::move(name), exportSymbol, importSymbol, it);
+				}
+				else
+				{
+					error("%s symbol must be OpVariable or OpFunction", name.c_str());
+					return false;
 				}
 			}
+			else
+			{
+				info("Symbol %s not found in import module", name.c_str()); // just an info because it could be in a different import module
+			}
+		}
+		else if (type == spv::LinkageType::Export)
+		{
+			hasExports = true;
 		}
 	}
 
@@ -442,10 +475,22 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 			{
 				for (auto& [node, call] : src.outputs())
 				{
-					if (node->data() != target) // not interested in the exported function
+					Function* callee = node->data();
+					if (callee != target) // not interested in the exported function
 					{
-						// TODO: check if callee is NOT marked for export
-						calledFuncs.emplaceUnique(node->data(), call); // dont really care about the call
+						// check if callee is NOT marked for export
+						bool exported = false;
+						ReflectionHelper::getDecorationsFunc(callee->getFunction(), [&exported](const Instruction* pDeco) {
+							if(exported == false && getLinkageTypeFromDecoration(pDeco) == spv::LinkageType::Export)
+							{
+								exported = true;
+							}
+						});
+
+						if (exported == false)
+						{
+							calledFuncs.emplaceUnique(callee, call); // dont really care about the call						
+						}
 					}
 				}
 			}
@@ -454,6 +499,15 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		// transfer functions from lib to consumer
 		for (auto& [lFunc, call] : calledFuncs)
 		{
+			if (const char* name = lFunc->getName(); name != nullptr)
+			{
+				info("Auto importing referenced function '%s'", name);
+			}
+			else
+			{
+				info("Auto importing referenced function @%u", lFunc->getFunction()->getResultId());
+			}
+
 			Function& cFunc = _consumer.addFunction();
 			cache.emplaceUnique(lFunc->getFunction(), cFunc.getFunction()); // OpFunction
 
