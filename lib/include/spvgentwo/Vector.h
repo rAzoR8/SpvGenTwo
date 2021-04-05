@@ -10,7 +10,7 @@ namespace spvgentwo
 	public:
 		using T = typename stdrep::remove_cv_t<U>;
 
-		constexpr Vector(IAllocator* _pAllocator);
+		constexpr Vector(IAllocator* _pAllocator = nullptr);
 
 		Vector(IAllocator* _pAllocator, sgt_size_t _size);
 
