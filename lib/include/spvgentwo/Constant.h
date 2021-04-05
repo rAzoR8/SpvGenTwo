@@ -162,7 +162,13 @@ namespace spvgentwo
 	template <>
 	struct Hasher<Constant>
 	{
-		Hash64 operator()(const Constant& _const, FNV1aHasher& _hasher) const
+		constexpr Hash64 operator()(const Constant& _const, Hash64 _seed) const
+		{
+			FNV1aHasher hasher(_seed);
+			return operator()(_const, hasher);
+		}
+
+		constexpr Hash64 operator()(const Constant& _const, FNV1aHasher& _hasher) const
 		{
 			_hasher << _const.getOperation();
 			Hasher<Type>()(_const.getType(), _hasher);
@@ -177,12 +183,6 @@ namespace spvgentwo
 			}
 
 			return _hasher;
-		}
-
-		Hash64 operator()(const Constant& _const) const
-		{
-			FNV1aHasher hasher;
-			return operator()(_const, hasher);
 		}
 	};
 } // !spvgentwo

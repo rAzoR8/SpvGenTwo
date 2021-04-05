@@ -571,7 +571,13 @@ namespace spvgentwo
 	template <>
 	struct Hasher<Type>
 	{
-		Hash64 operator()(const Type& _type, FNV1aHasher& _hasher) const
+		constexpr Hash64 operator()(const Type& _type, Hash64 _seed) const
+		{
+			FNV1aHasher h(_seed);
+			return operator()(_type, h);
+		}
+
+		constexpr Hash64 operator()(const Type& _type, FNV1aHasher& _hasher) const
 		{
 			_hasher << _type.getType();
 			_hasher << _type.getIntWidth(); // image depth, float width
@@ -589,12 +595,6 @@ namespace spvgentwo
 			}
 
 			return _hasher;
-		}
-
-		Hash64 operator()(const Type& _type) const
-		{
-			FNV1aHasher h;
-			return operator()(_type, h);
 		}
 	};
 

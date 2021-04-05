@@ -1,78 +1,74 @@
 #pragma once
+#include "stdreplacement.h"
 
 namespace spvgentwo
 {
 	struct Hash64
 	{
-		using u32 = unsigned long;
-		using u64 = unsigned long long;
-		u64 value;
-		constexpr Hash64(u64 _val = 0ull) : value(_val) {}
-		constexpr Hash64(u32 _low, u32 _high) : value(_low | static_cast<u64>(_high) << 32u) {}
-		constexpr operator u64() const { return value; }
+		sgt_uint64_t value;
+		constexpr Hash64(sgt_uint64_t _val = 0ull) : value(_val) {}
+		constexpr Hash64(sgt_uint32_t _low, sgt_uint32_t _high) : value(_low | static_cast<sgt_uint64_t>(_high) << 32u) {}
+		constexpr operator sgt_uint64_t() const { return value; }
 		inline constexpr Hash64 operator^=(unsigned char _byte) { value ^= _byte; return *this; }
 		inline constexpr Hash64 operator*=(const Hash64 _prime) { value *= _prime.value; return *this; }
 	};
 	
 	namespace detail
 	{
-		using hash_size_t = decltype(sizeof(int));
 		constexpr Hash64 Offset{ 0xcbf29ce484222325ull };
 		constexpr Hash64 Prime{ 0x100000001b3ull };
 	}
 
 	template <class Key>
-	struct Hasher
-	{
-		// default implementation
-		constexpr Hash64 operator()(const Key& _key, Hash64 _seed = detail::Offset)
-		{
-			const unsigned char* pBytes = reinterpret_cast<const unsigned char*>(&_key);
-			for (detail::hash_size_t i = 0u; i < sizeof(Key); ++i)
-			{
-				_seed ^= pBytes[i];
-				_seed *= detail::Prime;
-			}
-			return _seed;
-		}
-	};
+	struct Hasher;
 
 	// 64 bit FNV-1a hash
 	class FNV1aHasher
 	{
+		template <class T>
+		static constexpr Hash64 hasherOrDefault(const T& _data, Hash64 _seed)
+		{
+			if constexpr (traits::is_complete_v<Hasher<T>>) // check if specialization exists
+			{
+				Hasher<T> h{};
+				return h(_data, _seed);
+			}
+			else // resort for default impl
+			{
+				const void* pErased = &_data; // avoid reinterpret_cast in constexpr
+				const unsigned char* pBytes = static_cast<const unsigned char*>(pErased);
+				for (sgt_size_t i = 0u; i < sizeof(_data); ++i)
+				{
+					_seed ^= pBytes[i];
+					_seed *= detail::Prime;
+				}
+				return _seed;
+			}
+		}
+
 	public:
 		constexpr explicit FNV1aHasher(Hash64 _seed = detail::Offset);
 
-		template<class T>
-		FNV1aHasher(const T& _data);
-
-		FNV1aHasher(const char* _str);
-
-		Hash64 add(const char* _pStr);
-
-		Hash64 add(const void* _pData, const detail::hash_size_t _length);
-
-		template <class T>
-		FNV1aHasher& operator<<(const T& _data);
-
-		FNV1aHasher& operator<<(const char* _str);
-
-		template <class T>
-		FNV1aHasher& operator<<(const T* _ptr);
+		constexpr Hash64 add(const void* _pData, const sgt_size_t _length);
 
 		constexpr Hash64 get() const { return m_Hash; }
 		constexpr operator Hash64() const { return m_Hash; }
 
+		constexpr Hash64 operator()(const char* _str);
+
 		template <class T>
-		Hash64 operator()(const T& _data);
+		constexpr Hash64 operator()(const T& _data);
 
 		template <class T, class ...Tail>
-		Hash64 operator()(const T& _data,  const Tail&... _tail);
+		constexpr Hash64 operator()(const T& _data, const Tail&... _tail);
 
-		Hash64 operator()(const char* _str);
+		constexpr  FNV1aHasher& operator<<(const char* _pStr) { operator()(_pStr); return *this; }
 
 		template <class T>
-		Hash64 operator()(const T* _ptr);
+		constexpr FNV1aHasher& operator<<(const T& _data) { operator()(_data); return *this; }
+
+		template <class T>
+		constexpr FNV1aHasher& operator<<(const T* _ptr) { operator()(_ptr); return *this; }
 
 	private:
 		Hash64 m_Hash = detail::Offset;
@@ -83,26 +79,10 @@ namespace spvgentwo
 	{
 	}
 
-	inline FNV1aHasher::FNV1aHasher(const char* _str)
+	inline constexpr Hash64 spvgentwo::FNV1aHasher::add(const void* _pData, const sgt_size_t _length)
 	{
-		add(_str);
-	}
-
-	inline Hash64 FNV1aHasher::add(const char* _pStr)
-	{
-		for (; *_pStr != 0; ++ _pStr)
-		{
-			m_Hash ^= static_cast<unsigned char>(*_pStr);
-			m_Hash *= detail::Prime;
-		}
-
-		return m_Hash;
-	}
-
-	inline Hash64 spvgentwo::FNV1aHasher::add(const void* _pData, const detail::hash_size_t _length)
-	{
-		const unsigned char* pBytes = reinterpret_cast<const unsigned char*>(_pData);
-		for (detail::hash_size_t i = 0u; i < _length; ++i)
+		const unsigned char* pBytes = static_cast<const unsigned char*>(_pData);
+		for (sgt_size_t i = 0u; i < _length; ++i)
 		{
 			m_Hash ^= pBytes[i];
 			m_Hash *= detail::Prime;
@@ -111,49 +91,26 @@ namespace spvgentwo
 		return m_Hash;
 	}
 
-	inline FNV1aHasher& FNV1aHasher::operator<<(const char* _pStr)
+	inline constexpr Hash64 FNV1aHasher::operator()(const char* _pStr)
 	{
-		add(_pStr);
-		return *this;
-	}
+		for (; *_pStr != 0; ++_pStr)
+		{
+			m_Hash ^= static_cast<unsigned char>(*_pStr);
+			m_Hash *= detail::Prime;
+		}
 
-	inline Hash64 FNV1aHasher::operator()(const char* _str)
-	{
-		return add(_str);
-	}
-
-	template<class T>
-	inline FNV1aHasher::FNV1aHasher(const T& _data)
-	{
-		Hasher<T> func;
-		m_Hash = func(_data, m_Hash);
+		return m_Hash;
 	}
 
 	template<class T>
-	inline FNV1aHasher& FNV1aHasher::operator<<(const T& _data)
+	inline constexpr Hash64 FNV1aHasher::operator()(const T& _data)
 	{
-		Hasher<T> func;
-		m_Hash = func(_data, m_Hash);
-		return *this;
-	}
-
-	template<class T>
-	inline FNV1aHasher& FNV1aHasher::operator<<(const T* _ptr)
-	{
-		add(&_ptr, sizeof(const T*));
-		return *this;
-	}
-
-	template<class T>
-	inline Hash64 FNV1aHasher::operator()(const T& _data)
-	{
-		Hasher<T> func;
-		m_Hash = func(_data, m_Hash);
+		m_Hash = hasherOrDefault(_data, m_Hash);
 		return m_Hash;
 	}
 
 	template<class T, class ...Tail>
-	inline Hash64 FNV1aHasher::operator()(const T& _data, const Tail& ..._tail)
+	inline constexpr Hash64 FNV1aHasher::operator()(const T& _data, const Tail& ..._tail)
 	{
 		operator()(_data);
 
@@ -163,11 +120,5 @@ namespace spvgentwo
 		}
 
 		return m_Hash;
-	}
-
-	template<class T>
-	inline Hash64 FNV1aHasher::operator()(const T* _ptr)
-	{
-		return add(&_ptr, sizeof(const T*));
 	}
 } // !spvgentwo
