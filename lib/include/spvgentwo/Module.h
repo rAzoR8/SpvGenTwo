@@ -68,8 +68,8 @@ namespace spvgentwo
 		const List<Instruction>& getExtensions() const { return m_Extensions; }
 		List<Instruction>& getExtensions() { return m_Extensions; }
 
-		const HashMap<const char*, Instruction>& getExtInstrImports() const { return m_ExtInstrImport; }
-		HashMap<const char*, Instruction>& getExtInstrImports() { return m_ExtInstrImport; }
+		const HashMap<String, Instruction>& getExtInstrImports() const { return m_ExtInstrImport; }
+		HashMap<String, Instruction>& getExtInstrImports() { return m_ExtInstrImport; }
 
 		const Instruction& getMemoryModel() const { return m_MemoryModel; }
 		Instruction& getMemoryModel() { return m_MemoryModel; }
@@ -379,7 +379,7 @@ namespace spvgentwo
 		// preamble
 		HashMap<spv::Capability, Instruction> m_Capabilities;
 		List<Instruction> m_Extensions;
-		HashMap<const char*, Instruction> m_ExtInstrImport; // todo: map between ext names and Instruction*
+		HashMap<String, Instruction> m_ExtInstrImport; // todo: map between ext names and Instruction*
 		Instruction m_MemoryModel;
 
 		List<Instruction> m_ExecutionModes; // opExecutionMode, opExecutionModeId

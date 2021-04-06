@@ -322,7 +322,7 @@ void spvgentwo::Module::addExtension(const char* _pExtName)
 
 spvgentwo::Instruction* spvgentwo::Module::getExtensionInstructionImport(const char* _pExtName)
 {
-	Instruction& opExtInst = m_ExtInstrImport.emplaceUnique(_pExtName, this).kv.value;
+	Instruction& opExtInst = m_ExtInstrImport.emplaceUnique(String(m_pAllocator, _pExtName), this).kv.value;
 	if (opExtInst.empty())
 	{
 		opExtInst.opExtInstImport(_pExtName);
