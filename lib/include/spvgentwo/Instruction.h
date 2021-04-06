@@ -45,7 +45,7 @@ namespace spvgentwo
 	public:
 		using Iterator = EntryIterator<Operand>;
 
-		Instruction() = default;
+		constexpr Instruction() = default;
 
 		template <class ...Args>
 		Instruction(Module* _pModule, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
@@ -53,6 +53,8 @@ namespace spvgentwo
 		Instruction(Function* _pFunction, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
 		template <class ...Args>
 		Instruction(BasicBlock* _pBasicBlock, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
+
+		Instruction(Instruction&& _other) noexcept;
 
 		Instruction(Module* _pModule, Instruction&& _other) noexcept;
 		Instruction(Function* _pFunction, Instruction&& _other) noexcept;

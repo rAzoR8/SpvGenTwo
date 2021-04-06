@@ -10,6 +10,15 @@
 #include "spvgentwo/InstructionTemplate.inl"
 #include "spvgentwo/ModuleTemplate.inl"
 
+spvgentwo::Instruction::Instruction(Instruction&& _other) noexcept :
+	List(stdrep::move(_other)),
+	m_Operation(_other.m_Operation),
+	m_parentType(_other.m_parentType),
+	m_parent(_other.m_parent)
+{
+	_other.m_parent = {};
+}
+
 spvgentwo::Instruction::Instruction(Module* _pModule, Instruction&& _other) noexcept :
 	List(stdrep::move(_other)),
 	m_Operation(_other.m_Operation),
