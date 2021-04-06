@@ -132,7 +132,12 @@ namespace spvgentwo
 		// returns true if OpCapability matching _capability was in the module
 		bool removeCapability(spv::Capability _capability);
 		
+		// add OpExtension with name _pExtName
 		void addExtension(const char* _pExtName);
+
+		// add OpExtension
+		void addExtension(spv::Extension _ext) { addExtension(spv::ExtensionNames[static_cast<unsigned int>(_ext)]); }
+
 		Instruction* getExtensionInstructionImport(const char* _pExtName);
 
 		Instruction* addType(const Type& _type, const char* _pName = nullptr);
@@ -169,6 +174,7 @@ namespace spvgentwo
 		// manually assign IDs to all unresolved instructions, returns bounds/max id
 		// converts any Instruction pointer operand to an spv::Id
 		// adds missing OpCapabilities if _pGrammar != nullptr
+		// adss missing OpExtensions if _pGrammar != nullptr
 		spv::Id assignIDs(const Grammar*_pGrammar = nullptr);
 
 		// converts any spv::Id operand to Instruction pointer operands
@@ -322,8 +328,11 @@ namespace spvgentwo
 		// remove _pInstr if it is homed in this module, its functions and basic blocks, returns true if it was removed
 		bool remove(const Instruction* _pInstr);
 
-		// scans instructions of this module, looking for required OpCapabilities using _grammar, adding them to _outCapabilities
+		// scans instructions of this module, looking for required OpCapabilities using _grammar, adding them to m_Capabilities
 		void addRequiredCapabilities(const Grammar& _grammar);
+
+		// scans instructions of this module, looking for required OpExtensions using _grammar, adding them to m_Extensions
+		void addRequiredExtensions(const Grammar& _grammar);
 
 		// ILogger proxy calls
 		template <typename ...Args>

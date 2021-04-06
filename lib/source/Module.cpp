@@ -667,7 +667,11 @@ spvgentwo::spv::Id spvgentwo::Module::assignIDs(const Grammar* _pGrammar)
 			{
 				for (const spv::Capability& c : info->capabilities)
 				{
-					m_Capabilities.emplaceUnique(c, Instruction(this, spv::Op::OpCapability, c));
+					addCapability(c);
+				}
+				for (const spv::Extension& e : info->extensions)
+				{
+					addExtension(e);
 				}
 			}
 		}
@@ -1518,7 +1522,23 @@ void spvgentwo::Module::addRequiredCapabilities(const Grammar& _grammar)
 		{
 			for (const spv::Capability& c : info->capabilities)
 			{
-				m_Capabilities.emplaceUnique(c, Instruction(this, spv::Op::OpCapability, c));
+				addCapability(c);
+			}
+		}
+	};
+
+	iterateInstructions(check);
+}
+
+void spvgentwo::Module::addRequiredExtensions(const Grammar& _grammar)
+{
+	auto check = [&](const Instruction& _instr)
+	{
+		if (auto* info = _grammar.getInfo(static_cast<unsigned int>(_instr.getOperation())); info != nullptr)
+		{
+			for (const spv::Extension& e : info->extensions)
+			{
+				addExtension(e);
 			}
 		}
 	};

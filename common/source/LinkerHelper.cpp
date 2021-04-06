@@ -575,15 +575,21 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	const auto version = _lib.getSpvVersion() > _consumer.getSpvVersion() ? _lib.getSpvVersion() : _consumer.getSpvVersion();
 	_consumer.setSpvVersion(version);
 
-	if (_options.grammar != nullptr) // only add required capabilities
+	if (_options.grammar != nullptr) // only add required capabilities & extensions
 	{
 		_consumer.addRequiredCapabilities(*_options.grammar);
+		_consumer.addRequiredExtensions(*_options.grammar);
 	}
 	else // import all capabilities
 	{
 		for (const auto& [cap, instr] : _lib.getCapabilities())
 		{
 			_consumer.addCapability(cap);
+		}
+
+		for (const auto& [name, instr] : _lib.getExtensions())
+		{
+			_consumer.addExtension(name.c_str());
 		}
 	}
 
