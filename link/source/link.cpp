@@ -33,7 +33,7 @@ struct Target
 
 int patch(Module& _module, const HeapList<Target>& _targets, const char* _out)
 {
-	_module.checkAddCapability(spv::Capability::Linkage);
+	_module.addCapability(spv::Capability::Linkage);
 
 	for (auto& t : _targets)
 	{

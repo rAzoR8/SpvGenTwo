@@ -2,7 +2,6 @@
 #include "common/LinkerHelper.h"
 #include "spvgentwo/Templates.h"
 #include "common/ModulePrinter.h"
-#include "spvgentwo/Grammar.h"
 
 #include <stdio.h>
 
@@ -93,9 +92,8 @@ spvgentwo::Module examples::linkageConsumer(spvgentwo::IAllocator* _pAllocator, 
 	return module;
 }
 
-bool examples::linkageLinked(const spvgentwo::Module& _lib, spvgentwo::Module& _consumer, spvgentwo::IAllocator* _pAllocator)
+bool examples::linkageLinked(const spvgentwo::Module& _lib, spvgentwo::Module& _consumer, spvgentwo::IAllocator* _pAllocator, const spvgentwo::Grammar* _pGrammar)
 {
-	const Grammar gram(_pAllocator);
 	auto printer = ModulePrinter::ModuleSimpleFuncPrinter([](const char* str) {
 		printf("%s", str);
 
@@ -105,8 +103,9 @@ bool examples::linkageLinked(const spvgentwo::Module& _lib, spvgentwo::Module& _
 	});
 
 	LinkerHelper::LinkerOptions options{};
-	options.grammar = &gram;
+	options.grammar = _pGrammar;
 	options.printer = &printer;
+	options.allocator = _pAllocator;
 
-	return LinkerHelper::import(_lib, _consumer, options, _pAllocator);
+	return LinkerHelper::import(_lib, _consumer, options);
 }

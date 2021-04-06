@@ -47,13 +47,14 @@ namespace spvgentwo
 		struct LinkerOptions 
 		{
 			Flag<LinkerOptionBits> flags{ LinkerOptionBits::All };
-			ModulePrinter::IModulePrinter* printer = nullptr;
-			const Grammar* grammar = nullptr;
+			ModulePrinter::IModulePrinter* printer = nullptr; // used to print instructions when transfered
+			const Grammar* grammar = nullptr; // used for printing instructions & add required capabilities for the resulting module
+			IAllocator* allocator = nullptr; // used for intermediate allocations, if nullptr, _consumer allocator is used
 		};
 
 		constexpr Flag<LinkerOptionBits> operator&(const LinkerOptions& l, const LinkerOptionBits& r) { return l.flags & r; }
 
 		// import exported symbols of _lib to _consumber
-		bool import(const Module& _lib, Module& _consumer, const LinkerOptions& _options, IAllocator* _pAllocator = nullptr);
+		bool import(const Module& _lib, Module& _consumer, const LinkerOptions& _options);
 	} // !LinkerHelper
 } // spvgentwo

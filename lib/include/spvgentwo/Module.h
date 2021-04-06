@@ -62,8 +62,8 @@ namespace spvgentwo
 		const List<EntryPoint>& getEntryPoints() const { return m_EntryPoints; }
 		List<EntryPoint>& getEntryPoints() { return m_EntryPoints; }
 
-		const List<Instruction>& getCapabilities() const { return m_Capabilities; }
-		List<Instruction>& getCapabilities() { return m_Capabilities; }
+		const HashMap<spv::Capability, Instruction>& getCapabilities() const { return m_Capabilities; }
+		HashMap<spv::Capability, Instruction>& getCapabilities() { return m_Capabilities; }
 
 		const List<Instruction>& getExtensions() const { return m_Extensions; }
 		List<Instruction>& getExtensions() { return m_Extensions; }
@@ -123,11 +123,14 @@ namespace spvgentwo
 		template <class ReturnType = void, class ... ParameterTypes>
 		EntryPoint& addEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
 
-		void addCapability(const spv::Capability _capability);
-		bool checkCapability(const spv::Capability _capability) const;
-		
-		// adds capability if not present
-		void checkAddCapability(const spv::Capability _capability);
+		// add OpCapability if not present in the module
+		void addCapability(spv::Capability _capability);
+
+		// check if OpCapability is present in the module
+		bool checkCapability(spv::Capability _capability) const;
+
+		// returns true if OpCapability matching _capability was in the module
+		bool removeCapability(spv::Capability _capability);
 		
 		void addExtension(const char* _pExtName);
 		Instruction* getExtensionInstructionImport(const char* _pExtName);
@@ -165,7 +168,8 @@ namespace spvgentwo
 
 		// manually assign IDs to all unresolved instructions, returns bounds/max id
 		// converts any Instruction pointer operand to an spv::Id
-		spv::Id assignIDs();
+		// adds missing OpCapabilities if _pGrammar != nullptr
+		spv::Id assignIDs(const Grammar*_pGrammar = nullptr);
 
 		// converts any spv::Id operand to Instruction pointer operands
 		// resets resultId to InvalidId for new assignment
@@ -184,9 +188,10 @@ namespace spvgentwo
 		bool write(IWriter* _pWriter) const;
 
 		// calls finalizeGlobalInterface() on EntryPoints
-		// automatically assigns IDs if _assingIDs (otherwise m_Bounds must be set & result IDs properly enumerated)
+		// automatically assigns IDs
+		// calls addRequiredCapabilities() if _pGrammar != nullptr
 		// serializes module to IWriter
-		bool finalizeAndWrite(IWriter* _pWriter, const bool _assingIDs = true);
+		bool finalizeAndWrite(IWriter* _pWriter, const Grammar* _pGrammar = nullptr);
 
 		// calls finalizeGlobalInterface() on all EntryPoints, adds referenced global variables to OpEntryPoint parameters
 		void finalizeEntryPoints();
@@ -317,6 +322,9 @@ namespace spvgentwo
 		// remove _pInstr if it is homed in this module, its functions and basic blocks, returns true if it was removed
 		bool remove(const Instruction* _pInstr);
 
+		// scans instructions of this module, looking for required OpCapabilities using _grammar, adding them to _outCapabilities
+		void addRequiredCapabilities(const Grammar& _grammar);
+
 		// ILogger proxy calls
 		template <typename ...Args>
 		bool log(bool _pred, const LogLevel _level, const char* _pFormat, Args... _args) const;
@@ -369,7 +377,7 @@ namespace spvgentwo
 		List<EntryPoint> m_EntryPoints;
 
 		// preamble
-		List<Instruction> m_Capabilities;
+		HashMap<spv::Capability, Instruction> m_Capabilities;
 		List<Instruction> m_Extensions;
 		HashMap<const char*, Instruction> m_ExtInstrImport; // todo: map between ext names and Instruction*
 		Instruction m_MemoryModel;

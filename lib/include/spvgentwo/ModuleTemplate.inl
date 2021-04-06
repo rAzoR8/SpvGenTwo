@@ -159,9 +159,6 @@ namespace spvgentwo
 		static_assert(traits::is_invocable_v<Func, Instruction&>, "Func _func is not invocable: _func(Instruction& _instr)");
 		using Ret = decltype(stdrep::declval<Func>()(stdrep::declval<Instruction&>()));
 
-		if (iterateInstructionContainer(_func, _module.getCapabilities())) return true;
-		if (iterateInstructionContainer(_func, _module.getExtensions())) return true;
-
 		auto pred = [&_func](auto& instr) -> bool
 		{
 			if constexpr (stdrep::is_same_v<Ret, bool>)
@@ -175,9 +172,16 @@ namespace spvgentwo
 			}
 		};
 
-		for (auto& [key, value] : _module.getExtInstrImports())
+		for (auto& [key, instr] : _module.getCapabilities())
 		{
-			if (pred(value)) return true;
+			if (pred(instr)) return true;
+		}
+
+		if (iterateInstructionContainer(_func, _module.getExtensions())) return true;
+
+		for (auto& [key, instr] : _module.getExtInstrImports())
+		{
+			if (pred(instr)) return true;
 		}
 
 		if (pred(_module.getMemoryModel())) return true;

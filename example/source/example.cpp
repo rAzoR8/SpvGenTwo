@@ -1,6 +1,8 @@
 #include <cstdlib> // system
 
 #include "spvgentwo/Logger.h"
+#include "spvgentwo/Grammar.h"
+
 #include "common/HeapAllocator.h"
 #include "common/BinaryFileWriter.h"
 #include "common/BinaryFileReader.h"
@@ -73,6 +75,7 @@ int main(int argc, char* argv[])
 {
 	TestLogger log;
 	HeapAllocator alloc; // custom user allocator
+	const Grammar gram(&alloc);
 
 	{
 		Module lib, consumer;
@@ -80,7 +83,7 @@ int main(int argc, char* argv[])
 		if (BinaryFileWriter writer("export.spv"); writer.isOpen())
 		{
 			lib = examples::linkageLib(&alloc, &log);
-			lib.finalizeAndWrite(&writer);
+			lib.finalizeAndWrite(&writer, &gram);
 			writer.close();
 			system("spirv-dis export.spv");
 			assert(system("spirv-val export.spv") == 0);
@@ -99,7 +102,7 @@ int main(int argc, char* argv[])
 		// linkage importing example
 		if (BinaryFileWriter writer("linkageOutput.spv"); writer.isOpen())
 		{
-			assert(examples::linkageLinked(lib, consumer, &alloc));
+			assert(examples::linkageLinked(lib, consumer, &alloc, &gram));
 			consumer.finalizeAndWrite(&writer);
 			writer.close();
 			system("spirv-dis linkageOutput.spv");

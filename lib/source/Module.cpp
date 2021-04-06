@@ -6,6 +6,8 @@
 #include "spvgentwo/InstructionTemplate.inl"
 #include "spvgentwo/ModuleTemplate.inl"
 
+#include "spvgentwo/Grammar.h"
+
 spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersion, ILogger* _pLogger, ITypeInferenceAndVailation* _pTypeInferenceAndVailation) :
 	Module(_pAllocator, _spvVersion, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger, _pTypeInferenceAndVailation) // use delegate constructor
 {
@@ -134,7 +136,11 @@ void spvgentwo::Module::updateParentPointers()
 		}
 	};
 
-	fixList(m_Capabilities);
+	for (auto& [cap, instr] : m_Capabilities)
+	{
+		instr.m_parent.pModule = this;
+	}
+
 	fixList(m_Extensions);
 
 	for (auto& [ext, instr] : m_ExtInstrImport)
@@ -289,30 +295,24 @@ spvgentwo::Instruction* spvgentwo::Module::addGlobalVariableInstr(const char* _p
 	return pVar;
 }
 
-void spvgentwo::Module::addCapability(const spv::Capability _capability)
+void spvgentwo::Module::addCapability(spv::Capability _capability)
 {
-	m_Capabilities.emplace_back(this).opCapability(_capability);
+	m_Capabilities.emplaceUnique(_capability, Instruction(this, spv::Op::OpCapability, _capability));
 }
 
-bool spvgentwo::Module::checkCapability(const spv::Capability _capability) const
+bool spvgentwo::Module::checkCapability(spv::Capability _capability) const
 {
-	for (const Instruction& cap : m_Capabilities)
-	{
-		if (cap.front() == literal_t{ _capability })
-		{
-			return true;
-		}
-	}
+	return m_Capabilities.find(_capability) != m_Capabilities.end();
+}
 
+bool spvgentwo::Module::removeCapability(spv::Capability _capability)
+{
+	if (auto it = m_Capabilities.find(_capability); it != m_Capabilities.end())
+	{
+		m_Capabilities.erase(it);
+		return true;
+	}
 	return false;
-}
-
-void spvgentwo::Module::checkAddCapability(const spv::Capability _capability)
-{
-	if (checkCapability(_capability) == false)
-	{
-		addCapability(_capability);
-	}
 }
 
 void spvgentwo::Module::addExtension(const char* _pExtName)
@@ -651,12 +651,24 @@ void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel,
 	m_MemoryModel.opMemoryModel(_addressModel, _memoryModel);
 }
 
-spvgentwo::spv::Id spvgentwo::Module::assignIDs()
+spvgentwo::spv::Id spvgentwo::Module::assignIDs(const Grammar* _pGrammar)
 {
 	unsigned int maxId = 0u;
 
-	iterateInstructions([&maxId](Instruction& instr)
+	iterateInstructions([&maxId, _pGrammar, this](Instruction& instr)
 	{
+		if (_pGrammar != nullptr) // add missing capabilities
+		{
+			if (auto* info = _pGrammar->getInfo(static_cast<unsigned int>(instr.getOperation())); info != nullptr)
+			{
+				for (const spv::Capability& c : info->capabilities)
+				{
+					m_Capabilities.emplaceUnique(c, Instruction(this, spv::Op::OpCapability, c));
+				}
+			}
+		}
+
+		// assign IDs
 		if (auto it = instr.getResultIdOperand(); it != nullptr)
 		{
 			*it = spv::Id{ ++maxId };
@@ -1073,14 +1085,11 @@ bool spvgentwo::Module::write(IWriter* _pWriter) const
 	return !iterateInstructions(writeInstr);
 }
 
-bool spvgentwo::Module::finalizeAndWrite(IWriter* _pWriter, const bool _assingIDs)
+bool spvgentwo::Module::finalizeAndWrite(IWriter* _pWriter, const Grammar* _pGrammar)
 {
 	finalizeEntryPoints();
 
-	if (_assingIDs)
-	{
-		assignIDs(); // overwrites m_spvBound
-	}
+	assignIDs(_pGrammar); // overwrites m_spvBound
 
 	return write(_pWriter);
 }
@@ -1132,7 +1141,16 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 		switch (op)
 		{
 		case spv::Op::OpCapability:
-			if (m_Capabilities.emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		{
+			Instruction opCap(this, spv::Op::OpCapability);
+			if (opCap.readOperands(_pReader, _grammar, op, operands) == false)
+			{
+				return false;
+			}
+			const spv::Capability cap{ opCap.front().getLiteral().value };
+			m_Capabilities.emplaceUnique(cap, stdrep::move(opCap));
+			break;
+		}
 		case spv::Op::OpExtension:
 			if (m_Extensions.emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpExtInstImport:
@@ -1393,7 +1411,15 @@ bool spvgentwo::Module::remove(const Instruction* _pInstr)
 
 	if(_pInstr->getParentType() == Instruction::ParentType::Module)
 	{
-		if (erase(m_Capabilities)) return true;
+		for (const auto& [key, value] : m_Capabilities)
+		{
+			if (&value == _pInstr)
+			{
+				m_Capabilities.erase(m_Capabilities.find(key));
+				return true;
+			}
+		}
+
 		if (erase(m_Extensions)) return true;
 
 		for (const auto& [key, value] : m_ExtInstrImport)
@@ -1449,6 +1475,22 @@ bool spvgentwo::Module::remove(const Instruction* _pInstr)
 	logError("Invalid instruction parent");
 
 	return false;
+}
+
+void spvgentwo::Module::addRequiredCapabilities(const Grammar& _grammar)
+{
+	auto check = [&](const Instruction& _instr)
+	{
+		if (auto* info = _grammar.getInfo(static_cast<unsigned int>(_instr.getOperation())); info != nullptr)
+		{
+			for (const spv::Capability& c : info->capabilities)
+			{
+				m_Capabilities.emplaceUnique(c, Instruction(this, spv::Op::OpCapability, c));
+			}
+		}
+	};
+
+	iterateInstructions(check);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::getInstructionByName(const char* _pName) const

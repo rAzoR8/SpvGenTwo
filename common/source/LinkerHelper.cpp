@@ -391,26 +391,20 @@ namespace spvgentwo
 	} // !LinkerHelper
 } // !spvgentwo
 
-bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, const LinkerOptions& _options, IAllocator* _pAllocator)
+bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, const LinkerOptions& _options)
 {
-	if(_pAllocator == nullptr)
-	{
-		_pAllocator = _consumer.getAllocator();
-	}
+	IAllocator* pAllocator = _options.allocator != nullptr ? _options.allocator : _consumer.getAllocator();
 
 	auto info = [&](auto&& ... args) {_consumer.logInfo(args...); };
 	auto error = [&](auto&& ... args) {_consumer.logError(args...); };
 
-	const auto version = _lib.getSpvVersion() > _consumer.getSpvVersion() ? _lib.getSpvVersion() : _consumer.getSpvVersion();
-	_consumer.setSpvVersion(version);
-
-	HashMap<String, const Instruction*> exportTable(_pAllocator);
+	HashMap<String, const Instruction*> exportTable(pAllocator);
 
 	// build export table
 	for (const Instruction& deco : _lib.getDecorations())
 	{
 		Instruction* symbol = nullptr;
-		String name(_pAllocator);
+		String name(pAllocator);
 
 		if (getLinkageTypeFromDecoration(&deco, &symbol, &name) == spv::LinkageType::Export)
 		{
@@ -427,8 +421,8 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		BasicBlock::Iterator decoIt = nullptr;
 	};
 
-	List<ImportSymbol> iVars(_pAllocator);
-	List<ImportSymbol> iFuncs(_pAllocator);
+	List<ImportSymbol> iVars(pAllocator);
+	List<ImportSymbol> iFuncs(pAllocator);
 
 	bool hasExports = false;
 
@@ -436,7 +430,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	for (auto it = _consumer.getDecorations().begin(), end = _consumer.getDecorations().end(); it != end; ++it)
 	{
 		Instruction* importSymbol = nullptr;
-		String name(_pAllocator);
+		String name(pAllocator);
 		const spv::LinkageType type = getLinkageTypeFromDecoration(it.operator->(), &importSymbol, &name);
 
 		if (type == spv::LinkageType::Import)
@@ -471,16 +465,16 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	}
 
 	// lib -> consumer
-	HashMap<const Instruction*, Instruction*> cache(_pAllocator);
+	HashMap<const Instruction*, Instruction*> cache(pAllocator);
 
 	if (_options & LinkerOptionBits::ImportReferencedFunctions)
 	{
 		// gather all functions called from all the iFuncs we want to import
-		HashMap <Function*, Instruction*> calledFuncs(_pAllocator, static_cast<unsigned int>(_lib.getFunctions().size())); // Func -> OpFunctionCall
+		HashMap <Function*, Instruction*> calledFuncs(pAllocator, static_cast<unsigned int>(_lib.getFunctions().size())); // Func -> OpFunctionCall
 		for (const ImportSymbol& func : iFuncs)
 		{
 			Function* target = func.lib->getFunction();
-			FunctionCallGraph fcg(*target, _pAllocator);
+			FunctionCallGraph fcg(*target, pAllocator);
 
 			for (auto& src : fcg)
 			{
@@ -575,7 +569,22 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 	if (hasExports && allImportsResolved && (_options & LinkerOptionBits::RemoveLinkageCapability)) 
 	{
-		// TODO: remove Linkage capabilities from _consumer if it does not export any symbols itself
+		_consumer.removeCapability(spv::Capability::Linkage);
+	}
+
+	const auto version = _lib.getSpvVersion() > _consumer.getSpvVersion() ? _lib.getSpvVersion() : _consumer.getSpvVersion();
+	_consumer.setSpvVersion(version);
+
+	if (_options.grammar != nullptr) // only add required capabilities
+	{
+		_consumer.addRequiredCapabilities(*_options.grammar);
+	}
+	else // import all capabilities
+	{
+		for (const auto& [cap, instr] : _lib.getCapabilities())
+		{
+			_consumer.addCapability(cap);
+		}
 	}
 
 	// update global variable interface in case it changed and the user forgets to finalize the module
