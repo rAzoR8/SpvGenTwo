@@ -177,7 +177,10 @@ namespace spvgentwo
 			if (pred(instr)) return true;
 		}
 
-		if (iterateInstructionContainer(_func, _module.getExtensions())) return true;
+		for (auto& [key, instr] : _module.getExtensions())
+		{
+			if (pred(instr)) return true;
+		}
 
 		for (auto& [key, instr] : _module.getExtInstrImports())
 		{

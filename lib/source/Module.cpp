@@ -136,17 +136,17 @@ void spvgentwo::Module::updateParentPointers()
 		}
 	};
 
-	for (auto& [cap, instr] : m_Capabilities)
+	auto fixMap = [&](auto& map)
 	{
-		instr.m_parent.pModule = this;
-	}
+		for (auto& [key, instr] : map)
+		{
+			instr.m_parent.pModule = this;
+		}
+	};
 
-	fixList(m_Extensions);
-
-	for (auto& [ext, instr] : m_ExtInstrImport)
-	{
-		instr.m_parent.pModule = this;
-	}
+	fixMap(m_Capabilities);
+	fixMap(m_Extensions);
+	fixMap(m_ExtInstrImport);
 
 	fixList(m_ExecutionModes);
 	fixList(m_SourceStrings);
@@ -317,18 +317,22 @@ bool spvgentwo::Module::removeCapability(spv::Capability _capability)
 
 void spvgentwo::Module::addExtension(const char* _pExtName)
 {
-	m_Extensions.emplace_back(this).opExtension(_pExtName);
+	Instruction& instr = m_Extensions.emplaceUnique(String(m_pAllocator, _pExtName), this).kv.value;
+	if (instr.empty()) 
+	{
+		instr.opExtension(_pExtName);	
+	}
 }
 
 spvgentwo::Instruction* spvgentwo::Module::getExtensionInstructionImport(const char* _pExtName)
 {
-	Instruction& opExtInst = m_ExtInstrImport.emplaceUnique(String(m_pAllocator, _pExtName), this).kv.value;
-	if (opExtInst.empty())
+	Instruction& instr = m_ExtInstrImport.emplaceUnique(String(m_pAllocator, _pExtName), this).kv.value;
+	if (instr.empty())
 	{
-		opExtInst.opExtInstImport(_pExtName);
+		instr.opExtInstImport(_pExtName);
 	}
 
-	return &opExtInst;
+	return &instr;
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addSourceStringInstr()
@@ -1152,9 +1156,31 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			break;
 		}
 		case spv::Op::OpExtension:
-			if (m_Extensions.emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		{
+			Instruction opExtension(this, spv::Op::OpExtension);
+			if (opExtension.readOperands(_pReader, _grammar, op, operands) == false)
+			{
+				return false;
+			}
+
+			String name(m_pAllocator);
+			getLiteralString(name, opExtension.begin(), opExtension.end());
+			m_Extensions.emplaceUnique(stdrep::move(name), stdrep::move(opExtension));
+			break;
+		}
 		case spv::Op::OpExtInstImport:
-			if (m_Extensions.emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+		{
+			Instruction opExtInstrImport(this, spv::Op::OpExtension);
+			if (opExtInstrImport.readOperands(_pReader, _grammar, op, operands) == false)
+			{
+				return false;
+			}
+
+			String name(m_pAllocator);
+			getLiteralString(name, opExtInstrImport.begin().next(), opExtInstrImport.end());
+			m_ExtInstrImport.emplaceUnique(stdrep::move(name), stdrep::move(opExtInstrImport));
+			break;
+		}
 		case spv::Op::OpMemoryModel:
 			if (m_MemoryModel.readOperands(_pReader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpEntryPoint:
@@ -1420,7 +1446,14 @@ bool spvgentwo::Module::remove(const Instruction* _pInstr)
 			}
 		}
 
-		if (erase(m_Extensions)) return true;
+		for (const auto& [key, value] : m_Extensions)
+		{
+			if (&value == _pInstr)
+			{
+				m_Extensions.erase(m_Extensions.find(key));
+				return true;
+			}
+		}
 
 		for (const auto& [key, value] : m_ExtInstrImport)
 		{
