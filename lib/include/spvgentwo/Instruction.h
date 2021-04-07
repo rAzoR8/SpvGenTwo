@@ -98,7 +98,6 @@ namespace spvgentwo
 		template<class ...Args>
 		Operand& addOperand(Args&& ... _operand) { return emplace_back(stdrep::forward<Args>(_operand)...); }
 
-		// operand helper
 		spv::Id getResultId() const;
 		Instruction* getResultTypeInstr() const;
 		const Type* getType() const;
@@ -111,6 +110,13 @@ namespace spvgentwo
 
 		// get StorageClass of OpVariable and OpTypePointer instructions
 		spv::StorageClass getStorageClass() const;
+
+		// assign (overwrite prev. valid Id if _overwrite is true) next free Id from module to this instruction result (if it has a result)
+		// returns assigned Id
+		spv::Id assignResultId(bool _overwrite);
+
+		// assign (overwrite allways) _id to this instruction result (if it has a result)
+		void assignResultId(spv::Id _id);
 	
 		bool isType() const;
 		bool isTerminator() const;

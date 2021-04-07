@@ -270,6 +270,23 @@ spvgentwo::spv::StorageClass spvgentwo::Instruction::getStorageClass() const
 	}
 }
 
+spvgentwo::spv::Id spvgentwo::Instruction::assignResultId(bool _overwrite)
+{
+	if (auto it = getResultIdOperand(); it != nullptr && (_overwrite || it->getId() == InvalidId)) 
+	{
+		*it = getModule()->getNextId();
+	}
+	return InvalidId;
+}
+
+void spvgentwo::Instruction::assignResultId(spv::Id _id)
+{
+	if (auto it = getResultIdOperand(); it != nullptr)
+	{
+		*it = _id;
+	}
+}
+
 bool spvgentwo::Instruction::isType() const
 {
 	return spv::IsTypeOp(m_Operation);
