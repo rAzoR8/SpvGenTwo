@@ -146,12 +146,18 @@ namespace spvgentwo
 {
 	namespace LinkerHelper
 	{
-		void printInstruction(const LinkerOptions& _options, const spvgentwo::Instruction* _instr, const char* _end = "\n")
+		void printInstruction(const LinkerOptions& _options, const spvgentwo::Instruction* _instr1, const char* _separator = "\n", const Instruction* _instr2 = nullptr, const char* _end = "\n")
 		{
 			if(_options.printer != nullptr && _options.grammar != nullptr)
 			{
-				spvgentwo::ModulePrinter::printInstruction(*_instr, *_options.grammar, *_options.printer);
-				*_options.printer << _end;
+				spvgentwo::ModulePrinter::printInstruction(*_instr1, *_options.grammar, *_options.printer);
+				*_options.printer << _separator;
+
+				if (_instr2 != nullptr)
+				{
+					spvgentwo::ModulePrinter::printInstruction(*_instr2, *_options.grammar, *_options.printer);
+					*_options.printer << _end;
+				}
 			}
 		}
 
@@ -243,6 +249,7 @@ namespace spvgentwo
 			printInstruction(_options, _pTarget);
 
 			_cache.emplaceUnique(_pLibInstr, _pTarget);
+
 			return true;
 		}
 
@@ -254,7 +261,6 @@ namespace spvgentwo
 			}
 
 			// for Names, Decorates etc referencing _libInstr:
-			// transferInstruction(instr, new _consumerInstr, cache);
 			bool success = true;
 
 			// decorates except linkage
@@ -294,7 +300,6 @@ namespace spvgentwo
 				}
 			}
 
-
 			return success;
 		};
 
@@ -326,6 +331,7 @@ namespace spvgentwo
 				if (importGlobalDependencies(_consumer, _libSymbol, _consumerSymbol, _cache, _options) == false)
 					return false;
 
+				printInstruction(_options, _libSymbol, " -> ", _consumerSymbol);
 				_cache.emplaceUnique(_libSymbol, _consumerSymbol);
 			}
 			else if (*_libSymbol == spv::Op::OpFunction && _libSymbol->getFunction() != nullptr && _consumerSymbol->getFunction() != nullptr)
@@ -335,6 +341,7 @@ namespace spvgentwo
 
 				// add function signature to cache
 				{
+					printInstruction(_options, _libSymbol, " -> ", _consumerSymbol);
 					_cache.emplaceUnique(_libSymbol, _consumerSymbol); // cache OpFunction
 
 					const auto& libParams = libFunc.getParameters();
@@ -355,21 +362,36 @@ namespace spvgentwo
 							return false;
 						}
 
+						printInstruction(_options, lit.operator->(), " -> ", cit.operator->());
 						_cache.emplaceUnique(lit.operator->(), cit.operator->()); 
 					}
 				}
 				
 				// When resolving imported functions, the Function Control and all Function Parameter Attributes are taken from the function
 				// definition, and not from the function declaration.
-
 				for (const BasicBlock& bbLib : *_libSymbol->getFunction())
 				{
 					BasicBlock& bbConsumer = cosumerFunc.addBasicBlock(bbLib.getName());
+
+					printInstruction(_options, bbLib.getLabel(), " -> ", bbConsumer.getLabel());
+					_cache.emplaceUnique(bbLib.getLabel(), bbConsumer.getLabel());
+
 					for (const Instruction& iLib : bbLib)
 					{
 						if (iLib == spv::Op::OpFunctionCall)
 						{
-							// TODO: check if function was imported
+							const Instruction* iOpFunction = iLib.getFirstActualOperand()->getInstruction();
+							if (_cache.find(iOpFunction) == _cache.end())
+							{
+								if (const char* iFuncName = iOpFunction->getName(); iFuncName != nullptr) 
+								{
+									error("Call to unresolved OpFunction %s", iFuncName);								
+								}
+								else 
+								{
+									error("Call to unresolved OpFunction @%u", iOpFunction->getResultId());
+								}
+							}
 						}
 
 						if (importGlobalDependencies(_consumer, &iLib, nullptr, _cache, _options) == false)
@@ -379,6 +401,8 @@ namespace spvgentwo
 							return false;
 					}
 				}
+
+				printInstruction(_options, libFunc.getFunctionEnd(), " -> ", cosumerFunc.getFunctionEnd());
 			}
 			else
 			{
@@ -426,7 +450,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 	bool hasExports = false;
 
-	// consume inputs
+	// gather symbols to import
 	for (auto it = _consumer.getDecorations().begin(), end = _consumer.getDecorations().end(); it != end; ++it)
 	{
 		Instruction* importSymbol = nullptr;
@@ -514,36 +538,55 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 			}
 
 			Function& cFunc = _consumer.addFunction();
-			cache.emplaceUnique(lFunc->getFunction(), cFunc.getFunction()); // OpFunction
 
-			cFunc.setReturnType(_consumer.addType(lFunc->getReturnType()));
-
-			for (const Instruction& lParam : lFunc->getParameters()) // OpFunctionCall
+			auto assignId = [&](Instruction* instr) -> Instruction*
 			{
-				Instruction* cType = _consumer.addType(*lParam.getType());
-				cache.emplaceUnique(lParam.getResultTypeInstr(), cType);
-				
-				Instruction* cParam = cFunc.addParameters(cType);
+				if (_options & LinkerOptionBits::AssignResultIDs)
+				{
+					instr->assignResultId(false);
+				}
+				return instr;
+			};
+
+			// create function signature
+			cFunc.setReturnType(assignId(_consumer.addType(lFunc->getReturnType())));
+			for (const Instruction& lParam : lFunc->getParameters())
+			{
+				Instruction* cType = assignId(_consumer.addType(*lParam.getType()));
+				Instruction* cParam = assignId(cFunc.addParameters(cType)); // OpFunctionParameter
 				cache.emplaceUnique(&lParam, cParam);
+			}
+			cFunc.finalize(lFunc->getFunctionControl(), lFunc->getName());
+			assignId(cFunc.getFunctionTypeInstr());
+
+			cache.emplaceUnique(lFunc->getFunction(), assignId(cFunc.getFunction())); // OpFunction
+
+			printInstruction(_options, lFunc->getFunction(), " -> ", cFunc.getFunction()); // OpFunction
+			for (auto i = 0u; i < cFunc.getParameters().size(); ++i) 
+			{
+				printInstruction(_options, lFunc->getParameter(i), " -> ", cFunc.getParameter(i)); // OpFunctionParameter
 			}
 
 			for (const BasicBlock& lBB : *lFunc) 
 			{
 				BasicBlock& cBB = cFunc.addBasicBlock(lBB.getName());
 
+				cache.emplaceUnique(lBB.getLabel(), cBB.getLabel());
+				printInstruction(_options, lBB.getLabel(), " -> ", assignId(cBB.getLabel()));
+
 				for (const Instruction& lInstr : lBB)
 				{
 					Instruction* cInstr = cBB.addInstruction(lInstr.getName());
-
 					if (importGlobalDependencies(_consumer, &lInstr, cInstr, cache, _options) == false)
 						return false;
 
+					// don't add this instruction to the cache, we can't refenence it anyway
 					if (transferInstruction(&lInstr, cInstr, cache, _options) == false)
 						return false;
 				}
 			}
 
-			cFunc.finalize(lFunc->getFunctionControl(), lFunc->getName());
+			printInstruction(_options, lFunc->getFunctionEnd(), " -> ", cFunc.getFunctionEnd());
 		}
 	}
 
