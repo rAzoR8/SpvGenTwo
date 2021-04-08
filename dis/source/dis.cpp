@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 		Grammar gram(&alloc);
 
 		// parse the binary instructions & operands
-		if (module.readAndInit(&reader, gram) == false)
+		if (module.readAndInit(reader, gram) == false)
 		{
 			return -1;
 		}
@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
 		{
 			if (BinaryFileWriter writer("serialized.spv"); writer.isOpen())
 			{
-				module.finalizeAndWrite(&writer);
+				module.finalizeAndWrite(writer);
 			}
 		}
 	}

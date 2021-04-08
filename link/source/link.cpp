@@ -76,7 +76,7 @@ int patch(Module& _module, const HeapList<Target>& _targets, const char* _out)
 		return -1;
 	}
 
-	_module.finalizeAndWrite(&writer);
+	_module.finalizeAndWrite(writer);
 	return 0;
 }
 
@@ -97,7 +97,7 @@ int link(HeapList<Module>& _libs, Module& _target, const LinkerHelper::LinkerOpt
 		return -1;
 	}
 
-	_target.finalizeAndWrite(&writer);
+	_target.finalizeAndWrite(writer);
 
 	return 0;
 }
@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 				g_logger.logError("Failed to open %s", patchspv);
 				return -1;
 			}
-			else if (patchModule.readAndInit(&reader, g_gram) == false)
+			else if (patchModule.readAndInit(reader, g_gram) == false)
 			{
 				return -1;
 			}
@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
 				g_logger.logError("Failed to open %s", file);
 				return -1;
 			}
-			else if (libs.emplace_back(&g_alloc, spv::Version, &g_logger).readAndInit(&reader, g_gram) == false)
+			else if (libs.emplace_back(&g_alloc, spv::Version, &g_logger).readAndInit(reader, g_gram) == false)
 			{
 				return -1;
 			}
@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
 				g_logger.logError("Failed to open %s", targetspv);
 				return -1;
 			}
-			else if (targetModule.readAndInit(&reader, g_gram) == false)
+			else if (targetModule.readAndInit(reader, g_gram) == false)
 			{
 				return -1;
 			}

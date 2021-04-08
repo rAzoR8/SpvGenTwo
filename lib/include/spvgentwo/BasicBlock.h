@@ -61,9 +61,9 @@ namespace spvgentwo
 		// return last operation
 		operator Instruction* () const { return m_pLast != nullptr ? m_pLast->operator->() : nullptr; };
 
-		void write(IWriter* _pWriter) const;
+		void write(IWriter& _writer) const;
 
-		bool read(IReader* _pReader, const Grammar& _grammar);
+		bool read(IReader& _reader, const Grammar& _grammar);
 
 		// remove instruction from this block (if it is in this block). OpLabel can't be removed. Returns true if the instruction was removed
 		bool remove(const Instruction* _pInstr);

@@ -157,8 +157,9 @@ namespace spvgentwo
 
 		Instruction* compositeType(const spv::Op _Type, const List<Instruction*>& _subTypes);
 		
+		// create new composite type from _type as base type and Instruction* _types as subtypes
 		template <class ... TypeInstr>
-		Instruction* compositeType(const spv::Op _Type, TypeInstr ... _types);
+		Instruction* compositeType(const spv::Op _Type, TypeInstr* ... _types);
 		
 		Instruction* addConstant(const Constant& _const, const char* _pName = nullptr);
 		const Constant* getConstantInfo(const Instruction* _pConstantInstr);
@@ -175,7 +176,7 @@ namespace spvgentwo
 		// converts any Instruction pointer operand to an spv::Id
 		// adds missing OpCapabilities if _pGrammar != nullptr
 		// adss missing OpExtensions if _pGrammar != nullptr
-		spv::Id assignIDs(const Grammar*_pGrammar = nullptr);
+		spv::Id assignIDs(const Grammar* _pGrammar = nullptr);
 
 		// converts any spv::Id operand to Instruction pointer operands
 		// resets resultId to InvalidId for new assignment
@@ -191,22 +192,22 @@ namespace spvgentwo
 		// serializes module to IWriter, IDs must have been assigned using assignIDs()
 		// IDs dont need to be assigned if the module was parsed using read()
 		// returns false if IWriter::put failed
-		bool write(IWriter* _pWriter) const;
+		bool write(IWriter& _writer) const;
 
 		// calls finalizeGlobalInterface() on EntryPoints
 		// automatically assigns IDs
 		// calls addRequiredCapabilities() if _pGrammar != nullptr
 		// serializes module to IWriter
-		bool finalizeAndWrite(IWriter* _pWriter, const Grammar* _pGrammar = nullptr);
+		bool finalizeAndWrite(IWriter& _writer, const Grammar* _pGrammar = nullptr);
 
 		// calls finalizeGlobalInterface() on all EntryPoints, adds referenced global variables to OpEntryPoint parameters
 		void finalizeEntryPoints();
 
 		// parse a binary SPIR-V program from IReader using _grammer generated from SPIR-V machinereadable grammer json
-		bool read(IReader* _pReader, const Grammar& _grammar);
+		bool read(IReader& _reader, const Grammar& _grammar);
 
 		// calls read(), resolveIDs, reconstructNames and reconstrucTypesAndConstantInfo
-		bool readAndInit(IReader* _pReader, const Grammar& _grammar);
+		bool readAndInit(IReader& _reader, const Grammar& _grammar);
 
 		// for use with opExtensionMode, opExtensionModeId
 		Instruction* addExtensionModeInstr();
@@ -369,9 +370,6 @@ namespace spvgentwo
 		const Instruction* getErrorInstr() const { return &m_errorInstr; }
 
 	private:
-		template <class ... TypeInstr>
-		void compositeType(Type& _compositeTye, Instruction* _pSubType, TypeInstr ... _types);
-
 		void updateParentPointers();
 
 	private:

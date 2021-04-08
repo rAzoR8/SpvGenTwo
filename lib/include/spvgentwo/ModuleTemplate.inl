@@ -1,6 +1,28 @@
 #include "Module.h"
 #pragma once
 
+namespace 
+{
+	template<class ...TypeInstr>
+	inline void compositeTypeHelper(spvgentwo::Type& _compositeType, spvgentwo::Instruction* _pSubType, TypeInstr* ..._types)
+	{
+		if (const spvgentwo::Type* info = _pSubType->getType(); info != nullptr)
+		{
+			_compositeType.getSubTypes().emplace_back(*info);
+		}
+		else
+		{
+			_pSubType->getModule()->logError("Type info not found for _pSubType");
+			return;
+		}
+
+		if constexpr (sizeof...(_types) > 0u)
+		{
+			compositeTypeHelper(_compositeType, _types...);
+		};
+	}
+}
+
 namespace spvgentwo
 {
 	template<class Func>
@@ -68,37 +90,17 @@ namespace spvgentwo
 	}
 
 	template<class ...TypeInstr>
-	inline Instruction* Module::compositeType(const spv::Op _Type, TypeInstr ..._types)
+	inline Instruction* Module::compositeType(const spv::Op _Type, TypeInstr* ..._types)
 	{
 		Type t(m_pAllocator);
 		t.setType(_Type);
 
 		if constexpr (sizeof...(_types) > 0u)
 		{
-			compositeType(t, _types...);
+			compositeTypeHelper(t, _types...);
 		}
 	
 		return addType(t);
-	}
-
-	template<class ...TypeInstr>
-	inline void Module::compositeType(Type& _compositeType, Instruction* _pSubType, TypeInstr ..._types)
-	{
-		const Type* info = getTypeInfo(_pSubType);
-		if (info != nullptr)
-		{
-			_compositeType.getSubTypes().emplace_back(*info);
-		}
-		else
-		{
-			logError("Type info not found for _pSubType");
-			return;
-		}
-
-		if constexpr (sizeof...(_types) > 0u)
-		{
-			compositeType(_compositeType, _types...);
-		};
 	}
 
 	template<class T, class ... Props>

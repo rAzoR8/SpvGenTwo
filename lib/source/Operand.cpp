@@ -3,18 +3,18 @@
 #include "spvgentwo/Instruction.h"
 #include "spvgentwo/BasicBlock.h"
 
-bool spvgentwo::Operand::write(IWriter* _pWriter) const
+bool spvgentwo::Operand::write(IWriter& _writer) const
 {
 	switch (type)
 	{
 	case Type::Instruction:
-		return _pWriter->put(static_cast<unsigned int>(instruction->getResultId()));
+		return _writer.put(static_cast<unsigned int>(instruction->getResultId()));
 	case Type::BranchTarget:
-		return _pWriter->put(static_cast<unsigned int>(branchTarget->getLabel()->getResultId()));
+		return _writer.put(static_cast<unsigned int>(branchTarget->getLabel()->getResultId()));
 	case Type::Literal:
-		return _pWriter->put(literal.value);
+		return _writer.put(literal.value);
 	case Type::Id:
-		return _pWriter->put(static_cast<unsigned int>(id));
+		return _writer.put(static_cast<unsigned int>(id));
 	default:
 		return false;
 	}

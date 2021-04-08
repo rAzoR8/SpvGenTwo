@@ -141,10 +141,10 @@ namespace spvgentwo
 		unsigned int getOpCode() const;
 
 		// serialize instruction operands to the IWriter, returns false if IWriter::put returned false 
-		bool write(IWriter* _pWriter) const;
+		bool write(IWriter& _writer) const;
 
 		// deserialize instruction operands from this IReader
-		bool readOperands(IReader* _pReader, const Grammar& _grammar, spv::Op _op, unsigned int _operandCount);
+		bool readOperands(IReader& _reader, const Grammar& _grammar, spv::Op _op, unsigned int _operandCount);
 
 		// transforms _args to operands, calls inferResultTypeOperand and validateOperands()
 		template <class ...Args>

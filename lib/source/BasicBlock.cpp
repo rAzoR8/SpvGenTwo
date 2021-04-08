@@ -122,29 +122,29 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::returnValue(Instruction* _pValue)
 	return pRet;
 }
 
-void spvgentwo::BasicBlock::write(IWriter* _pWriter) const
+void spvgentwo::BasicBlock::write(IWriter& _writer) const
 {
-	m_Label.write(_pWriter);
+	m_Label.write(_writer);
 
 	for (Instruction& instr : *this)
 	{
-		instr.write(_pWriter);
+		instr.write(_writer);
 	}
 }
 
-bool spvgentwo::BasicBlock::read(IReader* _pReader, const Grammar& _grammar)
+bool spvgentwo::BasicBlock::read(IReader& _reader, const Grammar& _grammar)
 {
 	// function alread consumed the first word of OpLabel, OpLabel as one result Id operand
-	if (m_Label.readOperands(_pReader, _grammar, spv::Op::OpLabel, 1u) == false || m_Label.getOperation() != spv::Op::OpLabel) return false;
+	if (m_Label.readOperands(_reader, _grammar, spv::Op::OpLabel, 1u) == false || m_Label.getOperation() != spv::Op::OpLabel) return false;
 
 	unsigned int word{ 0 };
 
-	while (_pReader->get(word))
+	while (_reader.get(word))
 	{
 		const spv::Op op = getOperation(word);
 		const unsigned int operands = getOperandCount(word) - 1u;
 
-		if (emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false)
+		if (emplace_back(this).readOperands(_reader, _grammar, op, operands) == false)
 		{
 			break;
 		}

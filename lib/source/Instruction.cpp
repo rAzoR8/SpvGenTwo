@@ -312,21 +312,21 @@ bool spvgentwo::Instruction::isSpecOrConstant() const
 	return isSpecOrConstantOp(m_Operation);
 }
 
-bool spvgentwo::Instruction::write(IWriter* _pWriter) const
+bool spvgentwo::Instruction::write(IWriter& _writer) const
 {
-	if (_pWriter->put(getOpCode()) == false)
+	if (_writer.put(getOpCode()) == false)
 		return false;
 	
 	for (const Operand& operand : *this)
 	{
-		if (operand.write(_pWriter) == false)
+		if (operand.write(_writer) == false)
 			return false;
 	}
 
 	return true;
 }
 
-bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _grammar, spv::Op _op, unsigned int _operandCount)
+bool spvgentwo::Instruction::readOperands(IReader& _reader, const Grammar& _grammar, spv::Op _op, unsigned int _operandCount)
 {
 	reset();
 
@@ -353,7 +353,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 		unsigned int word{ 0u };
 		while (_operands-- > 0u)
 		{
-			if (_pReader->get(word) == false)
+			if (_reader.get(word) == false)
 			{
 				getModule()->logError("Unexpected end of instruction stream for %s", info->name);
 				return false;
@@ -372,7 +372,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 	auto parseId = [&](unsigned int& _operands) -> bool
 	{
 		unsigned int word{ 0u };
-		if (_pReader->get(word) == false)
+		if (_reader.get(word) == false)
 		{
 			getModule()->logError("Unexpected end of instruction stream for %s", info->name);
 			return false;
@@ -385,7 +385,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 	auto parseLiteral = [&](unsigned int& _operands) -> bool
 	{
 		unsigned int word{ 0u };
-		if (_pReader->get(word) == false)
+		if (_reader.get(word) == false)
 		{
 			getModule()->logError("Unexpected end of instruction stream for %s", info->name);
 			return false;

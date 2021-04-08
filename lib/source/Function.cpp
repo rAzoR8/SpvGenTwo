@@ -53,31 +53,31 @@ spvgentwo::Function& spvgentwo::Function::operator=(Function&& _other) noexcept
 	return *this;
 }
 
-void spvgentwo::Function::write(IWriter* _pWriter) const
+void spvgentwo::Function::write(IWriter& _writer) const
 {
-	m_Function.write(_pWriter);
+	m_Function.write(_writer);
 
 	for (const Instruction& instr : m_Parameters)
 	{
-		instr.write(_pWriter);
+		instr.write(_writer);
 	}
 
 	for (const BasicBlock& bb : *this)
 	{
-		bb.write(_pWriter);
+		bb.write(_writer);
 	}
 
-	m_FunctionEnd.write(_pWriter);
+	m_FunctionEnd.write(_writer);
 }
 
-bool spvgentwo::Function::read(IReader* _pReader, const Grammar& _grammar, Instruction&& _opFunc)
+bool spvgentwo::Function::read(IReader& _reader, const Grammar& _grammar, Instruction&& _opFunc)
 {
 	// module already consumed OpFunction
 	m_Function = stdrep::move(_opFunc);
 
 	unsigned int word{ 0 };
 
-	while (_pReader->get(word))
+	while (_reader.get(word))
 	{
 		const spv::Op op = getOperation(word);
 		const unsigned int operands = getOperandCount(word) - 1u;
@@ -85,10 +85,10 @@ bool spvgentwo::Function::read(IReader* _pReader, const Grammar& _grammar, Instr
 		switch (op)
 		{
 		case spv::Op::OpFunctionParameter:
-			if (m_Parameters.emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false) return false;
+			if (m_Parameters.emplace_back(this).readOperands(_reader, _grammar, op, operands) == false) return false;
 			break;
 		case spv::Op::OpLabel:
-			if (addBasicBlock().read(_pReader, _grammar) == false) return false;
+			if (addBasicBlock().read(_reader, _grammar) == false) return false;
 			break;
 		case spv::Op::OpFunctionEnd:
 			return true; // FunctionEnd has no operands

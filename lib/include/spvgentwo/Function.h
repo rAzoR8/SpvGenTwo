@@ -79,10 +79,10 @@ namespace spvgentwo
 		BasicBlock& operator*() { return m_pBegin->inner(); }
 
 		// write OpFunction OpFunctionParameters <BasicBlocks> OpFunctionEnd to IWriter
-		void write(IWriter* _pWriter) const;
+		void write(IWriter& _writer) const;
 
 		// read function from IReader user _grammer, assuming OpFunction was already parsed/consumed by module::read(Reader* _pReader)
-		bool read(IReader* _pReader, const Grammar& _grammar, Instruction&& _opFunc);
+		bool read(IReader& _rader, const Grammar& _grammar, Instruction&& _opFunc);
 
 		// storage class is Function
 		Instruction* variable(Instruction* _pPtrType, const char* _pName = nullptr, Instruction* _pInitialzer = nullptr);

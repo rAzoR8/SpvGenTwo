@@ -1075,31 +1075,31 @@ bool spvgentwo::Module::reconstructNames(IAllocator* _pAllocator)
 	return success;
 }
 
-bool spvgentwo::Module::write(IWriter* _pWriter) const
+bool spvgentwo::Module::write(IWriter& _writer) const
 {
 	// write header
-	if (_pWriter->put(spv::MagicNumber) == false) return false;
-	if (_pWriter->put(m_spvVersion) == false) return false;
-	if (_pWriter->put(GeneratorId) == false) return false;
-	if (_pWriter->put(m_spvBound) == false) return false;
-	if (_pWriter->put(m_spvSchema) == false) return false;
+	if (_writer.put(spv::MagicNumber) == false) return false;
+	if (_writer.put(m_spvVersion) == false) return false;
+	if (_writer.put(GeneratorId) == false) return false;
+	if (_writer.put(m_spvBound) == false) return false;
+	if (_writer.put(m_spvSchema) == false) return false;
 
-	auto writeInstr = [_pWriter](const Instruction& instr) -> bool
+	auto writeInstr = [&_writer](const Instruction& instr) -> bool
 	{
-		return instr.write(_pWriter) == false;
+		return instr.write(_writer) == false;
 	};
 
 	// iterateModuleInstructions returns TRUE if not all instructions were enumarated because _func returned TRUE
 	return !iterateInstructions(writeInstr);
 }
 
-bool spvgentwo::Module::finalizeAndWrite(IWriter* _pWriter, const Grammar* _pGrammar)
+bool spvgentwo::Module::finalizeAndWrite(IWriter& _writer, const Grammar* _pGrammar)
 {
 	finalizeEntryPoints();
 
 	assignIDs(_pGrammar); // overwrites m_spvBound
 
-	return write(_pWriter);
+	return write(_writer);
 }
 
 void spvgentwo::Module::finalizeEntryPoints()
@@ -1118,31 +1118,31 @@ void spvgentwo::Module::finalizeEntryPoints()
 	}
 }
 
-bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
+bool spvgentwo::Module::read(IReader& _reader, const Grammar& _grammar)
 {
 	unsigned int word{ 0 };
 
-	if (_pReader->get(word) == false || word != spv::MagicNumber)
+	if (_reader.get(word) == false || word != spv::MagicNumber)
 	{
 		logError("Failed to parse magic number");
 		return false;
 	}
 
-	if (logError(_pReader->get(m_spvVersion), "Failed to parse version") == false) return false;
-	if (logError(_pReader->get(m_spvGenerator), "Failed to parse generator") == false) return false;
-	if (logError(_pReader->get(m_spvBound), "Failed to parse bounds") == false) return false;
-	if (logError(_pReader->get(m_spvSchema), "Failed to parse schema") == false) return false;
+	if (logError(_reader.get(m_spvVersion), "Failed to parse version") == false) return false;
+	if (logError(_reader.get(m_spvGenerator), "Failed to parse generator") == false) return false;
+	if (logError(_reader.get(m_spvBound), "Failed to parse bounds") == false) return false;
+	if (logError(_reader.get(m_spvSchema), "Failed to parse schema") == false) return false;
 
 	HashMap<spv::Id, EntryPoint*> entryPoints(m_pAllocator);
 
-	while (_pReader->get(word))
+	while (_reader.get(word))
 	{
 		const spv::Op op = getOperation(word);
 		const unsigned int operands = getOperandCount(word) - 1u;
 
 		if (spv::IsTypeOp(op) || isSpecOrConstantOp(op))
 		{
-			if (m_TypesAndConstants.emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false) return false;
+			if (m_TypesAndConstants.emplace_back(this).readOperands(_reader, _grammar, op, operands) == false) return false;
 			continue;
 		}
 
@@ -1151,7 +1151,7 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 		case spv::Op::OpCapability:
 		{
 			Instruction opCap(this, spv::Op::OpCapability);
-			if (opCap.readOperands(_pReader, _grammar, op, operands) == false)
+			if (opCap.readOperands(_reader, _grammar, op, operands) == false)
 			{
 				return false;
 			}
@@ -1162,7 +1162,7 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 		case spv::Op::OpExtension:
 		{
 			Instruction opExtension(this, spv::Op::OpExtension);
-			if (opExtension.readOperands(_pReader, _grammar, op, operands) == false)
+			if (opExtension.readOperands(_reader, _grammar, op, operands) == false)
 			{
 				return false;
 			}
@@ -1175,7 +1175,7 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 		case spv::Op::OpExtInstImport:
 		{
 			Instruction opExtInstrImport(this, spv::Op::OpExtension);
-			if (opExtInstrImport.readOperands(_pReader, _grammar, op, operands) == false)
+			if (opExtInstrImport.readOperands(_reader, _grammar, op, operands) == false)
 			{
 				return false;
 			}
@@ -1186,11 +1186,11 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			break;
 		}
 		case spv::Op::OpMemoryModel:
-			if (m_MemoryModel.readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+			if (m_MemoryModel.readOperands(_reader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpEntryPoint:
 		{
 			EntryPoint* ep = &m_EntryPoints.emplace_back(this);
-			if (ep->getEntryPoint()->readOperands(_pReader, _grammar, op, operands) == false)
+			if (ep->getEntryPoint()->readOperands(_reader, _grammar, op, operands) == false)
 			{
 				return false;
 			}
@@ -1222,17 +1222,17 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 			break;
 		case spv::Op::OpExecutionMode:
 		case spv::Op::OpExecutionModeId:
-			if (addExtensionModeInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+			if (addExtensionModeInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpString:
 		case spv::Op::OpSourceExtension:
 		case spv::Op::OpSource:
 		case spv::Op::OpSourceContinued:
-			if (addSourceStringInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+			if (addSourceStringInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpName:
 		case spv::Op::OpMemberName:
-			if (addNameInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+			if (addNameInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpModuleProcessed:
-			if (addModuleProccessedInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+			if (addModuleProccessedInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpDecorate:
 		case spv::Op::OpMemberDecorate:
 		case spv::Op::OpDecorationGroup:
@@ -1241,9 +1241,9 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 		case spv::Op::OpDecorateId:
 		case spv::Op::OpDecorateString:
 		case spv::Op::OpMemberDecorateString:
-			if (addDecorationInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+			if (addDecorationInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpVariable:
-			if (addGlobalVariableInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false;
+			if (addGlobalVariableInstr()->readOperands(_reader, _grammar, op, operands) == false) return false;
 			
 			// check if storage type != function
 			if (m_GlobalVariables.last()->getStorageClass() == spv::StorageClass::Function)
@@ -1254,14 +1254,14 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 
 			break;
 		case spv::Op::OpUndef:
-			if(addUndefInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+			if(addUndefInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpLine:
 		case spv::Op::OpNoLine:
-			if (addLineInstr()->readOperands(_pReader, _grammar, op, operands) == false) return false; break;
+			if (addLineInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpFunction:
 		{
 			Instruction opFunc(this);
-			if (opFunc.readOperands(_pReader, _grammar, op, operands) == false)
+			if (opFunc.readOperands(_reader, _grammar, op, operands) == false)
 			{
 				return false;
 			}
@@ -1284,7 +1284,7 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 				func = &m_Functions.emplace_back(this);
 			}
 
-			if (func->read(_pReader, _grammar, stdrep::move(opFunc)) == false)
+			if (func->read(_reader, _grammar, stdrep::move(opFunc)) == false)
 			{
 				return false;
 			}
@@ -1299,9 +1299,9 @@ bool spvgentwo::Module::read(IReader* _pReader, const Grammar& _grammar)
 	return true;
 }
 
-bool spvgentwo::Module::readAndInit(IReader* _pReader, const Grammar& _grammar)
+bool spvgentwo::Module::readAndInit(IReader& _reader, const Grammar& _grammar)
 {
-	return read(_pReader, _grammar) && resolveIDs() && reconstructNames() && reconstructTypeAndConstantInfo();
+	return read(_reader, _grammar) && resolveIDs() && reconstructNames() && reconstructTypeAndConstantInfo();
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addExtensionModeInstr()
