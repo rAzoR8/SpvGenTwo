@@ -228,6 +228,25 @@ bool spvgentwo::Function::setReturnType(Instruction* _pReturnType)
 	}
 }
 
+bool spvgentwo::Function::setReturnType(const Type& _returnType)
+{
+	auto& types = m_FunctionType.getSubTypes();
+	if (types.empty())
+	{
+		m_pModule->logInfo("Result type of functions was not initialized");
+		return false;
+	}
+	else
+	{
+		// Todo: check _returnType:
+		// Return Type is the type of the return value of functions of this type. It must be a concrete or abstract type, or a pointer
+		// to such a type.If the function has no return value, Return Type must be OpTypeVoid.
+
+		types.front() = _returnType;
+		return true;
+	}
+}
+
 bool spvgentwo::Function::setFunctionType(Instruction* _pFunctionType)
 {
 	if (_pFunctionType->getOperation() != spv::Op::OpTypeFunction)
@@ -238,14 +257,25 @@ bool spvgentwo::Function::setFunctionType(Instruction* _pFunctionType)
 
 	if (const Type* type = _pFunctionType->getType(); type != nullptr)
 	{
-		m_FunctionType = *type;
-		return true;
+		return setFunctionType( *type );
 	}
 	else
 	{
-		m_pModule->logInfo("_pFunctionType has not type");
+		m_pModule->logInfo("_pFunctionType has no type");
 		return false;
 	}
+}
+
+bool spvgentwo::Function::setFunctionType(const Type& _functionType)
+{
+	if (_functionType != spv::Op::OpTypeFunction)
+	{
+		m_pModule->logError("_functionType is not OpTypeFunction");
+		return false;
+	}
+	m_FunctionType = _functionType;
+
+	return true;
 }
 
 spvgentwo::Instruction* spvgentwo::Function::finalize(const Flag<spv::FunctionControlMask> _control, const char* _pName)

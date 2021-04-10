@@ -20,13 +20,18 @@ namespace spvgentwo
 	template<class ... TypeInstr>
 	inline Instruction* Function::addParameters(Instruction* _pParamType, TypeInstr* ..._paramTypeInstructions)
 	{
-		[[maybe_unused]] Instruction* param = m_Parameters.emplace_back(this).opFunctionParameter(_pParamType);
-		
 		if (const Type* type = _pParamType->getType(); type != nullptr)
 		{
+			if (type->isVoid())
+			{
+				m_pModule->logError("_pParamType cannot be OpTypeVoid");
+				return nullptr;
+			}
 			m_FunctionType.getSubTypes().emplace_back(*type);
 		}
-
+		
+		[[maybe_unused]] Instruction* param = m_Parameters.emplace_back(this).opFunctionParameter(_pParamType);
+		
 		if constexpr (sizeof...(_paramTypeInstructions) > 0)
 		{
 			return addParameters(_paramTypeInstructions...);

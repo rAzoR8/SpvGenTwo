@@ -96,11 +96,13 @@ namespace spvgentwo
 		template <class T>
 		Instruction* variable(const T& _initialValue, const char* _pName = nullptr);
 
-		// creates m_pFunctionType with OpTypeFunction and _pReturnType (opperands are added by addParameters), returns m_pFunctionType
+		// set the first subtype of OpTypeFunction (opperands are added by addParameters), returns true on success
 		bool setReturnType(Instruction* _pReturnType);
+		bool setReturnType(const Type& _returnType);
 
-		// sets m_pFunctionType to _pFunctionType (OpTypeFunction) and extracts return type argument and asigns it to m_pReturnType, returns m_pReturnType
+		// sets m_FunctionType (OpTypeFunction), return true on success
 		bool setFunctionType(Instruction* _pFunctionType);
+		bool setFunctionType(const Type& _functionType);
 
 		// adds opFunctionParameter(_pParamType) to m_parameters and _pParamType to m_pFunctionType, returns last opFunctionParameter generated
 		template <class ... TypeInstr>
