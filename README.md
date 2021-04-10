@@ -36,7 +36,7 @@ Module module(&alloc, spv::Version, &log);
 // configure capabilities and extensions
 module.addCapability(spv::Capability::Shader);
 module.addCapability(spv::Capability::VulkanMemoryModelKHR);
-module.addExtension(u8"SPV_KHR_vulkan_memory_model");
+module.addExtension(spv::Extension::SPV_KHR_vulkan_memory_model);
 Instruction* ext = module.getExtensionInstructionImport(u8"GLSL.std.450");
 module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
 
@@ -70,7 +70,7 @@ Function& funcAdd = module.addFunction<float, float, float>(u8"add", spv::Functi
 
 // custom spir-v binary serializer:
 BinaryFileWriter writer("test.spv");
-module.write(&writer);
+module.finalizeAndWrite(writer);
 ```
 
 The resulting SPIR-V binary when disassembled using `spirv-dis`:
@@ -125,6 +125,7 @@ Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
 * [Constants Example](example/source/Constants.cpp)
 * [Types Example](example/source/Types.cpp)
 * [ExpressionGraph Example](example/source/ExpressionGraph.cpp)
+* [Linkage Example](example/source/Linkage.cpp)
 
 # Project Structure
 
