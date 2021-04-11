@@ -136,7 +136,7 @@ SpvGenTwo is split into 5 folders:
 * `example` contains small, self-contained code snippets that each generate a SPIR-V module to show some of the fundamental mechanics and APIs of SpvGenTwo.
 * `dis` is a [spirv-dis](https://github.com/KhronosGroup/SPIRV-Tools#disassembler-tool)-like tool to print assembly language text.
 * `refl` is a [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect)-like tool to extract descriptor bindings and other relevant info from SPIR-V binary modules.
-* `link`is a [spirv-link](https://github.com/KhronosGroup/SPIRV-Tools#linker-tool)-like tool to for merging symbols of modules into a new output module.
+* `link` is a [spirv-link](https://github.com/KhronosGroup/SPIRV-Tools#linker-tool)-like tool to for merging symbols of modules into a new output module.
 
 # Building
 
@@ -146,6 +146,7 @@ Use the supplied CMakeLists.txt to generate project files for your build system.
     * Note that the SpvGenTwoExample executable project requires the Vulkan SDK to be installed as it calls spirv-val and spriv-dis.
 * `SPVGENTWO_BUILD_DISASSEMBLER` is set to FALSE by default. If TRUE, an executable with sources from the 'dis' folder will be built.
 * `SPVGENTWO_BUILD_REFLECT` is set to FALSE by default. If TRUE, an executable with sources from the 'refl' folder will be built.
+* `SPVGENTWO_BUILD_LINKER` is set to FALSE by default. If TRUE, an executable with sources from the 'link' folder will be built.
 * `SPVGENTWO_REPLACE_PLACEMENTNEW` is set to TRUE by default. If FALSE, placement-new will be included from `<new>` header.
 * `SPVGENTWO_REPLACE_TRAITS` is set to TRUE by default. If FALSE, `<type_traits>` and `<utility>` header will be included under `spvgentwo::stdrep` namespace.
 * `SPVGENTWO_LOGGING` is set to TRUE by default, calls to module.log() will have not effect if FALSE.
@@ -162,7 +163,7 @@ SpvGenTwo includes a couple of CLI tools to explore and test the libraries capab
 
 SpvGenTwoDisassembler source can be found at [dis/source/dis.cpp](dis/source/dis.cpp), it is just a single source file demonstrating the basic parsing and IR walking capabilities of SpvGenTwo.
 
-CLI: ```SpvGenTwoDisassembler [file] <option> <option>```
+CLI: ```SpvGenTwoDisassembler [file] <option> <option> ...```
 
 ### Options
 * `--assignids` re-assigns instruction result IDs starting from 1. Some SPIR-V compilers emit IDs in a very high range, making it hard to read and trace data flow in assembly language text, `assignIDs` helps with that.
@@ -179,7 +180,7 @@ CLI: ```SpvGenTwoDisassembler [file] <option> <option>```
 
 SpvGenTwoReflect source can be found at [refl/source/refl.cpp](refl/source/refl.cpp)
 
-CLI: SpvGenTwoReflect ```[file] <option> <option>```
+CLI: SpvGenTwoReflect ```[file] <option> <option> ...```
 
 ### Options
 * `--var name` select variable by name (if OpVariable was annotated by OpName) for DescriptorType & Decoration printing (`name` has to be a UTF-8 string)
@@ -194,6 +195,36 @@ CLI: SpvGenTwoReflect ```[file] <option> <option>```
 * `--id Id` print SPIR-V assembly text for the instruction with result Id
     * `--id 24`
 * `--colors` use [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) color codes
+
+## Linker
+
+![SpvGenTwoLinker](/misc/link.PNG)
+
+SpvGenTwoLinker source can be found at [refl/source/link.cpp](refl/source/link.cpp)
+
+CLI: SpvGenTwoLinker ```<option> <option> ...```
+
+### Options
+
+* `--o outputPath` path to the resulting output module
+    * `--out outputPath` same as `--o`
+* `--l libPath` path to a input module to import symbols from (e.g. `--l toneMapping.spv`)
+    * `--lib libPath` same as `--l`
+* `--t targetPath` path to a target module to consume symbols from import modules (e.g. `--t targetShader.spv`)
+    * `--target targetPath` same as `--t`
+    * if `outputPath` (below) is undefined, _targetPath_ will be used to write the output .spv
+
+* `--printInstructions` enable printing of instructions being imported to the consuming module (debug feature)
+
+Currently, GLSL shader compilers do no support SPIR-V import/export attributes so SpvGenTwoLinker exposes functionality to patch existing SPIR-V modules to add linkage attributes and remove function bodies to turn .spv shaders into libs for import.
+
+* `--p shaderPath` path to .spv module that should be prepared for use as import or export module.
+    * `--patchspv shaderPath` same as `--p`
+    * if _outputPath_ is undefined _shaderPath_ will be used. (Overwrites the original file)
+* `--e target name --vars` export a symbol (OpVariable or OpFunction) with _target_ ID or string name (if the symbol was decorated with OpName) from the _patchspv_ module by adding `OpDecorate` with LinkageType::Export and export _name_. `--vars` can be used on OpFunction exports to automatically export global variables referenced in the function. Those global variables will be exported with the name taken form OpName (i,e. they can't be exported without OpName).
+    `--export target name --vars` same as `--e`. `--vars` is optional
+* `--i target name` import a _target_ symbol (by ID or OpName) with _name_ and LinkageType::Import decoration. `--vars` is only applicable for `--e`.
+    * `--import target name` same as `--i`
 
 # Documentation
 
