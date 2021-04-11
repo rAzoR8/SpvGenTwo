@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
 		if (const char* name = argv[++i]; name != nullptr)
 		{
 			bool exportVars = false;
-			if (i + 1 < argc && (strcmp(argv[i + 1], "--exportvars") == 0))
+			if (type == spv::LinkageType::Export && i + 1 < argc && (strcmp(argv[i + 1], "--vars") == 0))
 			{
 				++i;
 				exportVars = true;
@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
 	for (; i < argc; ++i)
 	{
 		const char* arg = argv[i];
-		if (i + 1 < argc && strcmp(arg, "--patchspv") == 0)
+		if (i + 1 < argc && (strcmp(arg, "--p") == 0 || strcmp(arg, "--patchspv") == 0))
 		{
 			patchspv = argv[++i];
 			BinaryFileReader reader(patchspv);
@@ -164,7 +164,7 @@ int main(int argc, char* argv[])
 				return -1;
 			}
 		}
-		else if (i + 1 < argc && strcmp(arg, "--l") == 0)
+		else if (i + 1 < argc && (strcmp(arg, "--l") == 0 || strcmp(arg, "--lib") == 0))
 		{
 			const char* file = argv[++i];
 			BinaryFileReader reader(file);
@@ -178,7 +178,7 @@ int main(int argc, char* argv[])
 				return -1;
 			}
 		}
-		else if (i + 1 < argc && strcmp(arg, "--target") == 0)
+		else if (i + 1 < argc && (strcmp(arg, "--t") == 0 || strcmp(arg, "--target") == 0))
 		{
 			targetspv = argv[++i];
 			BinaryFileReader reader(targetspv);
@@ -192,15 +192,15 @@ int main(int argc, char* argv[])
 				return -1;
 			}
 		}
-		else if (i + 1 < argc && strcmp(arg, "--out") == 0)
+		else if (i + 1 < argc && (strcmp(arg, "--o") == 0 || strcmp(arg, "--out") == 0))
 		{
 			out = argv[++i];
 		}
-		else if (i + 1 < argc && strcmp(arg, "--export") == 0)
+		else if (i + 1 < argc && (strcmp(arg, "--e") == 0 || strcmp(arg, "--export") == 0))
 		{
 			addTarget(spv::LinkageType::Export);
 		}
-		else if (i + 1 < argc && strcmp(arg, "--import") == 0)
+		else if (i + 1 < argc && (strcmp(arg, "--i") == 0 || strcmp(arg, "--import") == 0))
 		{
 			addTarget(spv::LinkageType::Import);
 		}
