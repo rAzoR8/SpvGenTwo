@@ -31,7 +31,7 @@ ConsoleLogger log;
 HeapAllocator alloc; // custom user allocator
 
 // create a new spir-v module
-Module module(&alloc, spv::Version, &log);
+Module module(&alloc, &log);
 
 // configure capabilities and extensions
 module.addCapability(spv::Capability::Shader);
@@ -76,7 +76,7 @@ module.finalizeAndWrite(writer);
 The resulting SPIR-V binary when disassembled using `spirv-dis`:
 ```cpp
 ; SPIR-V
-; Version: 1.4
+; Version: 1.0
 ; Generator: Unknown(250); 0
 ; Bound: 20
 ; Schema: 0
@@ -221,7 +221,7 @@ Currently, GLSL shader compilers do no support SPIR-V import/export attributes s
 * `--p shaderPath` path to .spv module that should be prepared for use as import or export module.
     * `--patchspv shaderPath` same as `--p`
     * if _outputPath_ is undefined _shaderPath_ will be used. (Overwrites the original file)
-* `--e target name --vars` export a symbol (OpVariable or OpFunction) with _target_ ID or string name (if the symbol was decorated with OpName) from the _patchspv_ module by adding `OpDecorate` with LinkageType::Export and export _name_. `--vars` can be used on OpFunction exports to automatically export global variables referenced in the function. Those global variables will be exported with the name taken form OpName (i,e. they can't be exported without OpName).
+* `--e target name --vars` export a symbol (OpVariable or OpFunction) with _target_ ID or string name (if the symbol was decorated with OpName) from the _patchspv_ module by adding `OpDecorate` with LinkageType::Export and export _name_. `--vars` can be used on OpFunction exports to automatically export global variables referenced in the function. Those global variables will be exported with the name taken form OpName (i.e. they can't be exported without OpName).
     `--export target name --vars` same as `--e`. `--vars` is optional
 * `--i target name` import a _target_ symbol (by ID or OpName) with _name_ and LinkageType::Import decoration. `--vars` is only applicable for `--e`.
     * `--import target name` same as `--i`

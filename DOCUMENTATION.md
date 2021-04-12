@@ -274,7 +274,7 @@ The `Module` class exposes the following interface for parsing and serializing b
 BinaryFileReader reader(spv);
 Grammar gram(&alloc);
 
-Module module(&alloc, spv::Version, &logger);
+Module module(&alloc, &logger);
 
 // parse the binary instructions & operands
 module.read(reader, gram);
@@ -384,11 +384,6 @@ const float* val = inst->getConstant()->getDataAs<float>();
 The resulting SPIR-V looks something like this:
 
 ```cpp
-; SPIR-V
-; Version: 1.5
-; Generator: Unknown(250); 0
-; Bound: 9
-; Schema: 0
                OpCapability Shader
                OpCapability GenericPointer
                OpCapability LiteralSampler
