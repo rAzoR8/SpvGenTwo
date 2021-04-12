@@ -39,14 +39,16 @@ namespace spvgentwo
 			ImportReferencedNames = 1 << 3, // referencing imported symbol
 			ImportReferencedFunctions = 1 << 4, // functions called from an imported function, but were not exported themselves
 			ImportReferencedVariables = 1 << 5, // global variables referenced in (auto) imported functions
-			AssignResultIDs = 1 << 6,
-			RemoveLinkageCapability = 1 << 7,
-			All = RemoveLinkageCapability | (RemoveLinkageCapability - 1)
+			AssignResultIDs = 1 << 6, // on-the-fligh assing ResultIds while transfering instructions from lib to consumber module (leaves original IDs intact, can improve performance if module.assignIDs() is not used)
+			RemoveLinkageCapability = 1 << 7, // remove linkage capability from the consumer library if all imports and exports have been resolved
+			AutoAddRequiredCapabilitiesAndExtensions = 1 << 8, // instead of copying ALL Capabilities & Extensions from the all libs to the consumer module, use LinkerOptions.grammar to select only required Caps & Exts for the consumer module.
+			UpdateEntryPointGlobalVarInterface = 1 << 9, // Add global variables referenced by the consumer EntryPoints to their OpEntryPoint, this should always be switched on unless Module.finalizeEntryPoints() is called after linking.
+			All = UpdateEntryPointGlobalVarInterface | (UpdateEntryPointGlobalVarInterface - 1)
 		};
 
 		struct LinkerOptions 
 		{
-			Flag<LinkerOptionBits> flags{ LinkerOptionBits::All };
+			Flag<LinkerOptionBits> flags{};
 			ModulePrinter::IModulePrinter* printer = nullptr; // used to print instructions when transfered
 			const Grammar* grammar = nullptr; // used for printing instructions & add required capabilities for the resulting module
 			IAllocator* allocator = nullptr; // used for intermediate allocations, if nullptr, _consumer allocator is used

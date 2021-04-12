@@ -142,278 +142,286 @@ spvgentwo::spv::LinkageType spvgentwo::LinkerHelper::getLinkageTypeFromDecoratio
 	return spv::LinkageType::Max;
 }
 
-namespace spvgentwo 
+namespace
 {
-	namespace LinkerHelper
+	using InstrLookup = spvgentwo::HashMap<const spvgentwo::Instruction*, spvgentwo::Instruction*>;
+
+	inline void printInstruction(const spvgentwo::LinkerHelper::LinkerOptions& _options, const spvgentwo::Instruction* _instr1, const char* _separator = "\n", const spvgentwo::Instruction* _instr2 = nullptr, const char* _end = "\n")
 	{
-		void printInstruction(const LinkerOptions& _options, const spvgentwo::Instruction* _instr1, const char* _separator = "\n", const Instruction* _instr2 = nullptr, const char* _end = "\n")
+		if (_options.printer != nullptr && _options.grammar != nullptr)
 		{
-			if(_options.printer != nullptr && _options.grammar != nullptr)
-			{
-				spvgentwo::ModulePrinter::printInstruction(*_instr1, *_options.grammar, *_options.printer);
-				*_options.printer << _separator;
+			spvgentwo::ModulePrinter::printInstruction(*_instr1, *_options.grammar, *_options.printer);
+			*_options.printer << _separator;
 
-				if (_instr2 != nullptr)
-				{
-					spvgentwo::ModulePrinter::printInstruction(*_instr2, *_options.grammar, *_options.printer);
-					*_options.printer << _end;
-				}
+			if (_instr2 != nullptr)
+			{
+				spvgentwo::ModulePrinter::printInstruction(*_instr2, *_options.grammar, *_options.printer);
+				*_options.printer << _end;
 			}
 		}
+	}
 
-		bool transferInstruction(const Instruction* _pLibInstr, Instruction* _pTarget, HashMap<const Instruction*, Instruction*>& _cache, LinkerOptions _options)
+	inline bool transferInstruction(const spvgentwo::Instruction* _pLibInstr, spvgentwo::Instruction* _pTarget, InstrLookup& _cache, spvgentwo::LinkerHelper::LinkerOptions _options)
+	{
+		using namespace spvgentwo;
+		using namespace LinkerHelper;
+
+		Module* module = _pTarget->getModule();
+		if (module == nullptr) { return false; }
+
+		printInstruction(_options, _pLibInstr, " -> ");
+
+		auto error = [&](auto&& ... args) {module->logError(args...); };
+
+		// instruction parent must be be set before calling this function
+		_pTarget->setOperation(_pLibInstr->getOperation());
+
+		auto lookup = [&](const Instruction* lib) -> bool
 		{
-			Module* module = _pTarget->getModule();
-			if (module == nullptr) { return false; }
+			Instruction* cInstr = nullptr;
 
-			printInstruction(_options, _pLibInstr, " -> ");
-
-			auto error = [&](auto&& ... args) {module->logError(args...); };
-
-			// instruction parent must be be set before calling this function
-			_pTarget->setOperation(_pLibInstr->getOperation());
-	
-			auto lookup = [&](const Instruction* lib) -> bool
+			if (Instruction** ppTarget = _cache[lib]; ppTarget != nullptr)
 			{
-				Instruction* cInstr = nullptr;
-
-				if (Instruction** ppTarget = _cache[lib]; ppTarget != nullptr)
+				cInstr = *ppTarget;
+			}
+			else if (lib->isSpecOrConstant() && (_options & LinkerOptionBits::ImportMissingConstants))
+			{
+				if (const Constant* c = lib->getConstant(); c != nullptr)
 				{
-					cInstr = *ppTarget;
+					cInstr = module->addConstant(*c, lib->getName());
+					_cache.emplaceUnique(lib, cInstr);
 				}
-				else if (lib->isSpecOrConstant() && (_options & LinkerOptionBits::ImportMissingConstants))
+			}
+			else if (lib->isType() && (_options & LinkerOptionBits::ImportMissingTypes))
+			{
+				if (const Type* t = lib->getType(); t != nullptr)
 				{
-					if (const Constant* c = lib->getConstant(); c != nullptr)
+					cInstr = module->addType(*t, lib->getName());
+					_cache.emplaceUnique(lib, cInstr);
+				}
+			}
+
+			if (cInstr != nullptr)
+			{
+				if (_options & LinkerOptionBits::AssignResultIDs)
+				{
+					if (auto it = cInstr->getResultIdOperand(); it != nullptr && it->getId() == InvalidId)
 					{
-						cInstr = module->addConstant(*c, lib->getName());
-						_cache.emplaceUnique(lib, cInstr);
+						*it = module->getNextId();
 					}
 				}
-				else if (lib->isType() && (_options & LinkerOptionBits::ImportMissingTypes))
-				{
-					if (const Type* t = lib->getType(); t != nullptr)
-					{
-						cInstr = module->addType(*t, lib->getName());
-						_cache.emplaceUnique(lib, cInstr);
-					}
-				}
 
-				if (cInstr != nullptr)
-				{
-					if (_options & LinkerOptionBits::AssignResultIDs)
-					{
-						if (auto it = cInstr->getResultIdOperand(); it != nullptr && it->getId() == InvalidId)
-						{
-							*it = module->getNextId();
-						}
-					}
-
-					_pTarget->addOperand(cInstr);
-					return true;
-				}
-				
-				error("Operand instruction not found");
-				return false;
-			};
-
-			if (_pTarget->hasResultType())
-			{
-				lookup(_pLibInstr->getResultTypeInstr());
-			}
-			if (_pTarget->hasResult())
-			{
-				_pTarget->addOperand((_options & LinkerOptionBits::AssignResultIDs) ? module->getNextId() : InvalidId);
+				_pTarget->addOperand(cInstr);
+				return true;
 			}
 
-			for (auto it = _pLibInstr->getFirstActualOperand(), end = _pLibInstr->end(); it != end; ++it)
-			{
-				if (it->isLiteral())
-				{
-					_pTarget->addOperand(*it);
-				}
-				else if (it->isInstruction())
-				{
-					if (lookup(it->getInstruction()) == false) return false;
-				}
-				else if (it->isBranchTarget())
-				{
-					if (lookup(it->getBranchTarget()->getLabel()) == false) return false;
-				}
-				else
-				{
-					error("Instruction has unresolved ID operand, module needs to be resolved by resolveIDs() before importing a using it as import library.");
-					return false;
-				}
-			}
-
-			printInstruction(_options, _pTarget);
-
-			_cache.emplaceUnique(_pLibInstr, _pTarget);
-
-			return true;
-		}
-
-		bool importGlobalDependencies (Module& _consumer, const Instruction* _lInstr, const Instruction* _cInstr, HashMap<const Instruction*, Instruction*>& _cache, LinkerOptions _options)
-		{
-			if (_cache.find(_lInstr) != _cache.end())
-			{
-				return true; // already imported
-			}
-
-			// for Names, Decorates etc referencing _libInstr:
-			bool success = true;
-
-			// decorates except linkage
-			if (_options & LinkerOptionBits::ImportReferencedDecorations)
-			{
-				ReflectionHelper::getDecorationsFunc(_lInstr, [&](const Instruction* deco) {
-					if (ReflectionHelper::getSpvDecorationKindFromDecoration(deco) != spv::Decoration::LinkageAttributes)
-					{
-						success &= transferInstruction(deco, _consumer.addDecorationInstr(), _cache, _options);
-					}
-				});
-			}
-
-			// OpNames
-			if (_options & LinkerOptionBits::ImportReferencedNames && (_cInstr == nullptr || _cInstr->getName() == nullptr)) // check if a name is already present
-			{
-				ReflectionHelper::getNamesFunc(_lInstr, [&](const Instruction* name) {
-					success &= transferInstruction(name, _consumer.addNameInstr(), _cache, _options);
-				});
-			}
-
-			// OpVariables
-			if ((_options & LinkerOptionBits::ImportReferencedVariables))
-			{
-				// look for global variable operands
-				for(auto it = _lInstr->getFirstActualOperand(); it != nullptr; ++it)
-				{
-					if (const Instruction* op = it->getInstruction(); op != nullptr && *op == spv::Op::OpVariable && op->getStorageClass() != spv::StorageClass::Function)
-					{
-						if (_cache.find(op) == _cache.end())
-						{
-							Instruction* cVar = _consumer.addGlobalVariableInstr(op->getName());
-							success &= importGlobalDependencies(_consumer, op, cVar, _cache, _options);
-							success &= transferInstruction(op, cVar, _cache, _options);						
-						}
-					}
-				}
-			}
-
-			return success;
+			error("Operand instruction not found");
+			return false;
 		};
 
-		bool importSymbolImpl(Module& _consumer, const Instruction* _libSymbol, Instruction* _consumerSymbol, const String& _name, HashMap<const Instruction*, Instruction*>& _cache, LinkerOptions _options)
+		if (_pTarget->hasResultType())
 		{
-			auto error = [&](auto&& ... args) {_consumer.logError(args...); };
-			auto info = [&](auto&& ... args) {_consumer.logInfo(args...); };
+			lookup(_pLibInstr->getResultTypeInstr());
+		}
+		if (_pTarget->hasResult())
+		{
+			_pTarget->addOperand((_options & LinkerOptionBits::AssignResultIDs) ? module->getNextId() : InvalidId);
+		}
 
-			info("Resolving import symbol [%llu] %s", hash(_name), _name.c_str());
-
-			if (_libSymbol->getOperation() != _consumerSymbol->getOperation())
+		for (auto it = _pLibInstr->getFirstActualOperand(), end = _pLibInstr->end(); it != end; ++it)
+		{
+			if (it->isLiteral())
 			{
-				return false;
+				_pTarget->addOperand(*it);
 			}
-
-			const Type* libType = _libSymbol->getType();
-			const Type* consumerType = _consumerSymbol->getType();
-
-			if (libType == nullptr || consumerType == nullptr) return false;
-
-			if (*libType != *consumerType)
+			else if (it->isInstruction())
 			{
-				error("Type mismatch for symbol %s", _name.c_str());
-				return false;
+				if (lookup(it->getInstruction()) == false) return false;
 			}
-
-			if (*_libSymbol == spv::Op::OpVariable) // && _options.importDecorationsAndNames
+			else if (it->isBranchTarget())
 			{
-				if (importGlobalDependencies(_consumer, _libSymbol, _consumerSymbol, _cache, _options) == false)
-					return false;
-
-				printInstruction(_options, _libSymbol, " -> ", _consumerSymbol);
-				_cache.emplaceUnique(_libSymbol, _consumerSymbol);
-			}
-			else if (*_libSymbol == spv::Op::OpFunction && _libSymbol->getFunction() != nullptr && _consumerSymbol->getFunction() != nullptr)
-			{
-				const Function& libFunc = *_libSymbol->getFunction();
-				Function& cosumerFunc = *_consumerSymbol->getFunction();
-
-				// add function signature to cache
-				{
-					printInstruction(_options, _libSymbol, " -> ", _consumerSymbol);
-					_cache.emplaceUnique(_libSymbol, _consumerSymbol); // cache OpFunction
-
-					const auto& libParams = libFunc.getParameters();
-					const auto& consumerParams = cosumerFunc.getParameters();
-
-					if (libParams.size() != consumerParams.size())
-					{
-						error("Number of function parameters does not match for %s", _name.c_str());
-						return false;
-					}
-
-					// cache OpFunctionParameter
-					for (auto lit = libParams.begin(), lend = libParams.end(), cit = consumerParams.begin(); lit != lend; ++lit, ++cit)
-					{
-						if ((lit->getType() == nullptr || cit->getType() == nullptr) || *lit->getType() != *cit->getType())
-						{
-							error("Type of function parameter does not match for %s", _name.c_str());
-							return false;
-						}
-
-						printInstruction(_options, lit.operator->(), " -> ", cit.operator->());
-						_cache.emplaceUnique(lit.operator->(), cit.operator->()); 
-					}
-				}
-				
-				// When resolving imported functions, the Function Control and all Function Parameter Attributes are taken from the function
-				// definition, and not from the function declaration.
-				for (const BasicBlock& bbLib : *_libSymbol->getFunction())
-				{
-					BasicBlock& bbConsumer = cosumerFunc.addBasicBlock(bbLib.getName());
-
-					printInstruction(_options, bbLib.getLabel(), " -> ", bbConsumer.getLabel());
-					_cache.emplaceUnique(bbLib.getLabel(), bbConsumer.getLabel());
-
-					for (const Instruction& iLib : bbLib)
-					{
-						if (iLib == spv::Op::OpFunctionCall)
-						{
-							const Instruction* iOpFunction = iLib.getFirstActualOperand()->getInstruction();
-							if (_cache.find(iOpFunction) == _cache.end())
-							{
-								if (const char* iFuncName = iOpFunction->getName(); iFuncName != nullptr) 
-								{
-									error("Call to unresolved OpFunction %s", iFuncName);								
-								}
-								else 
-								{
-									error("Call to unresolved OpFunction @%u", iOpFunction->getResultId());
-								}
-							}
-						}
-
-						if (importGlobalDependencies(_consumer, &iLib, nullptr, _cache, _options) == false)
-							return false;
-
-						if (transferInstruction(&iLib, bbConsumer.addInstruction(), _cache, _options) == false) 
-							return false;
-					}
-				}
-
-				printInstruction(_options, libFunc.getFunctionEnd(), " -> ", cosumerFunc.getFunctionEnd());
+				if (lookup(it->getBranchTarget()->getLabel()) == false) return false;
 			}
 			else
 			{
-				error("%s symbol must be OpVariable or OpFunction", _name.c_str());
+				error("Instruction has unresolved ID operand, module needs to be resolved by resolveIDs() before importing a using it as import library.");
 				return false;
 			}
-
-			return true;
 		}
-	} // !LinkerHelper
-} // !spvgentwo
+
+		printInstruction(_options, _pTarget);
+
+		_cache.emplaceUnique(_pLibInstr, _pTarget);
+
+		return true;
+	}
+
+	inline bool importGlobalDependencies(spvgentwo::Module& _consumer, const spvgentwo::Instruction* _lInstr, const spvgentwo::Instruction* _cInstr, InstrLookup& _cache, spvgentwo::LinkerHelper::LinkerOptions _options)
+	{
+		using namespace spvgentwo;
+		using namespace LinkerHelper;
+
+		if (_cache.find(_lInstr) != _cache.end())
+		{
+			return true; // already imported
+		}
+
+		// for Names, Decorates etc referencing _libInstr:
+		bool success = true;
+
+		// decorates except linkage
+		if (_options & LinkerOptionBits::ImportReferencedDecorations)
+		{
+			ReflectionHelper::getDecorationsFunc(_lInstr, [&](const Instruction* deco) {
+				if (ReflectionHelper::getSpvDecorationKindFromDecoration(deco) != spv::Decoration::LinkageAttributes)
+				{
+					success &= transferInstruction(deco, _consumer.addDecorationInstr(), _cache, _options);
+				}
+				});
+		}
+
+		// OpNames
+		if (_options & LinkerOptionBits::ImportReferencedNames && (_cInstr == nullptr || _cInstr->getName() == nullptr)) // check if a name is already present
+		{
+			ReflectionHelper::getNamesFunc(_lInstr, [&](const Instruction* name) {
+				success &= transferInstruction(name, _consumer.addNameInstr(), _cache, _options);
+				});
+		}
+
+		// OpVariables
+		if ((_options & LinkerOptionBits::ImportReferencedVariables))
+		{
+			// look for global variable operands
+			for (auto it = _lInstr->getFirstActualOperand(); it != nullptr; ++it)
+			{
+				if (const Instruction* op = it->getInstruction(); op != nullptr && *op == spv::Op::OpVariable && op->getStorageClass() != spv::StorageClass::Function)
+				{
+					if (_cache.find(op) == _cache.end())
+					{
+						Instruction* cVar = _consumer.addGlobalVariableInstr(op->getName());
+						success &= importGlobalDependencies(_consumer, op, cVar, _cache, _options);
+						success &= transferInstruction(op, cVar, _cache, _options);
+					}
+				}
+			}
+		}
+
+		return success;
+	};
+
+	inline bool importSymbolImpl(spvgentwo::Module& _consumer, const spvgentwo::Instruction* _libSymbol, spvgentwo::Instruction* _consumerSymbol, const spvgentwo::String& _name, InstrLookup& _cache, spvgentwo::LinkerHelper::LinkerOptions _options)
+	{
+		using namespace spvgentwo;
+		using namespace LinkerHelper;
+
+		auto error = [&](auto&& ... args) {_consumer.logError(args...); };
+		auto info = [&](auto&& ... args) {_consumer.logInfo(args...); };
+
+		info("Resolving import symbol [%llu] %s", hash(_name), _name.c_str());
+
+		if (_libSymbol->getOperation() != _consumerSymbol->getOperation())
+		{
+			return false;
+		}
+
+		const Type* libType = _libSymbol->getType();
+		const Type* consumerType = _consumerSymbol->getType();
+
+		if (libType == nullptr || consumerType == nullptr) return false;
+
+		if (*libType != *consumerType)
+		{
+			error("Type mismatch for symbol %s", _name.c_str());
+			return false;
+		}
+
+		if (*_libSymbol == spv::Op::OpVariable) // && _options.importDecorationsAndNames
+		{
+			if (importGlobalDependencies(_consumer, _libSymbol, _consumerSymbol, _cache, _options) == false)
+				return false;
+
+			printInstruction(_options, _libSymbol, " -> ", _consumerSymbol);
+			_cache.emplaceUnique(_libSymbol, _consumerSymbol);
+		}
+		else if (*_libSymbol == spv::Op::OpFunction && _libSymbol->getFunction() != nullptr && _consumerSymbol->getFunction() != nullptr)
+		{
+			const Function& libFunc = *_libSymbol->getFunction();
+			Function& cosumerFunc = *_consumerSymbol->getFunction();
+
+			// add function signature to cache
+			{
+				printInstruction(_options, _libSymbol, " -> ", _consumerSymbol);
+				_cache.emplaceUnique(_libSymbol, _consumerSymbol); // cache OpFunction
+
+				const auto& libParams = libFunc.getParameters();
+				const auto& consumerParams = cosumerFunc.getParameters();
+
+				if (libParams.size() != consumerParams.size())
+				{
+					error("Number of function parameters does not match for %s", _name.c_str());
+					return false;
+				}
+
+				// cache OpFunctionParameter
+				for (auto lit = libParams.begin(), lend = libParams.end(), cit = consumerParams.begin(); lit != lend; ++lit, ++cit)
+				{
+					if ((lit->getType() == nullptr || cit->getType() == nullptr) || *lit->getType() != *cit->getType())
+					{
+						error("Type of function parameter does not match for %s", _name.c_str());
+						return false;
+					}
+
+					printInstruction(_options, lit.operator->(), " -> ", cit.operator->());
+					_cache.emplaceUnique(lit.operator->(), cit.operator->());
+				}
+			}
+
+			// When resolving imported functions, the Function Control and all Function Parameter Attributes are taken from the function
+			// definition, and not from the function declaration.
+			for (const BasicBlock& bbLib : *_libSymbol->getFunction())
+			{
+				BasicBlock& bbConsumer = cosumerFunc.addBasicBlock(bbLib.getName());
+
+				printInstruction(_options, bbLib.getLabel(), " -> ", bbConsumer.getLabel());
+				_cache.emplaceUnique(bbLib.getLabel(), bbConsumer.getLabel());
+
+				for (const Instruction& iLib : bbLib)
+				{
+					if (iLib == spv::Op::OpFunctionCall)
+					{
+						const Instruction* iOpFunction = iLib.getFirstActualOperand()->getInstruction();
+						if (_cache.find(iOpFunction) == _cache.end())
+						{
+							if (const char* iFuncName = iOpFunction->getName(); iFuncName != nullptr)
+							{
+								error("Call to unresolved OpFunction %s", iFuncName);
+							}
+							else
+							{
+								error("Call to unresolved OpFunction @%u", iOpFunction->getResultId());
+							}
+						}
+					}
+
+					if (importGlobalDependencies(_consumer, &iLib, nullptr, _cache, _options) == false)
+						return false;
+
+					if (transferInstruction(&iLib, bbConsumer.addInstruction(), _cache, _options) == false)
+						return false;
+				}
+			}
+
+			printInstruction(_options, libFunc.getFunctionEnd(), " -> ", cosumerFunc.getFunctionEnd());
+		}
+		else
+		{
+			error("%s symbol must be OpVariable or OpFunction", _name.c_str());
+			return false;
+		}
+
+		return true;
+	}
+} // anon namespace
 
 bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, const LinkerOptions& _options)
 {
@@ -489,7 +497,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	}
 
 	// lib -> consumer
-	HashMap<const Instruction*, Instruction*> cache(pAllocator);
+	InstrLookup cache(pAllocator);
 
 	if (_options & LinkerOptionBits::ImportReferencedFunctions)
 	{
@@ -618,7 +626,8 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	const auto version = _lib.getSpvVersion() > _consumer.getSpvVersion() ? _lib.getSpvVersion() : _consumer.getSpvVersion();
 	_consumer.setSpvVersion(version);
 
-	if (_options.grammar != nullptr) // only add required capabilities & extensions
+	// only add required capabilities & extensions
+	if (_options.grammar != nullptr && (_options & LinkerOptionBits::AutoAddRequiredCapabilitiesAndExtensions))
 	{
 		_consumer.addRequiredCapabilities(*_options.grammar);
 		_consumer.addRequiredExtensions(*_options.grammar);
@@ -636,8 +645,11 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		}
 	}
 
-	// update global variable interface in case it changed and the user forgets to finalize the module
-	_consumer.finalizeEntryPoints();
+	if (_options & LinkerOptionBits::UpdateEntryPointGlobalVarInterface)
+	{
+		// update global variable interface in case it changed and the user forgets to finalize the module
+		_consumer.finalizeEntryPoints();	
+	}
 
 	return true;
 }
