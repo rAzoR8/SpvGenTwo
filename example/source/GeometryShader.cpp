@@ -9,7 +9,7 @@ Module examples::geometryShader(IAllocator* _pAllocator, ILogger* _pLogger)
     using namespace glsl;
 
     // create a new spir-v module
-    Module module(_pAllocator, spv::Version, spv::AddressingModel::Logical, spv::MemoryModel::GLSL450, _pLogger);
+    Module module(_pAllocator, spv::AddressingModel::Logical, spv::MemoryModel::GLSL450, _pLogger);
 
     // configure capabilities and extensions
     module.addCapability(spv::Capability::Geometry);

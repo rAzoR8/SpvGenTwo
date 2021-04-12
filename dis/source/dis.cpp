@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 
 	if (BinaryFileReader reader(spv); reader.isOpen())
 	{
-		Module module(&alloc, spv::Version, &logger);
+		Module module(&alloc, &logger);
 		Grammar gram(&alloc);
 
 		// parse the binary instructions & operands

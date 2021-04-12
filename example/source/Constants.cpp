@@ -5,7 +5,7 @@ using namespace spvgentwo;
 
 spvgentwo::Module examples::constants(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
-	Module module(_pAllocator, spv::Version, _pLogger);
+	Module module(_pAllocator, _pLogger);
 	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::GenericPointer);
 	module.addCapability(spv::Capability::LiteralSampler);

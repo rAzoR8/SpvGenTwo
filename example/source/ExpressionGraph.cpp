@@ -64,7 +64,7 @@ spvgentwo::Module examples::expressionGraph(spvgentwo::IAllocator* _pAllocator, 
 
 	//g.emplace(spv::Op::OpIAdd)->connect(g.emplace(spv::Op::OpIMul));
 
-	Module module(_pAllocator, spv::Version, _pLogger);
+	Module module(_pAllocator, _pLogger);
 	module.addCapability(spv::Capability::Shader);
 	Function& main = module.addEntryPoint<void>(spv::ExecutionModel::Vertex, u8"mainÜmlautß"); //test utf-8
 	BasicBlock& bb = *main;

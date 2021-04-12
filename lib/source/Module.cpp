@@ -8,16 +8,16 @@
 
 #include "spvgentwo/Grammar.h"
 
-spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersion, ILogger* _pLogger, ITypeInferenceAndVailation* _pTypeInferenceAndVailation) :
-	Module(_pAllocator, _spvVersion, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger, _pTypeInferenceAndVailation) // use delegate constructor
+spvgentwo::Module::Module(IAllocator* _pAllocator, ILogger* _pLogger, ITypeInferenceAndVailation* _pTypeInferenceAndVailation) :
+	Module(_pAllocator, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger, _pTypeInferenceAndVailation) // use delegate constructor
 {
 }
 
-spvgentwo::Module::Module(IAllocator* _pAllocator, const unsigned int _spvVersion, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel, ILogger* _pLogger, ITypeInferenceAndVailation* _pTypeInferenceAndVailation) :
+spvgentwo::Module::Module(IAllocator* _pAllocator, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel, ILogger* _pLogger, ITypeInferenceAndVailation* _pTypeInferenceAndVailation) :
 	m_pAllocator(_pAllocator),
 	m_pLogger(_pLogger),
 	m_pTypeInferenceAndVailation(_pTypeInferenceAndVailation),
-	m_spvVersion(_spvVersion),
+	m_spvVersion(makeVersion(1u, 0u)),
 	m_spvBound(0u),
 	m_spvSchema(0u),
 	m_Functions(_pAllocator),
@@ -658,10 +658,11 @@ void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel,
 spvgentwo::spv::Id spvgentwo::Module::assignIDs(const Grammar* _pGrammar)
 {
 	unsigned int maxId = 0u;
+	unsigned int maxVersion = makeVersion(1u, 0u);
 
-	iterateInstructions([&maxId, _pGrammar, this](Instruction& instr)
+	iterateInstructions([&maxId, &maxVersion, _pGrammar, this](Instruction& instr)
 	{
-		if (_pGrammar != nullptr) // add missing capabilities
+		if (_pGrammar != nullptr) // add missing capabilities, extensions and required version
 		{
 			if (auto* info = _pGrammar->getInfo(static_cast<unsigned int>(instr.getOperation())); info != nullptr)
 			{
@@ -673,6 +674,10 @@ spvgentwo::spv::Id spvgentwo::Module::assignIDs(const Grammar* _pGrammar)
 				{
 					addExtension(e);
 				}
+				if (info->version > maxVersion)
+				{
+					maxVersion = info->version;
+				}
 			}
 		}
 
@@ -683,6 +688,7 @@ spvgentwo::spv::Id spvgentwo::Module::assignIDs(const Grammar* _pGrammar)
 		}
 	});
 
+	m_spvVersion = maxVersion;
 	m_spvBound = maxId + 1u;
 
 	return spv::Id{ maxId };
@@ -1544,6 +1550,32 @@ void spvgentwo::Module::addRequiredExtensions(const Grammar& _grammar)
 	};
 
 	iterateInstructions(check);
+}
+
+unsigned int spvgentwo::Module::getRequiredVersion(const Grammar& _grammar) const
+{
+	auto ver = makeVersion(1u, 0u);
+
+	auto check = [&ver, &_grammar](const Instruction& _instr)
+	{
+		if (auto* info = _grammar.getInfo(static_cast<unsigned int>(_instr.getOperation())); info != nullptr)
+		{
+			if (info->version > ver) 
+			{
+				ver = info->version;
+			}
+		}
+	};
+
+	iterateInstructions(check);
+
+	return ver;
+}
+
+unsigned int spvgentwo::Module::setRequiredVersion(const Grammar& _grammar)
+{
+	m_spvVersion = getRequiredVersion(_grammar);
+	return m_spvVersion;
 }
 
 spvgentwo::Instruction* spvgentwo::Module::getInstructionByName(const char* _pName) const

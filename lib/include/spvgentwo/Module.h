@@ -16,8 +16,8 @@ namespace spvgentwo
 	public:
 		struct MemberName { String name; unsigned int member = 0u; };
 
-		Module(IAllocator* _pAllocator = nullptr, const unsigned int _spvVersion = spv::Version,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
-		Module(IAllocator* _pAllocator, const unsigned int _spvVersion, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
+		Module(IAllocator* _pAllocator = nullptr, ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
+		Module(IAllocator* _pAllocator, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
 
 		Module(Module&& _other) noexcept;
 		~Module();
@@ -32,6 +32,7 @@ namespace spvgentwo
 
 		unsigned int getSpvVersion() const { return m_spvVersion; }
 		void setSpvVersion(unsigned int _version) { m_spvVersion = _version; }
+		void setSpvVersion(unsigned char _major, unsigned char _minor) { m_spvBound = makeVersion(_major, _minor); }
 
 		unsigned int getMajorVersion() const { return spvgentwo::getMajorVersion(m_spvVersion); }
 		unsigned int getMinorVersion() const { return spvgentwo::getMinorVersion(m_spvVersion); }
@@ -172,10 +173,11 @@ namespace spvgentwo
 		
 		void setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
 
-		// manually assign IDs to all unresolved instructions, returns bounds/max id
+		// assign IDs to all unresolved instructions, returns bounds/max id
 		// converts any Instruction pointer operand to an spv::Id
 		// adds missing OpCapabilities if _pGrammar != nullptr
-		// adss missing OpExtensions if _pGrammar != nullptr
+		// adds missing OpExtensions if _pGrammar != nullptr
+		// sets minimum required version if _pGrammar != nullptr
 		spv::Id assignIDs(const Grammar* _pGrammar = nullptr);
 
 		// converts any spv::Id operand to Instruction pointer operands
@@ -334,6 +336,12 @@ namespace spvgentwo
 
 		// scans instructions of this module, looking for required OpExtensions using _grammar, adding them to m_Extensions
 		void addRequiredExtensions(const Grammar& _grammar);
+
+		// scans instrucions of this module, getting the highest required SPIR-V version
+		unsigned int getRequiredVersion(const Grammar& _grammar) const;
+
+		// overwrites m_spvVersion with getRequiredVersion(), returns version
+		unsigned int setRequiredVersion(const Grammar& _grammar);
 
 		// ILogger proxy calls
 		template <typename ...Args>

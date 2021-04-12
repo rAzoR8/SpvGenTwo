@@ -12,7 +12,7 @@ using namespace ext;
 
 Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 {
-	Module module(_pAllocator, spv::Version, _pLogger);
+	Module module(_pAllocator, _pLogger);
 
 	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::VulkanMemoryModelKHR);

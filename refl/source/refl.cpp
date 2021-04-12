@@ -320,7 +320,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	Module module(&alloc, spv::Version, &logger);
+	Module module(&alloc, &logger);
 	Grammar gram(&alloc);
 
 	// parse the binary instructions & operands

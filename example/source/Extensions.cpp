@@ -9,7 +9,7 @@ using namespace ext;
 spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
 	// create a new spir-v module
-	Module module(_pAllocator, spv::Version, spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR, _pLogger);
+	Module module(_pAllocator, spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR, _pLogger);
    
     module.addCapability(spv::Capability::Shader);
 

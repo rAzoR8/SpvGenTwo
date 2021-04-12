@@ -97,7 +97,14 @@ int link(HeapList<Module>& _libs, Module& _target, const LinkerHelper::LinkerOpt
 		return -1;
 	}
 
-	_target.finalizeAndWrite(writer);
+	_target.finalizeEntryPoints();
+
+	// don't need to call assignIDs, we are using AssignResultIDs
+	if (_target.write(writer) == false) 
+	{
+		g_logger.logError("Failed to write %s", _out);
+		return -1;
+	}
 
 	return 0;
 }
@@ -112,8 +119,11 @@ int main(int argc, char* argv[])
 	HeapList<Module> libs;
 	LinkerHelper::LinkerOptions options{};
 
-	Module patchModule(&g_alloc, spv::Version, &g_logger);
-	Module targetModule(&g_alloc, spv::Version, &g_logger);
+	options.flags = LinkerHelper::LinkerOptionBits::AssignResultIDs;
+	// we dont want to set LinkerOptionBits::UpdateEntryPointGlobalVarInterface, we call finalizeEntryPoints() manually 
+
+	Module patchModule(&g_alloc, &g_logger);
+	Module targetModule(&g_alloc, &g_logger);
 
 	int i = 1u;
 	auto addTarget = [&](spv::LinkageType type)
@@ -173,7 +183,7 @@ int main(int argc, char* argv[])
 				g_logger.logError("Failed to open %s", file);
 				return -1;
 			}
-			else if (libs.emplace_back(&g_alloc, spv::Version, &g_logger).readAndInit(reader, g_gram) == false)
+			else if (libs.emplace_back(&g_alloc, &g_logger).readAndInit(reader, g_gram) == false)
 			{
 				return -1;
 			}

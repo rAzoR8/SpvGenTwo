@@ -15,7 +15,7 @@ using namespace spvgentwo;
 spvgentwo::Module examples::linkageLib(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
 	// create a new spir-v module
-	Module module(_pAllocator, spv::Version, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger);
+	Module module(_pAllocator, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger);
 
 	// configure capabilities and extensions
 	module.addCapability(spv::Capability::Shader);
@@ -65,7 +65,7 @@ spvgentwo::Module examples::linkageLib(spvgentwo::IAllocator* _pAllocator, spvge
 spvgentwo::Module examples::linkageConsumer(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
 	// create a new spir-v module
-	Module module(_pAllocator, spv::Version, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger);
+	Module module(_pAllocator, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger);
 
 	// configure capabilities and extensions
 	module.addCapability(spv::Capability::Shader);
@@ -103,6 +103,7 @@ bool examples::linkageLinked(const spvgentwo::Module& _lib, spvgentwo::Module& _
 	});
 
 	LinkerHelper::LinkerOptions options{};
+	options.flags = LinkerHelper::LinkerOptionBits::All;
 	options.grammar = _pGrammar;
 	options.printer = &printer;
 	options.allocator = _pAllocator;

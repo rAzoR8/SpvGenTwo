@@ -6,7 +6,7 @@ using namespace spvgentwo;
 
 Module examples::types(IAllocator* _pAllocator, ILogger* _pLogger)
 {
-	 Module module(_pAllocator, spv::Version, _pLogger);
+	 Module module(_pAllocator,  _pLogger);
 	 module.addCapability(spv::Capability::Shader);
 	 Function& main = module.addEntryPoint<void>(spv::ExecutionModel::Vertex, u8"main");
 	 BasicBlock& bb = *main;
