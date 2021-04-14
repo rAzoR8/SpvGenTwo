@@ -645,6 +645,37 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		}
 	}
 
+	auto copy = [&](const List<Instruction>& _in, auto addFunc) -> bool
+	{
+		for (const Instruction& src : _in)
+		{
+			Instruction* cSrc = addFunc();
+			if (transferInstruction(&src, cSrc, cache, _options) == false)
+				return false;
+
+			printInstruction(_options, &src, " -> ", cSrc);
+		}
+		return true;
+	};
+
+	if (_options & LinkerOptionBits::CopyOpSourceStringInstructions)
+	{
+		if (copy(_lib.getSourceStrings(), [&]() -> Instruction* { return _consumer.addSourceStringInstr(); }) == false)
+			return false;
+	}
+
+	if (_options & LinkerOptionBits::CopyOpLineInstructions)
+	{
+		if (copy(_lib.getLines(), [&]() -> Instruction* { return _consumer.addLineInstr(); }) == false)
+			return false;
+	}
+
+	if (_options & LinkerOptionBits::CopyOpModuleProcessedInstructions)
+	{
+		if (copy(_lib.getModulesProcessed(), [&]() -> Instruction* { return _consumer.addLineInstr(); }) == false)
+			return false;
+	}
+
 	if (_options & LinkerOptionBits::UpdateEntryPointGlobalVarInterface)
 	{
 		// update global variable interface in case it changed and the user forgets to finalize the module

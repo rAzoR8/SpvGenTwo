@@ -43,7 +43,10 @@ namespace spvgentwo
 			RemoveLinkageCapability = 1 << 7, // remove linkage capability from the consumer library if all imports and exports have been resolved
 			AutoAddRequiredCapabilitiesAndExtensions = 1 << 8, // instead of copying ALL Capabilities & Extensions from the all libs to the consumer module, use LinkerOptions.grammar to select only required Caps & Exts for the consumer module.
 			UpdateEntryPointGlobalVarInterface = 1 << 9, // Add global variables referenced by the consumer EntryPoints to their OpEntryPoint, this should always be switched on unless Module.finalizeEntryPoints() is called after linking.
-			All = UpdateEntryPointGlobalVarInterface | (UpdateEntryPointGlobalVarInterface - 1)
+			CopyOpSourceStringInstructions = 1 << 10, // Copy OpString, OpSource, OpSourceContinued and OpSourceExtension instructions from lib to consumer module
+			CopyOpLineInstructions = 1 << 11, // Copy OpLine, OpNoLine
+			CopyOpModuleProcessedInstructions = 1 << 12, // Copy OpModuleProcessed
+			All = CopyOpModuleProcessedInstructions | (CopyOpModuleProcessedInstructions - 1)
 		};
 
 		struct LinkerOptions 
