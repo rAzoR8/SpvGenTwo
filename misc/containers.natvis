@@ -73,6 +73,18 @@
     </Expand>
   </Type>
 
+  <Type Name="spvgentwo::HashMap&lt;*&gt;" Inheritable="false">
+    <DisplayString>{{ elements={m_Elements} }}</DisplayString>
+    <Expand>
+      <Item Name="[elements]" ExcludeView="simple">m_Elements</Item>
+      <Item Name="[buckets]" ExcludeView="simple">m_Buckets</Item>
+      <ArrayItems>
+        <Size>m_Buckets</Size>
+        <ValuePointer>m_pBuckets</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
   <Type Name="spvgentwo::String">
     <DisplayString Condition="m_pData != 0">{m_pData}</DisplayString>
     <DisplayString Condition="m_pData == 0">empty</DisplayString>
