@@ -3,13 +3,40 @@
 
 namespace spvgentwo
 {
+	class Allocation
+	{
+		friend class IAllocator;
+		explicit constexpr Allocation(void* _ptr, sgt_size_t _size, IAllocator* _pAllocator, bool _dealloc = true) noexcept :
+			ptr{_ptr}, size{_size}, allocator{_pAllocator},dealloc{_dealloc}
+		{}
+
+		bool dealloc;
+		IAllocator* allocator;
+
+	public:
+		~Allocation();
+
+		Allocation(const Allocation&) = delete;
+		Allocation& operator=(const Allocation&) = delete;
+
+		constexpr Allocation(Allocation&& _other) noexcept :
+			ptr{_other.ptr}, size{_other.size}, allocator{_other.allocator}, dealloc{_other.dealloc}
+		{
+			_other.allocator = nullptr;
+			_other.dealloc = false;
+		}
+
+		void* const ptr;
+		const sgt_size_t size;
+	};
+
 	class IAllocator
 	{
 	public:
 		virtual ~IAllocator() {}
 
 		// alignment may only be a power of 2
-		virtual void* allocate(const sgt_size_t _bytes, const unsigned int _aligment = 1u) = 0;
+		[[nodiscard]] virtual void* allocate(const sgt_size_t _bytes, const unsigned int _aligment = 1u) = 0;
 		virtual void deallocate(void* _ptr, const sgt_size_t _bytes = 0u) = 0;
 
 		template <class T, class ... Args>
