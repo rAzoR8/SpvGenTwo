@@ -20,7 +20,9 @@ namespace spvgentwo
 	struct named_barrier_t {};
 
 	struct sampler_t {};
+
 	struct ray_query_khr_t {};
+	struct acceleration_structure_khr_t {};
 
 	struct dyn_scalar_t
 	{
@@ -250,6 +252,8 @@ namespace spvgentwo
 		
 		Type& RayQueryKHR();
 
+		Type& AccelerationStructureKHR();
+
 		constexpr Iterator begin() const { return m_subTypes.begin(); }
 		constexpr Iterator end() const { return m_subTypes.end(); }
 
@@ -322,7 +326,9 @@ namespace spvgentwo
 		constexpr bool isPipe() const { return m_Type == spv::Op::OpTypePipe; }
 		constexpr bool isPipeStorage() const { return m_Type == spv::Op::OpTypePipeStorage; }
 		constexpr bool isQueue() const { return m_Type == spv::Op::OpTypeQueue; }
+
 		constexpr bool isRayQueryKHR() const { return m_Type == spv::Op::OpTypeRayQueryKHR; }
+		constexpr bool isAccelerationStructure() const { return m_Type == spv::Op::OpTypeAccelerationStructureKHR; }
 
 		constexpr bool isVectorOf(const spv::Op _type, const unsigned int _length = 0u, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return isVector() && front().getType() == _type && (_length == 0u || m_VecComponentCount == _length) && (_componentWidth == 0u || front().getIntWidth() == _componentWidth) && front().hasSign(_sign); }
 
@@ -794,6 +800,9 @@ namespace spvgentwo
 
 	template <>
 	inline Type& Type::fundamental<ray_query_khr_t>(const ray_query_khr_t*) { return RayQueryKHR(); }
+
+	template <>
+	inline Type& Type::fundamental<acceleration_structure_khr_t>(const acceleration_structure_khr_t*) { return AccelerationStructureKHR(); }
 
 	template <>
 	inline Type& Type::fundamental<dyn_scalar_t>(const dyn_scalar_t* _prop)

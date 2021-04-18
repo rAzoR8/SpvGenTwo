@@ -542,6 +542,13 @@ spvgentwo::Type& spvgentwo::Type::RayQueryKHR()
 	return *this;
 }
 
+spvgentwo::Type& spvgentwo::Type::AccelerationStructureKHR()
+{
+	reset();
+	m_Type = spv::Op::OpTypeAccelerationStructureKHR;
+	return *this;
+}
+
 spvgentwo::Type& spvgentwo::Type::Member(const Type* _pSubType)
 {
 	if (_pSubType == nullptr)
