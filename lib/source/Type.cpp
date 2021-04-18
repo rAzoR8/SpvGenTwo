@@ -455,6 +455,13 @@ spvgentwo::Type& spvgentwo::Type::Queue()
 	return *this;
 }
 
+spvgentwo::Type& spvgentwo::Type::Pipe()
+{
+	reset();
+	m_Type = spv::Op::OpTypePipe;
+	return *this;
+}
+
 spvgentwo::Type& spvgentwo::Type::PipeStorage()
 {
 	reset();

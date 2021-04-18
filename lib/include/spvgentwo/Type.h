@@ -15,6 +15,7 @@ namespace spvgentwo
 	struct device_event_t {};
 	struct reserve_id_t {};
 	struct queue_t {};
+	struct pipe_t {};
 	struct pipe_storage_t {};
 	struct named_barrier_t {};
 
@@ -225,6 +226,8 @@ namespace spvgentwo
 		Type& ReserveId();
 
 		Type& Queue();
+
+		Type& Pipe();
 
 		Type& PipeStorage();
 
@@ -774,6 +777,9 @@ namespace spvgentwo
 
 	template <>
 	inline Type& Type::fundamental<queue_t>(const queue_t*) { return Queue(); }
+
+	template <>
+	inline Type& Type::fundamental<pipe_t>(const pipe_t*) { return Pipe(); }
 
 	template <>
 	inline Type& Type::fundamental<pipe_storage_t>(const pipe_storage_t*) { return PipeStorage(); }
