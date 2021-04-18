@@ -535,6 +535,13 @@ spvgentwo::Type& spvgentwo::Type::Matrix(unsigned int _columns, unsigned int _ro
 	return *this;
 }
 
+spvgentwo::Type& spvgentwo::Type::RayQueryKHR()
+{
+	reset();
+	m_Type = spv::Op::OpTypeRayQueryKHR;
+	return *this;
+}
+
 spvgentwo::Type& spvgentwo::Type::Member(const Type* _pSubType)
 {
 	if (_pSubType == nullptr)

@@ -20,6 +20,7 @@ namespace spvgentwo
 	struct named_barrier_t {};
 
 	struct sampler_t {};
+	struct ray_query_khr_t {};
 
 	struct dyn_scalar_t
 	{
@@ -247,6 +248,8 @@ namespace spvgentwo
 		// makes this a matrix type, returns column vector type
 		Type& MatrixColumn(unsigned int _columns) { Matrix(_columns); return Member().Vector(); }
 		
+		Type& RayQueryKHR();
+
 		constexpr Iterator begin() const { return m_subTypes.begin(); }
 		constexpr Iterator end() const { return m_subTypes.end(); }
 
@@ -317,7 +320,9 @@ namespace spvgentwo
 		constexpr bool isDeviceEvent() const { return m_Type == spv::Op::OpTypeDeviceEvent; }
 		constexpr bool isReservedId() const { return m_Type == spv::Op::OpTypeReserveId; }
 		constexpr bool isPipe() const { return m_Type == spv::Op::OpTypePipe; }
+		constexpr bool isPipeStorage() const { return m_Type == spv::Op::OpTypePipeStorage; }
 		constexpr bool isQueue() const { return m_Type == spv::Op::OpTypeQueue; }
+		constexpr bool isRayQueryKHR() const { return m_Type == spv::Op::OpTypeRayQueryKHR; }
 
 		constexpr bool isVectorOf(const spv::Op _type, const unsigned int _length = 0u, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return isVector() && front().getType() == _type && (_length == 0u || m_VecComponentCount == _length) && (_componentWidth == 0u || front().getIntWidth() == _componentWidth) && front().hasSign(_sign); }
 
@@ -513,7 +518,7 @@ namespace spvgentwo
 		using const_vector_type = vector_t<T, N>;
 		using element_type = T;
 		static constexpr unsigned int Elements = N;
-		T data[N];
+		T data[N]{};
 	};
 
 	template<class, class = stdrep::void_t<>>
@@ -545,7 +550,7 @@ namespace spvgentwo
 		using element_type = T;
 		static constexpr unsigned int Columns = _Columns;
 		static constexpr unsigned int Rows = _Rows;
-		const_vector_t<T, Rows> data[Columns]; // columns
+		const_vector_t<T, Rows> data[Columns]{}; // columns
 	};
 
 	template<class, class = stdrep::void_t<>>
@@ -579,7 +584,7 @@ namespace spvgentwo
 		using const_array_type = array_t<T, N>;
 		using element_type = T;
 		static constexpr unsigned int Elements = N;
-		T data[N];
+		T data[N]{};
 	};
 
 	template<class, class = stdrep::void_t<>>
@@ -786,6 +791,9 @@ namespace spvgentwo
 
 	template <>
 	inline Type& Type::fundamental<named_barrier_t>(const named_barrier_t*) { return NamedBarrier(); }
+
+	template <>
+	inline Type& Type::fundamental<ray_query_khr_t>(const ray_query_khr_t*) { return RayQueryKHR(); }
 
 	template <>
 	inline Type& Type::fundamental<dyn_scalar_t>(const dyn_scalar_t* _prop)
