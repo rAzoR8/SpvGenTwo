@@ -9,6 +9,7 @@ namespace spvgentwo
 	{
 	public:
 		using T = typename stdrep::remove_cv_t<U>;
+		using Iterator = T*;
 
 		constexpr Vector(IAllocator* _pAllocator = nullptr);
 
@@ -33,15 +34,18 @@ namespace spvgentwo
 
 		Vector<U>& operator=(const Vector<U>& _other);
 
+		template <sgt_size_t N>
+		Vector<U>& operator=(const T(&_data)[N]);
+
 		constexpr IAllocator* getAllocator() const { return m_pAllocator; }
 
 		constexpr T& operator[](sgt_size_t _idx) { return m_pData[_idx]; };
 		constexpr const T& operator[](sgt_size_t _idx) const { return m_pData[_idx]; }
 
-		// reserve can only grow
+		// reserve can only grow, returns false on allocation failure
 		bool reserve(sgt_size_t _size);
 
-		// resize calls {} constructor on new elements
+		// resize calls {} constructor on new elements, returns false on allocation failure
 		bool resize(sgt_size_t _size, const T* _pInitValue = nullptr);
 
 		// only destructs, does not deallocate
@@ -55,8 +59,8 @@ namespace spvgentwo
 		constexpr sgt_size_t capacity() const noexcept { return m_capacity; }
 		constexpr bool empty() const { return m_elements == 0; }
 		
-		constexpr T* begin() const noexcept { return m_pData; }
-		constexpr T* end() const noexcept { return m_pData + m_elements; }
+		constexpr Iterator begin() const noexcept { return m_pData; }
+		constexpr Iterator end() const noexcept { return m_pData + m_elements; }
 
 		constexpr T& front() { return *m_pData; }
 		constexpr const T& front() const{ return *m_pData; }
@@ -67,11 +71,22 @@ namespace spvgentwo
 		template <class ...Args>
 		T* emplace_back(Args&& ..._args);
 
+		// emplace one element per argument
 		template <class ...Args>
 		void emplace_back_args(const T& _first, Args&& ..._tail);
 
-		// assign _data to elements, _count == max means all
-		void assign(const T& _data, sgt_size_t _offset = 0u, sgt_size_t _count = ~(sgt_size_t{ 0 }));
+		// assign _data to elements starting at _pos, _count == max means all
+		void assign(const T& _data, sgt_size_t _pos = 0u, sgt_size_t _count = sgt_size_max);
+
+		// insert _count elements from _pData starting at _pos. migt reallocate.
+		// returns iterator to first inserted element, or nullptr if _pos is outside the valid range
+		Iterator insert(sgt_size_t _pos, const T* _pData, sgt_size_t _count);
+
+		// inserts _data at position _pos
+		Iterator insert(sgt_size_t _pos, const T& _data) { return insert(_pos, &_data, 1u); }
+
+		template <sgt_size_t N>
+		Iterator insert(sgt_size_t _pos, const T(&_array)[N]) { return insert(_pos, _array, N); }
 
 	protected:
 		void deallocate();
@@ -183,8 +198,21 @@ namespace spvgentwo
 			{
 				m_pData[i] = _other.m_pData[i];
 			}
+		}
 
-			m_elements = _other.m_elements;
+		return *this;
+	}
+
+	template<class U>
+	template<sgt_size_t N>
+	inline Vector<U>& Vector<U>::operator=(const T(&_data)[N])
+	{
+		if (resize(N))
+		{
+			for (sgt_size_t i = 0u; i < N; ++i)
+			{
+				m_pData[i] = _data[i];
+			}
 		}
 
 		return *this;
@@ -203,7 +231,8 @@ namespace spvgentwo
 			return false;
 		}
 
-		T* pNewData = reinterpret_cast<T*>(m_pAllocator->allocate(_size * sizeof(T)));
+		// TODO: pass alignment
+		T* pNewData = static_cast<T*>(m_pAllocator->allocate(_size * sizeof(T)));
 
 		if (pNewData == nullptr)
 		{
@@ -213,11 +242,11 @@ namespace spvgentwo
 		//  move or copy old to new data (if any)
 		for (sgt_size_t i = 0u; i < m_elements; ++i)
 		{
-			if constexpr (stdrep::is_constructible_v<T, stdrep::remove_reference_t<T>&&>) // move constructible
+			if constexpr (stdrep::is_move_constructible_v<T>)
 			{
 				new(pNewData + i) T(stdrep::move(m_pData[i]));
 			}
-			else if constexpr(stdrep::is_constructible_v<T, const stdrep::remove_reference_t<T>&>) // copy constructible
+			else if constexpr(stdrep::is_copy_constructible_v<T>) 
 			{
 				new(pNewData + i) T(m_pData[i]);
 			}
@@ -250,18 +279,18 @@ namespace spvgentwo
 				return false;
 			}
 
-			if (_pInitValue == nullptr)
+			if (_pInitValue == nullptr || stdrep::is_copy_constructible_v<T> == false)
 			{
 				for (sgt_size_t i = m_elements; i < m_capacity; ++i)
 				{
 					new(m_pData + i) T{};
 				}
 			}
-			else if constexpr(stdrep::is_constructible_v<T, const T&>)
+			else if constexpr(stdrep::is_copy_constructible_v<T>)
 			{
 				for (sgt_size_t i = m_elements; i < m_capacity; ++i)
 				{
-					new(m_pData + i) T{*_pInitValue };
+					new(m_pData + i) T{ *_pInitValue };
 				}
 			}
 		}
@@ -301,17 +330,69 @@ namespace spvgentwo
 	}
 
 	template<class U>
-	inline void Vector<U>::assign(const T& _data, sgt_size_t _offset, sgt_size_t _count)
+	inline void Vector<U>::assign(const T& _data, sgt_size_t _pos, sgt_size_t _count)
 	{
-		if (_offset + _count > m_elements)
+		if (_pos + _count > m_elements)
 		{
-			_count = m_elements - _offset;
+			_count = m_elements - _pos;
 		}
 
-		for (sgt_size_t i = _offset; i < _offset + _count; ++i)
+		for (sgt_size_t i = _pos; i < _pos + _count; ++i)
 		{
 			m_pData[i] = _data;
 		}
+	}
+
+	template<class U>
+	inline typename Vector<U>::Iterator Vector<U>::insert(sgt_size_t _pos, const T* _pData, sgt_size_t _count)
+	{
+		if (m_elements == 0u)  // empty string
+		{
+			//if (reserve(_pos + _count) == false)
+			//	return nullptr;
+			_pos = 0u;
+		}
+		else if (_pos >= m_elements)
+		{
+			return nullptr;
+		}
+
+		const sgt_size_t oldEnd = m_elements;
+
+		// TODO: implant reserve logic here and avoid copying old data twice
+
+		if (reserve(m_elements + _count))
+		{
+			for (sgt_size_t i = 0u; i < _count; ++i)
+			{
+				// [0, ... , _pos, ..., m_elements]
+				// move _pos + _count to end of vector
+				// [0, ..., _pos, ..., m_elements, ..., m_elements + _count]
+				//               ^                 ^
+				// --------------|-----------------|
+
+				if constexpr (stdrep::is_move_constructible_v<T>) 
+				{
+					new(m_pData + oldEnd + i) T(stdrep::move(m_pData[_pos + i]));
+				}
+				else if constexpr (stdrep::is_copy_constructible_v<T>)
+				{
+					new(m_pData + oldEnd + i) T(m_pData[_pos + i]);
+				}
+				else // aggregate init
+				{
+					new(m_pData + oldEnd + i) T{ m_pData[_pos + i] };
+				}
+
+				// assign new data
+				m_pData[_pos + i] = _pData[i];
+			}
+			m_elements = m_elements + _count;
+
+			return m_pData + _pos;
+		}
+
+		return nullptr;
 	}
 
 	template<class U>
