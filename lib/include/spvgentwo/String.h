@@ -34,9 +34,6 @@ namespace spvgentwo
 
 		String& operator=(const char* _pStr);
 		
-		template <sgt_size_t N>
-		String& operator=(const char(&_pStr)[N]);
-
 		constexpr const char* c_str() const { return data(); }
 		constexpr operator const char* () const { return data(); }
 
@@ -50,25 +47,16 @@ namespace spvgentwo
 
 		String& append(const char* _pStr, sgt_size_t _length = 0u);
 
+		template <sgt_size_t N>
+		Iterator insert(sgt_size_t _pos, const char(&_array)[N]) { return Vector::insert(_pos, _array, N); }
+
+		Iterator insert(sgt_size_t _pos, const char* _pCStr, sgt_size_t _length = 0u) { return Vector::insert(_pos, _pCStr, _length == 0u ? stringLength(_pCStr) : _length); }
+
+		Iterator insert(sgt_size_t _pos, const String& _str) { return Vector::insert(_pos, _str.data(), _str.size()); }
+
 		bool operator==(const String& _other) const;
 		bool operator==(const char* _pStr) const;
 	};
-
-	template<sgt_size_t length>
-	inline String& String::operator=(const char(&_pStr)[length])
-	{
-		if (reserve(length))
-		{
-			for (sgt_size_t i = 0; i < length; ++i)
-			{
-				m_pData[i] = _pStr[i];
-			}
-
-			m_elements = length;
-		}
-
-		return *this;
-	}
 
 	template<>
 	struct Hasher<String>
