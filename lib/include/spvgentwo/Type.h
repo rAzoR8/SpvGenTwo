@@ -360,10 +360,10 @@ namespace spvgentwo
 
 		// depth first traversal of type hierarchy using integer indices (static variant), returns the iterator of the last valid type accessed by index
 		template<class... Indices>
-		List<Type>::Iterator getSubType(const unsigned int _i, Indices... _indices) const;
+		Iterator getSubType(const unsigned int _i, Indices... _indices) const;
 
 		// depth first traversal of type hierarchy using integer indices (dynamic variant), returns the iterator of the last valid type accessed by index
-		List<Type>::Iterator getSubType(const List<unsigned int>& _indices) const;
+		Iterator getSubType(const List<unsigned int>& _indices) const;
 
 		// creates a new empty type from this types allocator
 		Type New() const;

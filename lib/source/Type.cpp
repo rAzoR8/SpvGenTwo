@@ -191,24 +191,29 @@ const char* spvgentwo::Type::getString() const
 	}
 
 	if (isArray()) return "array";
-	if (isRuntimeArray()) return "runtime array";
+	if (isRuntimeArray()) return "runtime_array";
 
 	if (isStruct()) return "struct";
 	if (isImage()) return "image";
-	if (isSampledImage()) return "sampled image";
+	if (isSampledImage()) return "sampled_image";
 	if (isSampler()) return "sampler";
 	if (isPointer()) return "pointer";
-	if (isForwardPointer()) return "forward pointer";
+	if (isForwardPointer()) return "forward_pointer";
+
+	if (isFunction()) return "function";
 
 	if (isOpaque()) return "opaque";
 
-	if (isFunction()) return "function";
 	if (isEvent()) return "event";
-	if (isReservedId()) return "reserved id";
+	if (isDeviceEvent()) return "device_event";
+	if (isReservedId()) return "reserved_id";
 
-	if (isDeviceEvent()) return "device event";
-	if (isPipe()) return "pipe";
 	if (isQueue()) return "queue";
+	if (isPipe()) return "pipe";
+	if (isPipeStorage()) return "pipe_storage";
+
+	if (isRayQueryKHR()) return "ray_query_khr";
+	if (isAccelerationStructure()) return "acceleration_structure_khr";
 
 	return nullptr;
 }
