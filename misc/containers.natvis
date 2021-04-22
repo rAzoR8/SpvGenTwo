@@ -86,7 +86,7 @@
   </Type>
 
   <Type Name="spvgentwo::String">
-    <DisplayString Condition="m_pData != 0">{m_pData}</DisplayString>
+    <DisplayString Condition="m_pData != 0">{{  [{m_elements}] {m_pData} }}</DisplayString>
     <DisplayString Condition="m_pData == 0">empty</DisplayString>
 
     <Expand>
