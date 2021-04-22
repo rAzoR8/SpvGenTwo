@@ -3,6 +3,7 @@
 #include "common/ReflectionHelperTemplate.inl"
 #include "common/FunctionCallGraph.h"
 #include "common/ModulePrinter.h"
+#include "common/TypeHelper.h"
 
 #include "spvgentwo/Module.h"
 #include "spvgentwo/ModuleTemplate.inl"
@@ -221,7 +222,7 @@ namespace
 
 		if (_pTarget->hasResultType())
 		{
-			lookup(_pLibInstr->getResultTypeInstr());
+			if (lookup(_pLibInstr->getResultTypeInstr()) == false) return false;
 		}
 		if (_pTarget->hasResult())
 		{
@@ -317,6 +318,8 @@ namespace
 		auto error = [&](auto&& ... args) {_consumer.logError(args...); };
 		auto info = [&](auto&& ... args) {_consumer.logInfo(args...); };
 
+		IAllocator* pAllocator = _options.allocator != nullptr ? _options.allocator : _consumer.getAllocator();
+
 		info("Resolving import symbol [%llu] %s", hash(_name), _name.c_str());
 
 		if (_libSymbol->getOperation() != _consumerSymbol->getOperation())
@@ -331,11 +334,17 @@ namespace
 
 		if (*libType != *consumerType)
 		{
-			error("Type mismatch for symbol %s", _name.c_str());
+			String lTypeName(pAllocator);
+			String cTypeName(pAllocator);
+
+			TypeHelper::getTypeName(*libType, lTypeName, _libSymbol);
+			TypeHelper::getTypeName(*consumerType, cTypeName, _consumerSymbol);
+
+			error("Type mismatch for symbol %s: \n [export] %s \n[import] %s", _name.c_str(), lTypeName.c_str(), cTypeName.c_str());
 			return false;
 		}
 
-		if (*_libSymbol == spv::Op::OpVariable) // && _options.importDecorationsAndNames
+		if (*_libSymbol == spv::Op::OpVariable)
 		{
 			if (importGlobalDependencies(_consumer, _libSymbol, _consumerSymbol, _cache, _options) == false)
 				return false;
@@ -365,11 +374,6 @@ namespace
 				// cache OpFunctionParameter
 				for (auto lit = libParams.begin(), lend = libParams.end(), cit = consumerParams.begin(); lit != lend; ++lit, ++cit)
 				{
-					if ((lit->getType() == nullptr || cit->getType() == nullptr) || *lit->getType() != *cit->getType())
-					{
-						error("Type of function parameter does not match for %s", _name.c_str());
-						return false;
-					}
 
 					printInstruction(_options, lit.operator->(), " -> ", cit.operator->());
 					_cache.emplaceUnique(lit.operator->(), cit.operator->());
