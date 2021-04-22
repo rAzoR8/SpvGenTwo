@@ -15,7 +15,7 @@ namespace spvgentwo
 	using sgt_uint64_t = decltype(0ull);
 
 	static_assert(sizeof(sgt_uint32_t) == 4, "32bit integer type size mismatch");
-	static_assert(sizeof(sgt_uint64_t) == 8, "63bit integer type size mismatch");
+	static_assert(sizeof(sgt_uint64_t) == 8, "64bit integer type size mismatch");
 }
 
 #ifdef SPVGENTWO_REPLACE_PLACEMENTNEW
@@ -252,6 +252,33 @@ namespace spvgentwo::stdrep
 
 	template <class T, class... Args>
 	inline constexpr bool is_constructible_v = is_constructible<T, Args...>::value;
+
+	template <class T>
+	using is_copy_constructible = is_constructible<T, add_lvalue_reference_t<T>>;
+
+	template <class T>
+	inline constexpr bool is_copy_constructible_v = is_copy_constructible<T>::value;
+
+	template <class T>
+	using is_move_constructible = is_constructible<T, add_rvalue_reference_t<T>>;
+
+	template <class T>
+	inline constexpr bool is_move_constructible_v = is_move_constructible<T>::value;
+
+	template <typename T, typename U, typename = void>
+	struct is_assignable : false_type {};
+
+	template <typename T, typename U>
+	struct is_assignable<T, U, decltype(declval<add_lvalue_reference_t<T>>() = declval<U>(), void())> : true_type {};
+
+	template <typename T, typename U>
+	inline constexpr bool is_assignable_v = is_assignable<T, U>::value;
+
+	template <class T, class U = T>
+	struct is_move_assignable : is_assignable< T, add_rvalue_reference_t<U>> {};
+
+	template<typename T, typename U = T>
+	inline constexpr bool is_move_assignable_v = is_move_assignable<T, U>::value;
 
 	template<class T>
 	struct is_function : integral_constant<bool, !is_const_v<const T> && !is_reference_v<T>> {};
