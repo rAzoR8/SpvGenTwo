@@ -67,7 +67,7 @@
       <Item Name="[size]" ExcludeView="simple">m_elements</Item>
       <Item Name="[capacity]" ExcludeView="simple">m_capacity</Item>
       <ArrayItems>
-        <Size>m_elements</Size>
+        <Size>m_capacity</Size>
         <ValuePointer>m_pData</ValuePointer>
       </ArrayItems>
     </Expand>
@@ -94,7 +94,7 @@
       <Item Name="[size]" ExcludeView="simple">m_elements</Item>
       <Item Name="[capacity]" ExcludeView="simple">m_capacity</Item>
       <ArrayItems>
-        <Size>m_elements</Size>
+        <Size>m_capacity</Size>
         <ValuePointer>m_pData</ValuePointer>
       </ArrayItems>
     </Expand>
