@@ -346,10 +346,10 @@ namespace spvgentwo
 	template<class U>
 	inline typename Vector<U>::Iterator Vector<U>::insert(sgt_size_t _pos, const T* _pData, sgt_size_t _count)
 	{
-		if (m_elements == 0u)  // empty string
+		// check if _pos is within the valid range [0, m_elements]
+		if (m_elements == 0u) // empty string
 		{
-			//if (reserve(_pos + _count) == false)
-			//	return nullptr;
+			// if the string is empty, we can only insert at the beginning
 			_pos = 0u;
 		}
 		else if (_pos >= m_elements)
@@ -357,42 +357,66 @@ namespace spvgentwo
 			return nullptr;
 		}
 
-		const sgt_size_t oldEnd = m_elements;
-
-		// TODO: implant reserve logic here and avoid copying old data twice
-
-		if (reserve(m_elements + _count))
+		// no reallocation needed
+		if (m_elements + _count <= m_capacity) 
 		{
+			// move-construct last _count elements to reserved but un-initialized data at the end
+			auto offset = m_elements - _count;
 			for (sgt_size_t i = 0u; i < _count; ++i)
 			{
-				// [0, ... , _pos, ..., m_elements]
-				// move _pos + _count to end of vector
-				// [0, ..., _pos, ..., m_elements, ..., m_elements + _count]
-				//               ^                 ^
-				// --------------|-----------------|
-
-				if constexpr (stdrep::is_move_constructible_v<T>) 
-				{
-					new(m_pData + oldEnd + i) T(stdrep::move(m_pData[_pos + i]));
-				}
-				else if constexpr (stdrep::is_copy_constructible_v<T>)
-				{
-					new(m_pData + oldEnd + i) T(m_pData[_pos + i]);
-				}
-				else // aggregate init
-				{
-					new(m_pData + oldEnd + i) T{ m_pData[_pos + i] };
-				}
-
-				// assign new data
+				traits::constructWithArgs(m_pData + m_elements + i, stdrep::move(m_pData[offset + i]));
+			}
+			for (sgt_size_t i = m_elements - 1u; i > _pos;) // go backwards & move data forward
+			{
+				m_pData[i] = stdrep::move(m_pData[--i]);
+			}
+			for (sgt_size_t i = 0u; i < _count; ++i) // copy data to insert
+			{
 				m_pData[_pos + i] = _pData[i];
 			}
-			m_elements = m_elements + _count;
 
-			return m_pData + _pos;
+			m_elements += _count;
+		}
+		else 
+		{
+			const auto newSize = m_elements + _count;
+			const auto newCapacity = newSize + (newSize >> 2); // grow by 1.25
+
+			T* pNewData = static_cast<T*>(m_pAllocator->allocate(newCapacity * sizeof(T)));
+
+			if (pNewData == nullptr)
+			{
+				return nullptr;
+			}
+
+			// copy original data [0, .., _pos]
+			for (sgt_size_t i = 0u; i < _pos; ++i)
+			{
+				traits::constructWithArgs(pNewData + i, stdrep::move(m_pData[i]));
+			}
+			//[_pos, .., _pos + count]
+			for (sgt_size_t i = 0u; i < _count; ++i) // inserted data
+			{
+				traits::constructWithArgs(pNewData + _pos + i, _pData[i]);
+			}
+			//[_pos, ..., m_elements]
+			auto rest = m_elements - _pos;
+			for (sgt_size_t i = 0u; i < rest; ++i) 
+			{
+				traits::constructWithArgs(pNewData + _pos + _count + i, stdrep::move(m_pData[_pos + i]));
+			}
+			
+			if (m_pData != nullptr)
+			{
+				m_pAllocator->deallocate(m_pData, m_capacity * sizeof(T));			
+			}
+
+			m_pData = pNewData;
+			m_elements = newSize;
+			m_capacity = newCapacity;
 		}
 
-		return nullptr;
+		return m_pData + _pos;
 	}
 
 	template<class U>
