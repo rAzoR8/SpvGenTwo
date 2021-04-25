@@ -14,17 +14,19 @@ namespace
 		{
 			auto sLen = sizeof("struct {\n");
 			_outName.insert(_offset, "struct {\n", sLen); // TODO: implant _pOpTypeInstr
-			_offset += sLen;
+			_offset += sLen-1;
 
 			for (const Type& t : _type) 
 			{
+				_outName.insert(_offset++, "\t", 1u);
+
 				auto prev = _outName.size();
 				getTypeName(_offset, t, _outName, _pOpTypeInstr); // todo, advance _pOpTypeInstr
-				auto len = _outName.size() - prev;
+				auto len = _outName.size() - prev - 1;
 				_offset += len;
 
 				_outName.insert(_offset, ";\n");
-				_offset += sizeof(";\n");
+				_offset += sizeof(";\n")-1;
 			}
 			
 			_outName.insert(_offset, "};");
@@ -33,6 +35,7 @@ namespace
 		else if(const char* name = _type.getString(); name != nullptr)
 		{
 			_outName.insert(_offset, name);
+			return true;
 		}
 		// TODO: other types
 
