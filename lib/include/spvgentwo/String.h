@@ -5,7 +5,7 @@
 
 namespace spvgentwo
 {
-	// includes terminator string
+	// includes string terminator
 	inline constexpr sgt_size_t stringLength(const char* _pStr)
 	{
 		if (_pStr == nullptr) 
@@ -37,6 +37,13 @@ namespace spvgentwo
 		constexpr const char* c_str() const { return data(); }
 		constexpr operator const char* () const { return data(); }
 
+		// exclude string terminator
+		constexpr sgt_size_t size() const { return m_elements == 0u ? 0u : m_elements - 1u; }
+		constexpr auto end() const { return begin() + size(); }
+
+		constexpr T& back() { return m_pData[m_elements - 2u]; }
+		constexpr const T& back() const { return m_pData[m_elements - 2u]; }
+
 		String substr(sgt_size_t _offset, sgt_size_t _length);
 
 		String operator+(const String& _other) const;
@@ -50,7 +57,8 @@ namespace spvgentwo
 		template <sgt_size_t N>
 		Iterator insert(sgt_size_t _pos, const char(&_array)[N]) { return Vector::insert(_pos, _array, N); }
 
-		Iterator insert(sgt_size_t _pos, const char* _pCStr, sgt_size_t _length = 0u) { return Vector::insert(_pos, _pCStr, _length == 0u ? stringLength(_pCStr) : _length); }
+		// don't insert the additional string terminator from _pCStr
+		Iterator insert(sgt_size_t _pos, const char* _pCStr, sgt_size_t _length = 0u);
 
 		Iterator insert(sgt_size_t _pos, const String& _str) { return Vector::insert(_pos, _str.data(), _str.size()); }
 

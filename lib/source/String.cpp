@@ -102,3 +102,14 @@ bool spvgentwo::String::operator==(const char* _pStr) const
 	}
 	return false;
 }
+
+spvgentwo::String::Iterator spvgentwo::String::insert(sgt_size_t _pos, const char* _pCStr, sgt_size_t _length)
+{
+	auto ret = Vector::insert(_pos, _pCStr, _length == 0u ? (stringLength(_pCStr) - 1u) : _length);
+
+	if (m_elements != 0u && m_pData[m_elements - 1u] != '\0')
+	{
+		emplace_back('\0'); // append string terminator if necessar
+	}
+	return ret;
+}
