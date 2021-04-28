@@ -66,6 +66,8 @@ Module examples::types(IAllocator* _pAllocator, ILogger* _pLogger)
 		String name(_pAllocator);
 		TypeHelper::getTypeName(f.getFunctionType(), name, f.getFunction());
 		_pLogger->logDebug("%s", name.c_str());
+
+		(*f).returnValue();
 	}
 
 	return module;
