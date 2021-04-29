@@ -52,10 +52,10 @@ namespace
 		};
 
 		// type
-		auto insertSubType = [&_outName, &_offset, _indent](const Type& _t, const spvgentwo::Instruction* _pInstr)
+		auto insertSubType = [&_outName, &_offset](const Type& _t, unsigned int _indent, const spvgentwo::Instruction* _pInstr)
 		{
 			auto prev = _outName.size();
-			getTypeName(_offset,_indent + 1u, _t, _outName, _pInstr);
+			getTypeName(_offset, _indent, _t, _outName, _pInstr);
 			auto len = _outName.size() - prev;
 			_offset += len;
 		};
@@ -70,7 +70,6 @@ namespace
 
 		if (_type.isStruct())
 		{
-			indent(_indent);
 			insert("struct ");
 
 			if (const char* name = instrName(_pOpTypeInstr); name != nullptr)
@@ -82,8 +81,8 @@ namespace
 
 			for (const Type& t : _type) 
 			{
-				indent(_indent + 1);
-				insertSubType(t, op != nullptr ? op->getInstruction() : nullptr);
+				indent(_indent+1u);
+				insertSubType(t, _indent + 1u, op != nullptr ? op->getInstruction() : nullptr);
 				if (t.isStruct() == false)
 				{
 					insert(";\n");
@@ -97,11 +96,10 @@ namespace
 		}
 		else if (_type.isFunction())
 		{
-			indent(_indent);
 			auto it = _type.begin();
 
 			// return type
-			getTypeName(_offset, 0u, *it, _outName, op != nullptr ? op->getInstruction() : nullptr);
+			insertSubType(*it, 0u, op != nullptr ? op->getInstruction() : nullptr);
 
 			insert(" "); // func name
 			if (const char* name = instrName(_pOpTypeInstr); name != nullptr)
@@ -127,7 +125,7 @@ namespace
 				}
 				else // parameter type
 				{
-					getTypeName(_offset, 0u, *it, _outName, op != nullptr ? op->getInstruction() : nullptr);
+					insertSubType(*it, 0u, op != nullptr ? op->getInstruction() : nullptr);
 				}
 
 				if (it.next() != nullptr)
@@ -140,21 +138,20 @@ namespace
 		}
 		else if (_type.isPointer())
 		{
-			indent(_indent);
 			if (const char* name = instrName(_pOpTypeInstr); name != nullptr)
 			{
 				insert(name);
 			}
 			else // parameter type
 			{
-				insertSubType(_type.front(), _pOpTypeInstr); // or pass subtype instr?
+				insertSubType(_type.front(), 0u, _pOpTypeInstr); // or pass subtype instr?
 			}
 
 			insert("*");
 		}
 		else if(const char* name = _type.getString(); name != nullptr)
 		{
-			_outName.insert(_offset, name);
+			insert(name);
 		}
 	}
 } // anon
