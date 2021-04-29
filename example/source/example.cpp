@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 	// types example
 	if (BinaryFileWriter writer("types.spv"); writer.isOpen())
 	{
-		examples::types(&alloc, &log).finalizeAndWrite(writer);
+		examples::types(&alloc, &log).finalizeAndWrite(writer, &gram);
 		writer.close();
 		system("spirv-dis types.spv");
 		assert(system("spirv-val types.spv") == 0);

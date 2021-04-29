@@ -61,7 +61,7 @@ Module examples::types(IAllocator* _pAllocator, ILogger* _pLogger)
 	}
 
 	{
-		Function& f = module.addFunction<vector_t<float, 3>, float, int, pipe_storage_t>("test");
+		Function& f = module.addFunction<void, float, int, sampler_t, vector_t<float, 3>>("testFunc");
 		
 		String name(_pAllocator);
 		TypeHelper::getTypeName(f.getFunctionType(), name, f.getFunction());
