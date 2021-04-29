@@ -124,8 +124,8 @@ namespace spvgentwo
 		template <class ReturnType = void, class ... ParameterTypes>
 		EntryPoint& addEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
 
-		// add OpCapability if not present in the module
-		void addCapability(spv::Capability _capability);
+		// add OpCapability if not present in the module, _addDependentCapablity adds base capabilities (not required) for _capability: Geometry->Shader etc.
+		void addCapability(spv::Capability _capability, bool _addDependentCapablity = false);
 
 		// check if OpCapability is present in the module
 		bool checkCapability(spv::Capability _capability) const;

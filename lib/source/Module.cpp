@@ -295,8 +295,21 @@ spvgentwo::Instruction* spvgentwo::Module::addGlobalVariableInstr(const char* _p
 	return pVar;
 }
 
-void spvgentwo::Module::addCapability(spv::Capability _capability)
+void spvgentwo::Module::addCapability(spv::Capability _capability, bool _addDependentCapablity)
 {
+	if (_addDependentCapablity)
+	{
+		const BaseCapability cap = getBaseCapability(_capability);
+		if (cap.primary != spv::Capability::Max)
+		{
+			addCapability(cap.primary, true);
+		}
+		if (cap.secondary != spv::Capability::Max)
+		{
+			addCapability(cap.primary, true);
+		}
+	}
+
 	m_Capabilities.emplaceUnique(_capability, Instruction(this, spv::Op::OpCapability, _capability));
 }
 
