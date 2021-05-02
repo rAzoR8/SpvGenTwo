@@ -64,6 +64,13 @@ namespace spvgentwo
 
 		bool operator==(const String& _other) const;
 		bool operator==(const char* _pStr) const;
+
+		template <class Arg>
+		T* emplace_back(Arg&& _arg);
+
+		// emplace one element per argument
+		template <class ...Args>
+		void emplace_back_args(const T& _first, Args&& ..._tail);
 	};
 
 	template<>
@@ -76,4 +83,34 @@ namespace spvgentwo
 			return h;
 		}
 	};
+
+	template<class Arg>
+	inline String::T* String::emplace_back(Arg&& _arg)
+	{
+		if(m_elements == 0 || Vector::back() != '\0')
+		{
+			Vector::emplace_back(stdrep::forward<Arg>(_arg));
+			Vector::emplace_back('\0');
+			return &back();
+		}
+		else if (reserve(m_elements+1u))
+		{
+			m_pData[m_elements] = m_pData[m_elements - 1];
+			m_pData[m_elements - 1] = stdrep::forward<Arg>(_arg);
+			++m_elements;
+			return &back();
+		}
+		return nullptr;
+	}
+
+	template<class ...Args>
+	inline void String::emplace_back_args(const T& _first, Args && ..._tail)
+	{
+		String::emplace_back(_first);
+
+		if constexpr (sizeof...(_tail) > 0)
+		{
+			String::emplace_back_args(stdrep::forward<Args>(_tail)...);
+		}
+	}
 }

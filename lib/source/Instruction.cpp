@@ -1675,9 +1675,9 @@ spvgentwo::Instruction::Iterator spvgentwo::getLiteralString(String& _out, Instr
 		const char* str = reinterpret_cast<const char*>(&_it->literal.value);
 		for (unsigned int i = 0u; i < sizeof(unsigned int); ++i)
 		{
-			_out.emplace_back(str[i]);
 			if (str[i] == '\0')
 				return _it.next();
+			_out.emplace_back(str[i]);
 		}
 	}
 

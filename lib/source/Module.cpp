@@ -1084,7 +1084,7 @@ bool spvgentwo::Module::reconstructNames(IAllocator* _pAllocator)
 
 		getLiteralString(name, it.next(), instr.end());
 
-		if (name.empty() || name.back() != '\0')
+		if (name.empty() || name.Vector::back() != '\0')
 		{
 			logError("Failed to parse name");
 			success = false;
