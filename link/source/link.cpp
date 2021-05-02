@@ -13,6 +13,7 @@
 #include <cstring> // strcmp
 #include <cstdio> // printf, note windows console, and others too, don't print SPIR-V's UTF-8 strings properly
 #include <cstdlib> // strtoul
+#include <cctype> // to lower
 
 using namespace spvgentwo;
 using namespace ModulePrinter;
@@ -111,16 +112,67 @@ int link(HeapList<Module>& _libs, Module& _target, const LinkerHelper::LinkerOpt
 
 int main(int argc, char* argv[])
 {
+	using namespace LinkerHelper;
+	struct Option
+	{
+		LinkerOptionBits flag;
+		const char* str;
+		const char* alt;
+	};
+
+#define CMDOPTION(x, acronym) {LinkerOptionBits::x, "--" #x, "--"#acronym}
+
+	const Option CmdOptions[] = 
+	{
+		CMDOPTION(ImportMissingTypes, types),
+		CMDOPTION(ImportMissingConstants, constants),
+		CMDOPTION(ImportReferencedDecorations, refdecos),
+		CMDOPTION(ImportReferencedNames, refnames),
+		CMDOPTION(ImportReferencedFunctions, reffuncs),
+		CMDOPTION(ImportReferencedVariables, refvars),
+		//CMDOPTION(AssignResultIDs, asid), // already on by default
+		CMDOPTION(RemoveLinkageCapability, rmcap),
+		CMDOPTION(AutoAddRequiredCapabilitiesAndExtensions, addcaps),
+		CMDOPTION(UpdateEntryPointGlobalVarInterface, variface),
+		CMDOPTION(CopyOpSourceStringInstructions, srcstrings),
+		CMDOPTION(CopyOpLineInstructions, lines),
+		CMDOPTION(CopyOpModuleProcessedInstructions, processed),
+	};
+
 	const char* out = nullptr;
 	const char* patchspv = nullptr;
 	const char* targetspv = nullptr;
 	
 	HeapList<Target> targets;
 	HeapList<Module> libs;
-	LinkerHelper::LinkerOptions options{};
+	LinkerOptions options{};
 
-	options.flags = LinkerHelper::LinkerOptionBits::AssignResultIDs;
+	options.flags = LinkerOptionBits::AssignResultIDs;
 	// we dont want to set LinkerOptionBits::UpdateEntryPointGlobalVarInterface, we call finalizeEntryPoints() manually 
+
+	auto addOption = [&options, &CmdOptions](const char* arg) -> bool
+	{
+		auto casecmp = [](const char* l, const char* r)
+		{
+			while(*l != 0 && *r != 0)
+			{
+				if (tolower(*l) != tolower(*r))
+					return false;
+				++l; ++r;
+			}
+			return true;
+		};
+		for(const Option& o : CmdOptions)
+		{
+			if(strcmp(arg, o.str) == 0 || strcmp(arg, o.alt) || casecmp(arg, o.str))
+			{
+				g_logger.logInfo("Option: %s", o.str);
+				options.flags |= o.flag;
+				return true;
+			}
+		}
+		return false;
+	};
 
 	Module patchModule(&g_alloc, &g_logger);
 	Module targetModule(&g_alloc, &g_logger);
@@ -214,10 +266,16 @@ int main(int argc, char* argv[])
 		{
 			addTarget(spv::LinkageType::Import);
 		}
-		else if (strcmp(arg, "--printInstructions") == 0)
+		else if (
+			strcmp(arg, "--printInstructions") == 0 ||
+			strcmp(arg, "--printinstructions") == 0)
 		{
 			options.grammar = &g_gram;
 			options.printer = &g_printer;
+		}
+		else
+		{
+			addOption(arg);
 		}
 	}
 

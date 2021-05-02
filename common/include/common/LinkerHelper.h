@@ -33,8 +33,8 @@ namespace spvgentwo
 
 		enum class LinkerOptionBits
 		{
-			ImportMissingTypes = 1 << 0,
-			ImportMissingConstants = 1 << 1,
+			ImportMissingTypes = 1 << 0, // during instruction lookup, import missing types
+			ImportMissingConstants = 1 << 1, // during instruction lookup, import missing constants
 			ImportReferencedDecorations = 1 << 2, // referencing imported symbol
 			ImportReferencedNames = 1 << 3, // referencing imported symbol
 			ImportReferencedFunctions = 1 << 4, // functions called from an imported function, but were not exported themselves
