@@ -312,6 +312,8 @@ namespace
 
 	inline bool importSymbolImpl(spvgentwo::Module& _consumer, const spvgentwo::Instruction* _libSymbol, spvgentwo::Instruction* _consumerSymbol, const spvgentwo::String& _name, InstrLookup& _cache, spvgentwo::LinkerHelper::LinkerOptions _options)
 	{
+		bool success = true;
+
 		using namespace spvgentwo;
 		using namespace LinkerHelper;
 
@@ -324,6 +326,7 @@ namespace
 
 		if (_libSymbol->getOperation() != _consumerSymbol->getOperation())
 		{
+			error("Lib symbol Op kind does not match consumer kind, both must be either OpFunction or OpVariable [Op: lib %u consumer %u]", _libSymbol->getOperation(), _consumerSymbol->getOperation());
 			return false;
 		}
 
@@ -340,14 +343,13 @@ namespace
 			TypeHelper::getTypeName(*libType, lTypeName, _libSymbol);
 			TypeHelper::getTypeName(*consumerType, cTypeName, _consumerSymbol);
 
-			error("Type mismatch for symbol %s: \n [export] %s \n[import] %s", _name.c_str(), lTypeName.c_str(), cTypeName.c_str());
+			error("Type mismatch for symbol %s: \n[export] %s\n[import] %s", _name.c_str(), lTypeName.c_str(), cTypeName.c_str());
 			return false;
 		}
 
 		if (*_libSymbol == spv::Op::OpVariable)
 		{
-			if (importGlobalDependencies(_consumer, _libSymbol, _consumerSymbol, _cache, _options) == false)
-				return false;
+			success &= importGlobalDependencies(_consumer, _libSymbol, _consumerSymbol, _cache, _options);
 
 			printInstruction(_options, _libSymbol, " -> ", _consumerSymbol);
 			_cache.emplaceUnique(_libSymbol, _consumerSymbol);
@@ -374,7 +376,6 @@ namespace
 				// cache OpFunctionParameter
 				for (auto lit = libParams.begin(), lend = libParams.end(), cit = consumerParams.begin(); lit != lend; ++lit, ++cit)
 				{
-
 					printInstruction(_options, lit.operator->(), " -> ", cit.operator->());
 					_cache.emplaceUnique(lit.operator->(), cit.operator->());
 				}
@@ -394,7 +395,7 @@ namespace
 					if (iLib == spv::Op::OpFunctionCall)
 					{
 						const Instruction* iOpFunction = iLib.getFirstActualOperand()->getInstruction();
-						if (_cache.find(iOpFunction) == _cache.end())
+						if (_cache.find(iOpFunction) == _cache.end()) // just report errors here, not panic
 						{
 							if (const char* iFuncName = iOpFunction->getName(); iFuncName != nullptr)
 							{
@@ -407,11 +408,8 @@ namespace
 						}
 					}
 
-					if (importGlobalDependencies(_consumer, &iLib, nullptr, _cache, _options) == false)
-						return false;
-
-					if (transferInstruction(&iLib, bbConsumer.addInstruction(), _cache, _options) == false)
-						return false;
+					success &= importGlobalDependencies(_consumer, &iLib, nullptr, _cache, _options);
+					success &= transferInstruction(&iLib, bbConsumer.addInstruction(), _cache, _options);
 				}
 			}
 
@@ -423,12 +421,13 @@ namespace
 			return false;
 		}
 
-		return true;
+		return success;
 	}
 } // anon namespace
 
 bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, const LinkerOptions& _options)
 {
+	bool success = true;
 	IAllocator* pAllocator = _options.allocator != nullptr ? _options.allocator : _consumer.getAllocator();
 
 	auto info = [&](auto&& ... args) {_consumer.logInfo(args...); };
@@ -486,7 +485,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 				else
 				{
 					error("%s symbol must be OpVariable or OpFunction", name.c_str());
-					return false;
+					success = false;
 				}
 			}
 			else
@@ -589,12 +588,8 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 				for (const Instruction& lInstr : lBB)
 				{
 					Instruction* cInstr = cBB.addInstruction(lInstr.getName());
-					if (importGlobalDependencies(_consumer, &lInstr, cInstr, cache, _options) == false)
-						return false;
-
-					// don't add this instruction to the cache, we can't refenence it anyway
-					if (transferInstruction(&lInstr, cInstr, cache, _options) == false)
-						return false;
+					success &= importGlobalDependencies(_consumer, &lInstr, cInstr, cache, _options);
+					success &= transferInstruction(&lInstr, cInstr, cache, _options);
 				}
 			}
 
@@ -606,7 +601,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	// import variables first in case they are used in the imported function
 	for (const ImportSymbol& var : iVars)
 	{
-		if (importSymbolImpl(_consumer, var.lib, var.consume, var.name, cache, _options))
+		if (success &= importSymbolImpl(_consumer, var.lib, var.consume, var.name, cache, _options); success)
 		{
 			_consumer.getDecorations().erase(var.decoIt); // remove if successful
 		}
@@ -615,7 +610,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 	for (const ImportSymbol& func : iFuncs)
 	{
-		if (importSymbolImpl(_consumer, func.lib, func.consume, func.name, cache, _options))
+		if (success &= importSymbolImpl(_consumer, func.lib, func.consume, func.name, cache, _options); success)
 		{
 			_consumer.getDecorations().erase(func.decoIt); // remove if successful
 		}
@@ -624,11 +619,13 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 	if (hasExports && allImportsResolved && (_options & LinkerOptionBits::RemoveLinkageCapability)) 
 	{
+		info("Removing Capability::Linkage from consumer module");
 		_consumer.removeCapability(spv::Capability::Linkage);
 	}
 
 	const auto version = _lib.getSpvVersion() > _consumer.getSpvVersion() ? _lib.getSpvVersion() : _consumer.getSpvVersion();
 	_consumer.setSpvVersion(version);
+	info("Merged SPIR-V version: %u.%u[%u->%u]", getMajorVersion(version), getMinorVersion(version), _consumer.getSpvVersion(), version);
 
 	// only add required capabilities & extensions
 	if (_options.grammar != nullptr && (_options & LinkerOptionBits::AutoAddRequiredCapabilitiesAndExtensions))
@@ -664,20 +661,17 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 	if (_options & LinkerOptionBits::CopyOpSourceStringInstructions)
 	{
-		if (copy(_lib.getSourceStrings(), [&]() -> Instruction* { return _consumer.addSourceStringInstr(); }) == false)
-			return false;
+		success &= copy(_lib.getSourceStrings(), [&]() -> Instruction* { return _consumer.addSourceStringInstr(); });
 	}
 
 	if (_options & LinkerOptionBits::CopyOpLineInstructions)
 	{
-		if (copy(_lib.getLines(), [&]() -> Instruction* { return _consumer.addLineInstr(); }) == false)
-			return false;
+		success &= copy(_lib.getLines(), [&]() -> Instruction* { return _consumer.addLineInstr(); });
 	}
 
 	if (_options & LinkerOptionBits::CopyOpModuleProcessedInstructions)
 	{
-		if (copy(_lib.getModulesProcessed(), [&]() -> Instruction* { return _consumer.addLineInstr(); }) == false)
-			return false;
+		success &= copy(_lib.getModulesProcessed(), [&]() -> Instruction* { return _consumer.addLineInstr(); });
 	}
 
 	if (_options & LinkerOptionBits::UpdateEntryPointGlobalVarInterface)
@@ -686,5 +680,5 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		_consumer.finalizeEntryPoints();	
 	}
 
-	return true;
+	return success;
 }
