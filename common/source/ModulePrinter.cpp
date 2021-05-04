@@ -9,20 +9,6 @@
 
 namespace
 {
-	// _outBuffer must have space for at least 10 digits ( max length is log10(UINT_MAX) ~ 9.6 )
-	void uintToString(unsigned int _value, char* _outBuffer)
-	{
-		unsigned int len = 0u; // count length of our string
-		for (unsigned int val = _value; val != 0u; val /= 10u, ++len) {}
-		len = _value == 0u ? 1u : len;
-
-		do
-		{
-			_outBuffer[--len] = '0' + (_value % 10u);
-			_value /= 10u;
-		} while (_value != 0 && len > 0u);
-	}
-
 	template <class T, unsigned int SIZE>
 	bool printConstData(const spvgentwo::Constant& _c, char(&_buffer)[SIZE], const char* _pFormat)
 	{
@@ -450,7 +436,7 @@ bool spvgentwo::ModulePrinter::IModulePrinter::append(const Constant& _constant,
 void spvgentwo::ModulePrinter::IModulePrinter::append(unsigned int _literal, const char* _pushColor, const char* _popColor)
 {
 	char buf[11] = { '\0' }; // max length is log10(UINT_MAX) ~ 9.6 + null terminator -> 11
-	uintToString(_literal, buf);
+	uintToString(_literal, buf, 10, 10u);
 
 	append(buf, _pushColor, _popColor);
 }

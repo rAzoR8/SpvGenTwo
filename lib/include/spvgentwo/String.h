@@ -16,6 +16,24 @@ namespace spvgentwo
 		return i+1u;
 	}
 
+	// _outBuffer must have space for at least 10 digits ( max length is log10(UINT_MAX) ~ 9.6 )
+	inline constexpr void uintToString(unsigned int _value, char* _outBuffer, unsigned int _bufferLength, unsigned int _base = 10u)
+	{
+		constexpr char alpha[] = { '0', '1','2','3','4','5','6','7','8','9','A','B','C','D','E','F' };
+		_base = sizeof(alpha) < _base ? sizeof(alpha) : _base;
+
+		unsigned int len = 0u; // count length of our string
+		for (unsigned int val = _value; val != 0u; val /= _base, ++len) {}
+		len = _value == 0u ? 1u : len;
+		len = _bufferLength < len ? _bufferLength : len;
+
+		do
+		{
+			_outBuffer[--len] = alpha[_value % _base];
+			_value /= _base;
+		} while (_value != 0 && len > 0u);
+	}
+
 	class String : public Vector<char>
 	{
 	public:
