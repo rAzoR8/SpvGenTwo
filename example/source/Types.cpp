@@ -61,13 +61,23 @@ Module examples::types(IAllocator* _pAllocator, ILogger* _pLogger)
 	}
 
 	{
-		Function& f = module.addFunction<void, float, int, sampler_t, vector_t<float, 3>>("testFunc");
+		Function& f = module.addFunction<int, float, int, sampler_t, vector_t<float, 3>>("testFunc");
 		
 		String name(_pAllocator);
 		TypeHelper::getTypeName(f.getFunctionType(), name, f.getFunction());
 		_pLogger->logDebug("%s", name.c_str());
 
-		(*f).returnValue();
+		BasicBlock& bb = *f;
+		Instruction* var = f.variable<array_t<int, 6>>("myArray");
+
+		name.clear();
+		TypeHelper::getTypeName(*var->getType(), name, var);
+		_pLogger->logDebug("%s", name.c_str());
+
+		var = bb->opLoad(var);
+		var = bb->opAccessChain(var, 3u);
+
+		(*f).returnValue(var);
 	}
 
 	return module;
