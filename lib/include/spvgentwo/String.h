@@ -113,8 +113,8 @@ namespace spvgentwo
 		}
 		else if (reserve(m_elements+1u))
 		{
-			m_pData[m_elements] = m_pData[m_elements - 1];
-			m_pData[m_elements - 1] = stdrep::forward<Arg>(_arg);
+			m_pData[m_elements] = m_pData[m_elements - 1]; // move string terminator to last element
+			m_pData[m_elements - 1] = stdrep::forward<Arg>(_arg); // new element is 2nd last
 			++m_elements;
 			return &back();
 		}

@@ -360,6 +360,7 @@ namespace spvgentwo
 		// no reallocation needed
 		if (m_elements + _count <= m_capacity) 
 		{
+			// TODO: fix _count > m_elements
 			// move-construct last _count elements to reserved but un-initialized data at the end
 			auto offset = m_elements - _count;
 			for (sgt_size_t i = 0u; i < _count; ++i)

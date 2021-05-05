@@ -166,7 +166,7 @@ namespace
 
 			insert("]");
 		}
-		if (const char* name = instrName(_pOpTypeInstr, _memberIndex); name != nullptr)
+		else if (const char* name = instrName(_pOpTypeInstr, _memberIndex); name != nullptr)
 		{
 			insert(name);
 		}
