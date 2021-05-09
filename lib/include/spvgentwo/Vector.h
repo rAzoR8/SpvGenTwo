@@ -352,7 +352,7 @@ namespace spvgentwo
 			// if the string is empty, we can only insert at the beginning
 			_pos = 0u;
 		}
-		else if (_pos >= m_elements)
+		else if (_pos > m_elements)
 		{
 			return nullptr;
 		}
@@ -360,20 +360,21 @@ namespace spvgentwo
 		// no reallocation needed
 		if (m_elements + _count <= m_capacity) 
 		{
-			// TODO: fix _count > m_elements
-			// move-construct last _count elements to reserved but un-initialized data at the end
-			auto offset = m_elements - _count;
-			for (sgt_size_t i = 0u; i < _count; ++i)
+			auto remainder = m_elements - _pos;
+
+			// move-construct last remainder elements to reserved but un-initialized data at the end
+			for(sgt_size_t i = 0u; i < remainder; ++i)
 			{
-				traits::constructWithArgs(m_pData + m_elements + i, stdrep::move(m_pData[offset + i]));
+				traits::constructWithArgs(m_pData + _pos + _count + i, stdrep::move(m_pData[_pos + i]));
 			}
-			for (sgt_size_t i = m_elements - 1u; i > _pos;) // go backwards & move data forward
-			{
-				m_pData[i] = stdrep::move(m_pData[--i]);
-			}
-			for (sgt_size_t i = 0u; i < _count; ++i) // copy data to insert
+			for (sgt_size_t i = 0u; i < remainder; ++i) 
 			{
 				m_pData[_pos + i] = _pData[i];
+			}			
+			auto rest = _count - remainder;
+			for (sgt_size_t i = 0u; i < rest; ++i)
+			{
+				traits::constructWithArgs(m_pData + m_elements + i, stdrep::move(_pData[remainder + i]));
 			}
 
 			m_elements += _count;
