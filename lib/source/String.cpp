@@ -109,7 +109,8 @@ spvgentwo::String::Iterator spvgentwo::String::insert(sgt_size_t _pos, const cha
 
 	if (m_elements != 0u && m_pData[m_elements - 1u] != '\0')
 	{
-		Vector::emplace_back('\0'); // append string terminator if necessar
+		// append string terminator if necessar
+		Vector::insert(m_elements, '\0');
 	}
 	return ret;
 }
