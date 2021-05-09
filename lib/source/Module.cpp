@@ -606,6 +606,15 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char
 	return pInstr;
 }
 
+spvgentwo::Instruction* spvgentwo::Module::getTypeInstr(const Type& _type) const
+{
+	if(Instruction** instr = m_TypeToInstr.get(_type); instr != nullptr)
+	{
+		return *instr;
+	}
+	return nullptr;
+}
+
 const spvgentwo::Type* spvgentwo::Module::getTypeInfo(const Instruction* _pTypeInstr) const 
 {
 	if (_pTypeInstr != nullptr && _pTypeInstr->isType())

@@ -141,7 +141,13 @@ namespace spvgentwo
 
 		Instruction* getExtensionInstructionImport(const char* _pExtName);
 
+		// add OpTypeXXX instruction for _type to the type system, returns OpType; 
 		Instruction* addType(const Type& _type, const char* _pName = nullptr);
+
+		//get OpTypeXXX instruction for _type or nullptr if not in the type system
+		Instruction* getTypeInstr(const Type& _type) const;
+
+		// get type info associated to OpTypeXXX _pTypeInstr
 		const Type* getTypeInfo(const Instruction* _pTypeInstr) const;
 
 		// add a new instruction to m_TypesAndConstants, if _pType is not nullptr, also add entries in m_TypeToInstr and m_InstrToType maps
