@@ -68,9 +68,21 @@ namespace spvgentwo
 	template<class T, class ...Args>
 	inline void Instruction::makeOpInternal(T&& _first, Args&& ..._args)
 	{
-		if constexpr (traits::is_same_base_type_v<T, Instruction*> || traits::is_same_base_type_v<T, BasicBlock*> || traits::is_same_base_type_v<T, spv::Id> || traits::is_same_base_type_v<T, literal_t>)
+		if constexpr (traits::is_same_base_type_v<T, Instruction*>)
 		{
-			addOperand(stdrep::forward<T>(_first));
+			addOperand(stdrep::forward<T>(_first)); // same overload as above, just make it easier to debug	
+		}
+		else if constexpr (traits::is_same_base_type_v<T, BasicBlock*>)
+		{
+			addOperand(stdrep::forward<T>(_first)); // same overload as above, just make it easier to debug
+		}
+		else if constexpr (traits::is_same_base_type_v<T, spv::Id>) 
+		{
+			addOperand(stdrep::forward<T>(_first)); // same overload as above, just make it easier to debug
+		}
+		else if constexpr (traits::is_same_base_type_v<T, literal_t>)
+		{
+			addOperand(stdrep::forward<T>(_first)); // same overload as above, just make it easier to debug
 		}
 		else if constexpr (stdrep::is_same_v<traits::remove_cvref_t<T>, int> || stdrep::is_same_v<traits::remove_cvref_t<T>, unsigned int>) // bitcast to 32 bit literal
 		{
