@@ -69,13 +69,13 @@ Module examples::types(IAllocator* _pAllocator, ILogger* _pLogger)
 
 		BasicBlock& bb = *f;
 		Instruction* var = f.variable<array_t<int, 6>>("myArray");
+		var = bb->opLoad(var);
 
 		name.clear();
 		TypeHelper::getTypeName(*var->getType(), name, var);
 		_pLogger->logDebug("%s", name.c_str());
 
-		var = bb->opLoad(var);
-		var = bb->opAccessChain(var, 3u);
+		var = bb->opCompositeExtract(var, 3u);
 
 		(*f).returnValue(var);
 	}
