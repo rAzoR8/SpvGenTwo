@@ -170,9 +170,9 @@ namespace
 		{
 			insert(name);
 		}
-		else if(const char* name = _type.getString(); name != nullptr)
+		else if(const char* fundamentalName = _type.getString(); fundamentalName != nullptr)
 		{
-			insert(name);
+			insert(fundamentalName);
 		}
 	}
 } // anon
