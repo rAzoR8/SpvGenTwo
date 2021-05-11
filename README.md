@@ -14,6 +14,8 @@ I mainly focused on Shader capabilities, so the Kernel and OpenCL side is a bit 
 * [Building](#Building)
 * [Tools](#Tools)
     * [Disassembler](#Disassembler)
+    * [Reflector](#Reflector)
+    * [Linker](#Linker)
 * [Documentation](#Documentation)
 * [Contributing](#Contributing)
 * [Copyright and Licensing](#Copyright-and-Licensing)
@@ -225,6 +227,20 @@ Currently, GLSL shader compilers do no support SPIR-V import/export attributes s
     `--export target name --vars` same as `--e`. `--vars` is optional
 * `--i target name` import a _target_ symbol (by ID or OpName) with _name_ and LinkageType::Import decoration. `--vars` is only applicable for `--e`.
     * `--import target name` same as `--i`
+
+#### Flags:
+    --ImportMissingTypes or --types
+    --ImportMissingConstants or --constants
+    --ImportReferencedDecorations or --refdecos
+    --ImportReferencedNames or --refnames
+    --ImportReferencedFunctions or --reffuncs
+    --ImportReferencedVariables or --refvars
+    --RemoveLinkageCapability or --rmcap
+    --AutoAddRequiredCapabilitiesAndExtensions or --addcaps
+    --UpdateEntryPointGlobalVarInterface or --variface
+    --CopyOpSourceStringInstructions or --srcstrings
+    --CopyOpLineInstructions or --lines
+    --CopyOpModuleProcessedInstructions or --processed
 
 # Documentation
 
