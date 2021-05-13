@@ -170,9 +170,15 @@ namespace
 		Module* module = _pTarget->getModule();
 		if (module == nullptr) { return false; }
 
+		auto libSymbolName = [_pLibInstr]() -> const char*
+		{
+			const char* name = _pLibInstr->getName();
+			return name != nullptr ? name : "UNNAMED-SYMBOL";
+		};
+
 		printInstruction(_options, _pLibInstr, " -> ");
 
-		auto error = [&](auto&& ... args) {module->logError(args...); };
+		auto error = [module](auto&& ... args) {module->logError(args...); };
 
 		// instruction parent must be be set before calling this function
 		_pTarget->setOperation(_pLibInstr->getOperation());
@@ -185,20 +191,28 @@ namespace
 			{
 				cInstr = *ppTarget;
 			}
-			else if (lib->isSpecOrConstant() && (_options & LinkerOptionBits::ImportMissingConstants))
+			else if (lib->isSpecOrConstant())
 			{
-				if (const Constant* c = lib->getConstant(); c != nullptr)
+				if (const Constant* c = lib->getConstant(); c != nullptr && (_options & LinkerOptionBits::ImportMissingConstants))
 				{
 					cInstr = module->addConstant(*c, lib->getName());
 					_cache.emplaceUnique(lib, cInstr);
 				}
+				else
+				{
+					error("[%s] OpConstant/OpSpecConstant operand instruction not found! use \'ImportMissingConstants\'", libSymbolName());
+				}
 			}
-			else if (lib->isType() && (_options & LinkerOptionBits::ImportMissingTypes))
+			else if (lib->isType())
 			{
-				if (const Type* t = lib->getType(); t != nullptr)
+				if (const Type* t = lib->getType(); t != nullptr && (_options & LinkerOptionBits::ImportMissingTypes))
 				{
 					cInstr = module->addType(*t, lib->getName());
 					_cache.emplaceUnique(lib, cInstr);
+				}
+				else
+				{
+					error("[%s] OpType operand instruction not found! use \'ImportMissingTypes\'", libSymbolName());
 				}
 			}
 
@@ -216,7 +230,8 @@ namespace
 				return true;
 			}
 
-			error("Operand instruction not found");
+			printInstruction(_options, lib);
+
 			return false;
 		};
 
@@ -245,7 +260,7 @@ namespace
 			}
 			else
 			{
-				error("Instruction has unresolved ID operand, module needs to be resolved by resolveIDs() before importing a using it as import library.");
+				error("[%s] Instruction has unresolved ID operand, module needs to be resolved by resolveIDs() before importing a using it as import library.", libSymbolName());
 				return false;
 			}
 		}
@@ -333,19 +348,31 @@ namespace
 		const Type* libType = _libSymbol->getType();
 		const Type* consumerType = _consumerSymbol->getType();
 
-		if (libType == nullptr || consumerType == nullptr) return false;
+		if (libType == nullptr || consumerType == nullptr) 
+			return false;
+
+		String lTypeName(pAllocator);
+		TypeHelper::getTypeName(*libType, lTypeName, _libSymbol);
 
 		if (*libType != *consumerType)
 		{
-			String lTypeName(pAllocator);
 			String cTypeName(pAllocator);
-
-			TypeHelper::getTypeName(*libType, lTypeName, _libSymbol);
 			TypeHelper::getTypeName(*consumerType, cTypeName, _consumerSymbol);
 
 			error("Type mismatch for symbol %s: \n[export] %s\n[import] %s", _name.c_str(), lTypeName.c_str(), cTypeName.c_str());
 			return false;
 		}
+
+		info("Symbol type: \'%s\'", lTypeName.c_str());
+
+		auto assignId = [&](Instruction* instr) -> Instruction*
+		{
+			if (_options & LinkerOptionBits::AssignResultIDs)
+			{
+				instr->assignResultId(false);
+			}
+			return instr;
+		};
 
 		if (*_libSymbol == spv::Op::OpVariable)
 		{
@@ -388,7 +415,7 @@ namespace
 				BasicBlock& bbConsumer = cosumerFunc.addBasicBlock(bbLib.getName());
 
 				printInstruction(_options, bbLib.getLabel(), " -> ", bbConsumer.getLabel());
-				_cache.emplaceUnique(bbLib.getLabel(), bbConsumer.getLabel());
+				_cache.emplaceUnique(bbLib.getLabel(), assignId(bbConsumer.getLabel()));
 
 				for (const Instruction& iLib : bbLib)
 				{
@@ -417,7 +444,7 @@ namespace
 		}
 		else
 		{
-			error("%s symbol must be OpVariable or OpFunction", _name.c_str());
+			error("Symbol %s must be OpVariable or OpFunction", _name.c_str());
 			return false;
 		}
 
@@ -484,7 +511,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 				}
 				else
 				{
-					error("%s symbol must be OpVariable or OpFunction", name.c_str());
+					error("Symbol %s must be OpVariable or OpFunction", name.c_str());
 					success = false;
 				}
 			}
@@ -539,13 +566,10 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		// transfer functions from lib to consumer
 		for (auto& [lFunc, call] : calledFuncs)
 		{
-			if (const char* name = lFunc->getName(); name != nullptr)
 			{
-				info("Auto importing referenced function '%s'", name);
-			}
-			else
-			{
-				info("Auto importing referenced function @%u", lFunc->getFunction()->getResultId());
+				String sig(pAllocator);
+				TypeHelper::getTypeName(lFunc->getFunctionType(), sig, lFunc->getFunction());
+				info("Auto importing referenced function \'%s\'", sig.c_str());
 			}
 
 			Function& cFunc = _consumer.addFunction();
@@ -582,8 +606,8 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 			{
 				BasicBlock& cBB = cFunc.addBasicBlock(lBB.getName());
 
-				cache.emplaceUnique(lBB.getLabel(), cBB.getLabel());
-				printInstruction(_options, lBB.getLabel(), " -> ", assignId(cBB.getLabel()));
+				cache.emplaceUnique(lBB.getLabel(), assignId(cBB.getLabel()));
+				printInstruction(_options, lBB.getLabel(), " -> ", cBB.getLabel());
 
 				for (const Instruction& lInstr : lBB)
 				{
@@ -617,7 +641,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		else { allImportsResolved = false; }
 	}
 
-	if (hasExports && allImportsResolved && (_options & LinkerOptionBits::RemoveLinkageCapability)) 
+	if (hasExports == false && allImportsResolved && (_options & LinkerOptionBits::RemoveLinkageCapability)) 
 	{
 		info("Removing Capability::Linkage from consumer module");
 		_consumer.removeCapability(spv::Capability::Linkage);
@@ -625,7 +649,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 	const auto version = _lib.getSpvVersion() > _consumer.getSpvVersion() ? _lib.getSpvVersion() : _consumer.getSpvVersion();
 	_consumer.setSpvVersion(version);
-	info("Merged SPIR-V version: %u.%u[%u->%u]", getMajorVersion(version), getMinorVersion(version), _consumer.getSpvVersion(), version);
+	info("Merged SPIR-V version: %u.%u [%u->%u]", getMajorVersion(version), getMinorVersion(version), _consumer.getSpvVersion(), version);
 
 	// only add required capabilities & extensions
 	if (_options.grammar != nullptr && (_options & LinkerOptionBits::AutoAddRequiredCapabilitiesAndExtensions))
