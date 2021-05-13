@@ -113,30 +113,40 @@ int link(HeapList<Module>& _libs, Module& _target, const LinkerHelper::LinkerOpt
 int main(int argc, char* argv[])
 {
 	using namespace LinkerHelper;
-	struct Option
+
+	struct CMDOption
 	{
-		LinkerOptionBits flag;
+		using Func = void(LinkerOptions& _options);
 		const char* str;
 		const char* alt;
+		Func* func = nullptr;
 	};
 
-#define CMDOPTION(x, acronym) {LinkerOptionBits::x, "--" #x, "--"#acronym}
+#define FLAGOPTION(x, acronym) {"--" #x, "--"#acronym, [](LinkerOptions& _options){_options.flags |= LinkerOptionBits::x;}}
 
-	const Option CmdOptions[] = 
+	const CMDOption CmdOptions[] =
 	{
-		CMDOPTION(ImportMissingTypes, types),
-		CMDOPTION(ImportMissingConstants, constants),
-		CMDOPTION(ImportReferencedDecorations, refdecos),
-		CMDOPTION(ImportReferencedNames, refnames),
-		CMDOPTION(ImportReferencedFunctions, reffuncs),
-		CMDOPTION(ImportReferencedVariables, refvars),
-		//CMDOPTION(AssignResultIDs, asid), // already on by default
-		CMDOPTION(RemoveLinkageCapability, rmcap),
-		CMDOPTION(AutoAddRequiredCapabilitiesAndExtensions, addcaps),
-		CMDOPTION(UpdateEntryPointGlobalVarInterface, variface),
-		CMDOPTION(CopyOpSourceStringInstructions, srcstrings),
-		CMDOPTION(CopyOpLineInstructions, lines),
-		CMDOPTION(CopyOpModuleProcessedInstructions, processed),
+		FLAGOPTION(ImportMissingTypes, types),
+		FLAGOPTION(ImportMissingConstants, constants),
+		FLAGOPTION(ImportReferencedDecorations, refdecos),
+		FLAGOPTION(ImportReferencedNames, refnames),
+		FLAGOPTION(ImportReferencedFunctions, reffuncs),
+		FLAGOPTION(ImportReferencedVariables, refvars),
+		//FLAGOPTION(AssignResultIDs, asid), // already on by default
+		FLAGOPTION(RemoveLinkageCapability, rmcap),
+		FLAGOPTION(AutoAddRequiredCapabilitiesAndExtensions, addcaps),
+		FLAGOPTION(UpdateEntryPointGlobalVarInterface, variface),
+		FLAGOPTION(CopyOpSourceStringInstructions, srcstrings),
+		FLAGOPTION(CopyOpLineInstructions, lines),
+		FLAGOPTION(CopyOpModuleProcessedInstructions, processed),
+		{
+			"--PrintInstructions",
+			"--verbose",
+			[](LinkerOptions& _options){
+			_options.grammar = &g_gram;
+			_options.printer = &g_printer;
+			}
+		}
 	};
 
 	const char* out = nullptr;
@@ -162,12 +172,12 @@ int main(int argc, char* argv[])
 			}
 			return true;
 		};
-		for(const Option& o : CmdOptions)
+		for(const CMDOption& o : CmdOptions)
 		{
-			if(strcmp(arg, o.str) == 0 || strcmp(arg, o.alt) || casecmp(arg, o.str))
+			if(casecmp(arg, o.alt) || casecmp(arg, o.str))
 			{
-				g_logger.logInfo("Option: %s", o.str);
-				options.flags |= o.flag;
+				g_logger.logInfo("Option: %s", arg);
+				o.func(options);
 				return true;
 			}
 		}
@@ -182,7 +192,7 @@ int main(int argc, char* argv[])
 	{
 		Instruction* instr = nullptr;
 		const char* target = argv[++i];
-		if (auto id = strtoul(target, nullptr, 10); id != 0 && id != sgt_uint32_max)
+		if (auto id = strtoul(target, nullptr, 10); id != 0u && id != sgt_uint32_max)
 		{
 			instr = patchModule.getInstructionById(spv::Id{ id });
 		}
@@ -205,7 +215,9 @@ int main(int argc, char* argv[])
 				++i;
 				exportVars = true;
 			}
+
 			targets.emplace_back(instr, name, type, exportVars);
+			g_logger.logInfo("Adding %s target instruction \'%s\' with name \'%s\'", type == spv::LinkageType::Import ? "import" : "export", target, name);
 		}
 	};
 
@@ -257,6 +269,7 @@ int main(int argc, char* argv[])
 		else if (i + 1 < argc && (strcmp(arg, "--o") == 0 || strcmp(arg, "--out") == 0))
 		{
 			out = argv[++i];
+			g_logger.logInfo("Output file \'%s\'", out);
 		}
 		else if (i + 1 < argc && (strcmp(arg, "--e") == 0 || strcmp(arg, "--export") == 0))
 		{
@@ -266,16 +279,12 @@ int main(int argc, char* argv[])
 		{
 			addTarget(spv::LinkageType::Import);
 		}
-		else if (
-			strcmp(arg, "--printInstructions") == 0 ||
-			strcmp(arg, "--printinstructions") == 0)
-		{
-			options.grammar = &g_gram;
-			options.printer = &g_printer;
-		}
 		else
 		{
-			addOption(arg);
+			if (addOption(arg) == false)
+			{
+				g_logger.logWarning("Unkown parameter %s", arg);
+			}
 		}
 	}
 

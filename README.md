@@ -216,7 +216,8 @@ CLI: SpvGenTwoLinker ```<option> <option> ...```
     * `--target targetPath` same as `--t`
     * if `outputPath` (below) is undefined, _targetPath_ will be used to write the output .spv
 
-* `--printInstructions` enable printing of instructions being imported to the consuming module (debug feature)
+* `--verbose` enable printing of instructions being imported to the consuming module (debug feature)
+    * `--PrintInstructions` same as `--verbose`
 
 Currently, GLSL shader compilers do no support SPIR-V import/export attributes so SpvGenTwoLinker exposes functionality to patch existing SPIR-V modules to add linkage attributes and remove function bodies to turn .spv shaders into libs for import.
 
