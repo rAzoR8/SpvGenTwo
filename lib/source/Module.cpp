@@ -1093,10 +1093,9 @@ bool spvgentwo::Module::reconstructNames(IAllocator* _pAllocator)
 
 		getLiteralString(name, it.next(), instr.end());
 
-		if (name.empty() || name.Vector::back() != '\0')
+		if (name.empty())
 		{
-			logError("Failed to parse name");
-			success = false;
+			logWarning("Empty OpName literal string");
 		}
 	}
 
@@ -1197,6 +1196,13 @@ bool spvgentwo::Module::read(IReader& _reader, const Grammar& _grammar)
 
 			String name(m_pAllocator);
 			getLiteralString(name, opExtension.begin(), opExtension.end());
+
+			if (name.empty())
+			{
+				logError("Invalid OpExtension name operand");
+				return false;
+			}
+
 			m_Extensions.emplaceUnique(stdrep::move(name), stdrep::move(opExtension));
 			break;
 		}
@@ -1210,6 +1216,13 @@ bool spvgentwo::Module::read(IReader& _reader, const Grammar& _grammar)
 
 			String name(m_pAllocator);
 			getLiteralString(name, opExtInstrImport.begin().next(), opExtInstrImport.end());
+
+			if (name.empty())
+			{
+				logError("Invalid OpExtInstImport name operand");
+				return false;
+			}
+
 			m_ExtInstrImport.emplaceUnique(stdrep::move(name), stdrep::move(opExtInstrImport));
 			break;
 		}
@@ -1244,6 +1257,12 @@ bool spvgentwo::Module::read(IReader& _reader, const Grammar& _grammar)
 			// copy name form LiteralString of OpEntryPoint to name storage for getName query
 			ep->getNameStorage().clear();
 			getLiteralString(ep->getNameStorage(), ++it, ep->getEntryPoint()->end());
+
+			if (ep->getNameStorage().empty())
+			{
+				logError("Invalid OpEntryPoint name operand");
+				return false;
+			}
 
 			entryPoints.emplaceUnique(id, ep);
 		}

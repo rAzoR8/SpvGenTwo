@@ -1669,7 +1669,7 @@ spvgentwo::Instruction::Iterator spvgentwo::getLiteralString(String& _out, Instr
 	{
 		if (_it->isLiteral() == false)
 		{
-			return nullptr;
+			return _it;
 		}
 
 		const char* str = reinterpret_cast<const char*>(&_it->literal.value);
