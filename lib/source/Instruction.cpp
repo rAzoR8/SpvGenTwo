@@ -320,7 +320,11 @@ bool spvgentwo::Instruction::write(IWriter& _writer) const
 	for (const Operand& operand : *this)
 	{
 		if (operand.write(_writer) == false)
+		{
+			const char* name = getName();
+			getModule()->logError("Failed to write operand for op %s [%u]", name != nullptr ? name : "", m_Operation);
 			return false;
+		}
 	}
 
 	return true;

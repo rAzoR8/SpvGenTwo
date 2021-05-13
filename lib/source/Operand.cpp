@@ -14,7 +14,7 @@ bool spvgentwo::Operand::write(IWriter& _writer) const
 	case Type::Literal:
 		return _writer.put(literal.value);
 	case Type::Id:
-		return _writer.put(static_cast<unsigned int>(id));
+		return id != InvalidId && _writer.put(static_cast<unsigned int>(id));
 	default:
 		return false;
 	}
