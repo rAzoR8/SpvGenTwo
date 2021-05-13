@@ -17,6 +17,8 @@ int main(int argc, char* argv[])
 {
 	ConsoleLogger logger;
 
+	logger.logInfo("SpvGenTwoDisassembler by Fabian Wahlster - https://github.com/rAzoR8/SpvGenTwo");
+
 	const char* spv = nullptr;
 	const char* tabs = "\t\t";
 	bool serialize = false; // for debugging

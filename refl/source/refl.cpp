@@ -229,6 +229,8 @@ int main(int argc, char* argv[])
 {
 	ConsoleLogger logger;
 
+	logger.logInfo("SpvGenTwoReflector by Fabian Wahlster - https://github.com/rAzoR8/SpvGenTwo");
+
 	const char* spv = nullptr;
 	const char* varName = nullptr; // variable to inspect
 
