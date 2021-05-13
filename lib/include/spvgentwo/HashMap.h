@@ -227,8 +227,9 @@ namespace spvgentwo
 	{
 		if(pos && pos != end())
 		{
+			auto next = pos.next();
 			pos.m_pBucket->erase(pos.m_element);
-			return ++pos;
+			return next;
 		}
 		return end();
 	}

@@ -47,6 +47,8 @@ namespace spvgentwo
 		// post
 		constexpr HashMapIterator<Key, Value> operator++(int);
 
+		constexpr HashMapIterator<Key, Value> next() const;
+
 		constexpr KeyValue& operator*() { return m_element->kv; }
 		constexpr const KeyValue& operator*() const { return m_element->kv; }
 
@@ -65,13 +67,13 @@ namespace spvgentwo
 	template<class Key, class Value>
 	inline constexpr bool HashMapIterator<Key, Value>::operator==(const HashMapIterator& _other) const
 	{
-		return m_pBucket == _other.m_pBucket && m_pEnd == _other.m_pEnd && m_element == _other.m_element;;
+		return m_pBucket == _other.m_pBucket && m_pEnd == _other.m_pEnd && m_element == _other.m_element;
 	}
 
 	template<class Key, class Value>
 	inline constexpr bool HashMapIterator<Key, Value>::operator!=(const HashMapIterator& _other) const
 	{
-		return m_pBucket != _other.m_pBucket || m_pEnd != _other.m_pEnd || m_element != _other.m_element;;
+		return m_pBucket != _other.m_pBucket || m_pEnd != _other.m_pEnd || m_element != _other.m_element;
 	}
 
 	template<class Key, class Value>
@@ -98,5 +100,12 @@ namespace spvgentwo
 		HashMapIterator<Key, Value> ret(*this);
 		this->operator++();
 		return ret;
+	}
+
+	template<class Key, class Value>
+	inline constexpr HashMapIterator<Key, Value> HashMapIterator<Key, Value>::next() const
+	{
+		HashMapIterator<Key, Value> ret(*this);
+		return ++ret;
 	}
 } // !spvgentwo
