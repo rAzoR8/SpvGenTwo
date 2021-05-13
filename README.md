@@ -242,6 +242,7 @@ Currently, GLSL shader compilers do no support SPIR-V import/export attributes s
     --CopyOpSourceStringInstructions or --srcstrings
     --CopyOpLineInstructions or --lines
     --CopyOpModuleProcessedInstructions or --processed
+    --AllOptions or --auto (all of the above)
 
 # Documentation
 
