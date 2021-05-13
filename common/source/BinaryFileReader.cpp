@@ -57,7 +57,7 @@ bool spvgentwo::BinaryFileReader::init(const char* _path, sgt_size_t _offset, sg
 			return false;
 		}
 
-		auto remaining = ftell(file);
+		auto remaining = static_cast<sgt_size_t>(ftell(file));
 		if (fseek(file, _offset, SEEK_SET) != 0u)
 		{
 			return false;
