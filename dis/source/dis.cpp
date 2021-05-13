@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 
 	HeapAllocator alloc;
 
-	if (BinaryFileReader reader(spv); reader.isOpen())
+	if (BinaryFileReader reader(alloc, spv); reader)
 	{
 		Module module(&alloc, &logger);
 		Grammar gram(&alloc);

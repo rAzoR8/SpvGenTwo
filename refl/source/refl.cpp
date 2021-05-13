@@ -313,8 +313,8 @@ int main(int argc, char* argv[])
 
 	HeapAllocator alloc;
 
-	BinaryFileReader reader(spv);
-	if (reader.isOpen() == false)
+	BinaryFileReader reader(alloc, spv);
+	if (reader == false)
 	{
 		logger.logError("Failed to open %s", spv);
 		return -1;

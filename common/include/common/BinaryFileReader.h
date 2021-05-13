@@ -1,24 +1,23 @@
 #pragma once
 
 #include "spvgentwo/Reader.h"
+#include "spvgentwo/Vector.h"
 
 namespace spvgentwo
 {
 	class BinaryFileReader : public IReader
 	{
 	public:
-		BinaryFileReader(const char* _path = nullptr);
-		~BinaryFileReader();
+		BinaryFileReader(IAllocator& _allocator, const char* _path = nullptr, sgt_size_t _offset = 0u, sgt_size_t _length = 0u);
+		~BinaryFileReader() override = default;
 
 		bool get(unsigned int& _word) final;
 
-		bool open(const char* _path);
-		bool isOpen() const { return m_pFile != nullptr; }
-		operator bool() const { return m_pFile != nullptr; }
-
-		void close();
+		bool init(const char* _path, sgt_size_t _offset = 0u, sgt_size_t _length = 0u);
+		operator bool() const { return m_buffer.empty() == false; }
 
 	private:
-		void* m_pFile = nullptr;
+		Vector<sgt_uint32_t> m_buffer;
+		sgt_size_t m_pos = 0u;
 	};
 } //!spvgentwo

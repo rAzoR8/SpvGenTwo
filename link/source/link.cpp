@@ -215,8 +215,8 @@ int main(int argc, char* argv[])
 		if (i + 1 < argc && (strcmp(arg, "--p") == 0 || strcmp(arg, "--patchspv") == 0))
 		{
 			patchspv = argv[++i];
-			BinaryFileReader reader(patchspv);
-			if (reader.isOpen() == false)
+			BinaryFileReader reader(g_alloc, patchspv);
+			if (reader == false)
 			{
 				g_logger.logError("Failed to open %s", patchspv);
 				return -1;
@@ -229,8 +229,8 @@ int main(int argc, char* argv[])
 		else if (i + 1 < argc && (strcmp(arg, "--l") == 0 || strcmp(arg, "--lib") == 0))
 		{
 			const char* file = argv[++i];
-			BinaryFileReader reader(file);
-			if (reader.isOpen() == false)
+			BinaryFileReader reader(g_alloc, file);
+			if (reader == false)
 			{
 				g_logger.logError("Failed to open %s", file);
 				return -1;
@@ -243,8 +243,8 @@ int main(int argc, char* argv[])
 		else if (i + 1 < argc && (strcmp(arg, "--t") == 0 || strcmp(arg, "--target") == 0))
 		{
 			targetspv = argv[++i];
-			BinaryFileReader reader(targetspv);
-			if (reader.isOpen() == false)
+			BinaryFileReader reader(g_alloc, targetspv);
+			if (reader == false)
 			{
 				g_logger.logError("Failed to open %s", targetspv);
 				return -1;
