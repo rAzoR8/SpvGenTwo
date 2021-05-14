@@ -48,7 +48,7 @@ namespace spvgentwo
 		template <class T, class ... Args>
 		T* construct(Args&& ..._args) noexcept
 		{
-			T* pData = reinterpret_cast<T*>(allocate(sizeof(T), 1u)); // TODO: aligment
+			T* pData = reinterpret_cast<T*>(allocate(sizeof(T), alignof(T))); // TODO: aligment
 			if (pData != nullptr)
 			{
 				new(pData) T{ stdrep::forward<Args>(_args)... };
