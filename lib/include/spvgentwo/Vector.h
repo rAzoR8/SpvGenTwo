@@ -49,10 +49,7 @@ namespace spvgentwo
 		bool resize(sgt_size_t _size, const T* _pInitValue = nullptr);
 
 		// only destructs, does not deallocate
-		void clear(bool _resetCount = true);
-
-		// only resets elements counter, no destructor or deallocation invoked, only use with primitive types
-		void reset(sgt_size_t _elements = 0u);
+		void clear();
 
 		constexpr T* data() const noexcept{ return m_pData; }
 		constexpr sgt_size_t size() const noexcept { return m_elements; }
@@ -231,35 +228,26 @@ namespace spvgentwo
 			return false;
 		}
 
-		// TODO: pass alignment
-		T* pNewData = static_cast<T*>(m_pAllocator->allocate(_size * sizeof(T)));
+		T* pNewData = static_cast<T*>(m_pAllocator->allocate(_size * sizeof(T), alignof(T)));
 
 		if (pNewData == nullptr)
 		{
 			return false;
 		}
 
-		//  move or copy old to new data (if any)
-		for (sgt_size_t i = 0u; i < m_elements; ++i)
-		{
-			if constexpr (stdrep::is_move_constructible_v<T>)
-			{
-				new(pNewData + i) T(stdrep::move(m_pData[i]));
-			}
-			else if constexpr(stdrep::is_copy_constructible_v<T>) 
-			{
-				new(pNewData + i) T(m_pData[i]);
-			}
-			else // aggregate init
-			{
-				new(pNewData + i) T{m_pData[i]};
-			}
-		}
-
-		// free old data
 		if (m_pData != nullptr)
 		{
-			clear(false);
+			//  move or copy old to new data (if any)
+			for (sgt_size_t i = 0u; i < m_elements; ++i)
+			{
+				traits::constructWithArgs(pNewData + i, stdrep::move(m_pData[i]));
+			}
+
+			// free old data
+			for (sgt_size_t i = 0u; i < m_elements; ++i)
+			{
+				m_pData[i].~T();
+			}
 			m_pAllocator->deallocate(m_pData, m_capacity * sizeof(T));
 		}
 
@@ -309,24 +297,15 @@ namespace spvgentwo
 	}
 
 	template<class U>
-	inline void Vector<U>::clear(bool _resetCount)
+	inline void Vector<U>::clear()
 	{
-		// call destructor (TODO: if there is one)
-		for (sgt_size_t i = 0; i < m_elements; ++i)
+		// call destructor
+		for (sgt_size_t i = 0u; i < m_elements; ++i)
 		{
 			m_pData[i].~T();
 		}
 
-		if (_resetCount)
-		{
-			m_elements = 0u;
-		}
-	}
-
-	template<class U>
-	inline void Vector<U>::reset(sgt_size_t _elements)
-	{
-		m_elements = _elements;
+		m_elements = 0u;
 	}
 
 	template<class U>
