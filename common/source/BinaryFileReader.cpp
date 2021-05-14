@@ -4,7 +4,7 @@
 spvgentwo::BinaryFileReader::BinaryFileReader(IAllocator& _allocator, const char* _path, sgt_size_t _offset, sgt_size_t _length) :
 	m_buffer(&_allocator)
 {
-	init(_path, _offset, _length);
+	read(_path, _offset, _length);
 }
 
 bool spvgentwo::BinaryFileReader::get(unsigned int& _word)
@@ -18,7 +18,7 @@ bool spvgentwo::BinaryFileReader::get(unsigned int& _word)
 	return false;
 }
 
-bool spvgentwo::BinaryFileReader::init(const char* _path, sgt_size_t _offset, sgt_size_t _length)
+bool spvgentwo::BinaryFileReader::read(const char* _path, sgt_size_t _offset, sgt_size_t _length)
 {
 	if (_path == nullptr)
 	{
