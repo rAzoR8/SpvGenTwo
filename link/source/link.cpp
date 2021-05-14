@@ -81,7 +81,7 @@ int patch(Module& _module, const HeapList<Target>& _targets, const char* _out)
 		g_printer << "Added "; printInstruction(*instr, g_gram, g_printer); g_printer << "\n";
 	}
 
-	BinaryFileWriter writer(_out);
+	BinaryFileWriter writer(g_alloc, _out);
 	if (writer.isOpen() == false)
 	{
 		g_logger.logError("Failed to open \'%s\'", _out);
@@ -102,7 +102,7 @@ int link(HeapList<Module>& _libs, Module& _target, const LinkerHelper::LinkerOpt
 		}
 	}
 
-	BinaryFileWriter writer(_out);
+	BinaryFileWriter writer(g_alloc, _out);
 	if (writer.isOpen() == false)
 	{
 		g_logger.logError("Failed to open \'%s\'", _out);

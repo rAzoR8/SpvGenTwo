@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 	{
 		Module lib, consumer;
 		// linkage export lib example
-		if (BinaryFileWriter writer("export.spv"); writer.isOpen())
+		if (BinaryFileWriter writer(alloc, "export.spv"); writer.isOpen())
 		{
 			lib = examples::linkageLib(&alloc, &log);
 			lib.finalizeAndWrite(writer, &gram);
@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
 		}
 
 		// linkage import lib example
-		if (BinaryFileWriter writer("import.spv"); writer.isOpen())
+		if (BinaryFileWriter writer(alloc, "import.spv"); writer.isOpen())
 		{
 			consumer = examples::linkageConsumer(&alloc, &log);
 			consumer.finalizeAndWrite(writer);
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 		}
 
 		// linkage importing example
-		if (BinaryFileWriter writer("linkageOutput.spv"); writer.isOpen())
+		if (BinaryFileWriter writer(alloc, "linkageOutput.spv"); writer.isOpen())
 		{
 			assert(examples::linkageLinked(lib, consumer, &alloc, &gram));
 			consumer.finalizeAndWrite(writer);
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
 	}
 
 	// expression graph example
-	if (BinaryFileWriter writer("expressionGraph.spv"); writer.isOpen())
+	if (BinaryFileWriter writer(alloc, "expressionGraph.spv"); writer.isOpen())
 	{
 		examples::expressionGraph(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
@@ -120,7 +120,7 @@ int main(int argc, char* argv[])
 	}
 
 	// old cli test
-	if (BinaryFileWriter writer("oldInstrTest.spv"); writer.isOpen())
+	if (BinaryFileWriter writer(alloc, "oldInstrTest.spv"); writer.isOpen())
 	{
 		examples::oldInstrTest(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
 	}
 
 	// function call example
-	if (BinaryFileWriter writer("functionCall.spv"); writer.isOpen())
+	if (BinaryFileWriter writer(alloc, "functionCall.spv"); writer.isOpen())
 	{
 		examples::functionCall(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
 	}
 
 	// control flow example
-	if (BinaryFileWriter writer("controlFlow.spv"); writer.isOpen())
+	if (BinaryFileWriter writer(alloc, "controlFlow.spv"); writer.isOpen())
 	{
 		examples::controlFlow(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 	}
 
 	// extension example
-	if (BinaryFileWriter writer("extensions.spv"); writer.isOpen())
+	if (BinaryFileWriter writer(alloc, "extensions.spv"); writer.isOpen())
 	{
 		examples::extensions(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
 	}
 
 	// types example
-	if (BinaryFileWriter writer("types.spv"); writer.isOpen())
+	if (BinaryFileWriter writer(alloc, "types.spv"); writer.isOpen())
 	{
 		examples::types(&alloc, &log).finalizeAndWrite(writer, &gram);
 		writer.close();
@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
 	}
 
 	// constants example
-	if (BinaryFileWriter writer("constants.spv"); writer.isOpen())
+	if (BinaryFileWriter writer(alloc, "constants.spv"); writer.isOpen())
 	{
 		examples::constants(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
@@ -174,7 +174,7 @@ int main(int argc, char* argv[])
 	}
 
 	// geo shader example
-	if (BinaryFileWriter writer("geometry.spv"); writer.isOpen())
+	if (BinaryFileWriter writer(alloc, "geometry.spv"); writer.isOpen())
 	{
 		examples::geometryShader(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
 	}
 
 	// fragment shader example
-	if (BinaryFileWriter writer("fragment.spv"); writer.isOpen())
+	if (BinaryFileWriter writer(alloc, "fragment.spv"); writer.isOpen())
 	{
 		examples::fragmentShader(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
