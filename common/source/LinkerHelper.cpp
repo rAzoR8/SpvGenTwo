@@ -5,6 +5,7 @@
 #include "common/ModulePrinter.h"
 #include "common/TypeHelper.h"
 
+#include "spvgentwo/Grammar.h"
 #include "spvgentwo/Module.h"
 #include "spvgentwo/ModuleTemplate.inl"
 #include "spvgentwo/InstructionTemplate.inl"
@@ -176,6 +177,18 @@ namespace
 			return name != nullptr ? name : "UNNAMED-SYMBOL";
 		};
 
+		auto instrName = [&_options](const Instruction* instr) -> const char*
+		{
+			if (_options.grammar == nullptr) return "";
+
+			if (auto* info = _options.grammar->getInfo(static_cast<unsigned int>(instr->getOperation())); info != nullptr)
+			{
+				return info->name;
+			}
+
+			return "";
+		};
+
 		printInstruction(_options, _pLibInstr, " -> ");
 
 		auto error = [module](auto&& ... args) {module->logError(args...); };
@@ -186,6 +199,8 @@ namespace
 		auto lookup = [&](const Instruction* lib) -> bool
 		{
 			Instruction* cInstr = nullptr;
+
+			bool reported = false;
 
 			if (Instruction** ppTarget = _cache[lib]; ppTarget != nullptr)
 			{
@@ -201,6 +216,7 @@ namespace
 				else
 				{
 					error("[%s] OpConstant/OpSpecConstant operand instruction not found! use \'ImportMissingConstants\'", libSymbolName());
+					reported = true;
 				}
 			}
 			else if (lib->isType())
@@ -213,6 +229,7 @@ namespace
 				else
 				{
 					error("[%s] OpType operand instruction not found! use \'ImportMissingTypes\'", libSymbolName());
+					reported = true;
 				}
 			}
 
@@ -228,6 +245,11 @@ namespace
 
 				_pTarget->addOperand(cInstr);
 				return true;
+			}
+
+			if (reported == false)
+			{
+				error("[%s] %s operand instruction not found!", libSymbolName(), instrName(lib));
 			}
 
 			printInstruction(_options, lib);

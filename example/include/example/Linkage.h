@@ -4,9 +4,11 @@
 
 namespace examples
 {
-	spvgentwo::Module linkageLib(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger);
+	spvgentwo::Module linkageLibA(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger);
+
+	spvgentwo::Module linkageLibB(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger);
 
 	spvgentwo::Module linkageConsumer(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger);
 
-	bool linkageLinked(const spvgentwo::Module& _lib, spvgentwo::Module& _consumer, spvgentwo::IAllocator* _pAllocator, const spvgentwo::Grammar* _pGrammar);
+	bool linkageLinked(const spvgentwo::Module& _libA, const spvgentwo::Module& _libB, spvgentwo::Module& _consumer, spvgentwo::IAllocator* _pAllocator, const spvgentwo::Grammar* _pGrammar);
 } // !examples

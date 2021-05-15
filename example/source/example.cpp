@@ -78,15 +78,25 @@ int main(int argc, char* argv[])
 	const Grammar gram(&alloc);
 
 	{
-		Module lib, consumer;
-		// linkage export lib example
-		if (BinaryFileWriter writer(alloc, "export.spv"); writer.isOpen())
+		Module libA, libB, consumer;
+		// linkage export libA example
+		if (BinaryFileWriter writer(alloc, "exportA.spv"); writer.isOpen())
 		{
-			lib = examples::linkageLib(&alloc, &log);
-			lib.finalizeAndWrite(writer, &gram);
+			libA = examples::linkageLibA(&alloc, &log);
+			libA.finalizeAndWrite(writer, &gram);
 			writer.close();
-			system("spirv-dis export.spv");
-			assert(system("spirv-val export.spv") == 0);
+			system("spirv-dis exportA.spv");
+			assert(system("spirv-val exportA.spv") == 0);
+		}
+
+		// linkage export libA example
+		if (BinaryFileWriter writer(alloc, "exportB.spv"); writer.isOpen())
+		{
+			libB = examples::linkageLibB(&alloc, &log);
+			libB.finalizeAndWrite(writer, &gram);
+			writer.close();
+			system("spirv-dis exportB.spv");
+			assert(system("spirv-val exportB.spv") == 0);
 		}
 
 		// linkage import lib example
@@ -102,7 +112,7 @@ int main(int argc, char* argv[])
 		// linkage importing example
 		if (BinaryFileWriter writer(alloc, "linkageOutput.spv"); writer.isOpen())
 		{
-			assert(examples::linkageLinked(lib, consumer, &alloc, &gram));
+			assert(examples::linkageLinked(libA, libB, consumer, &alloc, &gram));
 			consumer.finalizeAndWrite(writer);
 			writer.close();
 			system("spirv-dis linkageOutput.spv");
