@@ -107,19 +107,27 @@ bool spvgentwo::BasicBlock::getBranchTargets(List<BasicBlock*>& _outTargetBlocks
 
 spvgentwo::Instruction* spvgentwo::BasicBlock::returnValue(Instruction* _pValue)
 {
-	Instruction* pRet = addInstruction();
-
-	if (_pValue == nullptr)
+	const Type& retType = m_pFunction->getReturnType();
+	
+	if (_pValue == nullptr && retType.isVoid())
 	{
-		pRet->opReturn();
+		Instruction* ret = addInstruction();
+		ret->opReturn();
+		return ret;
 	}
 	else
 	{
-		// TODO: check return type with m_FunctionType
-		pRet->opReturnValue(_pValue);
+		if (const Type* t = _pValue->getType(); t != nullptr && *t == retType)
+		{
+			Instruction* ret = addInstruction();
+			ret->opReturnValue(_pValue);
+			return ret;
+		}
 	}
 
-	return pRet;
+	getModule()->logError("Value type does not match function return type");
+
+	return nullptr;
 }
 
 void spvgentwo::BasicBlock::write(IWriter& _writer) const
