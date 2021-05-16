@@ -176,6 +176,7 @@ int main(int argc, char* argv[])
 	{
 		FLAGOPTION(ImportMissingTypes, types),
 		FLAGOPTION(ImportMissingConstants, constants),
+		FLAGOPTION(ImportMissingExtensionSets, extsets),
 		FLAGOPTION(ImportReferencedDecorations, refdecos),
 		FLAGOPTION(ImportReferencedNames, refnames),
 		FLAGOPTION(ImportReferencedFunctions, reffuncs),

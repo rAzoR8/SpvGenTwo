@@ -337,7 +337,7 @@ void spvgentwo::Module::addExtension(const char* _pExtName)
 	}
 }
 
-spvgentwo::Instruction* spvgentwo::Module::getExtensionInstructionImport(const char* _pExtName)
+spvgentwo::Instruction* spvgentwo::Module::addExtensionInstructionImport(const char* _pExtName)
 {
 	Instruction& instr = m_ExtInstrImport.emplaceUnique(String(m_pAllocator, _pExtName), this).kv.value;
 	if (instr.empty())
@@ -346,6 +346,11 @@ spvgentwo::Instruction* spvgentwo::Module::getExtensionInstructionImport(const c
 	}
 
 	return &instr;
+}
+
+spvgentwo::Instruction* spvgentwo::Module::getExtensionInstructionImport(const char* _pExtName) const
+{
+	return m_ExtInstrImport.get(hash(_pExtName));
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addSourceStringInstr()

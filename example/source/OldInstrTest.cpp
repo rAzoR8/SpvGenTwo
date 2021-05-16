@@ -23,7 +23,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 	module.addCapability(spv::Capability::DerivativeControl);
 
 	module.addExtension(spv::Extension::SPV_KHR_vulkan_memory_model);
-	Instruction* ext = module.getExtensionInstructionImport(u8"GLSL.std.450");
+	Instruction* ext = module.addExtensionInstructionImport(u8"GLSL.std.450");
 	module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
 
 	Instruction* uniformVar = module.uniform<vector_t<float, 3>>(u8"u_Position");

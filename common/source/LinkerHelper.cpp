@@ -315,7 +315,7 @@ namespace
 				{
 					success &= transferInstruction(deco, _consumer.addDecorationInstr(), _cache, _options);
 				}
-				});
+			});
 		}
 
 		// OpNames
@@ -323,11 +323,11 @@ namespace
 		{
 			ReflectionHelper::getNamesFunc(_lInstr, [&](const Instruction* name) {
 				success &= transferInstruction(name, _consumer.addNameInstr(), _cache, _options);
-				});
+			});
 		}
 
 		// OpVariables
-		if ((_options & LinkerOptionBits::ImportReferencedVariables))
+		if (_options & LinkerOptionBits::ImportReferencedVariables)
 		{
 			// look for global variable operands
 			for (auto it = _lInstr->getFirstActualOperand(); it != nullptr; ++it)
@@ -339,6 +339,32 @@ namespace
 						Instruction* cVar = _consumer.addGlobalVariableInstr(op->getName());
 						success &= importGlobalDependencies(_consumer, op, cVar, _cache, _options);
 						success &= transferInstruction(op, cVar, _cache, _options);
+					}
+				}
+			}
+		}
+
+		//OpExtInst
+		if ((_options & LinkerOptionBits::ImportMissingExtensionSets) && *_lInstr == spv::Op::OpExtInst)
+		{
+			if (auto it = _lInstr->getFirstActualOperand(); it != nullptr && it->getInstruction() != nullptr) 
+			{
+				Instruction* lSet = it->instruction;
+				if (*lSet == spv::Op::OpExtInstImport)
+				{
+					for (const auto& [name, instr] : _lInstr->getModule()->getExtInstrImports())
+					{
+						if(&instr == lSet && _consumer.getExtensionInstructionImport(name.c_str()) == nullptr)
+						{
+							Instruction* cSet = _consumer.addExtensionInstructionImport(name.c_str());
+							_cache.emplaceUnique(lSet, cSet);
+							if (_options & LinkerOptionBits::AssignResultIDs)
+							{
+								cSet->assignResultId(false);
+							}
+							printInstruction(_options, lSet, "->", cSet);
+							break;
+						}
 					}
 				}
 			}

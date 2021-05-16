@@ -139,7 +139,11 @@ namespace spvgentwo
 		// add OpExtension
 		void addExtension(spv::Extension _ext) { addExtension(spv::ExtensionNames[static_cast<unsigned int>(_ext)]); }
 
-		Instruction* getExtensionInstructionImport(const char* _pExtName);
+		// add OpExtInstImport with name _pExtName
+		Instruction* addExtensionInstructionImport(const char* _pExtName);
+
+		// look up OpExtInstImport with name _pExtName, returns nullptr if not found
+		Instruction* getExtensionInstructionImport(const char* _pExtName) const;
 
 		// add OpTypeXXX instruction for _type to the type system, returns OpType; 
 		Instruction* addType(const Type& _type, const char* _pName = nullptr);

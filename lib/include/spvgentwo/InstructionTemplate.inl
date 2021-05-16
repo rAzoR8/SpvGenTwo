@@ -114,7 +114,7 @@ namespace spvgentwo
 	template<class ...Operands>
 	inline Instruction* Instruction::opExtInst(Instruction* _pResultType, const char* _pExtName, unsigned int _instOpCode, Operands ..._operands)
 	{
-		Instruction* _pExtImport = getModule()->getExtensionInstructionImport(_pExtName);
+		Instruction* _pExtImport = getModule()->addExtensionInstructionImport(_pExtName);
 		return makeOp(spv::Op::OpExtInst, _pResultType, InvalidId, _pExtImport, literal_t{ _instOpCode }, _operands...);
 	}
 
