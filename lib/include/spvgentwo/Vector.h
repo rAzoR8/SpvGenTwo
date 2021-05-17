@@ -363,7 +363,7 @@ namespace spvgentwo
 			const auto newSize = m_elements + _count;
 			const auto newCapacity = newSize + (newSize >> 2); // grow by 1.25
 
-			T* pNewData = static_cast<T*>(m_pAllocator->allocate(newCapacity * sizeof(T)));
+			T* pNewData = static_cast<T*>(m_pAllocator->allocate(newCapacity * sizeof(T), alignof(T)));
 
 			if (pNewData == nullptr)
 			{

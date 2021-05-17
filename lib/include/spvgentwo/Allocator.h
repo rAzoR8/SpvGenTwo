@@ -40,7 +40,7 @@ namespace spvgentwo
 		virtual ~IAllocator() {}
 
 		// alignment may only be a power of 2
-		[[nodiscard]] virtual void* allocate(const sgt_size_t _bytes, const unsigned int _aligment = 1u) = 0;
+		[[nodiscard]] virtual void* allocate(const sgt_size_t _bytes, unsigned int _aligment) = 0;
 		virtual void deallocate(void* _ptr, const sgt_size_t _bytes = 0u) = 0;
 
 		[[nodiscard]] ScopedAllocation allocateScoped(const sgt_size_t _bytes, const unsigned int _aligment = 1u);

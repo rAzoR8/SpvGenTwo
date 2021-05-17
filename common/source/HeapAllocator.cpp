@@ -7,7 +7,7 @@
 	#include <stdio.h>
 #endif
 
-void* spvgentwo::HeapAllocator::allocate(const sgt_size_t _bytes, const unsigned int _aligment)
+void* spvgentwo::HeapAllocator::allocate(const sgt_size_t _bytes, unsigned int _aligment)
 {
 	m_Allocated += _bytes;
 

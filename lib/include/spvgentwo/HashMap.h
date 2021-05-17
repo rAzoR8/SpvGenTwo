@@ -105,7 +105,7 @@ namespace spvgentwo
 	{
 		if (m_pAllocator != nullptr)
 		{
-			m_pBuckets = static_cast<Bucket*>(m_pAllocator->allocate(m_Buckets * sizeof(Bucket)));
+			m_pBuckets = static_cast<Bucket*>(m_pAllocator->allocate(m_Buckets * sizeof(Bucket), alignof(Bucket)));
 			for (auto i = 0u; i < m_Buckets; ++i)
 			{
 				new(m_pBuckets + i) Bucket(m_pAllocator);
