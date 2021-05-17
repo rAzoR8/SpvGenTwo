@@ -275,6 +275,7 @@ spvgentwo::spv::Id spvgentwo::Instruction::assignResultId(bool _overwrite)
 	if (auto it = getResultIdOperand(); it != nullptr && (_overwrite || it->getId() == InvalidId)) 
 	{
 		*it = getModule()->getNextId();
+		return it->id;
 	}
 	return InvalidId;
 }

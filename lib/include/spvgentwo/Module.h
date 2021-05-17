@@ -145,7 +145,8 @@ namespace spvgentwo
 		// look up OpExtInstImport with name _pExtName, returns nullptr if not found
 		Instruction* getExtensionInstructionImport(const char* _pExtName) const;
 
-		// add OpTypeXXX instruction for _type to the type system, returns OpType; 
+		// add OpTypeXXX instruction for _type to the type system, returns OpType;
+		// implicitly adds OpConstant instruction for OpTypeArray operand
 		Instruction* addType(const Type& _type, const char* _pName = nullptr);
 
 		//get OpTypeXXX instruction for _type or nullptr if not in the type system
