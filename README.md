@@ -168,13 +168,13 @@ SpvGenTwoDisassembler source can be found at [dis/source/dis.cpp](dis/source/dis
 CLI: ```SpvGenTwoDisassembler [file] <option> <option> ...```
 
 ### Options
-* `--assignids` re-assigns instruction result IDs starting from 1. Some SPIR-V compilers emit IDs in a very high range, making it hard to read and trace data flow in assembly language text, `assignIDs` helps with that.
-* `--serialize` writes the parsed SPIR-V program to a `serialized.spv` file in the working directory (this is a debug feature).
-* `--noinstrnames` don't replace result IDs with OpNames
-* `--noopnames` don't replace operand IDs with OpNames
-* `--nopreamble` don't print SPIR-V preamble
-* `--colors` use [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) color codes
-* `--tabs "    "` example: use 4 spaces instead of 2 tabs
+* `-assignids` re-assigns instruction result IDs starting from 1. Some SPIR-V compilers emit IDs in a very high range, making it hard to read and trace data flow in assembly language text, `assignIDs` helps with that.
+* `-serialize` writes the parsed SPIR-V program to a `serialized.spv` file in the working directory (this is a debug feature).
+* `-noinstrnames` don't replace result IDs with OpNames
+* `-noopnames` don't replace operand IDs with OpNames
+* `-nopreamble` don't print SPIR-V preamble
+* `-colors` use [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) color codes
+* `-tabs "    "` example: use 4 spaces instead of 2 tabs
 
 ## Reflector
 
@@ -185,18 +185,18 @@ SpvGenTwoReflect source can be found at [refl/source/refl.cpp](refl/source/refl.
 CLI: SpvGenTwoReflect ```[file] <option> <option> ...```
 
 ### Options
-* `--var name` select variable by name (if OpVariable was annotated by OpName) for DescriptorType & Decoration printing (`name` has to be a UTF-8 string)
-    * `--var MyBuffer`
-* `--deco decoration` select [decoration](https://github.com/KhronosGroup/SPIRV-Headers/blob/75b30a659c8a4979104986652c54cc421fc51129/include/spirv/unified1/spirv.core.grammar.json#L9486) to query for in the module
-    * `--deco` print all decorations in the module
-    * `--deco DescriptorSet` to print only DescriptorSets
-    * `--deco DescriptorSet --deco Binding` to print only DescriptorSets & Bindings
-* `--funcs` list functions names in the module
-* `--vars` list global variables in the module (StorageClass != Function)
-* `--types` list types and constatns in the module
-* `--id Id` print SPIR-V assembly text for the instruction with result Id
-    * `--id 24`
-* `--colors` use [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) color codes
+* `-var name` select variable by name (if OpVariable was annotated by OpName) for DescriptorType & Decoration printing (`name` has to be a UTF-8 string)
+    * `-var MyBuffer`
+* `-deco decoration` select [decoration](https://github.com/KhronosGroup/SPIRV-Headers/blob/75b30a659c8a4979104986652c54cc421fc51129/include/spirv/unified1/spirv.core.grammar.json#L9486) to query for in the module
+    * `-deco` print all decorations in the module
+    * `-deco DescriptorSet` to print only DescriptorSets
+    * `-deco DescriptorSet -deco Binding` to print only DescriptorSets & Bindings
+* `-funcs` list functions names in the module
+* `-vars` list global variables in the module (StorageClass != Function)
+* `-types` list types and constatns in the module
+* `-id Id` print SPIR-V assembly text for the instruction with result Id
+    * `-id 24`
+* `-colors` use [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) color codes
 
 ## Linker
 
@@ -208,41 +208,41 @@ CLI: SpvGenTwoLinker ```<option> <option> ...```
 
 ### Options
 
-* `--o outputPath` path to the resulting output module
-    * `--out outputPath` same as `--o`
-* `--l libPath` path to a input module to import symbols from (e.g. `--l toneMapping.spv`)
-    * `--lib libPath` same as `--l`
-* `--t targetPath` path to a target module to consume symbols from import modules (e.g. `--t targetShader.spv`)
-    * `--target targetPath` same as `--t`
+* `-o outputPath` path to the resulting output module
+    * `-out outputPath` same as `-o`
+* `-l libPath` path to a input module to import symbols from (e.g. `-l toneMapping.spv`)
+    * `-lib libPath` same as `-l`
+* `-c consumerPath` path to a target module to consume symbols from import modules (e.g. `-c targetShader.spv`)
+    * `-c targetPath` same as `-c`
     * if `outputPath` (below) is undefined, _targetPath_ will be used to write the output .spv
 
-* `--verbose` enable printing of instructions being imported to the consuming module (debug feature)
-    * `--PrintInstructions` same as `--verbose`
+* `-verbose` enable printing of instructions being imported to the consuming module (debug feature)
+    * `-PrintInstructions` same as `-verbose`
 
 Currently, GLSL shader compilers do no support SPIR-V import/export attributes so SpvGenTwoLinker exposes functionality to patch existing SPIR-V modules to add linkage attributes and remove function bodies to turn .spv shaders into libs for import.
 
-* `--p shaderPath` path to .spv module that should be prepared for use as import or export module.
-    * `--patchspv shaderPath` same as `--p`
+* `-p shaderPath` path to .spv module that should be prepared for use as import or export module.
+    * `-patchspv shaderPath` same as `-p`
     * if _outputPath_ is undefined _shaderPath_ will be used. (Overwrites the original file)
-* `--e target name --vars` export a symbol (OpVariable or OpFunction) with _target_ ID or string name (if the symbol was decorated with OpName) from the _patchspv_ module by adding `OpDecorate` with LinkageType::Export and export _name_. `--vars` can be used on OpFunction exports to automatically export global variables referenced in the function. Those global variables will be exported with the name taken form OpName (i.e. they can't be exported without OpName).
-    `--export target name --vars` same as `--e`. `--vars` is optional
-* `--i target name` import a _target_ symbol (by ID or OpName) with _name_ and LinkageType::Import decoration. `--vars` is only applicable for `--e`.
-    * `--import target name` same as `--i`
+* `-e target name -vars` export a symbol (OpVariable or OpFunction) with _target_ ID or string name (if the symbol was decorated with OpName) from the _patchspv_ module by adding `OpDecorate` with LinkageType::Export and export _name_. `-vars` can be used on OpFunction exports to automatically export global variables referenced in the function. Those global variables will be exported with the name taken form OpName (i.e. they can't be exported without OpName).
+    `-export target name -vars` same as `-e`. `-vars` is optional
+* `-i target name` import a _target_ symbol (by ID or OpName) with _name_ and LinkageType::Import decoration. `-vars` is only applicable for `-e`.
+    * `-import target name` same as `-i`
 
 #### Flags:
-    --ImportMissingTypes or --types
-    --ImportMissingConstants or --constants
-    --ImportReferencedDecorations or --refdecos
-    --ImportReferencedNames or --refnames
-    --ImportReferencedFunctions or --reffuncs
-    --ImportReferencedVariables or --refvars
-    --RemoveLinkageCapability or --rmcap
-    --AutoAddRequiredCapabilitiesAndExtensions or --addcaps
-    --UpdateEntryPointGlobalVarInterface or --variface
-    --CopyOpSourceStringInstructions or --srcstrings
-    --CopyOpLineInstructions or --lines
-    --CopyOpModuleProcessedInstructions or --processed
-    --AllOptions or --auto (all of the above)
+    -ImportMissingTypes or -types
+    -ImportMissingConstants or -constants
+    -ImportReferencedDecorations or -refdecos
+    -ImportReferencedNames or -refnames
+    -ImportReferencedFunctions or -reffuncs
+    -ImportReferencedVariables or -refvars
+    -RemoveLinkageCapability or -rmcap
+    -AutoAddRequiredCapabilitiesAndExtensions or -addcaps
+    -UpdateEntryPointGlobalVarInterface or -variface
+    -CopyOpSourceStringInstructions or -srcstrings
+    -CopyOpLineInstructions or -lines
+    -CopyOpModuleProcessedInstructions or -processed
+    -AllOptions or -auto (all of the above)
 
 # Documentation
 

@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
 	};
 
 	
-#define FLAGOPTION(x, acronym) {"--" #x, "--"#acronym, []([[maybe_unused]] int& _i, [[maybe_unused]] int _argc, [[maybe_unused]] char* _argv[]){g_options.flags |= LinkerOptionBits::x; g_logger.logInfo("Option: " #x); return true;}}
+#define FLAGOPTION(x, acronym) {"-" #x, "-"#acronym, []([[maybe_unused]] int& _i, [[maybe_unused]] int _argc, [[maybe_unused]] char* _argv[]){g_options.flags |= LinkerOptionBits::x; g_logger.logInfo("Option: " #x); return true;}}
 
 	const CMDOption CmdOptions[] =
 	{
@@ -189,13 +189,13 @@ int main(int argc, char* argv[])
 		FLAGOPTION(CopyOpLineInstructions, lines),
 		FLAGOPTION(CopyOpModuleProcessedInstructions, processed),
 		{
-			"--AllOptions", "--auto",
+			"-AllOptions", "-auto",
 			[]([[maybe_unused]] int& _i, [[maybe_unused]] int _argc, [[maybe_unused]] char* _argv[]) {
 				g_options.flags |= LinkerOptionBits::All; g_logger.logInfo("Option: AllOptions"); return true;
 			}
 		},
 		{ // verbose
-			"--PrintInstructions", "--verbose",
+			"-PrintInstructions", "-verbose",
 			[]([[maybe_unused]] int& _i, [[maybe_unused]] int _argc, [[maybe_unused]] char* _argv[]){
 				g_options.grammar = &g_gram;
 				g_options.printer = &g_printer;
@@ -204,7 +204,7 @@ int main(int argc, char* argv[])
 			}
 		},
 		{ // patch spv
-			"--patchspv", "--p",
+			"-patchspv", "-p",
 			[](int& _i, [[maybe_unused]] int _argc, char* _argv[]) {
 				g_patchspv = _argv[++_i];
 				BinaryFileReader reader(g_alloc, g_patchspv);
@@ -223,7 +223,7 @@ int main(int argc, char* argv[])
 			1 // one additonal path arg
 		},
 		{ // lib module
-			"--lib", "--l",
+			"-lib", "-l",
 			[](int& _i, [[maybe_unused]] int _argc, char* _argv[]) {
 				const char* file = _argv[++_i];
 				BinaryFileReader reader(g_alloc, file);
@@ -242,7 +242,7 @@ int main(int argc, char* argv[])
 			1 // one additonal path arg
 		},
 		{ // target/consumer module
-			"--target", "--t",
+			"-consumer", "-c",
 			[](int& _i, [[maybe_unused]] int _argc, char* _argv[]) {
 				g_targetspv = _argv[++_i];
 				BinaryFileReader reader(g_alloc, g_targetspv);
@@ -255,13 +255,13 @@ int main(int argc, char* argv[])
 				{
 					return false;
 				}
-				g_logger.logInfo("Loaded target/consumer \'%s\'", g_targetspv);
+				g_logger.logInfo("Loaded consumer \'%s\'", g_targetspv);
 				return true;
 			},
 			1 // one additonal path arg
 		},
 		{ // (link) output  module
-			"--out", "--o",
+			"-out", "-o",
 			[](int& _i, [[maybe_unused]] int _argc, char* _argv[]) {
 				g_out = _argv[++_i];
 				g_logger.logInfo("Output file \'%s\'", g_out);
@@ -270,7 +270,7 @@ int main(int argc, char* argv[])
 			1 // one additonal path arg
 		},
 		{ // import symbol
-			"--import", "--i",
+			"-import", "-i",
 			[](int& _i, int _argc, char* _argv[]) {
 				addTarget(spv::LinkageType::Import, _i, _argc, _argv);
 				return true;
@@ -278,7 +278,7 @@ int main(int argc, char* argv[])
 			2 // symbol name and export name
 		},
 		{ // import symbol
-			"--export", "--e",
+			"-export", "-e",
 			[](int& _i, int _argc, char* _argv[]) {
 				addTarget(spv::LinkageType::Export, _i, _argc, _argv);
 				return true;

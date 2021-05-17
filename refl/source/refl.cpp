@@ -253,15 +253,15 @@ int main(int argc, char* argv[])
 		{
 			spv = arg;
 		}
-		else if (i < end && strcmp(arg, "--id") == 0)
+		else if (i < end && strcmp(arg, "-id") == 0)
 		{
 			idToPrint = spv::Id{ strtoul(argv[++i], nullptr, 10) };
 		}
-		else if (i < end && strcmp(arg, "--var") == 0)
+		else if (i < end && strcmp(arg, "-var") == 0)
 		{
 			varName = argv[++i];
 		}
-		else if (strcmp(arg, "--deco") == 0)
+		else if (strcmp(arg, "-deco") == 0)
 		{
 			listDecorations = true;
 
@@ -286,23 +286,23 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
-		else if (strcmp(arg, "--funcs") == 0)
+		else if (strcmp(arg, "-funcs") == 0)
 		{
 			listFunctions = true;
 		}
-		else if (strcmp(arg, "--vars") == 0)
+		else if (strcmp(arg, "-vars") == 0)
 		{
 			listVariables = true;
 		}
-		else if (strcmp(arg, "--types") == 0)
+		else if (strcmp(arg, "-types") == 0)
 		{
 			listTypeAndConstants = true;
 		}
-		else if (strcmp(arg, "--localsize") == 0)
+		else if (strcmp(arg, "-localsize") == 0)
 		{
 			printLocalSize = true;
 		}
-		else if (strcmp(arg, "--colors") == 0)
+		else if (strcmp(arg, "-colors") == 0)
 		{
 			colors = true;
 		}

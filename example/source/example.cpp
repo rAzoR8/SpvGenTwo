@@ -71,7 +71,7 @@ public:
 
 };
 
-int main(int argc, char* argv[])
+int main()
 {
 	TestLogger log;
 	HeapAllocator alloc; // custom user allocator

@@ -208,8 +208,7 @@ namespace spvgentwo
 		bool write(IWriter& _writer) const;
 
 		// calls finalizeGlobalInterface() on EntryPoints
-		// automatically assigns IDs
-		// calls addRequiredCapabilities() if _pGrammar != nullptr
+		// automatically assigns IDs (calls assignIDs, adds Required Capabilities & Extensions & Version if _pGrammar != nullptr)
 		// serializes module to IWriter
 		bool finalizeAndWrite(IWriter& _writer, const Grammar* _pGrammar = nullptr);
 

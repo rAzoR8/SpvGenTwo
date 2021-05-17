@@ -34,31 +34,31 @@ int main(int argc, char* argv[])
 		{
 			spv = arg;
 		}
-		else if (strcmp(arg, "--serialize") == 0)
+		else if (strcmp(arg, "-serialize") == 0)
 		{
 			serialize = true;
 		}
-		else if (strcmp(arg, "--assignIDs") == 0 || strcmp(arg, "--assignids") == 0)
+		else if (strcmp(arg, "-assignIDs") == 0 || strcmp(arg, "-assignids") == 0)
 		{
 			reassignIDs = true;
 		}
-		else if (strcmp(arg, "--noinstrnames") == 0)
+		else if (strcmp(arg, "-noinstrnames") == 0)
 		{
 			options ^= PrintOptionsBits::InstructionName;
 		}
-		else if (strcmp(arg, "--noopnames") == 0)
+		else if (strcmp(arg, "-noopnames") == 0)
 		{
 			options ^= PrintOptionsBits::OperandName;
 		}
-		else if (strcmp(arg, "--nopreamble") == 0)
+		else if (strcmp(arg, "-nopreamble") == 0)
 		{
 			options ^= PrintOptionsBits::Preamble;
 		}
-		else if (strcmp(arg, "--colors") == 0)
+		else if (strcmp(arg, "-colors") == 0)
 		{
 			colors = true;
 		}
-		else if (i+1 < argc && strcmp(arg, "--tabs") == 0)
+		else if (i+1 < argc && strcmp(arg, "-tabs") == 0)
 		{
 			tabs = argv[++i];
 		}
