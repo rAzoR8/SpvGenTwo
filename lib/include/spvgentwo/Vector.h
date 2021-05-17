@@ -206,7 +206,7 @@ namespace spvgentwo
 			return false;
 		}
 
-		T* pNewData = reinterpret_cast<T*>(m_pAllocator->allocate(_size * sizeof(T)));
+		T* pNewData = reinterpret_cast<T*>(m_pAllocator->allocate(_size * sizeof(T), alignof(T)));
 
 		if (pNewData == nullptr)
 		{

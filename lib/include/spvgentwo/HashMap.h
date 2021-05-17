@@ -102,7 +102,7 @@ namespace spvgentwo
 	inline HashMap<Key, Value>::HashMap(IAllocator* _pAllocator, unsigned int _buckets) :
 		m_pAllocator(_pAllocator), m_Buckets(_buckets)
 	{
-		m_pBuckets = reinterpret_cast<Bucket*>(m_pAllocator->allocate(m_Buckets * sizeof(Bucket)));
+		m_pBuckets = reinterpret_cast<Bucket*>(m_pAllocator->allocate(m_Buckets * sizeof(Bucket), alignof(Bucket)));
 		for (auto i = 0u; i < m_Buckets; ++i)
 		{
 			new(m_pBuckets + i) Bucket(m_pAllocator);

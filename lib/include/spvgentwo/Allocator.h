@@ -9,13 +9,13 @@ namespace spvgentwo
 		virtual ~IAllocator() {}
 
 		// alignment may only be a power of 2
-		virtual void* allocate(const sgt_size_t _bytes, const unsigned int _aligment = 1u) = 0;
+		virtual void* allocate(const sgt_size_t _bytes, unsigned int _aligment) = 0;
 		virtual void deallocate(void* _ptr, const sgt_size_t _bytes = 0u) = 0;
 
 		template <class T, class ... Args>
 		T* construct(Args&& ..._args) noexcept
 		{
-			T* pData = reinterpret_cast<T*>(allocate(sizeof(T), 1u)); // TODO: aligment
+			T* pData = reinterpret_cast<T*>(allocate(sizeof(T), alignof(T)));
 			if (pData != nullptr)
 			{
 				new(pData) T{ stdrep::forward<Args>(_args)... };
