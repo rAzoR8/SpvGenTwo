@@ -168,6 +168,11 @@ namespace
 		using namespace spvgentwo;
 		using namespace LinkerHelper;
 
+		if (_cache.find(_pLibInstr) != _cache.end())
+		{
+			return true;
+		}
+
 		Module* module = _pTarget->getModule();
 		if (module == nullptr) { return false; }
 
@@ -196,7 +201,7 @@ namespace
 		// instruction parent must be be set before calling this function
 		_pTarget->setOperation(_pLibInstr->getOperation());
 
-		auto lookup = [&](const Instruction* lib) -> bool
+		auto lookupOperand = [&](const Instruction* lib) -> bool
 		{
 			Instruction* cInstr = nullptr;
 
@@ -211,7 +216,6 @@ namespace
 				if (const Constant* c = lib->getConstant(); c != nullptr && (_options & LinkerOptionBits::ImportMissingConstants))
 				{
 					cInstr = module->addConstant(*c, lib->getName());
-					_cache.emplaceUnique(lib, cInstr);
 				}
 				else
 				{
@@ -224,7 +228,6 @@ namespace
 				if (const Type* t = lib->getType(); t != nullptr && (_options & LinkerOptionBits::ImportMissingTypes))
 				{
 					cInstr = module->addType(*t, lib->getName());
-					_cache.emplaceUnique(lib, cInstr);
 				}
 				else
 				{
@@ -235,12 +238,11 @@ namespace
 
 			if (cInstr != nullptr)
 			{
+				_cache.emplaceUnique(lib, cInstr);
+
 				if (_options & LinkerOptionBits::AssignResultIDs)
 				{
-					if (auto it = cInstr->getResultIdOperand(); it != nullptr && it->getId() == InvalidId)
-					{
-						*it = module->getNextId();
-					}
+					cInstr->assignResultId(false);
 				}
 
 				_pTarget->addOperand(cInstr);
@@ -259,7 +261,7 @@ namespace
 
 		if (_pTarget->hasResultType())
 		{
-			if (lookup(_pLibInstr->getResultTypeInstr()) == false) return false;
+			if (lookupOperand(_pLibInstr->getResultTypeInstr()) == false) return false;
 		}
 		if (_pTarget->hasResult())
 		{
@@ -274,11 +276,11 @@ namespace
 			}
 			else if (it->isInstruction())
 			{
-				if (lookup(it->getInstruction()) == false) return false;
+				if (lookupOperand(it->getInstruction()) == false) return false;
 			}
 			else if (it->isBranchTarget())
 			{
-				if (lookup(it->getBranchTarget()->getLabel()) == false) return false;
+				if (lookupOperand(it->getBranchTarget()->getLabel()) == false) return false;
 			}
 			else
 			{
@@ -632,13 +634,19 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 			};
 
 			// create function signature
-			cFunc.setReturnType(assignId(_consumer.addType(lFunc->getReturnType())));
+			Instruction* cRetType = assignId(_consumer.addType(lFunc->getReturnType()));
+			cache.emplaceUnique(lFunc->getReturnTypeInstr(), cRetType);
+			cFunc.setReturnType(cRetType);
+
 			for (const Instruction& lParam : lFunc->getParameters())
 			{
 				Instruction* cType = assignId(_consumer.addType(*lParam.getType()));
+				cache.emplaceUnique(lParam.getResultTypeInstr(), cType);
+
 				Instruction* cParam = assignId(cFunc.addParameters(cType)); // OpFunctionParameter
 				cache.emplaceUnique(&lParam, cParam);
 			}
+
 			cFunc.finalize(lFunc->getFunctionControl(), lFunc->getName());
 			assignId(cFunc.getFunctionTypeInstr());
 
@@ -715,6 +723,15 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		for (const auto& [name, instr] : _lib.getExtensions())
 		{
 			_consumer.addExtension(name.c_str());
+		}
+	}
+
+	// OpTypeArray might have implictly added a integer OpConstant & OpType
+	if (_options & LinkerOptionBits::AssignResultIDs)
+	{
+		for (Instruction& ct : _consumer.getTypesAndConstants())
+		{
+			ct.assignResultId(false);
 		}
 	}
 
