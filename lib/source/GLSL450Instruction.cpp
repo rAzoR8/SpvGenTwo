@@ -2,6 +2,7 @@
 #include "spvgentwo/Module.h"
 
 #include "spvgentwo/InstructionTemplate.inl"
+#include "spvgentwo/ModuleTemplate.inl"
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const glslstd450::Op _op, Instruction* _pFloat, const bool _no64Bit)
 {
