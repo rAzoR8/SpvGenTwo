@@ -7,14 +7,19 @@
 	#include <stdio.h>
 #endif
 
-void* spvgentwo::HeapAllocator::allocate(const sgt_size_t _bytes, unsigned int _aligment)
+void* spvgentwo::HeapAllocator::allocate(const sgt_size_t _bytes, unsigned int _alignment)
 {
+	if (_alignment & (_alignment - 1)) // not a power of two
+	{
+		return nullptr;
+	}
+
 	m_Allocated += _bytes;
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-	void* ptr = _aligned_malloc(_bytes, _aligment);
+	void* ptr = _aligned_malloc(_bytes, _alignment);
 #else	
-	void* ptr = aligned_alloc(_aligment, _bytes);
+	void* ptr = aligned_alloc(_alignment < sizeof(void*) ? sizeof(void*) : _alignment, _bytes);
 #endif
 
 #ifdef SPVGENTWO_DEBUG_HEAP_ALLOC
