@@ -507,7 +507,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpAtomicFlagClear | &#9744; |
 | OpImageSparseRead | &#9744; |
 | OpSizeOf | &#10004; |
-| OpTypePipeStorage | &#9744; |
+| OpTypePipeStorage | via `Module::addType()` |
 | OpConstantPipeStorage | via `Module::addConstant()` |
 | OpCreatePipeFromPipeStorage | &#9744; |
 | OpGetKernelLocalSizeForSubgroupCount | &#9744; |
