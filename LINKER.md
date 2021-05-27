@@ -253,7 +253,10 @@ for (auto i = 1u; i < 8u; ++i)
 bb.returnValue(sum);
 ```
 
-We can import them using `SpvGenTwoLinker.exe -l exportA.spv -l exportB.spv -c import.spv -o linked.spv -types -constants -reffuncs -refvars -extsets -verbose`.
+We can import them using:
+```
+SpvGenTwoLinker.exe -l exportA.spv -l exportB.spv -c import.spv -o linked.spv -types -constants -reffuncs -refvars -extsets -verbose
+```
 
 ## linked.spv (result)
 ```cpp
