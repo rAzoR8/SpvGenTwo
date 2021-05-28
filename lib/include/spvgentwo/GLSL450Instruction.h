@@ -99,7 +99,7 @@ namespace spvgentwo
 		Instruction* opCross(Instruction* _pX, Instruction* _pY);
 		Instruction* opNormalize(Instruction* _pX) { return scalarOrFloatVec1(glslstd450::Op::Normalize, _pX); }
 		Instruction* opFaceForward(Instruction* _pN, Instruction* _pI, Instruction* _pNref) { return scalarOrFloatVec3(glslstd450::Op::FaceForward, _pN, _pI, _pNref); }
-		Instruction* opReflect(Instruction* _pI, Instruction* _pN) { return scalarOrFloatVec2(glslstd450::Op::Reflect, _pN, _pI); }
+		Instruction* opReflect(Instruction* _pI, Instruction* _pN) { return scalarOrFloatVec2(glslstd450::Op::Reflect, _pI, _pN); }
 		Instruction* opRefract(Instruction* _pIvec, Instruction* _pNvec, Instruction* _pEtaFloat);
 		
 		// FindILsb TODO
