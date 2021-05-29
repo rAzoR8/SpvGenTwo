@@ -432,7 +432,6 @@ namespace
 			_cFunc.finalize(_lFunc.getFunctionControl());		
 		}
 
-		_cFunc.getFunctionTypeInstr(), _options; // OpTypeFunction
 		_cache.emplaceUnique(_lFunc.getFunction(), assignId(_cFunc.getFunction(), _options)); // OpFunction
 
 		printInstruction(_options, _lFunc.getFunction(), " -> ", _cFunc.getFunction()); // OpFunction
