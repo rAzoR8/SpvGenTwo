@@ -91,8 +91,8 @@ spvgentwo::Module examples::linkageLibB(spvgentwo::IAllocator* _pAllocator, spvg
 		module.addName(x, "x");
 
 		Instruction* loopCount = module.constant(8u, "count");
-		Instruction* varI = funcPolynomial.variable(0u/*, "i"*/);
-		Instruction* varSum = funcPolynomial.variable<float>(0.f/*, "s"*/);
+		Instruction* varI = funcPolynomial.variable(0u, "i");
+		Instruction* varSum = funcPolynomial.variable<float>(0.f, "s");
 		Instruction* fltPtr = module.type<float*>("float*", spv::StorageClass::Uniform);
 
 		Instruction* one = module.constant(1);
