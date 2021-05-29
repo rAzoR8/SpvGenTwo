@@ -55,6 +55,8 @@ namespace spvgentwo
 
 		constexpr Iterator begin() const { return m_Begin; }
 		constexpr Iterator end() const { return m_End; }
+
+		constexpr bool empty() const { return m_Begin == m_End; }
 	};
 
 	template<class T>
