@@ -50,7 +50,7 @@ Module examples::types(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* var = bb->opVariable(type, spv::StorageClass::Function);
 
 		// add C++ type via type<T>
-		type = module.type<unsigned int*>(spv::StorageClass::Function);
+		type = module.type<unsigned int*>(spv::StorageClass::Function, "uintptr");
 
 		dyn_sampled_image_t img{ spv::Op::OpTypeFloat };
 

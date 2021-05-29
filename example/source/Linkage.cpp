@@ -77,6 +77,7 @@ spvgentwo::Module examples::linkageLibB(spvgentwo::IAllocator* _pAllocator, spvg
 	// configure capabilities and extensions
 	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::Linkage);
+	module.addCapability(spv::Capability::GenericPointer);
 	
 	Instruction* uniformCoefficients = module.uniform<array_t<float, 8>>(u8"u_Coefficients");
 	LinkerHelper::addLinkageDecoration(uniformCoefficients, spv::LinkageType::Export, "@u_Coefficients");
@@ -87,30 +88,42 @@ spvgentwo::Module examples::linkageLibB(spvgentwo::IAllocator* _pAllocator, spvg
 	{
 		BasicBlock& bb = *funcPolynomial; // get entry block to this function
 		Instruction* x = funcPolynomial.getParameter(0);
+		module.addName(x, "x");
 
-		Instruction* uCoefs = bb->opLoad(uniformCoefficients);
+		Instruction* loopCount = module.constant(8u, "count");
+		Instruction* varI = funcPolynomial.variable(0u/*, "i"*/);
+		Instruction* varSum = funcPolynomial.variable<float>(0.f/*, "s"*/);
+		Instruction* fltPtr = module.type<float*>("float*", spv::StorageClass::Uniform);
+
+		Instruction* one = module.constant(1);
+
+		BasicBlock& merge = bb.Loop([&](BasicBlock& cond) -> Instruction*
+		{
+			auto i = cond->opLoad(varI);
+			return cond.Less(i, loopCount);
+		}, [&](BasicBlock& inc)
+		{
+			auto i = inc->opLoad(varI);
+			i = inc.Add(i, one);
+			inc->opStore(varI, i); // i++
+		}, [&](BasicBlock& body)
+		{
+			auto i = body->opLoad(varI);
+			auto k = body->opConvertUToF(i);
+
+			// x += x^k * coeff[i]
+			Instruction* Xk = body.ext<ext::GLSL>()->opPow(x, k);
+			Instruction* Ai = body->opAccessChain(fltPtr, uniformCoefficients, i);
+			Ai = body->opLoad(Ai);
+			Instruction* AkXk = body.Mul(Ai, Xk);
+
+			auto s = body->opLoad(varSum);
+			s = body.Add(s, AkXk);
+			body->opStore(varSum, s);
+		});
 		
-		auto eval = [&](unsigned int i) -> Instruction*
-		{
-			Instruction* k = module.constant((float)i);
-			Instruction* Xk = bb.ext<ext::GLSL>()->opPow(x, k);
-
-			Instruction* Ai = bb->opCompositeExtract(uCoefs, i);
-
-			Instruction* AkXk = bb.Mul(Ai, Xk);
-			return AkXk;
-		};
-
-		Instruction* sum = eval(0);
-
-		// unroll
-		for (auto i = 1u; i < 8u; ++i)
-		{
-			auto val = eval(i);
-			sum = bb.Add(sum, val);
-		}
-
-		bb.returnValue(sum);
+		auto s = merge->opLoad(varSum);
+		merge.returnValue(s);
 	}
 
 	// void main();

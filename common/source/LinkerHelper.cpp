@@ -176,12 +176,6 @@ namespace
 		Module* module = _pTarget->getModule();
 		if (module == nullptr) { return false; }
 
-		auto libSymbolName = [_pLibInstr]() -> const char*
-		{
-			const char* name = _pLibInstr->getName();
-			return name != nullptr ? name : "UNNAMED-SYMBOL";
-		};
-
 		auto instrName = [&_options](const Instruction* instr) -> const char*
 		{
 			if (_options.grammar == nullptr) return "";
@@ -192,6 +186,16 @@ namespace
 			}
 
 			return "";
+		};
+
+		auto libSymbolName = [_pLibInstr, &instrName]() -> const char*
+		{
+			const char* name = _pLibInstr->getName();
+			if (name == nullptr)
+			{
+				name = instrName(_pLibInstr);
+			}
+			return name != nullptr ? name : "UNNAMED-SYMBOL";
 		};
 
 		printInstruction(_options, _pLibInstr, " -> ");
@@ -251,7 +255,7 @@ namespace
 
 			if (reported == false)
 			{
-				error("[%s] %s operand instruction not found!", libSymbolName(), instrName(lib));
+				error("[%s] operand %s not found!", libSymbolName(), instrName(lib));
 			}
 
 			printInstruction(_options, lib);
@@ -306,27 +310,7 @@ namespace
 			return true; // already imported
 		}
 
-		// for Names, Decorates etc referencing _libInstr:
 		bool success = true;
-
-		// decorates except linkage
-		if (_options & LinkerOptionBits::ImportReferencedDecorations)
-		{
-			ReflectionHelper::getDecorationsFunc(_lInstr, [&](const Instruction* deco) {
-				if (ReflectionHelper::getSpvDecorationKindFromDecoration(deco) != spv::Decoration::LinkageAttributes)
-				{
-					success &= transferInstruction(deco, _consumer.addDecorationInstr(), _cache, _options);
-				}
-			});
-		}
-
-		// OpNames
-		if (_options & LinkerOptionBits::ImportReferencedNames && (_cInstr == nullptr || _cInstr->getName() == nullptr)) // check if a name is already present
-		{
-			ReflectionHelper::getNamesFunc(_lInstr, [&](const Instruction* name) {
-				success &= transferInstruction(name, _consumer.addNameInstr(), _cache, _options);
-			});
-		}
 
 		// OpVariables
 		if (_options & LinkerOptionBits::ImportReferencedVariables)
@@ -344,6 +328,25 @@ namespace
 					}
 				}
 			}
+		}
+
+		// OpNames
+		if (_options & LinkerOptionBits::ImportReferencedNames && (_cInstr == nullptr || _cInstr->getName() == nullptr)) // check if a name is already present
+		{
+			ReflectionHelper::getNamesFunc(_lInstr, [&](const Instruction* name) {
+				success &= transferInstruction(name, _consumer.addNameInstr(), _cache, _options);
+				});
+		}
+
+		// decorates except linkage
+		if (_options & LinkerOptionBits::ImportReferencedDecorations)
+		{
+			ReflectionHelper::getDecorationsFunc(_lInstr, [&](const Instruction* deco) {
+				if (ReflectionHelper::getSpvDecorationKindFromDecoration(deco) != spv::Decoration::LinkageAttributes)
+				{
+					success &= transferInstruction(deco, _consumer.addDecorationInstr(), _cache, _options);
+				}
+				});
 		}
 
 		//OpExtInst
@@ -467,6 +470,8 @@ namespace
 				printInstruction(_options, bbLib.getLabel(), " -> ", bbConsumer.getLabel());
 				_cache.emplaceUnique(bbLib.getLabel(), assignId(bbConsumer.getLabel()));
 
+				// TODO: need to cache all function lables before iterating over the instructions of this block as we might jump to those
+
 				for (const Instruction& iLib : bbLib)
 				{
 					if (iLib == spv::Op::OpFunctionCall)
@@ -485,8 +490,9 @@ namespace
 						}
 					}
 
+					// TODO: check if its a function variable and transfer it before the OpName that references it
 					success &= importGlobalDependencies(_consumer, &iLib, nullptr, _cache, _options);
-					success &= transferInstruction(&iLib, bbConsumer.addInstruction(), _cache, _options);
+					success &= transferInstruction(&iLib, bbConsumer.addInstruction(iLib.getName()), _cache, _options);
 				}
 			}
 
