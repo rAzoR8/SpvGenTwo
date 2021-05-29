@@ -219,7 +219,7 @@ namespace
 			{
 				if (const Constant* c = lib->getConstant(); c != nullptr && (_options & LinkerOptionBits::ImportMissingConstants))
 				{
-					cInstr = module->addConstant(*c, lib->getName());
+					cInstr = module->addConstant(*c);
 				}
 				else
 				{
@@ -231,7 +231,7 @@ namespace
 			{
 				if (const Type* t = lib->getType(); t != nullptr && (_options & LinkerOptionBits::ImportMissingTypes))
 				{
-					cInstr = module->addType(*t, lib->getName());
+					cInstr = module->addType(*t);
 				}
 				else
 				{
@@ -322,7 +322,7 @@ namespace
 				{
 					if (_cache.find(op) == _cache.end())
 					{
-						Instruction* cVar = _consumer.addGlobalVariableInstr(op->getName());
+						Instruction* cVar = _consumer.addGlobalVariableInstr();
 						success &= importGlobalDependencies(_consumer, op, _cache, _options);
 						success &= transferInstruction(op, cVar, _cache, _options);
 					}
@@ -429,7 +429,7 @@ namespace
 
 		if(_cFunc.isFinalized() == false) // create OpFunction
 		{
-			_cFunc.finalize(_lFunc.getFunctionControl(), _lFunc.getName());		
+			_cFunc.finalize(_lFunc.getFunctionControl());		
 		}
 
 		_cFunc.getFunctionTypeInstr(), _options; // OpTypeFunction
@@ -451,7 +451,7 @@ namespace
 		// cache labels first, they can be referenced from other basic blocks, not yet added
 		for(const spvgentwo::BasicBlock& lBB : _lFunc)
 		{
-			auto& cBB = _cFunc.addBasicBlock(lBB.getName());
+			auto& cBB = _cFunc.addBasicBlock();
 			_cache.emplaceUnique(lBB.getLabel(), assignId(cBB.getLabel(), _options));
 		}
 
