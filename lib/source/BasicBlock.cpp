@@ -83,16 +83,9 @@ const spvgentwo::Instruction* spvgentwo::BasicBlock::getTerminator() const
 	return nullptr;
 }
 
-spvgentwo::Instruction* spvgentwo::BasicBlock::addInstruction(const char* _pName)
+spvgentwo::Instruction* spvgentwo::BasicBlock::addInstruction()
 {
-	Instruction* instr = &emplace_back(this);
-
-	if (_pName != nullptr)
-	{
-		getModule()->addName(instr, _pName);
-	}
-
-	return instr;
+	return &emplace_back(this);
 }
 
 bool spvgentwo::BasicBlock::getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const
