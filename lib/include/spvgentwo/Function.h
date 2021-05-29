@@ -71,7 +71,7 @@ namespace spvgentwo
 
 		// remove _pBB from this function (destroying it), optionally replacing it with _pReplacement, returning uses of this basic block or its label
 		// if bool _gatherReferencedInstructions is true, also return uses of instructions from the removed basic block (OpName etc)
-		List<Instruction*> remove(const BasicBlock* _pBB, BasicBlock* _pReplacement = nullptr);
+		List<Instruction*> remove(const BasicBlock* _pBB, BasicBlock* _pReplacement = nullptr, IAllocator* _pAllocator = nullptr);
 
 		// return entry bb (avoid confusion when adding a BB to this function and instructions are "magically" added to the last BB if using m_pLast
 		BasicBlock& operator->() { return m_pBegin->inner(); }
@@ -109,7 +109,7 @@ namespace spvgentwo
 		Instruction* addParameters(Instruction* _pParamType, TypeInstr* ... _paramTypeInstructions);
 
 		// get opFunctionParameter in order they were added by addParameters
-		Instruction* getParameter(unsigned int _index);
+		Instruction* getParameter(unsigned int _index) const;
 
 		// get list of all OpFunctionParameter instructions added by addParameters()
 		const List<Instruction>& getParameters() const { return m_Parameters; }
@@ -117,6 +117,9 @@ namespace spvgentwo
 
 		// creates opFunction, m_pFunctionType must have been completed (all parameters added via addParameters), returns opFunction
 		Instruction* finalize(const Flag<spv::FunctionControlMask> _control, const char* _pName = nullptr);
+
+		// returns true if this Functions has a valid OpFunctionType & m_Function is setup to OpFunction
+		bool isFinalized() const;
 
 		Flag<spv::FunctionControlMask> getFunctionControl() const;
 

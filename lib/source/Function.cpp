@@ -8,7 +8,7 @@
 spvgentwo::Function::Function(Module* _pModule) : 
 	List(_pModule->getAllocator()),
 	m_pModule(_pModule),
-	m_Function(this),
+	m_Function(this, spv::Op::OpNop), // not finalized
 	m_FunctionEnd(this, spv::Op::OpFunctionEnd),
 	m_FunctionType(_pModule->getAllocator(), spv::Op::OpTypeFunction),
 	m_Parameters(_pModule->getAllocator())
@@ -125,9 +125,9 @@ const char* spvgentwo::Function::getName() const
 	return m_pModule->getName(&m_Function);
 }
 
-spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::remove(const BasicBlock* _pBB, BasicBlock* _pReplacement)
+spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::remove(const BasicBlock* _pBB, BasicBlock* _pReplacement, IAllocator* _pAllocator)
 {
-	List<Instruction*> uses(getAllocator());
+	List<Instruction*> uses(_pAllocator != nullptr ? _pAllocator : getAllocator());
 
 	if(_pBB == nullptr)
 	{
@@ -170,7 +170,7 @@ spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::remove(const Basic
 	return uses;
 }
 
-spvgentwo::Instruction* spvgentwo::Function::getParameter(unsigned int _index)
+spvgentwo::Instruction* spvgentwo::Function::getParameter(unsigned int _index) const
 {
 	auto it = m_Parameters.begin() + _index;
 	return it == nullptr ? nullptr : it.operator->();
@@ -206,20 +206,9 @@ spvgentwo::Instruction* spvgentwo::Function::variable(const Type& _ptrType, cons
 
 bool spvgentwo::Function::setReturnType(Instruction* _pReturnType)
 {
-	auto& types = m_FunctionType.getSubTypes();
- 
 	if (const Type* type = _pReturnType->getType(); type != nullptr)
 	{
-		if (types.empty())
-		{
-			m_pModule->logInfo("Result type of functions was not initialized");
-			return false;
-		}
-		else
-		{
-			types.front() = *type;
-			return true;
-		}
+		return setReturnType(*type);
 	}
 	else
 	{
@@ -294,6 +283,11 @@ spvgentwo::Instruction* spvgentwo::Function::finalize(const Flag<spv::FunctionCo
 	}
 
 	return pFunc;
+}
+
+bool spvgentwo::Function::isFinalized() const
+{
+	return (m_FunctionType.getSubTypes().size() == m_Parameters.size() + 1u) && m_Function == spv::Op::OpFunction;
 }
 
 spvgentwo::Flag<spvgentwo::spv::FunctionControlMask> spvgentwo::Function::getFunctionControl() const
