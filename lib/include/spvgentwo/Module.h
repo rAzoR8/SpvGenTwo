@@ -227,8 +227,9 @@ namespace spvgentwo
 		// for use with opString, opSource, opSourceContinued, opSourceExtension
 		Instruction* addSourceStringInstr();
 
-		// for use with opName and opMemberName
+		// for use with opName and opMemberName, is not added to nameLookup
 		Instruction* addNameInstr();
+
 		void addName(Instruction* _pTarget, const char* _pName);
 		void addMemberName(Instruction* _pTargetBase, const char* _pMemberName, unsigned int _memberIndex);
 

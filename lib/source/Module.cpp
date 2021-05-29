@@ -366,7 +366,7 @@ spvgentwo::Instruction* spvgentwo::Module::addNameInstr()
 void spvgentwo::Module::addName(Instruction* _pTarget, const char* _pName)
 {
 	addNameInstr()->opName(_pTarget, _pName);
-	m_NameLookup.emplace(_pTarget, MemberName{ String(m_pAllocator, _pName), ~0u });
+	m_NameLookup.emplace(_pTarget, MemberName{ String(m_pAllocator, _pName), sgt_uint32_max });
 }
 
 void spvgentwo::Module::addMemberName(Instruction* _pTargetBase, const char* _pMemberName, unsigned int _memberIndex)
