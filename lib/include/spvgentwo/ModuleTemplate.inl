@@ -79,14 +79,15 @@ namespace spvgentwo
 	inline Instruction* Module::type(const Props& ... _props)
 	{
 		Type dummy(m_pAllocator);
-		return addType(dummy.make<T>(_props...));
+		const char* const* name = traits::selectTypeFromArgs<const char*>(_props...);
+		return addType(dummy.make<T>(_props...), name != nullptr ? *name : nullptr);
 	}
 
 	template<class T>
-	inline Instruction* Module::constant(const T& _value, const bool _spec)
+	inline Instruction* Module::constant(const T& _value, const bool _spec, const char* _pName)
 	{
 		Constant dummy(m_pAllocator);
-		return addConstant(dummy.make<T>(_value, _spec));
+		return addConstant(dummy.make<T>(_value, _spec), _pName);
 	}
 
 	template<class ...TypeInstr>
