@@ -235,9 +235,9 @@ namespace spvgentwo
 
 		if (_pResultType == nullptr || _pBase == nullptr) return error();
 
-		if(_pResultType->isType() == false) 
+		if(_pResultType->isType() == false || _pResultType->getType()->isPointer() == false) 
 		{
-			getModule()->logError("_pResultType is not a type instruction");
+			getModule()->logError("_pResultType is not a (pointer) type instruction");
 			return error();
 		}
 
