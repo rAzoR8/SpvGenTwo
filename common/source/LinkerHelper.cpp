@@ -325,18 +325,6 @@ namespace
 
 		bool success = true;
 
-		// TODO: move to post with OpNames
-		// decorates except linkage
-		if (_options & LinkerOptionBits::ImportReferencedDecorations)
-		{
-			ReflectionHelper::getDecorationsFunc(_lInstr, [&](const Instruction* deco) {
-				if (ReflectionHelper::getSpvDecorationKindFromDecoration(deco) != spv::Decoration::LinkageAttributes)
-				{
-					success &= transferInstruction(deco, _consumer.addDecorationInstr(), _cache, _options);
-				}
-				});
-		}
-
 		//OpExtInst
 		if ((_options & LinkerOptionBits::ImportMissingExtensionSets) && *_lInstr == spv::Op::OpExtInst)
 		{
@@ -730,6 +718,25 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 							_consumer.addName(cTarget, n.kv.value.name.c_str());
 						}
 					}
+				}
+			}
+		}
+	}
+
+	if (_options & LinkerOptionBits::ImportReferencedDecorations)
+	{
+		for(const Instruction& lDeco : _lib.getDecorations())
+		{
+			if (ReflectionHelper::getSpvDecorationKindFromDecoration(&lDeco) != spv::Decoration::LinkageAttributes)
+			{
+				const Instruction* lTarget = lDeco.getFirstActualOperand()->getInstruction();
+				if (Instruction** ppCTarget = cache[lTarget]; ppCTarget != nullptr)
+				{
+					Instruction* cDeco = _consumer.addDecorationInstr();
+					// TODO check if we already added those decorations?
+					success &= transferInstruction(&lDeco, cDeco, cache, _options);
+
+					printInstruction(_options, &lDeco, " -> ", cDeco);
 				}
 			}
 		}
