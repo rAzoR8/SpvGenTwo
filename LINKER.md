@@ -146,114 +146,103 @@ __import.spv__ requires external symbols to be runnable:
 ; SPIR-V
 ; Version: 1.0
 ; Generator: Unknown(250); 0
-; Bound: 57
+; Bound: 26
 ; Schema: 0
                OpCapability Linkage
                OpCapability Shader
-          %1 = OpExtInstImport "GLSL.std.450"
                OpMemoryModel Logical Simple
                OpEntryPoint Fragment %main "main"
                OpExecutionMode %main OriginUpperLeft
-               OpName %u_Coefficients "u_Coefficients"
-               OpName %polynomial "polynomial"
+               OpName %u_Time "u_Time"
+               OpName %addSq "addSq"
                OpName %FunctionEntry "FunctionEntry"
-               OpName %main "main"
+               OpName %addGlobalTime "addGlobalTime"
                OpName %FunctionEntry_0 "FunctionEntry"
-               OpDecorate %u_Coefficients LinkageAttributes "@u_Coefficients" Export
-               OpDecorate %polynomial LinkageAttributes "@polynomial" Export
+               OpName %main "main"
+               OpName %FunctionEntry_1 "FunctionEntry"
+               OpDecorate %addGlobalTime LinkageAttributes "@addGlobalTime" Export
       %float = OpTypeFloat 32
-       %uint = OpTypeInt 32 0
-     %uint_8 = OpConstant %uint 8
-%_arr_float_uint_8 = OpTypeArray %float %uint_8
-%_ptr_Uniform__arr_float_uint_8 = OpTypePointer Uniform %_arr_float_uint_8
-          %7 = OpTypeFunction %float %float
-    %float_0 = OpConstant %float 0
-    %float_1 = OpConstant %float 1
-    %float_2 = OpConstant %float 2
-    %float_3 = OpConstant %float 3
-    %float_4 = OpConstant %float 4
-    %float_5 = OpConstant %float 5
-    %float_6 = OpConstant %float 6
-    %float_7 = OpConstant %float 7
+%_ptr_Uniform_float = OpTypePointer Uniform %float
+          %3 = OpTypeFunction %float %float %float
+          %4 = OpTypeFunction %float %float
+ %float_1000 = OpConstant %float 1000
        %void = OpTypeVoid
-         %17 = OpTypeFunction %void
-%u_Coefficients = OpVariable %_ptr_Uniform__arr_float_uint_8 Uniform
- %polynomial = OpFunction %float Const %7
-         %20 = OpFunctionParameter %float
+          %7 = OpTypeFunction %void
+   %float_16 = OpConstant %float 16
+     %u_Time = OpVariable %_ptr_Uniform_float Uniform
+      %addSq = OpFunction %float Const %3
+         %11 = OpFunctionParameter %float
+         %12 = OpFunctionParameter %float
 %FunctionEntry = OpLabel
-         %22 = OpLoad %_arr_float_uint_8 %u_Coefficients None
-         %23 = OpExtInst %float %1 Pow %20 %float_0
-         %24 = OpCompositeExtract %float %22 0
-         %25 = OpFMul %float %24 %23
-         %26 = OpExtInst %float %1 Pow %20 %float_1
-         %27 = OpCompositeExtract %float %22 1
-         %28 = OpFMul %float %27 %26
-         %29 = OpFAdd %float %25 %28
-         %30 = OpExtInst %float %1 Pow %20 %float_2
-         %31 = OpCompositeExtract %float %22 2
-         %32 = OpFMul %float %31 %30
-         %33 = OpFAdd %float %29 %32
-         %34 = OpExtInst %float %1 Pow %20 %float_3
-         %35 = OpCompositeExtract %float %22 3
-         %36 = OpFMul %float %35 %34
-         %37 = OpFAdd %float %33 %36
-         %38 = OpExtInst %float %1 Pow %20 %float_4
-         %39 = OpCompositeExtract %float %22 4
-         %40 = OpFMul %float %39 %38
-         %41 = OpFAdd %float %37 %40
-         %42 = OpExtInst %float %1 Pow %20 %float_5
-         %43 = OpCompositeExtract %float %22 5
-         %44 = OpFMul %float %43 %42
-         %45 = OpFAdd %float %41 %44
-         %46 = OpExtInst %float %1 Pow %20 %float_6
-         %47 = OpCompositeExtract %float %22 6
-         %48 = OpFMul %float %47 %46
-         %49 = OpFAdd %float %45 %48
-         %50 = OpExtInst %float %1 Pow %20 %float_7
-         %51 = OpCompositeExtract %float %22 7
-         %52 = OpFMul %float %51 %50
-         %53 = OpFAdd %float %49 %52
-               OpReturnValue %53
+         %14 = OpFMul %float %11 %11
+         %15 = OpFMul %float %12 %12
+         %16 = OpFAdd %float %14 %15
+               OpReturnValue %16
                OpFunctionEnd
-       %main = OpFunction %void None %17
+%addGlobalTime = OpFunction %float Const %4
+         %18 = OpFunctionParameter %float
 %FunctionEntry_0 = OpLabel
-         %56 = OpFunctionCall %float %polynomial %float_4
+         %20 = OpLoad %float %u_Time None
+         %21 = OpFDiv %float %20 %float_1000
+         %22 = OpFunctionCall %float %addSq %18 %21
+               OpReturnValue %22
+               OpFunctionEnd
+       %main = OpFunction %void None %7
+%FunctionEntry_1 = OpLabel
+         %25 = OpFunctionCall %float %addGlobalTime %float_16
                OpReturn
                OpFunctionEnd
 ```
 
-Note that this is just pseudo SPIR-V code, it's valid but not meaningful. The recurring computation above is the result of meta-programing & unrolling polynomial evaluation loop:
+Note that this is just pseudo SPIR-V code, it's valid but not meaningful. The generating code looks something like this:
 
 ```cpp
-BasicBlock& bb = *funcPolynomial; // get entry block to this function
-Instruction* x = funcPolynomial.getParameter(0);
+	// float polynomial(float x);
+	Function& funcPolynomial = module.addFunction<float, float>(u8"polynomial", spv::FunctionControlMask::Const);
+	LinkerHelper::addLinkageDecoration(funcPolynomial.getFunction(), spv::LinkageType::Export, "@polynomial");
+	{
+		BasicBlock& bb = *funcPolynomial; // get entry block to this function
+		Instruction* x = funcPolynomial.getParameter(0);
+		module.addName(x, "x");
 
-Instruction* uCoefs = bb->opLoad(uniformCoefficients);
+		Instruction* loopCount = module.constant(8u, "count");
+		Instruction* varI = funcPolynomial.variable(0u, "i");
+		Instruction* varSum = funcPolynomial.variable<float>(0.f, "s");
+		Instruction* fltPtr = module.type<float*>("float*", spv::StorageClass::Uniform);
+
+		Instruction* one = module.constant(1);
+
+		BasicBlock& merge = bb.Loop([&](BasicBlock& cond) -> Instruction*
+		{
+			auto i = cond->opLoad(varI);
+			return cond.Less(i, loopCount);
+		}, [&](BasicBlock& inc)
+		{
+			auto i = inc->opLoad(varI);
+			i = inc.Add(i, one);
+			inc->opStore(varI, i); // i++
+		}, [&](BasicBlock& body)
+		{
+			auto i = body->opLoad(varI);
+			auto k = body->opConvertUToF(i);
+
+			// x += x^k * coeff[i]
+			Instruction* Xk = body.ext<ext::GLSL>()->opPow(x, k);
+			Instruction* Ai = body->opAccessChain(fltPtr, uniformCoefficients, i);
+			Ai = body->opLoad(Ai);
+			Instruction* AkXk = body.Mul(Ai, Xk);
+
+			auto s = body->opLoad(varSum);
+			s = body.Add(s, AkXk);
+			body->opStore(varSum, s);
+		});
 		
-auto eval = [&](unsigned int i) -> Instruction*
-{
-	Instruction* k = module.constant((float)i);
-	Instruction* Xk = bb.ext<ext::GLSL>()->opPow(x, k);
-
-	Instruction* Ai = bb->opCompositeExtract(uCoefs, i);
-
-	Instruction* AkXk = bb.Mul(Ai, Xk);
-	return AkXk;
-};
-
-Instruction* sum = eval(0);
-
-// unroll
-for (auto i = 1u; i < 8u; ++i)
-{
-	auto val = eval(i);
-	sum = bb.Add(sum, val);
-}
-
-bb.returnValue(sum);
+		auto s = merge->opLoad(varSum);
+		merge.returnValue(s);
+	}
 ```
 
-We can import them using:
+We can import __exportA.spv__ and __exportB.spv__ into __import.spv__ and store the result in __linked.spv__ with these arguments:
 ```
 SpvGenTwoLinker.exe -l exportA.spv -l exportB.spv -c import.spv -o linked.spv -types -constants -reffuncs -refvars -extsets -verbose
 ```
@@ -263,11 +252,10 @@ SpvGenTwoLinker.exe -l exportA.spv -l exportB.spv -c import.spv -o linked.spv -t
 ; SPIR-V
 ; Version: 1.0
 ; Generator: Unknown(250); 0
-; Bound: 76
+; Bound: 64
 ; Schema: 0
-               OpCapability Linkage
                OpCapability Shader
-         %34 = OpExtInstImport "GLSL.std.450"
+          %1 = OpExtInstImport "GLSL.std.450"
                OpMemoryModel Logical Simple
                OpEntryPoint Fragment %main "main"
                OpExecutionMode %main OriginUpperLeft
@@ -275,92 +263,96 @@ SpvGenTwoLinker.exe -l exportA.spv -l exportB.spv -c import.spv -o linked.spv -t
                OpName %polynomial "polynomial"
                OpName %main "main"
                OpName %FunctionEntry "FunctionEntry"
+               OpName %u_Time "u_Time"
                OpName %addSq "addSq"
                OpName %FunctionEntry_0 "FunctionEntry"
                OpName %FunctionEntry_1 "FunctionEntry"
-               OpName %u_Time "u_Time"
-               OpName %FunctionEntry_2 "FunctionEntry"
                OpName %u_Coefficients "u_Coefficients"
+               OpName %FunctionEntry_2 "FunctionEntry"
+               OpName %x "x"
+               OpName %i "i"
+               OpName %s "s"
+               OpName %LoopEntry "LoopEntry"
+               OpName %LoopCondition "LoopCondition"
+               OpName %LoopBody "LoopBody"
+               OpName %LoopContinue "LoopContinue"
+               OpName %LoopMerge "LoopMerge"
       %float = OpTypeFloat 32
-          %2 = OpTypeFunction %float %float
+          %3 = OpTypeFunction %float %float
        %void = OpTypeVoid
-          %4 = OpTypeFunction %void
+          %5 = OpTypeFunction %void
    %float_16 = OpConstant %float 16
-         %16 = OpTypeFunction %float %float %float
+          %7 = OpTypeFunction %float %float %float
 %_ptr_Uniform_float = OpTypePointer Uniform %float
  %float_1000 = OpConstant %float 1000
+%_ptr_Function_float = OpTypePointer Function %float
+    %float_0 = OpConstant %float 0
        %uint = OpTypeInt 32 0
+%_ptr_Function_uint = OpTypePointer Function %uint
+     %uint_0 = OpConstant %uint 0
+       %bool = OpTypeBool
+         %16 = OpSpecConstant %uint 8
      %uint_8 = OpConstant %uint 8
 %_arr_float_uint_8 = OpTypeArray %float %uint_8
 %_ptr_Uniform__arr_float_uint_8 = OpTypePointer Uniform %_arr_float_uint_8
-    %float_0 = OpConstant %float 0
-    %float_1 = OpConstant %float 1
-    %float_2 = OpConstant %float 2
-    %float_3 = OpConstant %float 3
-    %float_4 = OpConstant %float 4
-    %float_5 = OpConstant %float 5
-    %float_6 = OpConstant %float 6
-    %float_7 = OpConstant %float 7
+        %int = OpTypeInt 32 1
+      %int_1 = OpConstant %int 1
      %u_Time = OpVariable %_ptr_Uniform_float Uniform
 %u_Coefficients = OpVariable %_ptr_Uniform__arr_float_uint_8 Uniform
-%addGlobalTime = OpFunction %float Const %2
-          %7 = OpFunctionParameter %float
+%addGlobalTime = OpFunction %float Const %3
+         %25 = OpFunctionParameter %float
 %FunctionEntry_1 = OpLabel
-         %25 = OpLoad %float %u_Time None
-         %26 = OpFDiv %float %25 %float_1000
-         %28 = OpFunctionCall %float %addSq %7 %26
-               OpReturnValue %28
+         %27 = OpLoad %float %u_Time None
+         %28 = OpFDiv %float %27 %float_1000
+         %29 = OpFunctionCall %float %addSq %25 %28
+               OpReturnValue %29
                OpFunctionEnd
- %polynomial = OpFunction %float Const %2
-          %9 = OpFunctionParameter %float
+ %polynomial = OpFunction %float Const %3
+          %x = OpFunctionParameter %float
 %FunctionEntry_2 = OpLabel
-         %33 = OpLoad %_arr_float_uint_8 %u_Coefficients None
-         %35 = OpExtInst %float %34 Pow %9 %float_0
-         %37 = OpCompositeExtract %float %33 0
-         %38 = OpFMul %float %37 %35
-         %39 = OpExtInst %float %34 Pow %9 %float_1
-         %41 = OpCompositeExtract %float %33 1
-         %42 = OpFMul %float %41 %39
-         %43 = OpFAdd %float %38 %42
-         %44 = OpExtInst %float %34 Pow %9 %float_2
-         %46 = OpCompositeExtract %float %33 2
-         %47 = OpFMul %float %46 %44
-         %48 = OpFAdd %float %43 %47
-         %49 = OpExtInst %float %34 Pow %9 %float_3
-         %51 = OpCompositeExtract %float %33 3
-         %52 = OpFMul %float %51 %49
-         %53 = OpFAdd %float %48 %52
-         %54 = OpExtInst %float %34 Pow %9 %float_4
-         %56 = OpCompositeExtract %float %33 4
-         %57 = OpFMul %float %56 %54
-         %58 = OpFAdd %float %53 %57
-         %59 = OpExtInst %float %34 Pow %9 %float_5
-         %61 = OpCompositeExtract %float %33 5
-         %62 = OpFMul %float %61 %59
-         %63 = OpFAdd %float %58 %62
-         %64 = OpExtInst %float %34 Pow %9 %float_6
-         %66 = OpCompositeExtract %float %33 6
-         %67 = OpFMul %float %66 %64
-         %68 = OpFAdd %float %63 %67
-         %69 = OpExtInst %float %34 Pow %9 %float_7
-         %71 = OpCompositeExtract %float %33 7
-         %72 = OpFMul %float %71 %69
-         %73 = OpFAdd %float %68 %72
-               OpReturnValue %73
+          %s = OpVariable %_ptr_Function_float Function %float_0
+          %i = OpVariable %_ptr_Function_uint Function %uint_0
+               OpBranch %LoopEntry
+  %LoopEntry = OpLabel
+               OpLoopMerge %LoopMerge %LoopContinue None
+               OpBranch %LoopCondition
+%LoopCondition = OpLabel
+         %37 = OpLoad %uint %i None
+         %38 = OpULessThan %bool %37 %16
+               OpBranchConditional %38 %LoopBody %LoopMerge
+   %LoopBody = OpLabel
+         %40 = OpLoad %uint %i None
+         %41 = OpConvertUToF %float %40
+         %42 = OpExtInst %float %1 Pow %x %41
+         %43 = OpAccessChain %_ptr_Uniform_float %u_Coefficients %40
+         %44 = OpLoad %float %43 None
+         %45 = OpFMul %float %44 %42
+         %46 = OpLoad %float %s None
+         %47 = OpFAdd %float %46 %45
+               OpStore %s %47 None
+               OpBranch %LoopContinue
+%LoopContinue = OpLabel
+         %49 = OpLoad %uint %i None
+         %50 = OpIAdd %uint %49 %int_1
+               OpStore %i %50 None
+               OpBranch %LoopEntry
+  %LoopMerge = OpLabel
+         %52 = OpLoad %float %s None
+               OpReturnValue %52
                OpFunctionEnd
-      %addSq = OpFunction %float Const %16
-         %14 = OpFunctionParameter %float
-         %15 = OpFunctionParameter %float
+      %addSq = OpFunction %float Const %7
+         %54 = OpFunctionParameter %float
+         %55 = OpFunctionParameter %float
 %FunctionEntry_0 = OpLabel
-         %19 = OpFMul %float %14 %14
-         %20 = OpFMul %float %15 %15
-         %21 = OpFAdd %float %19 %20
-               OpReturnValue %21
+         %57 = OpFMul %float %54 %54
+         %58 = OpFMul %float %55 %55
+         %59 = OpFAdd %float %57 %58
+               OpReturnValue %59
                OpFunctionEnd
-       %main = OpFunction %void None %4
+       %main = OpFunction %void None %5
 %FunctionEntry = OpLabel
-         %12 = OpFunctionCall %float %addGlobalTime %float_16
-         %13 = OpFunctionCall %float %polynomial %12
+         %62 = OpFunctionCall %float %addGlobalTime %float_16
+         %63 = OpFunctionCall %float %polynomial %62
                OpReturn
                OpFunctionEnd
 ```
@@ -401,3 +393,5 @@ Error: Call to unresolved OpFunction addSq
 %25             OpFMul float %24 %23 -> Error: [UNNAMED-SYMBOL] OpExtInst operand instruction not found!
 %23             OpExtInst float %1 Pow %20 0.000000
 ```
+
+Instead of explicitly stating which parts should be imported, we can also just use `-auto` or `-AllOptions` the import everything needed, but this may come at a performance cost in return.
