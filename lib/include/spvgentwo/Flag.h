@@ -45,7 +45,7 @@ namespace spvgentwo
 		template <class ... TEnum>
 		void set(Enum _first, TEnum ... _enums)
 		{
-			mask |= detail::bit_or(_first, _enums);
+			mask |= detail::bit_or(_first, _enums...);
 		}
 
 		constexpr operator bool() const { return mask != 0u; }
