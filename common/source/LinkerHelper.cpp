@@ -239,6 +239,19 @@ namespace
 					reported = true;
 				}
 			}
+			else if(*lib == spv::Op::OpVariable)
+			{
+				if(lib->getStorageClass() != spv::StorageClass::Function && (_options & LinkerOptionBits::ImportReferencedVariables))
+				{
+					cInstr = module->addGlobalVariableInstr();
+					if (transferInstruction(lib, cInstr, _cache, _options) == false) return false;
+				}
+				else
+				{
+					error("[%s] OpVariable operand instruction not found! use \'ImportMissingTypes\'", libSymbolName());
+					reported = true;
+				}	
+			}
 
 			if (cInstr != nullptr)
 			{
@@ -311,24 +324,6 @@ namespace
 		}
 
 		bool success = true;
-
-		// OpVariables
-		if (_options & LinkerOptionBits::ImportReferencedVariables)
-		{
-			// look for global variable operands
-			for (auto it = _lInstr->getFirstActualOperand(); it != nullptr; ++it)
-			{
-				if (const Instruction* op = it->getInstruction(); op != nullptr && *op == spv::Op::OpVariable && op->getStorageClass() != spv::StorageClass::Function)
-				{
-					if (_cache.find(op) == _cache.end())
-					{
-						Instruction* cVar = _consumer.addGlobalVariableInstr();
-						success &= importGlobalDependencies(_consumer, op, _cache, _options);
-						success &= transferInstruction(op, cVar, _cache, _options);
-					}
-				}
-			}
-		}
 
 		// TODO: move to post with OpNames
 		// decorates except linkage
