@@ -444,28 +444,31 @@ namespace
 			return false;
 		}
 
-		const Type* libType = _libSymbol->getType();
-		const Type* consumerType = _consumerSymbol->getType();
-
-		if (libType == nullptr || consumerType == nullptr) 
-			return false;
-
 		String lTypeName(pAllocator);
-		TypeHelper::getTypeName(*libType, lTypeName, _libSymbol);
 
-		if (*libType != *consumerType)
+		auto checkType = [&](const Type& lType, const Type& cType)
 		{
-			String cTypeName(pAllocator);
-			TypeHelper::getTypeName(*consumerType, cTypeName, _consumerSymbol);
+			TypeHelper::getTypeName(lType, lTypeName, _libSymbol);
+			info("Symbol type: \'%s\'", lTypeName.c_str());
 
-			error("Type mismatch for symbol %s: \n[export] %s\n[import] %s", _name.c_str(), lTypeName.c_str(), cTypeName.c_str());
-			return false;
-		}
+			if (lType != cType)
+			{
+				String cTypeName(pAllocator);
+				TypeHelper::getTypeName(cType, cTypeName, _consumerSymbol);
 
-		info("Symbol type: \'%s\'", lTypeName.c_str());
+				error("Type mismatch for symbol %s: \n[export] %s\n[import] %s", _name.c_str(), lTypeName.c_str(), cTypeName.c_str());
+				return false;
+			}
+			return true;
+		};
 
 		if (*_libSymbol == spv::Op::OpVariable)
 		{
+			const Type* libType = _libSymbol->getType();
+			const Type* consumerType = _consumerSymbol->getType();
+
+			if (checkType(*libType, *consumerType) == false) return false;
+
 			printInstruction(_options, _libSymbol, " -> ", _consumerSymbol);
 			_cache.emplaceUnique(_libSymbol, _consumerSymbol);
 		}
@@ -473,6 +476,8 @@ namespace
 		{
 			const Function& libFunc = *_libSymbol->getFunction();
 			Function& cosumerFunc = *_consumerSymbol->getFunction();
+
+			if (checkType(libFunc.getFunctionType(), cosumerFunc.getFunctionType()) == false) return false;
 
 			success &= transferFunction(libFunc, cosumerFunc, _cache, _options);
 		}
