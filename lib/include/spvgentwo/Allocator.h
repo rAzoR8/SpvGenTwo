@@ -3,6 +3,9 @@
 
 namespace spvgentwo
 {
+	// forward decl
+	class IAllocator;
+
 	class ScopedAllocation
 	{
 		friend class IAllocator;
