@@ -252,6 +252,25 @@ namespace
 					reported = true;
 				}	
 			}
+			else if (*lib == spv::Op::OpExtInstImport)
+			{
+				if (_options & LinkerOptionBits::ImportMissingExtensionSets)
+				{
+					for (const auto& [name, instr] : lib->getModule()->getExtInstrImports())
+					{
+						if (&instr == lib && module->getExtensionInstructionImport(name.c_str()) == nullptr)
+						{
+							cInstr = module->addExtensionInstructionImport(name.c_str());
+							break;
+						}
+					}
+				}
+				else
+				{
+					error("[%s] OpExtInstImport operand instruction not found! use \'ImportMissingExtensionSets\'", libSymbolName());
+					reported = true;
+				}
+			}
 
 			if (cInstr != nullptr)
 			{
@@ -313,47 +332,6 @@ namespace
 		return true;
 	}
 
-	inline bool importGlobalDependencies(spvgentwo::Module& _consumer, const spvgentwo::Instruction* _lInstr, InstrLookup& _cache, spvgentwo::LinkerHelper::LinkerOptions _options)
-	{
-		using namespace spvgentwo;
-		using namespace LinkerHelper;
-
-		if (_cache.find(_lInstr) != _cache.end())
-		{
-			return true; // already imported
-		}
-
-		bool success = true;
-
-		//OpExtInst
-		if ((_options & LinkerOptionBits::ImportMissingExtensionSets) && *_lInstr == spv::Op::OpExtInst)
-		{
-			if (auto it = _lInstr->getFirstActualOperand(); it != nullptr && it->getInstruction() != nullptr) 
-			{
-				Instruction* lSet = it->instruction;
-				if (*lSet == spv::Op::OpExtInstImport)
-				{
-					for (const auto& [name, instr] : _lInstr->getModule()->getExtInstrImports())
-					{
-						if(&instr == lSet && _consumer.getExtensionInstructionImport(name.c_str()) == nullptr)
-						{
-							Instruction* cSet = _consumer.addExtensionInstructionImport(name.c_str());
-							_cache.emplaceUnique(lSet, cSet);
-							if (_options & LinkerOptionBits::AssignResultIDs)
-							{
-								cSet->assignResultId(false);
-							}
-							printInstruction(_options, lSet, "->", cSet);
-							break;
-						}
-					}
-				}
-			}
-		}
-
-		return success;
-	}
-
 	inline spvgentwo::Instruction* assignId(spvgentwo::Instruction* instr, spvgentwo::LinkerHelper::LinkerOptions _options)
 	{
 		if (_options & spvgentwo::LinkerHelper::LinkerOptionBits::AssignResultIDs)
@@ -371,7 +349,6 @@ namespace
 
 		for (const spvgentwo::Instruction& lInstr : _lBB)
 		{
-			success &= importGlobalDependencies(*_cBB.getModule(), &lInstr, _cache, _options);
 			success &= transferInstruction(&lInstr, _cBB.addInstruction(), _cache, _options);
 		}
 
@@ -489,8 +466,6 @@ namespace
 
 		if (*_libSymbol == spv::Op::OpVariable)
 		{
-			success &= importGlobalDependencies(_consumer, _libSymbol, _cache, _options);
-
 			printInstruction(_options, _libSymbol, " -> ", _consumerSymbol);
 			_cache.emplaceUnique(_libSymbol, _consumerSymbol);
 		}
