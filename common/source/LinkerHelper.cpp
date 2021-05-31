@@ -223,7 +223,7 @@ namespace
 				}
 				else
 				{
-					error("[%s] OpConstant/OpSpecConstant operand instruction not found! use \'ImportMissingConstants\'", libSymbolName());
+					error("[%s] operand OpConstant/OpSpecConstant not found! use \'ImportMissingConstants\'", libSymbolName());
 					reported = true;
 				}
 			}
@@ -235,7 +235,7 @@ namespace
 				}
 				else
 				{
-					error("[%s] OpType operand instruction not found! use \'ImportMissingTypes\'", libSymbolName());
+					error("[%s] operand OpType not found! use \'ImportMissingTypes\'", libSymbolName());
 					reported = true;
 				}
 			}
@@ -248,7 +248,7 @@ namespace
 				}
 				else
 				{
-					error("[%s] OpVariable operand instruction not found! use \'ImportMissingTypes\'", libSymbolName());
+					error("[%s] operand OpVariable not found! use \'ImportMissingTypes\'", libSymbolName());
 					reported = true;
 				}	
 			}
@@ -267,7 +267,7 @@ namespace
 				}
 				else
 				{
-					error("[%s] OpExtInstImport operand instruction not found! use \'ImportMissingExtensionSets\'", libSymbolName());
+					error("[%s] operand OpExtInstImport not found! use \'ImportMissingExtensionSets\'", libSymbolName());
 					reported = true;
 				}
 			}
