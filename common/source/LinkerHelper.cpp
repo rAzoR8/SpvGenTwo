@@ -363,11 +363,12 @@ namespace
 		Module& consumer = *_cFunc.getModule();
 
 		// we dont need to call assignID for OpTypes because we iterate over all types and assign them later
+		// but we do it anyway for nicer instruction printing, avoiding INVALID-INSTRID
 
 		// create function signature
 		if (_cFunc.isFinalized() == false) // Function return type
 		{
-			Instruction* cRetType = consumer.addType(_lFunc.getReturnType());
+			Instruction* cRetType = assignId(consumer.addType(_lFunc.getReturnType()), _options);
 			_cache.emplaceUnique(_lFunc.getReturnTypeInstr(), cRetType);
 			_cFunc.setReturnType(_lFunc.getReturnType());
 		}
@@ -376,7 +377,7 @@ namespace
 		{
 			for (const Instruction& lParam : _lFunc.getParameters())
 			{
-				Instruction* cType = consumer.addType(*lParam.getType());
+				Instruction* cType = assignId(consumer.addType(*lParam.getType()), _options);
 				_cache.emplaceUnique(lParam.getResultTypeInstr(), cType);
 				_cFunc.addParameters(cType); // OpFunctionParameter
 			}
@@ -389,7 +390,8 @@ namespace
 
 		if(_cFunc.isFinalized() == false) // create OpFunction
 		{
-			_cFunc.finalize(_lFunc.getFunctionControl());		
+			_cFunc.finalize(_lFunc.getFunctionControl());
+			assignId(_cFunc.getFunctionTypeInstr(), _options);
 		}
 
 		_cache.emplaceUnique(_lFunc.getFunction(), assignId(_cFunc.getFunction(), _options)); // OpFunction
