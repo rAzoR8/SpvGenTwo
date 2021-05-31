@@ -198,8 +198,6 @@ namespace
 			return name != nullptr ? name : "UNNAMED-SYMBOL";
 		};
 
-		printInstruction(_options, _pLibInstr, " -> ");
-
 		auto error = [module](auto&& ... args) {module->logError(args...); };
 
 		// instruction parent must be be set before calling this function
@@ -210,10 +208,12 @@ namespace
 			Instruction* cInstr = nullptr;
 
 			bool reported = false;
+			bool cached = false;
 
 			if (Instruction** ppTarget = _cache[lib]; ppTarget != nullptr)
 			{
 				cInstr = *ppTarget;
+				cached = true;
 			}
 			else if (lib->isSpecOrConstant())
 			{
@@ -245,6 +245,7 @@ namespace
 				{
 					cInstr = module->addGlobalVariableInstr();
 					if (transferInstruction(lib, cInstr, _cache, _options) == false) return false;
+					cached = true;
 				}
 				else
 				{
@@ -274,11 +275,15 @@ namespace
 
 			if (cInstr != nullptr)
 			{
-				_cache.emplaceUnique(lib, cInstr);
-
-				if (_options & LinkerOptionBits::AssignResultIDs)
+				if (cached == false)
 				{
-					cInstr->assignResultId(false);
+					_cache.emplaceUnique(lib, cInstr);
+					if (_options & LinkerOptionBits::AssignResultIDs)
+					{
+						cInstr->assignResultId(false);
+					}
+
+					printInstruction(_options, lib, " -> ", cInstr);				
 				}
 
 				_pTarget->addOperand(cInstr);
@@ -289,8 +294,6 @@ namespace
 			{
 				error("[%s] operand %s not found!", libSymbolName(), instrName(lib));
 			}
-
-			printInstruction(_options, lib);
 
 			return false;
 		};
@@ -325,7 +328,7 @@ namespace
 			}
 		}
 
-		printInstruction(_options, _pTarget);
+		printInstruction(_options, _pLibInstr, " -> ", _pTarget);
 
 		_cache.emplaceUnique(_pLibInstr, _pTarget);
 
