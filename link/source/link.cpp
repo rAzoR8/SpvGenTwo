@@ -94,12 +94,15 @@ int patch(Module& _module, const HeapList<Target>& _targets, const char* _out)
 
 int link(HeapList<Module>& _libs, Module& _target, const LinkerHelper::LinkerOptions& _options, const char* _out)
 {
+	bool success = true;
 	for (const Module& lib : _libs)
 	{
-		if (LinkerHelper::import(lib, _target, _options) == false)
-		{
-			return -1;
-		}
+		success &= LinkerHelper::import(lib, _target, _options);
+	}
+
+	if (success == false)
+	{
+		return -1;
 	}
 
 	BinaryFileWriter writer(g_alloc, _out);

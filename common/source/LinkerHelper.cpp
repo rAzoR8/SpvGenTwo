@@ -248,7 +248,7 @@ namespace
 				}
 				else
 				{
-					error("[%s] operand OpVariable not found! use \'ImportMissingTypes\'", libSymbolName());
+					error("[%s] operand OpVariable not found! use \'ImportReferencedVariables\'", libSymbolName());
 					reported = true;
 				}	
 			}
