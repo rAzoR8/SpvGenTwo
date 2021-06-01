@@ -23,7 +23,7 @@ Currently, GLSL shader compilers do no support SPIR-V import/export attributes s
 
 * `-p shaderPath` path to .spv module that should be prepared for use as import or export module.
     * `-patchspv shaderPath` same as `-p`
-    * if _outputPath_ is undefined _shaderPath_ will be used. (Overwrites the original file)
+    * if `-o` _outputPath_ is undefined _shaderPath_ will be used. (Overwrites the original file)
 * `-e target name -vars` export a symbol (OpVariable or OpFunction) with _target_ ID or string name (if the symbol was decorated with OpName) from the _patchspv_ module by adding `OpDecorate` with LinkageType::Export and export _name_. `-vars` can be used on OpFunction exports to automatically export global variables referenced in the function. Those global variables will be exported with the name taken form OpName (i.e. they can't be exported without OpName).
     `-export target name -vars` same as `-e`. `-vars` is optional
 * `-i target name` import a _target_ symbol (by ID or OpName) with _name_ and LinkageType::Import decoration. `-vars` is only applicable for `-e`.
@@ -44,11 +44,23 @@ Currently, GLSL shader compilers do no support SPIR-V import/export attributes s
     -CopyOpLineInstructions or -lines
     -CopyOpModuleProcessedInstructions or -processed
     -AllOptions or -auto (all of the above)
+    -PrintInstructions or -verbose
 
-## Example
+# Link example
 Example code for generating the SPIR-V modules listed below can be found in the [Linkage Example](example/source/Linkage.cpp)
 
-### import.spv
+__import.spv__ requires external symbols to be runnable:
+* `float addGlobalTime(float x)` from __exportA.spv__
+* `float polynomial(float x)` from __exportB.spv__
+
+We can import __exportA.spv__ and __exportB.spv__ into __import.spv__ and store the result in __linked.spv__ with these arguments:
+```
+SpvGenTwoLinker.exe -l exportA.spv -l exportB.spv -c import.spv -o linked.spv -types -constants -reffuncs -refvars -extsets -verbose
+```
+
+<details>
+  <summary>import.spv</summary>
+
 ```cpp
 ; SPIR-V
 ; Version: 1.0
@@ -84,11 +96,11 @@ Example code for generating the SPIR-V modules listed below can be found in the 
                OpReturn
                OpFunctionEnd
 ```
-__import.spv__ requires external symbols to be runnable:
-* `float addGlobalTime(float x)` from __exportA.spv__
-* `float polynomial(float x)` from __exportB.spv__
+</details>
 
-### exportA.spv
+<details>
+  <summary>exportA.spv</summary>
+
 ```cpp
 ; SPIR-V
 ; Version: 1.0
@@ -140,8 +152,11 @@ __import.spv__ requires external symbols to be runnable:
                OpReturn
                OpFunctionEnd
 ```
+</details>
 
-### exportB.spv
+<details>
+  <summary>exportB.spv</summary>
+
 ```cpp
 ; SPIR-V
 ; Version: 1.0
@@ -193,61 +208,11 @@ __import.spv__ requires external symbols to be runnable:
                OpReturn
                OpFunctionEnd
 ```
+</details>
 
-Note that this is just pseudo SPIR-V code, it's valid but not meaningful. The generating code looks something like this:
+<details>
+  <summary>linked.spv (result)</summary>
 
-```cpp
-	// float polynomial(float x);
-	Function& funcPolynomial = module.addFunction<float, float>(u8"polynomial", spv::FunctionControlMask::Const);
-	LinkerHelper::addLinkageDecoration(funcPolynomial.getFunction(), spv::LinkageType::Export, "@polynomial");
-	{
-		BasicBlock& bb = *funcPolynomial; // get entry block to this function
-		Instruction* x = funcPolynomial.getParameter(0);
-		module.addName(x, "x");
-
-		Instruction* loopCount = module.constant(8u, "count");
-		Instruction* varI = funcPolynomial.variable(0u, "i");
-		Instruction* varSum = funcPolynomial.variable<float>(0.f, "s");
-		Instruction* fltPtr = module.type<float*>("float*", spv::StorageClass::Uniform);
-
-		Instruction* one = module.constant(1);
-
-		BasicBlock& merge = bb.Loop([&](BasicBlock& cond) -> Instruction*
-		{
-			auto i = cond->opLoad(varI);
-			return cond.Less(i, loopCount);
-		}, [&](BasicBlock& inc)
-		{
-			auto i = inc->opLoad(varI);
-			i = inc.Add(i, one);
-			inc->opStore(varI, i); // i++
-		}, [&](BasicBlock& body)
-		{
-			auto i = body->opLoad(varI);
-			auto k = body->opConvertUToF(i);
-
-			// x += x^k * coeff[i]
-			Instruction* Xk = body.ext<ext::GLSL>()->opPow(x, k);
-			Instruction* Ai = body->opAccessChain(fltPtr, uniformCoefficients, i);
-			Ai = body->opLoad(Ai);
-			Instruction* AkXk = body.Mul(Ai, Xk);
-
-			auto s = body->opLoad(varSum);
-			s = body.Add(s, AkXk);
-			body->opStore(varSum, s);
-		});
-		
-		auto s = merge->opLoad(varSum);
-		merge.returnValue(s);
-	}
-```
-
-We can import __exportA.spv__ and __exportB.spv__ into __import.spv__ and store the result in __linked.spv__ with these arguments:
-```
-SpvGenTwoLinker.exe -l exportA.spv -l exportB.spv -c import.spv -o linked.spv -types -constants -reffuncs -refvars -extsets -verbose
-```
-
-## linked.spv (result)
 ```cpp
 ; SPIR-V
 ; Version: 1.0
@@ -356,42 +321,85 @@ SpvGenTwoLinker.exe -l exportA.spv -l exportB.spv -c import.spv -o linked.spv -t
                OpReturn
                OpFunctionEnd
 ```
+</details>
+
+# Patch import/export example
+
+We can remove function bodies and add import/export decorations to modules, turning them into SPIR-V libraries and consumers with these arguments:
+
+## Export - create library
+
+```
+SpvGenTwoLinker.exe -p shader.spv -o libraryA.spv -e addGlobalTime @float_addGlobalTime_float -vars
+```
+
+## Import - create consumer
+
+```
+SpvGenTwoLinker.exe -p shader.spv -o consumerA.spv -i addGlobalTime -i u_Time
+```
+
+<details>
+  <summary>shader.spv</summary>
+
+```cpp
+
+```
+
+</details>
+
+<details>
+  <summary>libraryA.spv</summary>
+
+```cpp
+
+```
+
+</details>
+
+<details>
+  <summary>consumerA.spv</summary>
+
+```cpp
+
+```
+
+</details>
+
+# CLI
 
 `-types` and `-constants` will import newly introduced OpType and OpConstant instructions. Without we will run into these errors (pointer type missing):
 
 ```cpp
-%u_Time         OpVariable %2 Uniform -> Error: [u_Time] OpType operand instruction not found! use 'ImportMissingTypes'
-%2              OpTypePointer Uniform float
-...
-%21             OpFDiv float %20 1000.000000 -> Error: [UNNAMED-SYMBOL] OpConstant/OpSpecConstant operand instruction not found! use 'ImportMissingConstants'
-%5              OpConstant float 1000.000000
+Error: [%9 = OpVariable] operand 'UNNAMED' OpTypePointer not found! Use 'ImportMissingTypes'.
+Error: [%21 = OpFDiv] operand 'UNNAMED' OpConstant not found! Use 'ImportMissingConstants'.
 ```
 
-`-reffuncs` and `-refvars` will import implicitly referenced functions and variables used in `float addGlobalTime(float x)` and `float polynomial(float x)`. Without those we will run in the following errors:
+`-refvars` and `-reffuncs` will import implicitly referenced functions and variables used in `float addGlobalTime(float x)` and `float polynomial(float x)`. Without those we will run in the following errors:
 
 ```cpp
-Error: Call to unresolved OpFunction addSq
-%22             OpFunctionCall float %addSq %18 %21 -> Error: [UNNAMED-SYMBOL] OpFunction operand instruction not found!
-%addSq          OpFunction float Const %3
-                OpReturnValue %22 -> Error: [UNNAMED-SYMBOL] OpFunctionCall operand instruction not found!
-%22             OpFunctionCall float %addSq %18 %21
-
-%20             OpLoad float %u_Time None -> Error: [UNNAMED-SYMBOL] OpVariable operand instruction not found!
-%u_Time         OpVariable %2 Uniform
-%21             OpFDiv float %20 1000.000000 -> Error: [UNNAMED-SYMBOL] OpLoad operand instruction not found!
-%20             OpLoad float %u_Time None
-%22             OpFunctionCall float %addSq %18 %21 -> Error: [UNNAMED-SYMBOL] OpFDiv operand instruction not found!
-%21             OpFDiv float %20 1000.000000
+Error: [%20 = OpLoad] operand 'u_Time' OpVariable not found! Use 'ImportReferencedVariables'.
+Error: [%22 = OpFunctionCall] operand 'addSq' OpFunction not found! Use 'ImportReferencedFunctions'.
 ```
 
 `-extsets` will import OpExtInstImport instructions referenced by OpExtInst in any of the newly imported functions. Without this option we can not use functions with extension set instructions:
 
 ```cpp
-%23             OpExtInst float %1 Pow %20 0.000000 -> Error: [UNNAMED-SYMBOL] OpExtInstImport operand instruction not found!
-%1              OpExtInstImport "GLSL.std.450"
-%24             OpCompositeExtract float %22 0 -> %35           OpCompositeExtract float %33 0
-%25             OpFMul float %24 %23 -> Error: [UNNAMED-SYMBOL] OpExtInst operand instruction not found!
-%23             OpExtInst float %1 Pow %20 0.000000
+Error: [%33 = OpExtInst] operand 'UNNAMED' OpExtInstImport not found! Use 'ImportMissingExtensionSets'.
+```
+
+`-verbose` or `-PrintInstructions` enables verbose printing of instructions transferred from the library to the consuming module.
+
+```cpp
+%addSq          OpFunction float Const %3 -> %15                OpFunction float Const %14
+%11             OpFunctionParameter float -> %16                OpFunctionParameter float
+%12             OpFunctionParameter float -> %17                OpFunctionParameter float
+%FunctionEntry          OpLabel -> %18          OpLabel
+%14             OpFMul float %11 %11 -> %19             OpFMul float %16 %16
+%15             OpFMul float %12 %12 -> %20             OpFMul float %17 %17
+%16             OpFAdd float %14 %15 -> %21             OpFAdd float %19 %20
+                OpReturnValue %16 ->            OpReturnValue %21
+                OpFunctionEnd ->                OpFunctionEnd
 ```
 
 Instead of explicitly stating which parts should be imported, we can also just use `-auto` or `-AllOptions` the import everything needed, but this may come at a performance cost in return.
