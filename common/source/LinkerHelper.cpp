@@ -163,6 +163,39 @@ namespace
 		}
 	}
 
+	inline spvgentwo::Instruction* assignId(spvgentwo::Instruction* instr, spvgentwo::LinkerHelper::LinkerOptions _options)
+	{
+		if (_options & spvgentwo::LinkerHelper::LinkerOptionBits::AssignResultIDs)
+		{
+			instr->assignResultId(false);
+		}
+		return instr;
+	};
+
+	template<class Func>
+	inline spvgentwo::Instruction* addTypeOrConstants(Func _func, spvgentwo::Module& _module, spvgentwo::LinkerHelper::LinkerOptions _options)
+	{
+		using namespace spvgentwo;
+		const auto& tac = _module.getTypesAndConstants();
+		auto prev = tac.last();
+		Instruction* instr = _func();
+
+		for (auto end = tac.end(), it = prev; it != end; ++it)
+		{
+			if (_options & LinkerHelper::LinkerOptionBits::AssignResultIDs)
+			{
+				it->assignResultId(false);
+			}
+
+			if (it != prev && it.next() != end)
+			{
+				printInstruction(_options, it.operator->(), " -> [IMPLICIT]\n");
+			}
+		}
+
+		return instr;
+	}
+
 	inline bool transferInstruction(const spvgentwo::Instruction* _pLibInstr, spvgentwo::Instruction* _pTarget, InstrLookup& _cache, spvgentwo::LinkerHelper::LinkerOptions _options)
 	{
 		using namespace spvgentwo;
@@ -176,26 +209,23 @@ namespace
 		Module* module = _pTarget->getModule();
 		if (module == nullptr) { return false; }
 
-		auto instrName = [&_options](const Instruction* instr) -> const char*
+		auto getInstrName = [&_options](const Instruction* instr, const char* alt = nullptr) -> const char*
 		{
-			if (_options.grammar == nullptr) return "";
-
-			if (auto* info = _options.grammar->getInfo(static_cast<unsigned int>(instr->getOperation())); info != nullptr)
+			if (_options.grammar != nullptr)
 			{
-				return info->name;
+				if (auto* info = _options.grammar->getInfo(static_cast<unsigned int>(instr->getOperation())); info != nullptr)
+				{
+					return info->name;
+				}
 			}
 
-			return "";
+			return alt;
 		};
 
-		auto libSymbolName = [_pLibInstr, &instrName]() -> const char*
+		auto getSymbolName = [](const Instruction* instr) -> const char*
 		{
-			const char* name = _pLibInstr->getName();
-			if (name == nullptr)
-			{
-				name = instrName(_pLibInstr);
-			}
-			return name != nullptr ? name : "UNNAMED-SYMBOL";
+			const char* name = instr->getName();
+			return name != nullptr ? name : "UNNAMED";
 		};
 
 		auto error = [module](auto&& ... args) {module->logError(args...); };
@@ -205,6 +235,11 @@ namespace
 
 		auto lookupOperand = [&](const Instruction* lib) -> bool
 		{
+			auto operandError = [&](const char* operandInstrName = "", const char* hint = "")
+			{
+				error("[%%%u = %s] operand '%s' %s not found! %s", _pLibInstr->getResultId(), getInstrName(_pLibInstr, ""), getSymbolName(lib), getInstrName(lib, operandInstrName), hint);
+			};
+
 			Instruction* cInstr = nullptr;
 
 			bool reported = false;
@@ -219,11 +254,11 @@ namespace
 			{
 				if (const Constant* c = lib->getConstant(); c != nullptr && (_options & LinkerOptionBits::ImportMissingConstants))
 				{
-					cInstr = module->addConstant(*c);
+					cInstr = addTypeOrConstants([&]() { return module->addConstant(*c); }, *module, _options);
 				}
 				else
 				{
-					error("[%s] operand OpConstant/OpSpecConstant not found! use \'ImportMissingConstants\'", libSymbolName());
+					operandError("Op(Spec)Constant", "Use \'ImportMissingConstants\'.");
 					reported = true;
 				}
 			}
@@ -231,11 +266,11 @@ namespace
 			{
 				if (const Type* t = lib->getType(); t != nullptr && (_options & LinkerOptionBits::ImportMissingTypes))
 				{
-					cInstr = module->addType(*t);
+					cInstr = addTypeOrConstants([&]() { return module->addType(*t); }, *module, _options);
 				}
 				else
 				{
-					error("[%s] operand OpType not found! use \'ImportMissingTypes\'", libSymbolName());
+					operandError("OpType", "Use \'ImportMissingTypes\'.");
 					reported = true;
 				}
 			}
@@ -249,9 +284,14 @@ namespace
 				}
 				else
 				{
-					error("[%s] operand OpVariable not found! use \'ImportReferencedVariables\'", libSymbolName());
+					operandError("OpVariable", "Use \'ImportReferencedVariables\'.");
 					reported = true;
 				}	
+			}
+			else if (*lib == spv::Op::OpFunction)
+			{
+				operandError("OpFunction", "Use \'ImportReferencedFunctions\'.");
+				reported = true;
 			}
 			else if (*lib == spv::Op::OpExtInstImport)
 			{
@@ -268,7 +308,7 @@ namespace
 				}
 				else
 				{
-					error("[%s] operand OpExtInstImport not found! use \'ImportMissingExtensionSets\'", libSymbolName());
+					operandError("OpExtInstImport", "Use \'ImportMissingExtensionSets\'.");
 					reported = true;
 				}
 			}
@@ -292,7 +332,7 @@ namespace
 
 			if (reported == false)
 			{
-				error("[%s] operand %s not found!", libSymbolName(), instrName(lib));
+				operandError();
 			}
 
 			return false;
@@ -323,7 +363,7 @@ namespace
 			}
 			else
 			{
-				error("[%s] Instruction has unresolved ID operand, module needs to be resolved by resolveIDs() before importing a using it as import library.", libSymbolName());
+				error("[%s] %s has unresolved ID operand, module needs to be resolved by resolveIDs() before importing a using it as import library.", getInstrName(_pLibInstr, ""), getSymbolName(_pLibInstr));
 				return false;
 			}
 		}
@@ -334,15 +374,6 @@ namespace
 
 		return true;
 	}
-
-	inline spvgentwo::Instruction* assignId(spvgentwo::Instruction* instr, spvgentwo::LinkerHelper::LinkerOptions _options)
-	{
-		if (_options & spvgentwo::LinkerHelper::LinkerOptionBits::AssignResultIDs)
-		{
-			instr->assignResultId(false);
-		}
-		return instr;
-	};
 
 	inline bool transferBasicBlock(const spvgentwo::BasicBlock& _lBB, spvgentwo::BasicBlock& _cBB, InstrLookup& _cache, spvgentwo::LinkerHelper::LinkerOptions _options)
 	{
@@ -365,14 +396,9 @@ namespace
 		bool success = true;
 		Module& consumer = *_cFunc.getModule();
 
-		// we dont need to call assignID for OpTypes because we iterate over all types and assign them later
-		// but we do it anyway for nicer instruction printing, avoiding INVALID-INSTRID
-
 		// create function signature
 		if (_cFunc.isFinalized() == false) // Function return type
 		{
-			Instruction* cRetType = assignId(consumer.addType(_lFunc.getReturnType()), _options);
-			_cache.emplaceUnique(_lFunc.getReturnTypeInstr(), cRetType);
 			_cFunc.setReturnType(_lFunc.getReturnType());
 		}
 
@@ -380,21 +406,20 @@ namespace
 		{
 			for (const Instruction& lParam : _lFunc.getParameters())
 			{
-				Instruction* cType = assignId(consumer.addType(*lParam.getType()), _options);
-				_cache.emplaceUnique(lParam.getResultTypeInstr(), cType);
+				Instruction* cType = addTypeOrConstants([&]() { return consumer.addType(*lParam.getType()); }, consumer, _options);
 				_cFunc.addParameters(cType); // OpFunctionParameter
 			}
 		}
 		else if(_cFunc.getParameters().size() != _lFunc.getParameters().size())
 		{
-			consumer.logError("Number of function parameters does not match for");
+			consumer.logError("Number of function parameters does not match");
 			return false;
 		}
 
 		if(_cFunc.isFinalized() == false) // create OpFunction
 		{
 			_cFunc.finalize(_lFunc.getFunctionControl());
-			assignId(_cFunc.getFunctionTypeInstr(), _options);
+			addTypeOrConstants([&]() { return consumer.addType(_cFunc.getFunctionType()); }, consumer, _options);
 		}
 
 		_cache.emplaceUnique(_lFunc.getFunction(), assignId(_cFunc.getFunction(), _options)); // OpFunction
@@ -666,15 +691,6 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		for (const auto& [name, instr] : _lib.getExtensions())
 		{
 			_consumer.addExtension(name.c_str());
-		}
-	}
-
-	// OpTypeArray might have implictly added a integer OpConstant & OpType
-	if (_options & LinkerOptionBits::AssignResultIDs)
-	{
-		for (Instruction& ct : _consumer.getTypesAndConstants())
-		{
-			ct.assignResultId(false);
 		}
 	}
 
