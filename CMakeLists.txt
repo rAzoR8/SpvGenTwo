@@ -96,7 +96,7 @@ endif()
 #reflection project
 if(${SPVGENTWO_BUILD_LINKER})
 	add_sources("link/source/*.cpp" "linker_sources")
-	add_sources("link/include/refl/*.h" "linker_sources")
+	add_sources("link/include/link/*.h" "linker_sources")
 	add_include_folder("link/include" "linker_includes")
 
 	add_executable(SpvGenTwoLinker "${linker_sources}")
