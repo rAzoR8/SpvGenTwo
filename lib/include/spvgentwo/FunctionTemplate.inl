@@ -3,9 +3,15 @@
 namespace spvgentwo
 {
 	template<class ...TypeInstr>
-	inline Function::Function(Module* _pModule, const char* _pName, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ..._paramTypeInstructions) :
-		Function(_pModule)
+	inline Function::Function(Module* _pModule, const char* _pName, const Flag<spv::FunctionControlMask> _control, Instruction* _pReturnType, TypeInstr* ..._paramTypeInstructions)
+		: List(_pModule->getAllocator()),
+		m_pModule(_pModule),
+		m_Function(this, spv::Op::OpNop), // not finalized
+		m_FunctionEnd(this, spv::Op::OpFunctionEnd),
+		m_FunctionType(_pModule->getAllocator(), spv::Op::OpTypeFunction),
+		m_Parameters(_pModule->getAllocator())
 	{
+		m_FunctionType.VoidM(); // return type defaults to void
 		// function signature type
 		setReturnType(_pReturnType);
 
