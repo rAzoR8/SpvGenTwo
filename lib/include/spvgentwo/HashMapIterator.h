@@ -8,24 +8,25 @@ namespace spvgentwo
 	template <class Key, class Value>
 	struct NodeT
 	{
-		constexpr NodeT() = default;
-
 		template <class K, class V>
 		friend class HashMap;
 
-		template <class KeyT, class ...Args>
-		constexpr NodeT(KeyT&& _key, Args&& ... _args) :
-			kv{ stdrep::forward<KeyT>(_key), stdrep::forward<Args>(_args)... },
-			hash{ 0u }{}
+		template <class ...Args>
+		constexpr NodeT( Args&& ... _args) : kv( stdrep::forward<Args>(_args)... ) {}
 
 		struct KV
 		{
+			template <class KeyT, class ...Args>
+			constexpr KV(KeyT&& _key, Args&& ... _args) :
+				key{ stdrep::forward<KeyT>(_key) },
+				value{ stdrep::forward<Args>(_args)... } {}
+			
 			Key key{};
 			Value value{};
 		} kv;
 
 	private:
-		Hash64 hash{};
+		Hash64 hash{0u};
 	};
 
 	template <class Key, class Value>

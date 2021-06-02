@@ -310,7 +310,7 @@ void spvgentwo::Module::addCapability(spv::Capability _capability, bool _addDepe
 		}
 	}
 
-	m_Capabilities.emplaceUnique(_capability, Instruction(this, spv::Op::OpCapability, _capability));
+	m_Capabilities.emplaceUnique(_capability, this, spv::Op::OpCapability, _capability);
 }
 
 bool spvgentwo::Module::checkCapability(spv::Capability _capability) const
