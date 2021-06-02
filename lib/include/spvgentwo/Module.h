@@ -24,8 +24,8 @@ namespace spvgentwo
 
 		Module& operator=(Module&& _other) noexcept;
 
-		// 0xFabian's SPIR-V generator
-		static constexpr unsigned int GeneratorId = makeGeneratorId(0xfa, 0);
+		// SpvGenTwo SPIR-V IR Tools" - https://github.com/KhronosGroup/SPIRV-Headers/pull/210
+		static constexpr unsigned int GeneratorId = makeGeneratorId(30, 0);
 
 		// reset module to its initial / empty state - clear all functions and instructions etc (invalidate all pointers)
 		void reset();
@@ -36,6 +36,9 @@ namespace spvgentwo
 
 		unsigned int getMajorVersion() const { return spvgentwo::getMajorVersion(m_spvVersion); }
 		unsigned int getMinorVersion() const { return spvgentwo::getMinorVersion(m_spvVersion); }
+
+		unsigned int getGeneratorVersion() const { return spvgentwo::getGeneratorVersion(m_spvGenerator); }
+		unsigned int getGeneratorId() const { return spvgentwo::getGeneratorId(m_spvGenerator); }
 
 		unsigned int getSpvGenerator() const { return m_spvGenerator; }
 		void setSpvGenerator(unsigned int _generator) { m_spvGenerator = _generator; }

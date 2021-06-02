@@ -5,6 +5,9 @@
 namespace spvgentwo
 {
 	constexpr unsigned int makeGeneratorId(unsigned short _gen, unsigned short _ver) { return _gen << 16 | _ver; }
+	constexpr unsigned int getGeneratorId(unsigned int _gen) { return (_gen >> 16) & 0xFFFF; }
+	constexpr unsigned int getGeneratorVersion(unsigned int _gen) { return _gen & 0xFFFF; }
+
 	constexpr unsigned int makeVersion(unsigned char _major, unsigned char _minor) { return _major << 16 | (_minor << 8); }
 	constexpr unsigned char getMajorVersion(unsigned int _version) { return static_cast<unsigned char>( (_version & 0x00FF0000) >> 16 ); }
 	constexpr unsigned char getMinorVersion(unsigned int _version) { return static_cast<unsigned char>( (_version & 0x0000FF00) >> 8 ); }

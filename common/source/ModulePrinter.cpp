@@ -366,7 +366,7 @@ bool spvgentwo::ModulePrinter::printModule(const Module& _module, const Grammar&
 	if (_options & PrintOptionsBits::Preamble)
 	{
 		_printer << "# SPIR-V Version " << _module.getMajorVersion() << "." << _module.getMinorVersion() << "\n";
-		_printer << "# Generator " << _module.getSpvGenerator() << "\n";
+		_printer << "# Generator " << _module.getGeneratorId() << " | " << _module.getGeneratorVersion() << "\n";
 		_printer << "# Bound " << _module.getSpvBound() << "\n";
 		_printer << "# Schema " << _module.getSpvSchema() << "\n\n";
 	}
