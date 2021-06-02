@@ -50,7 +50,7 @@ namespace spvgentwo
 		// manual instruction add
 		Instruction* addInstruction();
 
-		Instruction* operator->() { return &emplace_back(this); }
+		Instruction* operator->() { return &emplace_back(this, spv::Op::OpNop); }
 
 		template <class ExtInstr>
 		ExtInstr* ext() { return reinterpret_cast<ExtInstr*>(addInstruction()); }

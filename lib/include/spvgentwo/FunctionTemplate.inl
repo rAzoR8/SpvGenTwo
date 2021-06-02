@@ -36,7 +36,7 @@ namespace spvgentwo
 			m_FunctionType.getSubTypes().emplace_back(*type);
 		}
 		
-		[[maybe_unused]] Instruction* param = m_Parameters.emplace_back(this).opFunctionParameter(_pParamType);
+		[[maybe_unused]] Instruction* param = m_Parameters.emplace_back(this, spv::Op::OpNop).opFunctionParameter(_pParamType);
 		
 		if constexpr (sizeof...(_paramTypeInstructions) > 0)
 		{

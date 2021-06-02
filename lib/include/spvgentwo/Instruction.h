@@ -48,11 +48,11 @@ namespace spvgentwo
 		constexpr Instruction() = default;
 
 		template <class ...Args>
-		Instruction(Module* _pModule, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
+		Instruction(Module* _pModule, const spv::Op _op, Args&& ... _args);
 		template <class ...Args>
-		Instruction(Function* _pFunction, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
+		Instruction(Function* _pFunction, const spv::Op _op, Args&& ... _args);
 		template <class ...Args>
-		Instruction(BasicBlock* _pBasicBlock, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
+		Instruction(BasicBlock* _pBasicBlock, const spv::Op _op, Args&& ... _args);
 
 		Instruction(Instruction&& _other) noexcept;
 

@@ -40,7 +40,7 @@ spvgentwo::Module::Module(IAllocator* _pAllocator, const spv::AddressingModel _a
 	m_GlobalVariables(_pAllocator),
 	m_Undefs(_pAllocator),
 	m_Lines(_pAllocator),
-	m_errorInstr(this)
+	m_errorInstr(this, spv::Op::OpNop)
 {
 	if (_pAllocator != nullptr)
 	{
@@ -284,8 +284,7 @@ spvgentwo::Constant spvgentwo::Module::newConstant()
 
 spvgentwo::Instruction* spvgentwo::Module::addGlobalVariableInstr(const char* _pName)
 {
-	Instruction* pVar = &m_GlobalVariables.emplace_back(this);
-	pVar->setOperation(spv::Op::OpVariable);
+	Instruction* pVar = &m_GlobalVariables.emplace_back(this, spv::Op::OpNop);
 
 	if (_pName != nullptr)
 	{
@@ -330,7 +329,7 @@ bool spvgentwo::Module::removeCapability(spv::Capability _capability)
 
 void spvgentwo::Module::addExtension(const char* _pExtName)
 {
-	Instruction& instr = m_Extensions.emplaceUnique(String(m_pAllocator, _pExtName), this).kv.value;
+	Instruction& instr = m_Extensions.emplaceUnique(String(m_pAllocator, _pExtName), this, spv::Op::OpNop).kv.value;
 	if (instr.empty()) 
 	{
 		instr.opExtension(_pExtName);	
@@ -339,7 +338,7 @@ void spvgentwo::Module::addExtension(const char* _pExtName)
 
 spvgentwo::Instruction* spvgentwo::Module::addExtensionInstructionImport(const char* _pExtName)
 {
-	Instruction& instr = m_ExtInstrImport.emplaceUnique(String(m_pAllocator, _pExtName), this).kv.value;
+	Instruction& instr = m_ExtInstrImport.emplaceUnique(String(m_pAllocator, _pExtName), this, spv::Op::OpNop).kv.value;
 	if (instr.empty())
 	{
 		instr.opExtInstImport(_pExtName);
@@ -355,12 +354,12 @@ spvgentwo::Instruction* spvgentwo::Module::getExtensionInstructionImport(const c
 
 spvgentwo::Instruction* spvgentwo::Module::addSourceStringInstr()
 {
-	return &m_SourceStrings.emplace_back(this);
+	return &m_SourceStrings.emplace_back(this, spv::Op::OpNop);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addNameInstr()
 {
-	return &m_Names.emplace_back(this);
+	return &m_Names.emplace_back(this, spv::Op::OpNop);
 }
 
 void spvgentwo::Module::addName(Instruction* _pTarget, const char* _pName)
@@ -405,12 +404,12 @@ spvgentwo::List<spvgentwo::Module::MemberNameCStr> spvgentwo::Module::getNames(c
 
 spvgentwo::Instruction* spvgentwo::Module::addModuleProccessedInstr()
 {
-	return &m_ModuleProccessed.emplace_back(this);
+	return &m_ModuleProccessed.emplace_back(this, spv::Op::OpNop);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addDecorationInstr()
 {
-	return &m_Decorations.emplace_back(this);
+	return &m_Decorations.emplace_back(this, spv::Op::OpNop);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, const char* _pName)
@@ -423,15 +422,15 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, c
 
 	Instruction* pType = addType(_const.getType());
 
-	auto entry = Entry<Instruction>::create(m_pAllocator, this);
+	auto entry = Entry<Instruction>::create(m_pAllocator, this, spv::Op::OpNop);
 
 	Instruction* pInstr = node.kv.value = entry->operator->();
 
 	m_InstrToConstant.emplaceUnique(pInstr, &node.kv.key);
 
 	const spv::Op constantOp = _const.getOperation();
-	pInstr->setOperation(constantOp);
 
+	pInstr->setOperation(constantOp);
 	pInstr->addOperand(pType);
 	pInstr->addOperand(InvalidId);
 
@@ -502,14 +501,13 @@ spvgentwo::Instruction* spvgentwo::Module::addType(const Type& _type, const char
 		return node.kv.value;
 	}
 
-	auto entry = Entry<Instruction>::create(m_pAllocator, this);
+	auto entry = Entry<Instruction>::create(m_pAllocator, this, spv::Op::OpNop);
 
 	Instruction* pInstr = node.kv.value = entry->operator->();
 
 	m_InstrToType.emplaceUnique(pInstr, &node.kv.key);
 
 	const spv::Op base = _type.getType();
-
 	pInstr->setOperation(base);
 
 	if (base != spv::Op::OpTypeForwardPointer)
@@ -636,7 +634,7 @@ const spvgentwo::Type* spvgentwo::Module::getTypeInfo(const Instruction* _pTypeI
 
 spvgentwo::Instruction* spvgentwo::Module::addTypeInstr(const Type* _pType)
 {
-	Instruction* instr = &m_TypesAndConstants.emplace_back(this);
+	Instruction* instr = &m_TypesAndConstants.emplace_back(this, spv::Op::OpNop);
 
 	if (_pType != nullptr)
 	{
@@ -649,7 +647,7 @@ spvgentwo::Instruction* spvgentwo::Module::addTypeInstr(const Type* _pType)
 
 spvgentwo::Instruction* spvgentwo::Module::addConstantInstr(const Constant* _pConstant)
 {
-	Instruction* instr = &m_TypesAndConstants.emplace_back(this);
+	Instruction* instr = &m_TypesAndConstants.emplace_back(this, spv::Op::OpNop);
 
 	if (_pConstant != nullptr)
 	{
@@ -1174,7 +1172,7 @@ bool spvgentwo::Module::read(IReader& _reader, const Grammar& _grammar)
 
 		if (spv::IsTypeOp(op) || isSpecOrConstantOp(op))
 		{
-			if (m_TypesAndConstants.emplace_back(this).readOperands(_reader, _grammar, op, operands) == false) return false;
+			if (m_TypesAndConstants.emplace_back(this, spv::Op::OpNop).readOperands(_reader, _grammar, op, operands) == false) return false;
 			continue;
 		}
 
@@ -1312,7 +1310,7 @@ bool spvgentwo::Module::read(IReader& _reader, const Grammar& _grammar)
 			if (addLineInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
 		case spv::Op::OpFunction:
 		{
-			Instruction opFunc(this);
+			Instruction opFunc(this, spv::Op::OpNop);
 			if (opFunc.readOperands(_reader, _grammar, op, operands) == false)
 			{
 				return false;
@@ -1358,12 +1356,12 @@ bool spvgentwo::Module::readAndInit(IReader& _reader, const Grammar& _grammar)
 
 spvgentwo::Instruction* spvgentwo::Module::addExtensionModeInstr()
 {
-	return &m_ExecutionModes.emplace_back(this);
+	return &m_ExecutionModes.emplace_back(this, spv::Op::OpNop);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, const char* _pName, Instruction* _pInitialzer)
 {
-	Instruction* pVar = m_GlobalVariables.emplace_back(this).opVariable(_pPtrType, _storageClass, _pInitialzer);
+	Instruction* pVar = m_GlobalVariables.emplace_back(this, spv::Op::OpNop).opVariable(_pPtrType, _storageClass, _pInitialzer);
 
 	if (_pName != nullptr)
 	{
@@ -1382,12 +1380,12 @@ spvgentwo::Instruction* spvgentwo::Module::variable(const Type& _ptrType, const 
 
 spvgentwo::Instruction* spvgentwo::Module::addUndefInstr()
 {
-	return &m_Undefs.emplace_back(this);
+	return &m_Undefs.emplace_back(this, spv::Op::OpNop);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::addLineInstr()
 {
-	return &m_Lines.emplace_back(this);
+	return &m_Lines.emplace_back(this, spv::Op::OpNop);
 }
 
 spvgentwo::Instruction* spvgentwo::Module::getInstructionById(const spv::Id _resultId)

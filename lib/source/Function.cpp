@@ -85,7 +85,7 @@ bool spvgentwo::Function::read(IReader& _reader, const Grammar& _grammar, Instru
 		switch (op)
 		{
 		case spv::Op::OpFunctionParameter:
-			if (m_Parameters.emplace_back(this).readOperands(_reader, _grammar, op, operands) == false) return false;
+			if (m_Parameters.emplace_back(this, spv::Op::OpNop).readOperands(_reader, _grammar, op, operands) == false) return false;
 			break;
 		case spv::Op::OpLabel:
 			if (addBasicBlock().read(_reader, _grammar) == false) return false;
@@ -187,7 +187,7 @@ spvgentwo::Instruction* spvgentwo::Function::variable(Instruction* _pPtrType, co
 	BasicBlock& funcEntry = **m_pBegin;
 
 	// insert var instruction after label
-	Instruction* pVar = funcEntry.emplace_front(&funcEntry).opVariable(_pPtrType, spv::StorageClass::Function, _pInitialzer);
+	Instruction* pVar = funcEntry.emplace_front(&funcEntry, spv::Op::OpNop).opVariable(_pPtrType, spv::StorageClass::Function, _pInitialzer);
 
 	if (_pName != nullptr)
 	{

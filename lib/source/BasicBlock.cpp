@@ -7,7 +7,7 @@
 
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, const char* _pName) : List(_pFunction->getAllocator()),
 	m_pFunction(_pFunction),
-	m_Label(this)
+	m_Label(this, spv::Op::OpNop)
 {
 	m_Label.opLabel();
 
@@ -20,7 +20,7 @@ spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, const char* _pName) : Li
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, BasicBlock&& _other) noexcept :
 	List(stdrep::move(_other)),
 	m_pFunction(_pFunction),
-	m_Label(this)
+	m_Label(this, spv::Op::OpNop)
 {
 	m_Label.opLabel();
 
@@ -85,7 +85,7 @@ const spvgentwo::Instruction* spvgentwo::BasicBlock::getTerminator() const
 
 spvgentwo::Instruction* spvgentwo::BasicBlock::addInstruction()
 {
-	return &emplace_back(this);
+	return &emplace_back(this, spv::Op::OpNop);
 }
 
 bool spvgentwo::BasicBlock::getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const
@@ -145,7 +145,7 @@ bool spvgentwo::BasicBlock::read(IReader& _reader, const Grammar& _grammar)
 		const spv::Op op = getOperation(word);
 		const unsigned int operands = getOperandCount(word) - 1u;
 
-		if (emplace_back(this).readOperands(_reader, _grammar, op, operands) == false)
+		if (emplace_back(this, spv::Op::OpNop).readOperands(_reader, _grammar, op, operands) == false)
 		{
 			break;
 		}

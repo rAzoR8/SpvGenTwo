@@ -9,7 +9,7 @@ spvgentwo::EntryPoint::EntryPoint()
 
 spvgentwo::EntryPoint::EntryPoint(Module* _pModule) :
 	Function(_pModule),
-	m_EntryPoint(this),
+	m_EntryPoint(this, spv::Op::OpNop),
 	m_nameStorage(_pModule->getAllocator())
 {
 	m_isEntryPoint = true;
