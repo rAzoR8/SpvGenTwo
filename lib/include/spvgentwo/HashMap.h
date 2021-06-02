@@ -36,19 +36,13 @@ namespace spvgentwo
 		HashMap& operator=(HashMap&& _other) noexcept;
 
 		template <class ... Args>
-		Node& emplace(Args&& ... _args);
+		Node& emplace(const Key& _key, Args&& ... _args);
 
 		template <class ... Args>
 		void emplaceArgs(Key&& _key, Value&& _value, Args&& ... _keyvals);
 
-		// returns existing node if duplicate
-		template <class ... Args>
-		Node& emplaceUnique(Args&& ... _args);
-
 		template <class ... Args>
 		Node& emplaceUnique(const Key& _key, Args&& ... _args);
-
-		Node& newNodeUnique(const Hash64& _hash);
 
 		// retuns nullptr if not resident
 		Value* get(const Hash64 _hash) const;
@@ -345,19 +339,19 @@ namespace spvgentwo
 
 	template<class Key, class Value>
 	template<class ...Args>
-	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplace(Args&& ..._args)
+	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplace(const Key& _key, Args&& ..._args)
 	{
-		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, stdrep::forward<Args>(_args)...);
+		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, _key, stdrep::forward<Args>(_args)...);
 
 		Node& n = pNode->inner();
 
 		if constexpr (stdrep::is_same_v<Key, Hash64>)
 		{
-			n.hash = n.kv.key;
+			n.hash = _key;
 		}
 		else
 		{
-			n.hash = hash(n.kv.key);
+			n.hash = hash(_key);
 		}
 
 		const auto index = n.hash % m_Buckets;
@@ -380,41 +374,6 @@ namespace spvgentwo
 		{
 			emplaceArgs(stdrep::forward<Args>(_keyvals)...);
 		}
-	}
-
-	template<class Key, class Value>
-	template<class ...Args> // (non trivial) key is constructed from args and then used to compute the hash
-	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplaceUnique(Args&& ..._args)
-	{
-		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, stdrep::forward<Args>(_args)...);
-
-		Node& n = pNode->inner();
-
-		if constexpr (stdrep::is_same_v<Key, Hash64>)
-		{
-			n.hash = n.kv.key;
-		}
-		else
-		{
-			n.hash = hash(n.kv.key);
-		}
-
-		const auto index = n.hash % m_Buckets;
-
-		for (Node& existing : m_pBuckets[index])
-		{
-			if (existing.hash == n.hash)
-			{
-				m_pAllocator->destruct(pNode);
-				return existing;
-			}
-		}
-
-		m_pBuckets[index].append_entry(pNode);
-
-		++m_Elements;
-
-		return n;
 	}
 
 	template<class Key, class Value>
@@ -444,27 +403,6 @@ namespace spvgentwo
 
 		Node& n = m_pBuckets[index].emplace_back(_key, stdrep::forward<Args>(_args)...);
 		n.hash = h;
-
-		++m_Elements;
-
-		return n;
-	}
-
-	template<class Key, class Value>
-	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::newNodeUnique(const Hash64& _hash)
-	{
-		const auto index = _hash % m_Buckets;
-
-		for (Node& existing : m_pBuckets[index])
-		{
-			if (existing.hash == _hash)
-			{
-				return existing;
-			}
-		}
-
-		Node& n = m_pBuckets[index].emplace_back();
-		n.hash = _hash;
 
 		++m_Elements;
 
