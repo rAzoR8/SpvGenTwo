@@ -368,7 +368,7 @@ Info: Option: AllOptions
 Info: Found export symbol u_Time [14627584942389379996]
 Info: Found export symbol float_addGlobalTime_float [16975055762231437530]
 Info: Resolving import symbol u_Time [14627584942389379996]
-Info: Symbol type: 'u_Time*'
+Info: Symbol type: 'float u_Time*'
 Info: Resolving import symbol float_addGlobalTime_float [16975055762231437530]
 Info: Symbol type: 'float addGlobalTime(float)'
 Info: Removing Capability::Linkage from consumer module
