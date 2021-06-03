@@ -128,7 +128,7 @@ void addTarget(spv::LinkageType type, int& _i, int _argc, char* _argv[])
 {
 	Instruction* instr = nullptr;
 	const char* target = _argv[++_i];
-	if (auto id = strtoul(target, nullptr, 10); id != 0u && id != sgt_uint32_max)
+	if (auto id = static_cast<unsigned int>(strtoul(target, nullptr, 10)); id != 0u && id != sgt_uint32_max)
 	{
 		instr = g_patchModule.getInstructionById(spv::Id{ id });
 	}
