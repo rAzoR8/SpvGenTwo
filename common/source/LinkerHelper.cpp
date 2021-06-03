@@ -685,7 +685,10 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	{
 		for (const auto& [cap, instr] : _lib.getCapabilities())
 		{
-			_consumer.addCapability(cap);
+			if (cap != spv::Capability::Linkage)
+			{
+				_consumer.addCapability(cap);			
+			}
 		}
 
 		for (const auto& [name, instr] : _lib.getExtensions())
