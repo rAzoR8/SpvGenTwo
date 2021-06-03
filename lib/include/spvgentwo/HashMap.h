@@ -223,6 +223,7 @@ namespace spvgentwo
 		{
 			auto next = pos.next();
 			pos.m_pBucket->erase(pos.m_element);
+			--m_Elements;
 			return next;
 		}
 		return end();
