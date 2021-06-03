@@ -146,7 +146,7 @@ void addTarget(spv::LinkageType type, int& _i, int _argc, char* _argv[])
 	if (const char* name = _argv[++_i]; name != nullptr)
 	{
 		bool exportVars = false;
-		if (type == spv::LinkageType::Export && _i + 1 < _argc && (strcmp(_argv[_i + 1], "--vars") == 0))
+		if (type == spv::LinkageType::Export && _i + 1 < _argc && (strcmp(_argv[_i + 1], "-vars") == 0))
 		{
 			++_i;
 			exportVars = true;
@@ -286,7 +286,7 @@ int main(int argc, char* argv[])
 				addTarget(spv::LinkageType::Export, _i, _argc, _argv);
 				return true;
 			},
-			2 // symbol name and export name
+			2 // symbol name and export name and -vars (optional)
 		}
 	};
 
