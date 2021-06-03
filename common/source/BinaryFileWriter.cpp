@@ -1,7 +1,8 @@
 #include "common/BinaryFileWriter.h"
 #include <cstdio>
 
-spvgentwo::BinaryFileWriter::BinaryFileWriter(const char* _path)
+spvgentwo::BinaryFileWriter::BinaryFileWriter(IAllocator& _allocator, const char* _path, sgt_size_t _initialBufferSize) :
+	m_buffer(&_allocator, _initialBufferSize)
 {
 	open(_path);
 }
@@ -13,7 +14,8 @@ spvgentwo::BinaryFileWriter::~BinaryFileWriter()
 
 bool spvgentwo::BinaryFileWriter::put(unsigned int _word)
 {
-	return m_pFile != nullptr && fwrite(&_word, sizeof(unsigned int), 1u, static_cast<FILE*>(m_pFile)) == 1u;
+	m_buffer.emplace_back(_word);
+	return true;
 }
 
 bool spvgentwo::BinaryFileWriter::open(const char* _path)
@@ -40,8 +42,13 @@ void spvgentwo::BinaryFileWriter::close()
 {
 	if (m_pFile != nullptr)
 	{
-		fflush(static_cast<FILE*>(m_pFile));
+		if (m_buffer.empty() == false)
+		{
+			fwrite(m_buffer.data(), sizeof(sgt_uint32_t), m_buffer.size(), static_cast<FILE*>(m_pFile));
+		}
+
 		fclose(static_cast<FILE*>(m_pFile));
 		m_pFile = nullptr;
 	}
+	m_buffer.clear();
 }

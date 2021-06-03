@@ -17,22 +17,22 @@ namespace spvgentwo
 		Constant& operator=(const Constant& _other);
 		Constant& operator=(Constant&& _other) noexcept;
 
-		spv::Op getOperation() const { return m_Operation; }
+		constexpr spv::Op getOperation() const { return m_Operation; }
 		void setOperation(const spv::Op _op) { m_Operation = _op; }
-		const Type& getType() const { return m_Type; }
-		Type& getType() { return m_Type; }
+		constexpr const Type& getType() const { return m_Type; }
+		constexpr Type& getType() { return m_Type; }
 
 		template <class T>
 		Type& setType();
 
-		const Vector<unsigned int>& getData() const { return m_literalData; }
-		Vector<unsigned int>& getData() { return m_literalData; }
+		constexpr const Vector<unsigned int>& getData() const { return m_literalData; }
+		constexpr Vector<unsigned int>& getData() { return m_literalData; }
 
 		template <class T>
 		void addData(const T& _data);
 
-		const List<Constant>& getComponents() const { return m_Components; }
-		List<Constant>& getComponents() { return m_Components; }
+		constexpr const List<Constant>& getComponents() const { return m_Components; }
+		constexpr List<Constant>& getComponents() { return m_Components; }
 
 		template <class T>
 		Constant& make(const T& _value, const bool _spec = false);
@@ -162,7 +162,13 @@ namespace spvgentwo
 	template <>
 	struct Hasher<Constant>
 	{
-		Hash64 operator()(const Constant& _const, FNV1aHasher& _hasher) const
+		constexpr Hash64 operator()(const Constant& _const, Hash64 _seed) const
+		{
+			FNV1aHasher hasher(_seed);
+			return operator()(_const, hasher);
+		}
+
+		constexpr Hash64 operator()(const Constant& _const, FNV1aHasher& _hasher) const
 		{
 			_hasher << _const.getOperation();
 			Hasher<Type>()(_const.getType(), _hasher);
@@ -177,12 +183,6 @@ namespace spvgentwo
 			}
 
 			return _hasher;
-		}
-
-		Hash64 operator()(const Constant& _const) const
-		{
-			FNV1aHasher hasher;
-			return operator()(_const, hasher);
 		}
 	};
 } // !spvgentwo

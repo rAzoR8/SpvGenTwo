@@ -7,7 +7,7 @@
 
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, const char* _pName) : List(_pFunction->getAllocator()),
 	m_pFunction(_pFunction),
-	m_Label(this)
+	m_Label(this, spv::Op::OpNop)
 {
 	m_Label.opLabel();
 
@@ -20,7 +20,7 @@ spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, const char* _pName) : Li
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, BasicBlock&& _other) noexcept :
 	List(stdrep::move(_other)),
 	m_pFunction(_pFunction),
-	m_Label(this)
+	m_Label(this, spv::Op::OpNop)
 {
 	m_Label.opLabel();
 
@@ -83,6 +83,11 @@ const spvgentwo::Instruction* spvgentwo::BasicBlock::getTerminator() const
 	return nullptr;
 }
 
+spvgentwo::Instruction* spvgentwo::BasicBlock::addInstruction()
+{
+	return &emplace_back(this, spv::Op::OpNop);
+}
+
 bool spvgentwo::BasicBlock::getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const
 {
 	if (empty() == false) // there is more then just initial opLabel
@@ -95,44 +100,52 @@ bool spvgentwo::BasicBlock::getBranchTargets(List<BasicBlock*>& _outTargetBlocks
 
 spvgentwo::Instruction* spvgentwo::BasicBlock::returnValue(Instruction* _pValue)
 {
-	Instruction* pRet = addInstruction();
-
-	if (_pValue == nullptr)
+	const Type& retType = m_pFunction->getReturnType();
+	
+	if (_pValue == nullptr && retType.isVoid())
 	{
-		pRet->opReturn();
+		Instruction* ret = addInstruction();
+		ret->opReturn();
+		return ret;
 	}
 	else
 	{
-		// TODO: check return type with m_FunctionType
-		pRet->opReturnValue(_pValue);
+		if (const Type* t = _pValue->getType(); t != nullptr && *t == retType)
+		{
+			Instruction* ret = addInstruction();
+			ret->opReturnValue(_pValue);
+			return ret;
+		}
 	}
 
-	return pRet;
+	getModule()->logError("Value type does not match function return type");
+
+	return nullptr;
 }
 
-void spvgentwo::BasicBlock::write(IWriter* _pWriter)
+void spvgentwo::BasicBlock::write(IWriter& _writer) const
 {
-	m_Label.write(_pWriter);
+	m_Label.write(_writer);
 
 	for (Instruction& instr : *this)
 	{
-		instr.write(_pWriter);
+		instr.write(_writer);
 	}
 }
 
-bool spvgentwo::BasicBlock::read(IReader* _pReader, const Grammar& _grammar)
+bool spvgentwo::BasicBlock::read(IReader& _reader, const Grammar& _grammar)
 {
 	// function alread consumed the first word of OpLabel, OpLabel as one result Id operand
-	if (m_Label.readOperands(_pReader, _grammar, spv::Op::OpLabel, 1u) == false || m_Label.getOperation() != spv::Op::OpLabel) return false;
+	if (m_Label.readOperands(_reader, _grammar, spv::Op::OpLabel, 1u) == false || m_Label.getOperation() != spv::Op::OpLabel) return false;
 
 	unsigned int word{ 0 };
 
-	while (_pReader->get(word))
+	while (_reader.get(word))
 	{
 		const spv::Op op = getOperation(word);
 		const unsigned int operands = getOperandCount(word) - 1u;
 
-		if (emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false)
+		if (emplace_back(this, spv::Op::OpNop).readOperands(_reader, _grammar, op, operands) == false)
 		{
 			break;
 		}

@@ -12,7 +12,7 @@ using namespace ext;
 
 Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 {
-	Module module(_pAllocator, spv::Version, _pLogger);
+	Module module(_pAllocator, _pLogger);
 
 	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::VulkanMemoryModelKHR);
@@ -22,8 +22,8 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 	module.addCapability(spv::Capability::Int64);
 	module.addCapability(spv::Capability::DerivativeControl);
 
-	module.addExtension(u8"SPV_KHR_vulkan_memory_model");
-	Instruction* ext = module.getExtensionInstructionImport(u8"GLSL.std.450");
+	module.addExtension(spv::Extension::SPV_KHR_vulkan_memory_model);
+	Instruction* ext = module.addExtensionInstructionImport(u8"GLSL.std.450");
 	module.setMemoryModel(spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR);
 
 	Instruction* uniformVar = module.uniform<vector_t<float, 3>>(u8"u_Position");

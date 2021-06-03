@@ -67,7 +67,7 @@ public:
     Instruction* makeOp(const spv::Op _op, Args ... _args);
 
     // assign <id>s to unresolved operands and serialize to physical layout
-    void write(IWriter* _pWriter);
+    void write(IWriter& _writer);
 
     /// OPERATIONS:
     Instruction* opDot(Instruction* _pLeft, Instruction* _pRight);
@@ -121,10 +121,10 @@ public:
     Instruction* operator->() { return &emplace_back(this); } // add new instruction
 
     // serialize instructions of this block
-    void write(IWriter* _pWriter);
+    void write(IWriter& _writer_);
 
     // parse instructions of this block using _grammar
-    bool read(IReader* _pReader, const Grammar& _grammar);
+    bool read(IReader& _reader, const Grammar& _grammar);
 
     // Control flow helpers
     BasicBlock& If(Instruction* _pCondition, BasicBlock& _trueBlock, BasicBlock* _pMergeBlock, Flag<spv::SelectionControlMask> _mask);
@@ -149,17 +149,18 @@ Programming control-flow in SPIR-V can be tedious. The BasicBlock class implemen
 class Function : public List<BasicBlock>
 {
 private:
+    Type m_FunctionType; // OpTypeFunction
     Instruction m_Function; // OpFunction
 	Instruction m_FunctionEnd; // OpFunctionEnd
     List<Instruction> m_Parameters; // OpFunctionParameters
 public:
-    void write(IWriter* _pWriter); // serialize opFunction, BasicBLocks, opFunctionEnd
+    void write(IWriter& _writer_); // serialize opFunction, BasicBLocks, opFunctionEnd
 
-    // creates m_pFunctionType with OpTypeFunction and _pReturnType (opperands are added by addParameters), returns m_pFunctionType
-    Instruction* setReturnType(Instruction* _pReturnType);
+	// set the first subtype of OpTypeFunction (opperands are added by addParameters), returns true on success
+    bool setReturnType(Instruction* _pReturnType);
 
-    // sets m_pFunctionType to _pFunctionType (OpTypeFunction) and extracts return type argument and asigns it to m_pReturnType, returns m_pReturnType
-	Instruction* setFunctionType(Instruction* _pFunctionType);
+	// sets m_FunctionType (OpTypeFunction), return true on success
+	bool setFunctionType(Instruction* _pFunctionType);
 
     // adds opFunctionParameter(_pParamType) to m_parameters and _pParamType to m_pFunctionType, returns last opFunctionParameter generated
     template <class ... TypeInstr>
@@ -234,8 +235,14 @@ private:
     HashMap<Constant, Instruction*> m_ConstantBuilder;
 	List<Instruction> m_GlobalVariables; //opVariable with StorageClass != Function
 public:
-	// automatically assigns IDs and serializes module to IWriter
-	void write(IWriter* _pWriter, const bool _assingIDs = true);
+	// serializes module to IWriter
+	void write(IWriter& _writer);
+
+    // calls finalizeGlobalInterface() on EntryPoints
+    // automatically assigns IDs
+    // calls addRequiredCapabilities() if _pGrammar != nullptr
+    // serializes module to IWriter
+    bool finalizeAndWrite(IWriter& _writer, const Grammar* _pGrammar = nullptr);
    
     Type newType(); // creates new empty type using this modules allocator
     Constant newConstant();  // creates new empty constant using this modules allocator
@@ -267,10 +274,10 @@ The `Module` class exposes the following interface for parsing and serializing b
 BinaryFileReader reader(spv);
 Grammar gram(&alloc);
 
-Module module(&alloc, spv::Version, &logger);
+Module module(&alloc, &logger);
 
 // parse the binary instructions & operands
-module.read(&reader, gram);
+module.read(reader, gram);
 
 // turn <id> operands into instruction pointers (spv::Id result ID -> Instruction* ptr)
 module.resolveIDs();
@@ -284,13 +291,15 @@ module.reconstructNames();
 // compact IDs for serializing / printing
 module.assignIDs(); 
 
+// or call module.readAndInit(reader, gram) to do all of the above from read() to assignIDs() in one step :)
+
 // loop through all instructions in serialization order (as dictated by SPIR-Vs physical layout)
 module.iterateInstructions([](Instruction& instr){ ... print instruction });
 
 BinaryFileWriter writer("serialized.spv");
 
 // serialize Module to SPIR-Vs physical layout
-module.write(&writer);
+module.finalizeAndWrite(writer);
 ```
 
 Note that `Module::iterateInstructions(Functor f)` could also be used to generate a text representation like [WGSL](https://gpuweb.github.io/gpuweb/wgsl.html) with a bit of work.
@@ -375,11 +384,6 @@ const float* val = inst->getConstant()->getDataAs<float>();
 The resulting SPIR-V looks something like this:
 
 ```cpp
-; SPIR-V
-; Version: 1.5
-; Generator: Unknown(250); 0
-; Bound: 9
-; Schema: 0
                OpCapability Shader
                OpCapability GenericPointer
                OpCapability LiteralSampler

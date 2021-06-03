@@ -16,28 +16,41 @@ namespace spvgentwo
 	public:
 		struct MemberName { String name; unsigned int member = 0u; };
 
-		Module() = default;
-
-		Module(IAllocator* _pAllocator, const unsigned int _spvVersion = spv::Version,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
-		Module(IAllocator* _pAllocator, const unsigned int _spvVersion, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
+		Module(IAllocator* _pAllocator = nullptr, ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
+		Module(IAllocator* _pAllocator, const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel,  ILogger* _pLogger = nullptr, ITypeInferenceAndVailation* _pTypeInferenceAndVailation = nullptr);
 
 		Module(Module&& _other) noexcept;
 		~Module();
 
 		Module& operator=(Module&& _other) noexcept;
 
-		// 0xFabian's SPIR-V generator
-		static constexpr unsigned int GeneratorId = makeGeneratorId(0xfa, 0);
+		// SpvGenTwo SPIR-V IR Tools" - https://github.com/KhronosGroup/SPIRV-Headers/pull/210
+		static constexpr unsigned int GeneratorId = makeGeneratorId(30, 0);
 
 		// reset module to its initial / empty state - clear all functions and instructions etc (invalidate all pointers)
 		void reset();
 
 		unsigned int getSpvVersion() const { return m_spvVersion; }
+		void setSpvVersion(unsigned int _version) { m_spvVersion = _version; }
+		void setSpvVersion(unsigned char _major, unsigned char _minor) { m_spvBound = makeVersion(_major, _minor); }
+
 		unsigned int getMajorVersion() const { return spvgentwo::getMajorVersion(m_spvVersion); }
 		unsigned int getMinorVersion() const { return spvgentwo::getMinorVersion(m_spvVersion); }
+
+		unsigned int getGeneratorVersion() const { return spvgentwo::getGeneratorVersion(m_spvGenerator); }
+		unsigned int getGeneratorId() const { return spvgentwo::getGeneratorId(m_spvGenerator); }
+
 		unsigned int getSpvGenerator() const { return m_spvGenerator; }
+		void setSpvGenerator(unsigned int _generator) { m_spvGenerator = _generator; }
+
 		unsigned int getSpvBound() const { return m_spvBound; }
+		void setSpvBound(unsigned int _bound) { m_spvBound = _bound; }
+
 		unsigned int getSpvSchema() const { return m_spvSchema; }
+		void setSpvSchema(unsigned int _schema) { m_spvSchema = _schema; }
+
+		// get next free Id for use as ResultId operand
+		spv::Id getNextId() { return spv::Id{ m_spvBound++ }; }
 
 		IAllocator* getAllocator() const { return m_pAllocator; }
 
@@ -53,14 +66,14 @@ namespace spvgentwo
 		const List<EntryPoint>& getEntryPoints() const { return m_EntryPoints; }
 		List<EntryPoint>& getEntryPoints() { return m_EntryPoints; }
 
-		const List<Instruction>& getCapabilities() const { return m_Capabilities; }
-		List<Instruction>& getCapabilities() { return m_Capabilities; }
+		const HashMap<spv::Capability, Instruction>& getCapabilities() const { return m_Capabilities; }
+		HashMap<spv::Capability, Instruction>& getCapabilities() { return m_Capabilities; }
 
-		const List<Instruction>& getExtensions() const { return m_Extensions; }
-		List<Instruction>& getExtensions() { return m_Extensions; }
+		const HashMap<String, Instruction>& getExtensions() const { return m_Extensions; }
+		HashMap<String, Instruction>& getExtensions() { return m_Extensions; }
 
-		const HashMap<const char*, Instruction>& getExtInstrImports() const { return m_ExtInstrImport; }
-		HashMap<const char*, Instruction>& getExtInstrImports() { return m_ExtInstrImport; }
+		const HashMap<String, Instruction>& getExtInstrImports() const { return m_ExtInstrImport; }
+		HashMap<String, Instruction>& getExtInstrImports() { return m_ExtInstrImport; }
 
 		const Instruction& getMemoryModel() const { return m_MemoryModel; }
 		Instruction& getMemoryModel() { return m_MemoryModel; }
@@ -114,16 +127,35 @@ namespace spvgentwo
 		template <class ReturnType = void, class ... ParameterTypes>
 		EntryPoint& addEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
 
-		void addCapability(const spv::Capability _capability);
-		bool checkCapability(const spv::Capability _capability) const;
-		
-		// adds capability if not present
-		void checkAddCapability(const spv::Capability _capability);
-		
-		void addExtension(const char* _pExtName);
-		Instruction* getExtensionInstructionImport(const char* _pExtName);
+		// add OpCapability if not present in the module, _addDependentCapablity adds base capabilities (not required) for _capability: Geometry->Shader etc.
+		void addCapability(spv::Capability _capability, bool _addDependentCapablity = false);
 
+		// check if OpCapability is present in the module
+		bool checkCapability(spv::Capability _capability) const;
+
+		// returns true if OpCapability matching _capability was in the module
+		bool removeCapability(spv::Capability _capability);
+		
+		// add OpExtension with name _pExtName
+		void addExtension(const char* _pExtName);
+
+		// add OpExtension
+		void addExtension(spv::Extension _ext) { addExtension(spv::ExtensionNames[static_cast<unsigned int>(_ext)]); }
+
+		// add OpExtInstImport with name _pExtName
+		Instruction* addExtensionInstructionImport(const char* _pExtName);
+
+		// look up OpExtInstImport with name _pExtName, returns nullptr if not found
+		Instruction* getExtensionInstructionImport(const char* _pExtName) const;
+
+		// add OpTypeXXX instruction for _type to the type system, returns OpType;
+		// implicitly adds OpConstant instruction for OpTypeArray operand
 		Instruction* addType(const Type& _type, const char* _pName = nullptr);
+
+		//get OpTypeXXX instruction for _type or nullptr if not in the type system
+		Instruction* getTypeInstr(const Type& _type) const;
+
+		// get type info associated to OpTypeXXX _pTypeInstr
 		const Type* getTypeInfo(const Instruction* _pTypeInstr) const;
 
 		// add a new instruction to m_TypesAndConstants, if _pType is not nullptr, also add entries in m_TypeToInstr and m_InstrToType maps
@@ -140,41 +172,57 @@ namespace spvgentwo
 
 		Instruction* compositeType(const spv::Op _Type, const List<Instruction*>& _subTypes);
 		
+		// create new composite type from _type as base type and Instruction* _types as subtypes
 		template <class ... TypeInstr>
-		Instruction* compositeType(const spv::Op _Type, TypeInstr ... _types);
+		Instruction* compositeType(const spv::Op _Type, TypeInstr* ... _types);
 		
 		Instruction* addConstant(const Constant& _const, const char* _pName = nullptr);
 		const Constant* getConstantInfo(const Instruction* _pConstantInstr);
 
 		template <class T>
-		Instruction* constant(const T& _value, const bool _spec = false);
+		Instruction* constant(const T& _value, const bool _spec = false, const char* _pName = nullptr);
 
 		template <class T>
-		Instruction* specConstant(const T& _value) { return constant<T>(_value, true); };
+		Instruction* specConstant(const T& _value, const char* _pName = nullptr) { return constant<T>(_value, true, _pName); };
 		
 		void setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
 
-		// manually assign IDs to all unresolved instructions, returns bounds/max id
+		// assign IDs to all unresolved instructions, returns bounds/max id
 		// converts any Instruction pointer operand to an spv::Id
-		spv::Id assignIDs();
+		// adds missing OpCapabilities if _pGrammar != nullptr
+		// adds missing OpExtensions if _pGrammar != nullptr
+		// sets minimum required version if _pGrammar != nullptr
+		spv::Id assignIDs(const Grammar* _pGrammar = nullptr);
 
 		// converts any spv::Id operand to Instruction pointer operands
 		// resets resultId to InvalidId for new assignment
-		bool resolveIDs();
+		bool resolveIDs(IAllocator* _pAllocator = nullptr);
 
 		// create 'Type' and 'Constant' infos from OpType### and OpConstant### instructions in m_TypesAndConstants and add them to m_TypeToInstr and m_InstrToType
 		// resolveIDs() must have been called before to allow sub type lookup
-		bool reconstructTypeAndConstantInfo();
+		bool reconstructTypeAndConstantInfo(IAllocator* _pAllocator = nullptr);
 
 		// recover the strings from OpName instructions for m_NameLookup
-		bool reconstructNames();
+		bool reconstructNames(IAllocator* _pAllocator = nullptr);
 
-		// automatically assigns IDs if _assingIDs (otherwise m_Bounds must be set) and serializes module to IWriter
+		// serializes module to IWriter, IDs must have been assigned using assignIDs()
 		// IDs dont need to be assigned if the module was parsed using read()
-		void write(IWriter* _pWriter, const bool _assingIDs = true);
+		// returns false if IWriter::put failed
+		bool write(IWriter& _writer) const;
+
+		// calls finalizeGlobalInterface() on EntryPoints
+		// automatically assigns IDs (calls assignIDs, adds Required Capabilities & Extensions & Version if _pGrammar != nullptr)
+		// serializes module to IWriter
+		bool finalizeAndWrite(IWriter& _writer, const Grammar* _pGrammar = nullptr);
+
+		// calls finalizeGlobalInterface() on all EntryPoints, adds referenced global variables to OpEntryPoint parameters
+		void finalizeEntryPoints();
 
 		// parse a binary SPIR-V program from IReader using _grammer generated from SPIR-V machinereadable grammer json
-		bool read(IReader* _pReader, const Grammar& _grammar);
+		bool read(IReader& _reader, const Grammar& _grammar);
+
+		// calls read(), resolveIDs, reconstructNames and reconstrucTypesAndConstantInfo
+		bool readAndInit(IReader& _reader, const Grammar& _grammar);
 
 		// for use with opExtensionMode, opExtensionModeId
 		Instruction* addExtensionModeInstr();
@@ -182,8 +230,9 @@ namespace spvgentwo
 		// for use with opString, opSource, opSourceContinued, opSourceExtension
 		Instruction* addSourceStringInstr();
 
-		// for use with opName and opMemberName
+		// for use with opName and opMemberName, is not added to nameLookup
 		Instruction* addNameInstr();
+
 		void addName(Instruction* _pTarget, const char* _pName);
 		void addMemberName(Instruction* _pTargetBase, const char* _pMemberName, unsigned int _memberIndex);
 
@@ -192,7 +241,7 @@ namespace spvgentwo
 
 		struct MemberNameCStr { const char* name; unsigned int memberIndex; };
 
-		// get all names associated to theis instruction
+		// get all names associated to these instruction
 		List<MemberNameCStr> getNames(const Instruction* _pTarget, IAllocator* _pAllocator = nullptr) const;
 
 		// for use with opModuleProccessed
@@ -212,7 +261,7 @@ namespace spvgentwo
 		Constant newConstant();
 
 		// add empty instruction which must be OpVarible with StorageClass != function
-		Instruction* addGlobalVariableInstr();
+		Instruction* addGlobalVariableInstr(const char* _pName = nullptr);
 
 		// _pPtrType needs to be in the same StorageClass as _storageClass
 		Instruction* variable(Instruction* _pPtrType, const spv::StorageClass _storageClass, const char* _pName = nullptr, Instruction* _pInitialzer = nullptr);
@@ -276,10 +325,10 @@ namespace spvgentwo
 
 		// iterates over all instructions in this module in serialization order, should be called AFTER write() which does some finalization
 		template <class Func> // func takes Instruction& -> func(instr)
-		bool iterateInstructions(Func _func) { return iterateModuleInstructions(*this, _func); }
+		bool iterateInstructions(Func _func);
 
 		template <class Func> // func takes const Instruction& -> func(instr)
-		bool iterateInstructions(Func _func) const { return iterateModuleInstructions(*this, _func); }
+		bool iterateInstructions(Func _func) const;
 
 		// search for instruction assigned to _resultId (for use with resolved instructions generated by assignIDs())
 		Instruction* getInstructionById(const spv::Id _resultId);
@@ -295,6 +344,18 @@ namespace spvgentwo
 
 		// remove _pInstr if it is homed in this module, its functions and basic blocks, returns true if it was removed
 		bool remove(const Instruction* _pInstr);
+
+		// scans instructions of this module, looking for required OpCapabilities using _grammar, adding them to m_Capabilities
+		void addRequiredCapabilities(const Grammar& _grammar);
+
+		// scans instructions of this module, looking for required OpExtensions using _grammar, adding them to m_Extensions
+		void addRequiredExtensions(const Grammar& _grammar);
+
+		// scans instrucions of this module, getting the highest required SPIR-V version
+		unsigned int getRequiredVersion(const Grammar& _grammar) const;
+
+		// overwrites m_spvVersion with getRequiredVersion(), returns version
+		unsigned int setRequiredVersion(const Grammar& _grammar);
 
 		// ILogger proxy calls
 		template <typename ...Args>
@@ -331,9 +392,6 @@ namespace spvgentwo
 		const Instruction* getErrorInstr() const { return &m_errorInstr; }
 
 	private:
-		template <class ... TypeInstr>
-		void compositeType(Type& _compositeTye, Instruction* _pSubType, TypeInstr ... _types);
-
 		void updateParentPointers();
 
 	private:
@@ -342,15 +400,15 @@ namespace spvgentwo
 		ITypeInferenceAndVailation* m_pTypeInferenceAndVailation = nullptr;
 		unsigned int m_spvVersion = spv::Version;
 		unsigned int m_spvGenerator = GeneratorId;
-		unsigned int m_spvBound = InvalidId;
+		unsigned int m_spvBound = 0u;
 		unsigned int m_spvSchema = 0u;
 		List<Function> m_Functions;
 		List<EntryPoint> m_EntryPoints;
 
 		// preamble
-		List<Instruction> m_Capabilities;
-		List<Instruction> m_Extensions;
-		HashMap<const char*, Instruction> m_ExtInstrImport; // todo: map between ext names and Instruction*
+		HashMap<spv::Capability, Instruction> m_Capabilities;
+		HashMap<String, Instruction> m_Extensions; // map between extension name and OpExtension
+		HashMap<String, Instruction> m_ExtInstrImport; // map between instruction extension names and opExtInstImport
 		Instruction m_MemoryModel;
 
 		List<Instruction> m_ExecutionModes; // opExecutionMode, opExecutionModeId
@@ -360,6 +418,7 @@ namespace spvgentwo
 		List<Instruction> m_Decorations; // opDecorate, opMemberDecorate
 		
 		List<Instruction> m_TypesAndConstants;
+
 		HashMap<Type, Instruction*> m_TypeToInstr;
 		HashMap<const Instruction*, const Type*> m_InstrToType;
 		HashMap<Constant, Instruction*> m_ConstantToInstr;
@@ -375,118 +434,4 @@ namespace spvgentwo
 
 		Instruction m_errorInstr; // opNop
 	};
-
-	// returns TRUE if Func has bool return value and returned true (to exit loop)
-	template<class Func, class Container>
-	inline bool iterateInstructionContainer(Func _func, Container& _container)
-	{
-		static_assert(traits::is_invocable_v<Func, Instruction&>, "Func _func is not invocable: _func(Instruction& _instr)");
-		using Ret = decltype(stdrep::declval<Func>()(stdrep::declval<Instruction&>()));
-
-		for (auto& instr : _container)
-		{
-			if constexpr (stdrep::is_same_v<Ret, bool>)
-			{
-				if (_func(traits::to_ref(instr)))
-					return true;
-			}
-			else
-			{
-				_func(traits::to_ref(instr));
-			}
-		}
-
-		return false;
-	}
-
-	// if func returns a bool, TRUE indecates to abort iterating
-	// iterateModuleInstructions returns TRUE if not all instructions were enumarated because _func returned TRUE
-	template<class ModuleT, class Func>
-	inline bool iterateModuleInstructions(ModuleT& _module, Func _func)
-	{
-		static_assert(traits::is_invocable_v<Func, Instruction&>, "Func _func is not invocable: _func(Instruction& _instr)");
-		using Ret = decltype(stdrep::declval<Func>()(stdrep::declval<Instruction&>()));
-
-		if (iterateInstructionContainer(_func, _module.getCapabilities())) return true;
-		if (iterateInstructionContainer(_func, _module.getExtensions())) return true;
-
-		auto pred = [&_func](auto& instr) -> bool
-		{
-			if constexpr (stdrep::is_same_v<Ret, bool>)
-			{
-				return _func(instr);
-			}
-			else
-			{
-				_func(instr);
-				return false;
-			}
-		};
-
-		for (auto& [key, value] : _module.getExtInstrImports())
-		{
-			if (pred(value)) return true;
-		}
-
-		if (pred(_module.getMemoryModel())) return true;
-
-		for (auto& ep : _module.getEntryPoints())
-		{
-			if (pred(*ep.getEntryPoint())) return true;
-		}
-
-		if (iterateInstructionContainer(_func, _module.getExecutionModes())) return true;
-		if (iterateInstructionContainer(_func, _module.getSourceStrings())) return true;
-		if (iterateInstructionContainer(_func, _module.getNames())) return true;
-		if (iterateInstructionContainer(_func, _module.getModulesProcessed())) return true;
-		if (iterateInstructionContainer(_func, _module.getDecorations())) return true;
-		if (iterateInstructionContainer(_func, _module.getTypesAndConstants())) return true;
-		if (iterateInstructionContainer(_func, _module.getGlobalVariables())) return true;
-		if (iterateInstructionContainer(_func, _module.getUndefs())) return true;
-		if (iterateInstructionContainer(_func, _module.getLines())) return true;
-
-		auto iterateFuncion = [&_module, &pred, &_func](auto& f) -> bool
-		{
-			if (pred(*f.getFunction())) return true;
-			if (iterateInstructionContainer(_func, f.getParameters())) return true;
-			for (auto& bb : f)
-			{
-				if (pred(*bb.getLabel())) return true;
-				if (iterateInstructionContainer(_func, bb)) return true;
-				if (bb.getTerminator() == nullptr)
-				{
-					_module.logError("BasicBlock %s has no terminator instruction, missing opReturn?", bb.getName());
-					return true;
-				}
-			}
-			if (pred(*f.getFunctionEnd())) return true;
-			return false;
-		};
-
-		for (auto& fun : _module.getFunctions())
-		{
-			if (fun.empty())
-			{
-				if (iterateFuncion(fun)) return true;
-			}
-		}
-
-		// write functions with bodies
-		for (auto& fun : _module.getFunctions())
-		{
-			if (fun.empty() == false)
-			{
-				if (iterateFuncion(fun)) return true;
-			}
-		}
-		for (auto& ep : _module.getEntryPoints())
-		{
-			if (ep.empty() == false) // can entry points be empty forward decls?
-			{
-				if (iterateFuncion(ep)) return true;
-			}
-		}
-
-		return false;
-	}
 } // !spvgentwo

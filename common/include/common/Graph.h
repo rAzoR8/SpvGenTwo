@@ -11,7 +11,7 @@ namespace spvgentwo
 		using NodeType = Node<N, E>;
 		using Iterator = typename List<NodeType>::Iterator;
 
-		Graph(IAllocator* _pAllocator = nullptr);
+		constexpr Graph(IAllocator* _pAllocator = nullptr);
 
 		Graph(Graph<N, E>&& _other) noexcept;
 
@@ -21,10 +21,10 @@ namespace spvgentwo
 		Graph<N, E>& operator=(Graph<N, E>&& _other) noexcept;
 		Graph<N, E>& operator=(const Graph<N, E>& _other) = delete;
 
-		IAllocator* getAllocator() const { return m_nodes.getAllocator(); }
+		constexpr IAllocator* getAllocator() const { return m_nodes.getAllocator(); }
 
-		Iterator begin() const { return m_nodes.begin(); }
-		Iterator end() const { return m_nodes.end(); }
+		constexpr Iterator begin() const { return m_nodes.begin(); }
+		constexpr Iterator end() const { return m_nodes.end(); }
 
 		// add new node
 		template <class ...Args>
@@ -34,9 +34,9 @@ namespace spvgentwo
 
 		void clear();
 
-		bool empty() const { return m_nodes.empty(); }
+		constexpr bool empty() const { return m_nodes.empty(); }
 
-		sgt_size_t size() const { return m_nodes.size(); }
+		constexpr sgt_size_t size() const { return m_nodes.size(); }
 
 		NodeType& front() { return m_nodes.front(); }
 		const NodeType& front() const { return m_nodes.front(); }
@@ -50,7 +50,7 @@ namespace spvgentwo
 	};
 
 	template<class N, class E>
-	inline Graph<N, E>::Graph(IAllocator* _pAllocator) :
+	inline constexpr Graph<N, E>::Graph(IAllocator* _pAllocator) :
 		m_nodes(_pAllocator)
 	{
 	}

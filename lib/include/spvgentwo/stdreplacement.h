@@ -7,15 +7,15 @@ namespace spvgentwo
 	using sgt_size_t = decltype(sizeof(int));
 	using sgt_nullptr_t = decltype(nullptr);
 
-	constexpr sgt_size_t sgt_size_max = ~(sgt_size_t)0;
+	constexpr sgt_size_t sgt_size_max = ~(sgt_size_t)0u;
 	constexpr auto sgt_uint32_max = ~0u;
 	constexpr auto sgt_uint64_max = ~0ull;
 
-	using sgt_uint32_t = decltype(sgt_uint32_max);
-	using sgt_uint64_t = decltype(sgt_uint64_max);
+	using sgt_uint32_t = decltype(0u);
+	using sgt_uint64_t = decltype(0ull);
 
 	static_assert(sizeof(sgt_uint32_t) == 4, "32bit integer type size mismatch");
-	static_assert(sizeof(sgt_uint64_t) == 8, "63bit integer type size mismatch");
+	static_assert(sizeof(sgt_uint64_t) == 8, "64bit integer type size mismatch");
 }
 
 #ifdef SPVGENTWO_REPLACE_PLACEMENTNEW
@@ -253,6 +253,33 @@ namespace spvgentwo::stdrep
 	template <class T, class... Args>
 	inline constexpr bool is_constructible_v = is_constructible<T, Args...>::value;
 
+	template <class T>
+	using is_copy_constructible = is_constructible<T, add_lvalue_reference_t<T>>;
+
+	template <class T>
+	inline constexpr bool is_copy_constructible_v = is_copy_constructible<T>::value;
+
+	template <class T>
+	using is_move_constructible = is_constructible<T, add_rvalue_reference_t<T>>;
+
+	template <class T>
+	inline constexpr bool is_move_constructible_v = is_move_constructible<T>::value;
+
+	template <typename T, typename U, typename = void>
+	struct is_assignable : false_type {};
+
+	template <typename T, typename U>
+	struct is_assignable<T, U, decltype(declval<add_lvalue_reference_t<T>>() = declval<U>(), void())> : true_type {};
+
+	template <typename T, typename U>
+	inline constexpr bool is_assignable_v = is_assignable<T, U>::value;
+
+	template <class T, class U = T>
+	struct is_move_assignable : is_assignable< T, add_rvalue_reference_t<U>> {};
+
+	template<typename T, typename U = T>
+	inline constexpr bool is_move_assignable_v = is_move_assignable<T, U>::value;
+
 	template<class T>
 	struct is_function : integral_constant<bool, !is_const_v<const T> && !is_reference_v<T>> {};
 
@@ -344,10 +371,10 @@ namespace spvgentwo::traits
 	inline constexpr bool is_invocable_v = is_invocable<F, Args...>::value;
 
 	template <class T>
-	const T* selectTypeFromArgs() { return nullptr; }
+	constexpr const T* selectTypeFromArgs() { return nullptr; }
 
 	template <class T, class First, class... Args>
-	const T* selectTypeFromArgs([[maybe_unused]] First& _first, [[maybe_unused]] Args&... _tail)
+	constexpr const T* selectTypeFromArgs([[maybe_unused]] First& _first, [[maybe_unused]] Args&... _tail)
 	{
 		if constexpr (is_same_base_type_v<First, T>)
 		{
@@ -364,13 +391,13 @@ namespace spvgentwo::traits
 	}
 
 	template <class T>
-	T& to_ref(T& _ref) { return _ref; }
+	constexpr T& to_ref(T& _ref) { return _ref; }
 
 	template <class T>
-	T& to_ref(T* _ptr) { return *_ptr; }
+	constexpr T& to_ref(T* _ptr) { return *_ptr; }
 
 	template <int N, int I, class Element, class... Args>
-	auto selectNthElement(Element&& elem, Args&& ... args)
+	constexpr auto selectNthElement(Element&& elem, Args&& ... args)
 	{
 		if constexpr (I == N)
 		{
@@ -383,7 +410,7 @@ namespace spvgentwo::traits
 	}
 
 	template<class T, class ...Args>
-	T* constructWithArgs(T* _ptr, Args&& ..._args)
+	constexpr T* constructWithArgs(T* _ptr, Args&& ..._args)
 	{
 		if constexpr (stdrep::is_constructible_v<T, Args...>)
 		{
@@ -394,4 +421,18 @@ namespace spvgentwo::traits
 			return new(_ptr) T{ stdrep::forward<Args>(_args)... };
 		}
 	}
+
+	namespace detail
+	{
+		template <class T, sgt_uint64_t = sizeof(T)> // sizeof can only be applied to complete types
+		constexpr stdrep::true_type is_complete_type(T*);
+		constexpr stdrep::false_type is_complete_type(...);
+	}
+
+	template <class T>
+	using is_complete_t = decltype(detail::is_complete_type(stdrep::declval<T*>()));
+
+	template <class T>
+	constexpr bool is_complete_v = is_complete_t<T>::value;
+
 } // !spvgentwo::traits

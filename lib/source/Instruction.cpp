@@ -10,6 +10,15 @@
 #include "spvgentwo/InstructionTemplate.inl"
 #include "spvgentwo/ModuleTemplate.inl"
 
+spvgentwo::Instruction::Instruction(Instruction&& _other) noexcept :
+	List(stdrep::move(_other)),
+	m_Operation(_other.m_Operation),
+	m_parentType(_other.m_parentType),
+	m_parent(_other.m_parent)
+{
+	_other.m_parent = {};
+}
+
 spvgentwo::Instruction::Instruction(Module* _pModule, Instruction&& _other) noexcept :
 	List(stdrep::move(_other)),
 	m_Operation(_other.m_Operation),
@@ -261,6 +270,24 @@ spvgentwo::spv::StorageClass spvgentwo::Instruction::getStorageClass() const
 	}
 }
 
+spvgentwo::spv::Id spvgentwo::Instruction::assignResultId(bool _overwrite)
+{
+	if (auto it = getResultIdOperand(); it != nullptr && (_overwrite || it->getId() == InvalidId)) 
+	{
+		*it = getModule()->getNextId();
+		return it->id;
+	}
+	return InvalidId;
+}
+
+void spvgentwo::Instruction::assignResultId(spv::Id _id)
+{
+	if (auto it = getResultIdOperand(); it != nullptr)
+	{
+		*it = _id;
+	}
+}
+
 bool spvgentwo::Instruction::isType() const
 {
 	return spv::IsTypeOp(m_Operation);
@@ -286,17 +313,25 @@ bool spvgentwo::Instruction::isSpecOrConstant() const
 	return isSpecOrConstantOp(m_Operation);
 }
 
-void spvgentwo::Instruction::write(IWriter* _pWriter)
+bool spvgentwo::Instruction::write(IWriter& _writer) const
 {
-	_pWriter->put(getOpCode());
+	if (_writer.put(getOpCode()) == false)
+		return false;
 	
 	for (const Operand& operand : *this)
 	{
-		operand.write(_pWriter);
+		if (operand.write(_writer) == false)
+		{
+			const char* name = getName();
+			getModule()->logError("Failed to write operand for op %s [%u]", name != nullptr ? name : "", m_Operation);
+			return false;
+		}
 	}
+
+	return true;
 }
 
-bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _grammar, spv::Op _op, unsigned int _operandCount)
+bool spvgentwo::Instruction::readOperands(IReader& _reader, const Grammar& _grammar, spv::Op _op, unsigned int _operandCount)
 {
 	reset();
 
@@ -323,7 +358,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 		unsigned int word{ 0u };
 		while (_operands-- > 0u)
 		{
-			if (_pReader->get(word) == false)
+			if (_reader.get(word) == false)
 			{
 				getModule()->logError("Unexpected end of instruction stream for %s", info->name);
 				return false;
@@ -342,7 +377,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 	auto parseId = [&](unsigned int& _operands) -> bool
 	{
 		unsigned int word{ 0u };
-		if (_pReader->get(word) == false)
+		if (_reader.get(word) == false)
 		{
 			getModule()->logError("Unexpected end of instruction stream for %s", info->name);
 			return false;
@@ -355,7 +390,7 @@ bool spvgentwo::Instruction::readOperands(IReader* _pReader, const Grammar& _gra
 	auto parseLiteral = [&](unsigned int& _operands) -> bool
 	{
 		unsigned int word{ 0u };
-		if (_pReader->get(word) == false)
+		if (_reader.get(word) == false)
 		{
 			getModule()->logError("Unexpected end of instruction stream for %s", info->name);
 			return false;
@@ -725,7 +760,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFunction(const Flag<spv::Funct
 {
 	if (_pResultType->isType() && _pFuncType->getOperation() == spv::Op::OpTypeFunction)
 	{
-		return makeOp(spv::Op::OpFunction, _pResultType, InvalidId, literal_t{ _functionControl.mask }, _pFuncType);
+		return makeOp(spv::Op::OpFunction, _pResultType, InvalidId, literal_t{ _functionControl }, _pFuncType);
 	}
 	getModule()->logError("ResultType operand of opFunction must type instruction, function type instruction must be OpTypeFunction");
 	return error();
@@ -754,7 +789,7 @@ void spvgentwo::Instruction::opReturn()
 void spvgentwo::Instruction::opReturnValue(Instruction* _pValue)
 {
 	Function* func = getFunction();
-	if (func != nullptr && (func->getReturnType() != nullptr && func->getReturnType()->getType() == _pValue->getType()))
+	if (func != nullptr && _pValue->getType() != nullptr && func->getReturnType() == *_pValue->getType())
 	{
 		makeOp(spv::Op::OpReturnValue, _pValue);	
 	}
@@ -935,7 +970,7 @@ void spvgentwo::Instruction::opBranchConditional(Instruction* _pCondition, Basic
 
 spvgentwo::Instruction* spvgentwo::Instruction::callDynamic(Function* _pFunction, const List<Instruction*>& _args)
 {
-	return opFunctionCallDynamic(_pFunction->getReturnType(), _pFunction->getFunction(), _args);
+	return opFunctionCallDynamic(_pFunction->getReturnTypeInstr(), _pFunction->getFunction(), _args);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResultType, const spv::StorageClass _storageClass, Instruction* _pInitializer)
@@ -1639,15 +1674,15 @@ spvgentwo::Instruction::Iterator spvgentwo::getLiteralString(String& _out, Instr
 	{
 		if (_it->isLiteral() == false)
 		{
-			return nullptr;
+			return _it;
 		}
 
 		const char* str = reinterpret_cast<const char*>(&_it->literal.value);
 		for (unsigned int i = 0u; i < sizeof(unsigned int); ++i)
 		{
-			_out.emplace_back(str[i]);
 			if (str[i] == '\0')
 				return _it.next();
+			_out.emplace_back(str[i]);
 		}
 	}
 

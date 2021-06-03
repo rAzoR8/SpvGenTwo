@@ -1,43 +1,84 @@
 #include "example/Types.h"
 
+#include "common/TypeHelper.h"
 #include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 
 Module examples::types(IAllocator* _pAllocator, ILogger* _pLogger)
 {
-	 Module module(_pAllocator, spv::Version, _pLogger);
-	 module.addCapability(spv::Capability::Shader);
-	 Function& main = module.addEntryPoint<void>(spv::ExecutionModel::Vertex, u8"main");
-	 BasicBlock& bb = *main;
+	Module module(_pAllocator, _pLogger);
+	module.addCapability(spv::Capability::Shader);
+	{
+		Function& main = module.addEntryPoint<void>(spv::ExecutionModel::Vertex, u8"main");
+		BasicBlock& bb = *main;
 
-	 Type myStruct = module.newType();
+		Type innerStruct = module.newType().RayQueryKHR().wrapStruct();
 
-	 //struct myStruct
-	 //{
-		// float x;
-		// int y;
-		// vec3 v;
-	 //};
+		//struct innerStruct
+		//{
+		   // ray_query_khr_t query;
+		//};
 
-	 myStruct.Struct();
-	 myStruct.FloatM(); // add 32 bit float as member
-	 myStruct.IntM(); // add signed int as member
-	 myStruct.Member().VectorElement(3).Float(); // add empty member to struct, make it a vector of 3 elements of type float
+		// add a name to the type
+		module.addType(innerStruct, u8"innerStruct");
 
-	 // add via addType, make a pointer for storage class 'function
-	 Instruction* type = module.addType(myStruct.wrapPointer(spv::StorageClass::Function), u8"myStruct");
-	 Instruction* var = bb->opVariable(type, spv::StorageClass::Function);
+		Type myStruct = module.newType();
 
-	 // add C++ type via type<T>
-	 type = module.type<unsigned int*>(spv::StorageClass::Function);
+		//struct myStruct
+		//{
+		   // float x;
+		   // int y;
+		   // vec3 v;
+		   // innerStruct i;
+		//};
 
-	 dyn_sampled_image_t img{ spv::Op::OpTypeFloat };
+		myStruct.Struct();
+		myStruct.FloatM(); // add 32 bit float as member
+		myStruct.IntM(); // add signed int as member
+		myStruct.Member().VectorElement(3).Float(); // add empty member to struct, make it a vector of 3 elements of type float
+		myStruct.Member(&innerStruct);
 
-	 // add complex dynamic C++ type
-	 type = module.type<dyn_sampled_image_t>(img);
+		Instruction* type = module.addType(myStruct, u8"myStruct");
+		
+		String name(_pAllocator);
+		TypeHelper::getTypeName(myStruct, name, type);
+		_pLogger->logDebug("%s", name.c_str());
 
-	 bb.returnValue();
+		type = module.addType(myStruct.wrapPointer(spv::StorageClass::Function));
+		// add via addType, make a pointer for storage class 'function
+		Instruction* var = bb->opVariable(type, spv::StorageClass::Function);
 
-	 return module;
+		// add C++ type via type<T>
+		type = module.type<unsigned int*>(spv::StorageClass::Function, "uintptr");
+
+		dyn_sampled_image_t img{ spv::Op::OpTypeFloat };
+
+		// add complex dynamic C++ type
+		type = module.type<dyn_sampled_image_t>(img);
+
+		bb.returnValue();
+	}
+
+	{
+		Function& f = module.addFunction<int, float, int, sampler_t, vector_t<float, 3>>("testFunc");
+		
+		String name(_pAllocator);
+		TypeHelper::getTypeName(f.getFunctionType(), name, f.getFunction());
+		_pLogger->logDebug("%s", name.c_str());
+
+		BasicBlock& bb = *f;
+		Instruction* var = f.variable<array_t<int, 6>>("myArray");
+		var = bb->opLoad(var);
+
+		name.clear();
+		TypeHelper::getTypeName(*var->getType(), name, var);
+		_pLogger->logDebug("%s", name.c_str());
+
+		var = bb->opCompositeExtract(var, 3u);
+
+		(*f).returnValue(var);
+	}
+
+	return module;
 }

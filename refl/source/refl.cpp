@@ -101,10 +101,10 @@ const HeapHashMap<vk::DescriptorType, const char*> DescriptorTypeNames(
 	vk::DescriptorType::VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV, (const char*)"VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV"
 );
 
-template <template <class> class Container>
-void getList(const Container<Instruction>& _container, List<const Instruction*>& _instructions)
+template <template <class> class Container, class Instr>
+void getList(const Container<Instruction>& _container, List<Instr*>& _instructions)
 {
-	for (const Instruction& instr : _container)
+	for (auto& instr : _container)
 	{
 		_instructions.emplace_back(&instr);
 	}
@@ -120,7 +120,7 @@ void printFunctions(IModulePrinter& _printer, const Module& _module, const Gramm
 		}
 
 		printf("\n"); // OpTypeFunction
-		if (const Instruction* type = _func.getFunctionType(); type != nullptr)
+		if (const Instruction* type = _func.getFunctionTypeInstr(); type != nullptr)
 		{
 			printInstruction(*type, _gram, _printer, PrintOptionsBits::All);
 			printf("\n");
@@ -206,7 +206,7 @@ void printVariable(IModulePrinter& _printer, const Instruction& _instr, const Gr
 
 void printDecorationsForTargets(IModulePrinter& _printer, const List<Instruction>& _targets, const Grammar& _gram)
 {
-	HeapList<const Instruction*> decorations;
+	HeapList<Instruction*> decorations;
 
 	for (const Instruction& target : _targets)
 	{
@@ -228,6 +228,8 @@ void printDecorationsForTargets(IModulePrinter& _printer, const List<Instruction
 int main(int argc, char* argv[])
 {
 	ConsoleLogger logger;
+
+	logger.logInfo("SpvGenTwoReflector by Fabian Wahlster - https://github.com/rAzoR8/SpvGenTwo");
 
 	const char* spv = nullptr;
 	const char* varName = nullptr; // variable to inspect
@@ -251,15 +253,15 @@ int main(int argc, char* argv[])
 		{
 			spv = arg;
 		}
-		else if (i < end && strcmp(arg, "--id") == 0)
+		else if (i < end && strcmp(arg, "-id") == 0)
 		{
-			idToPrint = strtoul(argv[++i], nullptr, 10);
+			idToPrint = spv::Id{ static_cast<unsigned int>(strtoul(argv[++i], nullptr, 10)) };
 		}
-		else if (i < end && strcmp(arg, "--var") == 0)
+		else if (i < end && strcmp(arg, "-var") == 0)
 		{
 			varName = argv[++i];
 		}
-		else if (strcmp(arg, "--deco") == 0)
+		else if (strcmp(arg, "-deco") == 0)
 		{
 			listDecorations = true;
 
@@ -284,23 +286,23 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
-		else if (strcmp(arg, "--funcs") == 0)
+		else if (strcmp(arg, "-funcs") == 0)
 		{
 			listFunctions = true;
 		}
-		else if (strcmp(arg, "--vars") == 0)
+		else if (strcmp(arg, "-vars") == 0)
 		{
 			listVariables = true;
 		}
-		else if (strcmp(arg, "--types") == 0)
+		else if (strcmp(arg, "-types") == 0)
 		{
 			listTypeAndConstants = true;
 		}
-		else if (strcmp(arg, "--localsize") == 0)
+		else if (strcmp(arg, "-localsize") == 0)
 		{
 			printLocalSize = true;
 		}
-		else if (strcmp(arg, "--colors") == 0)
+		else if (strcmp(arg, "-colors") == 0)
 		{
 			colors = true;
 		}
@@ -313,36 +315,18 @@ int main(int argc, char* argv[])
 
 	HeapAllocator alloc;
 
-	BinaryFileReader reader(spv);
-	if (reader.isOpen() == false)
+	BinaryFileReader reader(alloc, spv);
+	if (reader == false)
 	{
 		logger.logError("Failed to open %s", spv);
 		return -1;
 	}
 
-	Module module(&alloc, spv::Version, &logger);
+	Module module(&alloc, &logger);
 	Grammar gram(&alloc);
 
 	// parse the binary instructions & operands
-	if (module.read(&reader, gram) == false)
-	{
-		return -1;
-	}
-
-	// turn <id> operands into instruction pointers
-	if (module.resolveIDs() == false)
-	{
-		return -1;
-	}
-
-	// parses strings for lookup of named instructions, needed for printing
-	if (module.reconstructNames() == false)
-	{
-		return -1;
-	}
-
-	// get type info for vulkan descriptor lookup help
-	if (module.reconstructTypeAndConstantInfo() == false)
+	if (module.readAndInit(reader, gram) == false)
 	{
 		return -1;
 	}
@@ -405,7 +389,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	auto printDecorations = [&decorationsToPrint, &gram, &printer](const List<const Instruction*>& _decorations)
+	auto printDecorations = [&decorationsToPrint, &gram, &printer](const List<Instruction*>& _decorations)
 	{
 		for (const Instruction* decoInstr : _decorations)
 		{
@@ -426,7 +410,7 @@ int main(int argc, char* argv[])
 		}
 	};
 
-	List<const Instruction*> decorations(&alloc);
+	List<Instruction*> decorations(&alloc);
 
 	if (listDecorations)
 	{

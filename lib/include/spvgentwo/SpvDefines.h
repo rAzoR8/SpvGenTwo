@@ -5,6 +5,9 @@
 namespace spvgentwo
 {
 	constexpr unsigned int makeGeneratorId(unsigned short _gen, unsigned short _ver) { return _gen << 16 | _ver; }
+	constexpr unsigned int getGeneratorId(unsigned int _gen) { return (_gen >> 16) & 0xFFFF; }
+	constexpr unsigned int getGeneratorVersion(unsigned int _gen) { return _gen & 0xFFFF; }
+
 	constexpr unsigned int makeVersion(unsigned char _major, unsigned char _minor) { return _major << 16 | (_minor << 8); }
 	constexpr unsigned char getMajorVersion(unsigned int _version) { return static_cast<unsigned char>( (_version & 0x00FF0000) >> 16 ); }
 	constexpr unsigned char getMinorVersion(unsigned int _version) { return static_cast<unsigned char>( (_version & 0x0000FF00) >> 8 ); }
@@ -228,5 +231,208 @@ namespace spvgentwo
 	constexpr bool hasStringTerminator(unsigned int _word)
 	{
 		return (_word & 0x000000FFu) == 0u || (_word & 0x0000FF00) == 0u || (_word & 0x00FF0000) == 0u || (_word & 0xFF000000) == 0u;
+	}
+	
+	struct BaseCapability
+	{
+		constexpr BaseCapability(spv::Capability _primary = spv::Capability::Max, spv::Capability _secondary = spv::Capability::Max) :
+			primary{ _primary }, secondary{ _secondary }
+		{}
+
+		spv::Capability primary;
+		spv::Capability secondary;
+
+		constexpr operator spv::Capability() const { return primary; }
+	};
+
+	// returns 'parent' capability required for _cap, or Max if unspecified
+	constexpr BaseCapability getBaseCapability(spv::Capability _cap)
+	{
+		// commented means no implicit base capability -> Max is returned
+		switch (_cap)
+		{
+		//case spv::Capability::Matrix:
+		case spv::Capability::Shader: return spv::Capability::Matrix;
+		case spv::Capability::Geometry: return spv::Capability::Shader;
+		case spv::Capability::Tessellation: return spv::Capability::Shader;
+		//case spv::Capability::Addresses:
+		//case spv::Capability::Linkage:
+		//case spv::Capability::Kernel:
+		case spv::Capability::Vector16: return spv::Capability::Kernel;
+		case spv::Capability::Float16Buffer: return spv::Capability::Kernel;
+		//case spv::Capability::Float16:
+		//case spv::Capability::Float64:
+		//case spv::Capability::Int64:
+		case spv::Capability::Int64Atomics: return spv::Capability::Int64;
+		case spv::Capability::ImageBasic: return spv::Capability::Kernel;
+		case spv::Capability::ImageReadWrite: return spv::Capability::ImageBasic;
+		case spv::Capability::ImageMipmap: return spv::Capability::ImageBasic;
+		case spv::Capability::Pipes: return spv::Capability::Kernel;
+		//case spv::Capability::Groups:
+		case spv::Capability::DeviceEnqueue: return spv::Capability::Kernel;
+		case spv::Capability::LiteralSampler: return spv::Capability::Kernel;
+		case spv::Capability::AtomicStorage: return spv::Capability::Shader;
+		//case spv::Capability::Int16:
+		case spv::Capability::TessellationPointSize: return spv::Capability::Tessellation;
+		case spv::Capability::GeometryPointSize: return spv::Capability::Geometry;
+		case spv::Capability::ImageGatherExtended: return spv::Capability::Shader;
+		case spv::Capability::StorageImageMultisample: return spv::Capability::Shader;
+		case spv::Capability::UniformBufferArrayDynamicIndexing: return spv::Capability::Shader;
+		case spv::Capability::SampledImageArrayDynamicIndexing: return spv::Capability::Shader;
+		case spv::Capability::StorageBufferArrayDynamicIndexing: return spv::Capability::Shader;
+		case spv::Capability::StorageImageArrayDynamicIndexing: return spv::Capability::Shader;
+		case spv::Capability::ClipDistance: return spv::Capability::Shader;
+		case spv::Capability::CullDistance: return spv::Capability::Shader;
+		case spv::Capability::ImageCubeArray: return spv::Capability::SampledCubeArray;
+		case spv::Capability::SampleRateShading: return spv::Capability::Shader;
+		case spv::Capability::ImageRect: return spv::Capability::SampledRect;
+		case spv::Capability::SampledRect: return spv::Capability::Shader;
+		case spv::Capability::GenericPointer: return spv::Capability::Addresses;
+		//case spv::Capability::Int8:
+		case spv::Capability::InputAttachment: return spv::Capability::Shader;
+		case spv::Capability::SparseResidency: return spv::Capability::Shader;
+		case spv::Capability::MinLod: return spv::Capability::Shader;
+		//case spv::Capability::Sampled1D:
+		case spv::Capability::Image1D: return spv::Capability::Sampled1D;
+		case spv::Capability::SampledCubeArray: return spv::Capability::Shader;
+		//case spv::Capability::SampledBuffer:
+		case spv::Capability::ImageBuffer: return spv::Capability::SampledBuffer;
+		case spv::Capability::ImageMSArray: return spv::Capability::Shader;
+		case spv::Capability::StorageImageExtendedFormats: return spv::Capability::Shader;
+		case spv::Capability::ImageQuery: return spv::Capability::Shader;
+		case spv::Capability::DerivativeControl: return spv::Capability::Shader;
+		case spv::Capability::InterpolationFunction: return spv::Capability::Shader;
+		case spv::Capability::TransformFeedback: return spv::Capability::Shader;
+		case spv::Capability::GeometryStreams: return spv::Capability::Geometry;
+		case spv::Capability::StorageImageReadWithoutFormat: return spv::Capability::Shader;
+		case spv::Capability::StorageImageWriteWithoutFormat: return spv::Capability::Shader;
+		case spv::Capability::MultiViewport: return spv::Capability::Geometry;
+		case spv::Capability::SubgroupDispatch: return spv::Capability::DeviceEnqueue;
+		case spv::Capability::NamedBarrier: return spv::Capability::Kernel;
+		case spv::Capability::PipeStorage: return spv::Capability::Pipes;
+		//case spv::Capability::GroupNonUniform:
+		case spv::Capability::GroupNonUniformVote: return spv::Capability::GroupNonUniform;
+		case spv::Capability::GroupNonUniformArithmetic: return spv::Capability::GroupNonUniform;
+		case spv::Capability::GroupNonUniformBallot: return spv::Capability::GroupNonUniform;
+		case spv::Capability::GroupNonUniformShuffle: return spv::Capability::GroupNonUniform;
+		case spv::Capability::GroupNonUniformShuffleRelative: return spv::Capability::GroupNonUniform;
+		case spv::Capability::GroupNonUniformClustered: return spv::Capability::GroupNonUniform;
+		case spv::Capability::GroupNonUniformQuad: return spv::Capability::GroupNonUniform;
+		//case spv::Capability::ShaderLayer:
+		//case spv::Capability::ShaderViewportIndex:
+		case spv::Capability::FragmentShadingRateKHR: return spv::Capability::Shader;
+		//case spv::Capability::SubgroupBallotKHR:
+		case spv::Capability::DrawParameters: return spv::Capability::Shader;
+		//case spv::Capability::WorkgroupMemoryExplicitLayoutKHR: unkown
+		//case spv::Capability::WorkgroupMemoryExplicitLayout8BitAccessKHR: unkonwn
+		//case spv::Capability::WorkgroupMemoryExplicitLayout16BitAccessKHR: unkown
+		//case spv::Capability::SubgroupVoteKHR:
+		//case spv::Capability::StorageBuffer16BitAccess: // same as StorageUniformBufferBlock16
+		case spv::Capability::UniformAndStorageBuffer16BitAccess: return spv::Capability::StorageBuffer16BitAccess; // same as StorageUniform16
+		//case spv::Capability::StoragePushConstant16:
+		//case spv::Capability::StorageInputOutput16:
+		//case spv::Capability::DeviceGroup:
+		case spv::Capability::MultiView: return spv::Capability::Shader;
+		case spv::Capability::VariablePointersStorageBuffer: return spv::Capability::Shader;
+		case spv::Capability::VariablePointers: return spv::Capability::VariablePointersStorageBuffer;
+		//case spv::Capability::AtomicStorageOps:
+		//case spv::Capability::SampleMaskPostDepthCoverage:
+		//case spv::Capability::StorageBuffer8BitAccess:
+		case spv::Capability::UniformAndStorageBuffer8BitAccess: return spv::Capability::StorageBuffer8BitAccess;
+		//case spv::Capability::StoragePushConstant8:
+		//case spv::Capability::DenormPreserve:
+		//case spv::Capability::DenormFlushToZero:
+		//case spv::Capability::SignedZeroInfNanPreserve:
+		//case spv::Capability::RoundingModeRTE:
+		//case spv::Capability::RoundingModeRTZ:
+		case spv::Capability::RayQueryProvisionalKHR: return spv::Capability::Shader;
+		case spv::Capability::RayQueryKHR: return spv::Capability::Shader;
+		case spv::Capability::RayTraversalPrimitiveCullingKHR: return { spv::Capability::RayQueryKHR, spv::Capability::RayTracingKHR };
+		case spv::Capability::RayTracingKHR:return spv::Capability::Shader;
+		case spv::Capability::Float16ImageAMD:return spv::Capability::Shader;
+		case spv::Capability::ImageGatherBiasLodAMD: return spv::Capability::Shader;
+		case spv::Capability::FragmentMaskAMD: return spv::Capability::Shader;
+		case spv::Capability::StencilExportEXT: return spv::Capability::Shader;
+		case spv::Capability::ImageReadWriteLodAMD: return spv::Capability::Shader;
+		case spv::Capability::Int64ImageEXT: return spv::Capability::Shader;
+		case spv::Capability::ShaderClockKHR: return spv::Capability::Shader;
+		case spv::Capability::SampleMaskOverrideCoverageNV: return spv::Capability::SampleRateShading;
+		case spv::Capability::GeometryShaderPassthroughNV: return spv::Capability::Geometry;
+		case spv::Capability::ShaderViewportIndexLayerEXT: return spv::Capability::MultiViewport;
+		case spv::Capability::ShaderViewportMaskNV: return spv::Capability::ShaderViewportIndexLayerEXT;
+		case spv::Capability::ShaderStereoViewNV: return spv::Capability::ShaderViewportMaskNV;
+		case spv::Capability::PerViewAttributesNV: return spv::Capability::MultiView;
+		case spv::Capability::FragmentFullyCoveredEXT:  return spv::Capability::Shader;
+		case spv::Capability::MeshShadingNV: return spv::Capability::Shader;
+		//case spv::Capability::ImageFootprintNV:
+		//case spv::Capability::FragmentBarycentricNV:
+		//case spv::Capability::ComputeDerivativeGroupQuadsNV:
+		case spv::Capability::FragmentDensityEXT: return spv::Capability::Shader;
+		//case spv::Capability::GroupNonUniformPartitionedNV: unkown
+		case spv::Capability::ShaderNonUniform: return spv::Capability::Shader;
+		case spv::Capability::RuntimeDescriptorArray: return spv::Capability::Shader;
+		case spv::Capability::InputAttachmentArrayDynamicIndexing:  return spv::Capability::InputAttachment;
+		case spv::Capability::UniformTexelBufferArrayDynamicIndexing: return spv::Capability::SampledBuffer;
+		case spv::Capability::StorageTexelBufferArrayDynamicIndexing: return spv::Capability::ImageBuffer;
+		case spv::Capability::UniformBufferArrayNonUniformIndexing: return spv::Capability::ShaderNonUniform;
+		case spv::Capability::SampledImageArrayNonUniformIndexing: return spv::Capability::ShaderNonUniform;
+		case spv::Capability::StorageBufferArrayNonUniformIndexing: return spv::Capability::ShaderNonUniform;
+		case spv::Capability::StorageImageArrayNonUniformIndexing: return spv::Capability::ShaderNonUniform;
+		case spv::Capability::InputAttachmentArrayNonUniformIndexing: return spv::Capability::ShaderNonUniform;
+		case spv::Capability::UniformTexelBufferArrayNonUniformIndexing: return spv::Capability::ShaderNonUniform;
+		case spv::Capability::StorageTexelBufferArrayNonUniformIndexing: return spv::Capability::ShaderNonUniform;
+		case spv::Capability::RayTracingNV: return spv::Capability::Shader;
+		//case spv::Capability::VulkanMemoryModel:
+		//case spv::Capability::VulkanMemoryModelDeviceScope:
+		case spv::Capability::PhysicalStorageBufferAddresses: return spv::Capability::Shader;
+		//case spv::Capability::ComputeDerivativeGroupLinearNV:
+		case spv::Capability::RayTracingProvisionalKHR: return spv::Capability::Shader;
+		case spv::Capability::CooperativeMatrixNV: return spv::Capability::Shader;
+		case spv::Capability::FragmentShaderSampleInterlockEXT: return spv::Capability::Shader;
+		case spv::Capability::FragmentShaderShadingRateInterlockEXT: return spv::Capability::Shader;
+		case spv::Capability::ShaderSMBuiltinsNV: return spv::Capability::Shader;
+		case spv::Capability::FragmentShaderPixelInterlockEXT: return spv::Capability::Shader;
+		case spv::Capability::DemoteToHelperInvocationEXT: return spv::Capability::Shader;
+		//case spv::Capability::SubgroupShuffleINTEL:
+		//case spv::Capability::SubgroupBufferBlockIOINTEL:
+		//case spv::Capability::SubgroupImageBlockIOINTEL:
+		//case spv::Capability::SubgroupImageMediaBlockIOINTEL:
+		//case spv::Capability::RoundToInfinityINTEL: unknown
+		//case spv::Capability::FloatingPointModeINTEL: unknown
+		case spv::Capability::IntegerFunctions2INTEL: return spv::Capability::Shader;
+		//case spv::Capability::FunctionPointersINTEL:
+		//case spv::Capability::IndirectReferencesINTEL: unknown
+		//case spv::Capability::AsmINTEL: unknown
+		//case spv::Capability::AtomicFloat32MinMaxEXT: unknown
+		//case spv::Capability::AtomicFloat64MinMaxEXT: unknown
+		//case spv::Capability::AtomicFloat16MinMaxEXT: unknown
+		//case spv::Capability::VectorComputeINTEL: unknown
+		//case spv::Capability::VectorAnyINTEL: unknown
+		//case spv::Capability::SubgroupAvcMotionEstimationINTEL:
+		//case spv::Capability::SubgroupAvcMotionEstimationIntraINTEL:
+		//case spv::Capability::SubgroupAvcMotionEstimationChromaINTEL:
+		//case spv::Capability::VariableLengthArrayINTEL: unknown
+		//case spv::Capability::FunctionFloatControlINTEL: unknown
+		//case spv::Capability::FPGAMemoryAttributesINTEL: unknown
+		//case spv::Capability::FPFastMathModeINTEL: unknown
+		//case spv::Capability::ArbitraryPrecisionIntegersINTEL: unknown
+		//case spv::Capability::UnstructuredLoopControlsINTEL:
+		//case spv::Capability::FPGALoopControlsINTEL:
+		//case spv::Capability::KernelAttributesINTEL:
+		//case spv::Capability::FPGAKernelAttributesINTEL:
+		//case spv::Capability::FPGAMemoryAccessesINTEL: unknown
+		//case spv::Capability::FPGAClusterAttributesINTEL: unknown
+		//case spv::Capability::LoopFuseINTEL: unknown
+		//case spv::Capability::FPGABufferLocationINTEL: unknown
+		//case spv::Capability::USMStorageClassesINTEL: unknown
+		//case spv::Capability::IOPipesINTEL: unknown
+		//case spv::Capability::BlockingPipesINTEL:
+		//case spv::Capability::FPGARegINTEL:
+		case spv::Capability::AtomicFloat32AddEXT: return spv::Capability::Shader;
+		case spv::Capability::AtomicFloat64AddEXT: return spv::Capability::Shader;
+		//case spv::Capability::LongConstantCompositeINTEL: unknown
+		default:
+			return spv::Capability::Max;
+		}
 	}
 } //!spvgentwo

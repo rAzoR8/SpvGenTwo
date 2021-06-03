@@ -152,8 +152,8 @@ namespace spvgentwo
 		using PrintOptions = Flag<PrintOptionsBits>;
 
 		// returns false on failure / invalid instruction
-		bool printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _pOutput, PrintOptions _options = PrintOptionsBits::All, const char* _pIndentation = "\t\t");
+		bool printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer, PrintOptions _options = PrintOptionsBits::All, const char* _pIndentation = "\t\t");
 
-		bool printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _pOutput, PrintOptions _options = PrintOptionsBits::All, const char* _pIndentation = "\t\t");
+		bool printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _printer, PrintOptions _options = PrintOptionsBits::All, const char* _pIndentation = "\t\t");
 	} // !ModulePrinter
 }

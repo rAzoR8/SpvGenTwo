@@ -22,7 +22,8 @@ namespace spvgentwo
 		using TRange = Range<typename Bucket::Iterator>;
 	public:
 
-		HashMap(IAllocator* _pAllocator = nullptr, unsigned int _buckets = DefaultBucktCount);
+		constexpr HashMap() = default;
+		HashMap(IAllocator* _pAllocator, unsigned int _buckets = DefaultBucktCount);
 		HashMap(HashMap&& _other) noexcept;
 
 		// computes bucket size as sizeof..(_keyvals) * 2 + 1 (number of nodes construected from args passed)
@@ -35,19 +36,13 @@ namespace spvgentwo
 		HashMap& operator=(HashMap&& _other) noexcept;
 
 		template <class ... Args>
-		Node& emplace(Args&& ... _args);
+		Node& emplace(const Key& _key, Args&& ... _args);
 
 		template <class ... Args>
 		void emplaceArgs(Key&& _key, Value&& _value, Args&& ... _keyvals);
 
-		// returns existing node if duplicate
-		template <class ... Args>
-		Node& emplaceUnique(Args&& ... _args);
-
 		template <class ... Args>
 		Node& emplaceUnique(const Key& _key, Args&& ... _args);
-
-		Node& newNodeUnique(const Hash64& _hash);
 
 		// retuns nullptr if not resident
 		Value* get(const Hash64 _hash) const;
@@ -78,15 +73,15 @@ namespace spvgentwo
 		unsigned int count(const Hash64 _hash) const;
 		unsigned int count(const Key& _key) const { return count(hash(_key)); }
 
-		const Bucket& getBucket(const unsigned int _index) const { return m_pBuckets[_index]; }
-		unsigned int getBucketCount() const { return m_Buckets; }
+		constexpr const Bucket& getBucket(const unsigned int _index) const { return m_pBuckets[_index]; }
+		constexpr unsigned int getBucketCount() const { return m_Buckets; }
 
-		Iterator begin() const;
-		Iterator end() const { return Iterator(m_pBuckets + m_Buckets, m_pBuckets + m_Buckets, nullptr); }
+		constexpr Iterator begin() const;
+		constexpr Iterator end() const { return Iterator(m_pBuckets + m_Buckets, m_pBuckets + m_Buckets, nullptr); }
 
 		void clear();
 
-		unsigned int elements() const { return m_Elements; }
+		constexpr unsigned int elements() const { return m_Elements; }
 
 	private:
 		void destroy();
@@ -102,10 +97,13 @@ namespace spvgentwo
 	inline HashMap<Key, Value>::HashMap(IAllocator* _pAllocator, unsigned int _buckets) :
 		m_pAllocator(_pAllocator), m_Buckets(_buckets)
 	{
-		m_pBuckets = reinterpret_cast<Bucket*>(m_pAllocator->allocate(m_Buckets * sizeof(Bucket), alignof(Bucket)));
-		for (auto i = 0u; i < m_Buckets; ++i)
+		if (m_pAllocator != nullptr)
 		{
-			new(m_pBuckets + i) Bucket(m_pAllocator);
+			m_pBuckets = static_cast<Bucket*>(m_pAllocator->allocate(m_Buckets * sizeof(Bucket), alignof(Bucket)));
+			for (auto i = 0u; i < m_Buckets; ++i)
+			{
+				new(m_pBuckets + i) Bucket(m_pAllocator);
+			}
 		}
 	}
 
@@ -117,7 +115,7 @@ namespace spvgentwo
 		m_Elements(_other.m_Elements)
 	{
 		_other.m_pAllocator = nullptr;
-		_other.m_pBuckets = 0u;
+		_other.m_pBuckets = nullptr;
 		_other.m_Buckets = 0u;
 		_other.m_Elements = 0u;
 	}
@@ -160,7 +158,7 @@ namespace spvgentwo
 	template<class Key, class Value>
 	inline HashMap<Key, Value>& HashMap<Key, Value>::operator=(HashMap&& _other) noexcept
 	{
-		if (this != &_other) return *this;
+		if (this == &_other) return *this;
 
 		// free left side
 		destroy();
@@ -223,8 +221,10 @@ namespace spvgentwo
 	{
 		if(pos && pos != end())
 		{
+			auto next = pos.next();
 			pos.m_pBucket->erase(pos.m_element);
-			return ++pos;
+			--m_Elements;
+			return next;
 		}
 		return end();
 	}
@@ -340,19 +340,19 @@ namespace spvgentwo
 
 	template<class Key, class Value>
 	template<class ...Args>
-	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplace(Args&& ..._args)
+	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplace(const Key& _key, Args&& ..._args)
 	{
-		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, stdrep::forward<Args>(_args)...);
+		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, _key, stdrep::forward<Args>(_args)...);
 
 		Node& n = pNode->inner();
 
 		if constexpr (stdrep::is_same_v<Key, Hash64>)
 		{
-			n.hash = n.kv.key;
+			n.hash = _key;
 		}
 		else
 		{
-			n.hash = hash(n.kv.key);
+			n.hash = hash(_key);
 		}
 
 		const auto index = n.hash % m_Buckets;
@@ -375,41 +375,6 @@ namespace spvgentwo
 		{
 			emplaceArgs(stdrep::forward<Args>(_keyvals)...);
 		}
-	}
-
-	template<class Key, class Value>
-	template<class ...Args> // (non trivial) key is constructed from args and then used to compute the hash
-	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::emplaceUnique(Args&& ..._args)
-	{
-		Entry<Node>* pNode = Entry<Node>::create(m_pAllocator, stdrep::forward<Args>(_args)...);
-
-		Node& n = pNode->inner();
-
-		if constexpr (stdrep::is_same_v<Key, Hash64>)
-		{
-			n.hash = n.kv.key;
-		}
-		else
-		{
-			n.hash = hash(n.kv.key);
-		}
-
-		const auto index = n.hash % m_Buckets;
-
-		for (Node& existing : m_pBuckets[index])
-		{
-			if (existing.hash == n.hash)
-			{
-				m_pAllocator->destruct(pNode);
-				return existing;
-			}
-		}
-
-		m_pBuckets[index].append_entry(pNode);
-
-		++m_Elements;
-
-		return n;
 	}
 
 	template<class Key, class Value>
@@ -446,28 +411,7 @@ namespace spvgentwo
 	}
 
 	template<class Key, class Value>
-	inline typename HashMap<Key, Value>::Node& HashMap<Key, Value>::newNodeUnique(const Hash64& _hash)
-	{
-		const auto index = _hash % m_Buckets;
-
-		for (Node& existing : m_pBuckets[index])
-		{
-			if (existing.hash == _hash)
-			{
-				return existing;
-			}
-		}
-
-		Node& n = m_pBuckets[index].emplace_back();
-		n.hash = _hash;
-
-		++m_Elements;
-
-		return n;
-	}
-
-	template<class Key, class Value>
-	inline typename HashMap<Key, Value>::Iterator HashMap<Key, Value>::begin() const
+	inline constexpr typename HashMap<Key, Value>::Iterator HashMap<Key, Value>::begin() const
 	{
 		for (unsigned int i = 0u; i < m_Buckets; ++i)
 		{

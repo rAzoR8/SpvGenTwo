@@ -3,14 +3,50 @@
 
 namespace spvgentwo
 {
+	// forward decl
+	class IAllocator;
+
+	class ScopedAllocation
+	{
+		friend class IAllocator;
+		explicit constexpr ScopedAllocation(void* _ptr, sgt_size_t _size, IAllocator* _pAllocator) noexcept :
+			allocator{_pAllocator},
+			ptr{_ptr}, 
+			size{_size}
+		{}
+
+		IAllocator* allocator;
+
+	public:
+		~ScopedAllocation();
+
+		ScopedAllocation(const ScopedAllocation&) = delete;
+		ScopedAllocation& operator=(const ScopedAllocation&) = delete;
+
+		constexpr ScopedAllocation(ScopedAllocation&& _other) noexcept :
+			allocator{_other.allocator},
+			ptr{_other.ptr},
+			size{_other.size}
+		{
+			_other.allocator = nullptr;
+		}
+
+		constexpr operator bool() const { return ptr != nullptr && allocator != nullptr; }
+
+		void* const ptr;
+		const sgt_size_t size;
+	};
+
 	class IAllocator
 	{
 	public:
 		virtual ~IAllocator() {}
 
 		// alignment may only be a power of 2
-		virtual void* allocate(const sgt_size_t _bytes, unsigned int _aligment) = 0;
+		[[nodiscard]] virtual void* allocate(const sgt_size_t _bytes, unsigned int _alignment) = 0;
 		virtual void deallocate(void* _ptr, const sgt_size_t _bytes = 0u) = 0;
+
+		[[nodiscard]] ScopedAllocation allocateScoped(const sgt_size_t _bytes, const unsigned int _alignment = 1u);
 
 		template <class T, class ... Args>
 		T* construct(Args&& ..._args) noexcept

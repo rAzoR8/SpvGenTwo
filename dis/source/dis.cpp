@@ -17,6 +17,8 @@ int main(int argc, char* argv[])
 {
 	ConsoleLogger logger;
 
+	logger.logInfo("SpvGenTwoDisassembler by Fabian Wahlster - https://github.com/rAzoR8/SpvGenTwo");
+
 	const char* spv = nullptr;
 	const char* tabs = "\t\t";
 	bool serialize = false; // for debugging
@@ -32,31 +34,31 @@ int main(int argc, char* argv[])
 		{
 			spv = arg;
 		}
-		else if (strcmp(arg, "--serialize") == 0)
+		else if (strcmp(arg, "-serialize") == 0)
 		{
 			serialize = true;
 		}
-		else if (strcmp(arg, "--assignIDs") == 0 || strcmp(arg, "--assignids") == 0)
+		else if (strcmp(arg, "-assignIDs") == 0 || strcmp(arg, "-assignids") == 0)
 		{
 			reassignIDs = true;
 		}
-		else if (strcmp(arg, "--noinstrnames") == 0)
+		else if (strcmp(arg, "-noinstrnames") == 0)
 		{
 			options ^= PrintOptionsBits::InstructionName;
 		}
-		else if (strcmp(arg, "--noopnames") == 0)
+		else if (strcmp(arg, "-noopnames") == 0)
 		{
 			options ^= PrintOptionsBits::OperandName;
 		}
-		else if (strcmp(arg, "--nopreamble") == 0)
+		else if (strcmp(arg, "-nopreamble") == 0)
 		{
 			options ^= PrintOptionsBits::Preamble;
 		}
-		else if (strcmp(arg, "--colors") == 0)
+		else if (strcmp(arg, "-colors") == 0)
 		{
 			colors = true;
 		}
-		else if (i+1 < argc && strcmp(arg, "--tabs") == 0)
+		else if (i+1 < argc && strcmp(arg, "-tabs") == 0)
 		{
 			tabs = argv[++i];
 		}
@@ -69,31 +71,13 @@ int main(int argc, char* argv[])
 
 	HeapAllocator alloc;
 
-	if (BinaryFileReader reader(spv); reader.isOpen())
+	if (BinaryFileReader reader(alloc, spv); reader)
 	{
-		Module module(&alloc, spv::Version, &logger);
+		Module module(&alloc, &logger);
 		Grammar gram(&alloc);
 
 		// parse the binary instructions & operands
-		if (module.read(&reader, gram) == false)
-		{
-			return -1;
-		}
-
-		// turn <id> operands into instruction pointers
-		if (module.resolveIDs() == false)
-		{
-			return -1;
-		}
-
-		// creates type & constant infos for lookup (needed for codegen)
-		if (module.reconstructTypeAndConstantInfo() == false)
-		{
-			return -1;
-		}
-
-		// parses strings for lookup of named instructions, needed for printing
-		if (module.reconstructNames() == false)
+		if (module.readAndInit(reader, gram) == false)
 		{
 			return -1;
 		}
@@ -113,9 +97,9 @@ int main(int argc, char* argv[])
 
 		if (serialize)
 		{
-			if (BinaryFileWriter writer("serialized.spv"); writer.isOpen())
+			if (BinaryFileWriter writer(alloc, "serialized.spv"); writer.isOpen())
 			{
-				module.write(&writer);
+				module.finalizeAndWrite(writer);
 			}
 		}
 	}

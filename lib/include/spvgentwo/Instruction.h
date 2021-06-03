@@ -45,14 +45,16 @@ namespace spvgentwo
 	public:
 		using Iterator = EntryIterator<Operand>;
 
-		Instruction() = default;
+		constexpr Instruction() = default;
 
 		template <class ...Args>
-		Instruction(Module* _pModule, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
+		Instruction(Module* _pModule, const spv::Op _op, Args&& ... _args);
 		template <class ...Args>
-		Instruction(Function* _pFunction, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
+		Instruction(Function* _pFunction, const spv::Op _op, Args&& ... _args);
 		template <class ...Args>
-		Instruction(BasicBlock* _pBasicBlock, const spv::Op _op = spv::Op::OpNop, Args&& ... _args);
+		Instruction(BasicBlock* _pBasicBlock, const spv::Op _op, Args&& ... _args);
+
+		Instruction(Instruction&& _other) noexcept;
 
 		Instruction(Module* _pModule, Instruction&& _other) noexcept;
 		Instruction(Function* _pFunction, Instruction&& _other) noexcept;
@@ -96,7 +98,6 @@ namespace spvgentwo
 		template<class ...Args>
 		Operand& addOperand(Args&& ... _operand) { return emplace_back(stdrep::forward<Args>(_operand)...); }
 
-		// operand helper
 		spv::Id getResultId() const;
 		Instruction* getResultTypeInstr() const;
 		const Type* getType() const;
@@ -109,6 +110,13 @@ namespace spvgentwo
 
 		// get StorageClass of OpVariable and OpTypePointer instructions
 		spv::StorageClass getStorageClass() const;
+
+		// assign (overwrite prev. valid Id if _overwrite is true) next free Id from module to this instruction result (if it has a result)
+		// returns assigned Id
+		spv::Id assignResultId(bool _overwrite);
+
+		// assign (overwrite allways) _id to this instruction result (if it has a result)
+		void assignResultId(spv::Id _id);
 	
 		bool isType() const;
 		bool isTerminator() const;
@@ -132,11 +140,11 @@ namespace spvgentwo
 		// get opcode encoded with instruction word count [16 bit op code, 16 bit number of operand words] 
 		unsigned int getOpCode() const;
 
-		// serialize instruction operands to the IWriter
-		void write(IWriter* _pWriter);
+		// serialize instruction operands to the IWriter, returns false if IWriter::put returned false 
+		bool write(IWriter& _writer) const;
 
 		// deserialize instruction operands from this IReader
-		bool readOperands(IReader* _pReader, const Grammar& _grammar, spv::Op _op, unsigned int _operandCount);
+		bool readOperands(IReader& _reader, const Grammar& _grammar, spv::Op _op, unsigned int _operandCount);
 
 		// transforms _args to operands, calls inferResultTypeOperand and validateOperands()
 		template <class ...Args>

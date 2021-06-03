@@ -17,9 +17,9 @@ namespace spvgentwo
 		using ReferenceType = T &;
 		using PointerType = T *;
 
-		List(IAllocator* _pAllocator = nullptr);
+		constexpr List(IAllocator* _pAllocator = nullptr);
 		List(const List& _other);
-		List(List&& _other) noexcept;
+		constexpr List(List&& _other) noexcept;
 
 		// construct from variadic argument list of T: List l(instr1, instr2, instr3)
 		template <class ...Args> // args must be of type T
@@ -30,10 +30,11 @@ namespace spvgentwo
 		List& operator=(const List& _other);
 		List& operator=(List&& _other) noexcept;
 
-		bool operator==(const List<T>&  other) const;
-		bool operator!=(const List<T>& _other) const { return !operator==(_other); }
+		constexpr bool operator==(const List<T>&  other) const;
+		constexpr bool operator!=(const List<T>& _other) const { return !operator==(_other); }
 
-		IAllocator* getAllocator()  const { return m_pAllocator; }
+		constexpr IAllocator* getAllocator()  const { return m_pAllocator; }
+
 		// set allocator if non was set earlier
 		void setAllocator(IAllocator* _pAllocator);
 
@@ -71,33 +72,30 @@ namespace spvgentwo
 		T pop_back();
 		T pop_front();
 
-		Iterator begin() const { return Iterator(m_pBegin); }
-		Iterator end() const { return Iterator(nullptr); }
+		constexpr Iterator begin() const { return Iterator(m_pBegin); }
+		constexpr Iterator end() const { return Iterator(nullptr); }
+		constexpr Iterator last() const { return Iterator(m_pLast); }
 
-		T& front() { return m_pBegin->inner(); }
-		const T& front() const { return m_pBegin->inner(); }
+		constexpr T& front() { return m_pBegin->inner(); }
+		constexpr const T& front() const { return m_pBegin->inner(); }
 
-		T& back() { return m_pLast->inner(); }
-		const T& back() const { return m_pLast->inner(); }
+		constexpr T& back() { return m_pLast->inner(); }
+		constexpr const T& back() const { return m_pLast->inner(); }
 
-		Entry<T>* lastEntry() { return m_pLast; }
-		const Entry<T>* lastEntry() const { return m_pLast; }
+		constexpr Entry<T>* lastEntry() const{ return m_pLast; }
 
-		Iterator last() { return Iterator(m_pLast); }
-		const Iterator last() const { return Iterator(m_pLast); }
+		constexpr bool empty() const { return m_pBegin == nullptr; }
 
-		bool empty() const { return m_pBegin == nullptr; }
-
-		sgt_size_t size() const { return m_Elements; }
+		constexpr sgt_size_t size() const { return m_Elements; }
 
 		template <class Comparable>
-		Iterator find(const Comparable& _val) const;
+		constexpr Iterator find(const Comparable& _val) const;
 
 		template<class _Pred>
-		Iterator find_if(const _Pred& _pred) const;
+		constexpr Iterator find_if(const _Pred& _pred) const;
 
 		template <class Comparable>
-		bool contains(const Comparable& _val) const { return find(_val) != nullptr; }
+		constexpr bool contains(const Comparable& _val) const { return find(_val) != nullptr; }
 
 	protected:
 		Entry<T>* m_pBegin = nullptr;
@@ -107,7 +105,7 @@ namespace spvgentwo
 	};
 
 	template<class T>
-	inline List<T>::List(IAllocator* _pAllocator) : m_pAllocator(_pAllocator)
+	inline constexpr List<T>::List(IAllocator* _pAllocator) : m_pAllocator(_pAllocator)
 	{
 	}
 
@@ -122,7 +120,7 @@ namespace spvgentwo
 	}
 
 	template<class T>
-	inline List<T>::List(List&& _other) noexcept:
+	inline constexpr List<T>::List(List&& _other) noexcept:
 		m_pBegin(_other.m_pBegin),
 		m_pLast(_other.m_pLast),
 		m_Elements(_other.m_Elements),
@@ -227,7 +225,7 @@ namespace spvgentwo
 	}
 
 	template <class T>
-	bool List<T>::operator==(const List<T>& _other) const
+	constexpr bool List<T>::operator==(const List<T>& _other) const
 	{
 		Iterator l = begin(), le = end(), r = _other.begin(), re = _other.end();
 		for (; l != le && r != re; ++l, ++r)
@@ -366,7 +364,7 @@ namespace spvgentwo
 
 	template<class T>
 	template<class Comparable>
-	inline typename List<T>::Iterator List<T>::find(const Comparable& _val) const
+	inline constexpr typename List<T>::Iterator List<T>::find(const Comparable& _val) const
 	{
 		auto it = begin();
 		for (; it != nullptr && !(*it == _val); ++it) {}
@@ -375,7 +373,7 @@ namespace spvgentwo
 
 	template<class T>
 	template<class _Pred>
-	inline typename List<T>::Iterator List<T>::find_if(const _Pred& _pred) const
+	inline constexpr typename List<T>::Iterator List<T>::find_if(const _Pred& _pred) const
 	{
 		auto it = begin();
 		for (; it != nullptr && !_pred(*it); ++it) {}

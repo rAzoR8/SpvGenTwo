@@ -40,13 +40,13 @@ endif()
 #this project
 project(SpvGenTwo VERSION 1.0 DESCRIPTION "SPIR-V codegen library")
 
-cmake_option(BUILD_SHARED_LIBS "Build spvgentwo as shared library" TRUE)
 cmake_option(SPVGENTWO_LOGGING "Enable Logging" TRUE)
 cmake_option(SPVGENTWO_REPLACE_PLACEMENTNEW "Don't use replacement new from <new>" TRUE)
 cmake_option(SPVGENTWO_REPLACE_TRAITS "Use custom traits instead of <type_traits>" TRUE)
 cmake_option(SPVGENTWO_BUILD_EXAMPLES "Build examples" FALSE)
 cmake_option(SPVGENTWO_BUILD_DISASSEMBLER "Build disassembler" FALSE)
 cmake_option(SPVGENTWO_BUILD_REFLECT "Build reflect" FALSE)
+cmake_option(SPVGENTWO_BUILD_LINKER "Build linker" FALSE)
 cmake_option(SPVGENTWO_DEBUG_HEAP_ALLOC "Log heap allocations" FALSE)
 
 #lib sources
@@ -60,7 +60,7 @@ add_include_folder("lib/include" "lib_includes")
 add_library(SpvGenTwoLib "${lib_sources}")
 target_include_directories(SpvGenTwoLib PUBLIC "${lib_includes}")
 
-#common sources - shared between examples and tests
+#common sources - shared between tools, examples and tests
 add_sources("common/source/*.cpp" "common_sources")
 add_sources("common/include/common/*.h" "common_sources")
 add_sources("common/include/common/*.inl" "common_sources")
@@ -70,17 +70,6 @@ add_library(SpvGenTwoCommon "${common_sources}")
 target_include_directories(SpvGenTwoCommon PRIVATE "${lib_includes}")
 target_include_directories(SpvGenTwoCommon PUBLIC "${common_includes}")
 target_link_libraries(SpvGenTwoCommon PRIVATE SpvGenTwoLib)
-
-#example project
-if(${SPVGENTWO_BUILD_EXAMPLES})
-	add_sources("example/source/*.cpp" "example_sources")
-	add_sources("example/include/example/*.h" "example_sources")
-	add_include_folder("example/include" "example_includes")
-
-	add_executable(SpvGenTwoExample "${example_sources}")
-	target_include_directories(SpvGenTwoExample PUBLIC "${example_includes};${common_includes}")
-	target_link_libraries(SpvGenTwoExample PRIVATE SpvGenTwoLib SpvGenTwoCommon)
-endif()
 
 #disassembler project
 if(${SPVGENTWO_BUILD_DISASSEMBLER})
@@ -102,6 +91,28 @@ if(${SPVGENTWO_BUILD_REFLECT})
 	add_executable(SpvGenTwoReflect "${refl_sources}")
 	target_include_directories(SpvGenTwoReflect PUBLIC "${refl_includes};${common_includes}")
 	target_link_libraries(SpvGenTwoReflect PRIVATE SpvGenTwoLib SpvGenTwoCommon)
+endif()
+
+#reflection project
+if(${SPVGENTWO_BUILD_LINKER})
+	add_sources("link/source/*.cpp" "linker_sources")
+	add_sources("link/include/link/*.h" "linker_sources")
+	add_include_folder("link/include" "linker_includes")
+
+	add_executable(SpvGenTwoLinker "${linker_sources}")
+	target_include_directories(SpvGenTwoLinker PUBLIC "${linker_includes};${common_includes}")
+	target_link_libraries(SpvGenTwoLinker PRIVATE SpvGenTwoLib SpvGenTwoCommon)
+endif()
+
+#example project
+if(${SPVGENTWO_BUILD_EXAMPLES})
+	add_sources("example/source/*.cpp" "example_sources")
+	add_sources("example/include/example/*.h" "example_sources")
+	add_include_folder("example/include" "example_includes")
+
+	add_executable(SpvGenTwoExample "${example_sources}")
+	target_include_directories(SpvGenTwoExample PUBLIC "${example_includes};${common_includes}")
+	target_link_libraries(SpvGenTwoExample PRIVATE SpvGenTwoLib SpvGenTwoCommon)
 endif()
 
 message(STATUS "")

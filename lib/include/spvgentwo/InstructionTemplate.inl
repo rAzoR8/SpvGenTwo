@@ -68,9 +68,21 @@ namespace spvgentwo
 	template<class T, class ...Args>
 	inline void Instruction::makeOpInternal(T&& _first, Args&& ..._args)
 	{
-		if constexpr (traits::is_same_base_type_v<T, Instruction*> || traits::is_same_base_type_v<T, BasicBlock*> || traits::is_same_base_type_v<T, spv::Id> || traits::is_same_base_type_v<T, literal_t>)
+		if constexpr (traits::is_same_base_type_v<T, Instruction*>)
 		{
-			addOperand(stdrep::forward<T>(_first));
+			addOperand(stdrep::forward<T>(_first)); // same overload as above, just make it easier to debug	
+		}
+		else if constexpr (traits::is_same_base_type_v<T, BasicBlock*>)
+		{
+			addOperand(stdrep::forward<T>(_first)); // same overload as above, just make it easier to debug
+		}
+		else if constexpr (traits::is_same_base_type_v<T, spv::Id>) 
+		{
+			addOperand(stdrep::forward<T>(_first)); // same overload as above, just make it easier to debug
+		}
+		else if constexpr (traits::is_same_base_type_v<T, literal_t>)
+		{
+			addOperand(stdrep::forward<T>(_first)); // same overload as above, just make it easier to debug
 		}
 		else if constexpr (stdrep::is_same_v<traits::remove_cvref_t<T>, int> || stdrep::is_same_v<traits::remove_cvref_t<T>, unsigned int>) // bitcast to 32 bit literal
 		{
@@ -102,7 +114,7 @@ namespace spvgentwo
 	template<class ...Operands>
 	inline Instruction* Instruction::opExtInst(Instruction* _pResultType, const char* _pExtName, unsigned int _instOpCode, Operands ..._operands)
 	{
-		Instruction* _pExtImport = getModule()->getExtensionInstructionImport(_pExtName);
+		Instruction* _pExtImport = getModule()->addExtensionInstructionImport(_pExtName);
 		return makeOp(spv::Op::OpExtInst, _pResultType, InvalidId, _pExtImport, literal_t{ _instOpCode }, _operands...);
 	}
 
@@ -130,7 +142,7 @@ namespace spvgentwo
 	inline Instruction* Instruction::call(Function* _pFunction, ArgInstr* ..._args)
 	{
 		if (_pFunction == nullptr) return error();
-		return opFunctionCall(_pFunction->getReturnType(), _pFunction->getFunction(), _args...);
+		return opFunctionCall(_pFunction->getReturnTypeInstr(), _pFunction->getFunction(), _args...);
 	}
 
 	template<class ...Instr>
@@ -223,9 +235,9 @@ namespace spvgentwo
 
 		if (_pResultType == nullptr || _pBase == nullptr) return error();
 
-		if(_pResultType->isType() == false) 
+		if(_pResultType->isType() == false || _pResultType->getType()->isPointer() == false) 
 		{
-			getModule()->logError("_pResultType is not a type instruction");
+			getModule()->logError("_pResultType is not a (pointer) type instruction");
 			return error();
 		}
 
@@ -307,7 +319,7 @@ namespace spvgentwo
 		// Result Type is the type of the loaded object.It must be a type with ﬁxed size; i.e., it cannot be, nor include, any OpTypeRuntimeArray types.
 		// Pointer is the pointer to load through.Its type must be an OpTypePointer whose Type operand is the same as Result Type.
 		Instruction* pResultType = getModule()->addType(ptrType->front());
-		return makeOp(spv::Op::OpLoad, pResultType, InvalidId, _pPointerToVar, _memOperands.mask, _operands...);
+		return makeOp(spv::Op::OpLoad, pResultType, InvalidId, _pPointerToVar, literal_t{ _memOperands }, _operands...);
 	}
 
 	template<class ...Operands>
@@ -324,7 +336,7 @@ namespace spvgentwo
 
 		if (ptrtype->isPointer() && ptrtype->front() == *valtype)
 		{
-			makeOp(spv::Op::OpStore, _pPointerToVar, _valueToStore, _memOperands.mask, _operands...);		
+			makeOp(spv::Op::OpStore, _pPointerToVar, _valueToStore, literal_t{ _memOperands }, _operands...);
 		}
 		else
 		{
@@ -613,7 +625,7 @@ namespace spvgentwo
 			}
 			else
 			{
-				makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate, literal_t{ _imageOperands.mask }, _operands...);
+				makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate, literal_t{ _imageOperands }, _operands...);
 			}
 		}
 		else
@@ -624,7 +636,7 @@ namespace spvgentwo
 			}
 			else
 			{
-				makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate, _pDrefOrCompnent, literal_t{ _imageOperands.mask }, _operands...);
+				makeOp(_imageSampleOp, InvalidInstr, InvalidId, _pSampledImage, _pCoordinate, _pDrefOrCompnent, literal_t{ _imageOperands }, _operands...);
 			}
 		}
 

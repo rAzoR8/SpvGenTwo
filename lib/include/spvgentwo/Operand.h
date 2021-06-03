@@ -10,14 +10,14 @@ namespace spvgentwo
 	class BasicBlock;
 	class IWriter;
 
-	static constexpr spv::Id InvalidId = 0u;
+	static constexpr spv::Id InvalidId{ 0u };
 	static constexpr Instruction* InvalidInstr = nullptr;
 
 	struct literal_t
 	{
-		literal_t() = default;
+		constexpr literal_t() = default;
 		template <class Arg>
-		literal_t(Arg&& _arg) : value{ static_cast<unsigned int>(_arg) } {}
+		constexpr literal_t(Arg&& _arg) : value{ static_cast<unsigned int>(_arg) } {}
 
 		unsigned int value = 0u;
 		operator unsigned int() const { return value; }
@@ -43,20 +43,20 @@ namespace spvgentwo
 			BasicBlock* branchTarget; 
 		};
 
-		bool isBranchTarget() const { return type == Type::BranchTarget; }
-		bool isInstruction() const { return type == Type::Instruction; }
-		bool isLiteral() const { return type == Type::Literal; }
-		bool isId() const { return type == Type::Id; }
+		constexpr bool isBranchTarget() const { return type == Type::BranchTarget; }
+		constexpr bool isInstruction() const { return type == Type::Instruction; }
+		constexpr bool isLiteral() const { return type == Type::Literal; }
+		constexpr bool isId() const { return type == Type::Id; }
 
-		BasicBlock* getBranchTarget() const { return isBranchTarget() ? branchTarget : nullptr; }
-		Instruction* getInstruction() const { return isInstruction() ? instruction : nullptr; }
-		literal_t getLiteral() const { return isLiteral() ? literal : literal_t{}; }
-		spv::Id getId() const { return isId() ? id : InvalidId; }
+		constexpr BasicBlock* getBranchTarget() const { return isBranchTarget() ? branchTarget : nullptr; }
+		constexpr Instruction* getInstruction() const { return isInstruction() ? instruction : nullptr; }
+		constexpr literal_t getLiteral() const { return isLiteral() ? literal : literal_t{}; }
+		constexpr spv::Id getId() const { return isId() ? id : InvalidId; }
 
-		explicit operator Instruction*() const { return getInstruction(); }
-		explicit operator spv::Id() const { return getId(); }
-		explicit operator literal_t() const { return getLiteral(); }
-		explicit operator BasicBlock* () const { return getBranchTarget(); }
+		constexpr explicit operator Instruction*() const { return getInstruction(); }
+		constexpr explicit operator spv::Id() const { return getId(); }
+		constexpr explicit operator literal_t() const { return getLiteral(); }
+		constexpr explicit operator BasicBlock* () const { return getBranchTarget(); }
 
 		Operand(const Operand& _other);
 		Operand(Operand&& _other) noexcept;
@@ -66,7 +66,7 @@ namespace spvgentwo
 		Operand(const literal_t _value) : type(Type::Literal), instruction(nullptr) { literal = _value; }
 		Operand(const spv::Id _resutlId) : type(Type::Id), instruction(nullptr) { id = _resutlId; }
 
-		void write(IWriter* _pWriter) const;
+		bool write(IWriter& _writer) const;
 
 		Operand& operator=(const Operand& _other);
 		Operand& operator=(Operand&& _other) noexcept;

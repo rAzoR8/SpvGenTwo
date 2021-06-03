@@ -60,12 +60,12 @@ void spvgentwo::ReflectionHelper::getVariablesWithDecoration(const Module& _modu
 	getVariablesWithDecorationFunc(_module, _decoration, [&_outTargets](const Instruction* _pTarget) {_outTargets.emplace_back(_pTarget); }, _pValue);
 }
 
-void spvgentwo::ReflectionHelper::getDecorations(const Instruction* _pTarget, List<const Instruction*>& _outDecorations)
+void spvgentwo::ReflectionHelper::getDecorations(const Instruction* _pTarget, List<Instruction*>& _outDecorations)
 {
 	if (_pTarget == nullptr || _pTarget->getModule() == nullptr)
 		return;
 
-	for(const Instruction& decoration : _pTarget->getModule()->getDecorations())
+	for(Instruction& decoration : _pTarget->getModule()->getDecorations())
 	{
 		if (*decoration.getFirstActualOperand() == _pTarget) // check target
 		{

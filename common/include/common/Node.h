@@ -27,10 +27,10 @@ namespace spvgentwo
 		// node edges store pointers to other graph nodes and cant be copied
 		Node(const Node<N, E>& _other) = delete;
 
-		Node(IAllocator* _pAllocator = nullptr);
+		constexpr Node(IAllocator* _pAllocator = nullptr);
 
 		template <class ...Args>
-		Node(IAllocator* _pAllocator, Args&& ... _args);
+		constexpr Node(IAllocator* _pAllocator, Args&& ... _args);
 
 		Node<N, E>& operator=(Node<N, E>&& _other) noexcept;
 		Node<N, E>& operator=(const Node<N, E>& _other) = delete;
@@ -55,7 +55,7 @@ namespace spvgentwo
 		typename List<EdgeType>::Iterator remove_output(const Node* _pNode);
 
 	private:
-		N m_data;
+		N m_data{};
 
 		List<EdgeType> m_inputs;
 		List<EdgeType> m_outputs;
@@ -70,7 +70,7 @@ namespace spvgentwo
 	}
 
 	template<class N, class E>
-	inline Node<N, E>::Node(IAllocator* _pAllocator) :
+	inline constexpr Node<N, E>::Node(IAllocator* _pAllocator) :
 		m_inputs(_pAllocator),
 		m_outputs(_pAllocator)
 	{
@@ -112,7 +112,7 @@ namespace spvgentwo
 
 	template<class N, class E>
 	template<class ...Args>
-	inline Node<N, E>::Node(IAllocator* _pAllocator, Args&& ..._args) :
+	inline constexpr Node<N, E>::Node(IAllocator* _pAllocator, Args&& ..._args) :
 		m_data{stdrep::forward<Args>(_args)...},
 		m_inputs(_pAllocator),
 		m_outputs(_pAllocator)

@@ -8,19 +8,20 @@
 spvgentwo::Function::Function(Module* _pModule) : 
 	List(_pModule->getAllocator()),
 	m_pModule(_pModule),
-	m_pReturnType(nullptr),
-	m_Function(this),
+	m_Function(this, spv::Op::OpNop), // not finalized
 	m_FunctionEnd(this, spv::Op::OpFunctionEnd),
+	m_FunctionType(_pModule->getAllocator(), spv::Op::OpTypeFunction),
 	m_Parameters(_pModule->getAllocator())
 {
+	m_FunctionType.VoidM(); // return type defaults to void
 }
 
 spvgentwo::Function::Function(Module* _pModule, Function&& _other) noexcept :
 	List(stdrep::move(_other)),
 	m_pModule(_pModule),
-	m_pReturnType(_other.m_pReturnType),
 	m_Function(this, stdrep::move(_other.m_Function)),
 	m_FunctionEnd(this, spv::Op::OpFunctionEnd), // no need to move
+	m_FunctionType(stdrep::move(_other.m_FunctionType)),
 	m_Parameters(stdrep::move(_other.m_Parameters))
 {
 	for (BasicBlock& bb : *this)
@@ -44,39 +45,39 @@ spvgentwo::Function& spvgentwo::Function::operator=(Function&& _other) noexcept
 		bb.m_pFunction = this;
 	}
 
-	m_pReturnType = _other.m_pReturnType;
 	m_Function = stdrep::move(_other.m_Function);
 	//m_FunctionEnd(this, spv::Op::OpFunctionEnd), // no need to move
+	m_FunctionType = stdrep::move(_other.m_FunctionType);
 	m_Parameters = stdrep::move(_other.m_Parameters);
 
 	return *this;
 }
 
-void spvgentwo::Function::write(IWriter* _pWriter)
+void spvgentwo::Function::write(IWriter& _writer) const
 {
-	m_Function.write(_pWriter);
+	m_Function.write(_writer);
 
-	for (Instruction& instr : m_Parameters)
+	for (const Instruction& instr : m_Parameters)
 	{
-		instr.write(_pWriter);
+		instr.write(_writer);
 	}
 
-	for (BasicBlock& bb : *this)
+	for (const BasicBlock& bb : *this)
 	{
-		bb.write(_pWriter);
+		bb.write(_writer);
 	}
 
-	m_FunctionEnd.write(_pWriter);
+	m_FunctionEnd.write(_writer);
 }
 
-bool spvgentwo::Function::read(IReader* _pReader, const Grammar& _grammar, Instruction&& _opFunc)
+bool spvgentwo::Function::read(IReader& _reader, const Grammar& _grammar, Instruction&& _opFunc)
 {
 	// module already consumed OpFunction
 	m_Function = stdrep::move(_opFunc);
 
 	unsigned int word{ 0 };
 
-	while (_pReader->get(word))
+	while (_reader.get(word))
 	{
 		const spv::Op op = getOperation(word);
 		const unsigned int operands = getOperandCount(word) - 1u;
@@ -84,21 +85,39 @@ bool spvgentwo::Function::read(IReader* _pReader, const Grammar& _grammar, Instr
 		switch (op)
 		{
 		case spv::Op::OpFunctionParameter:
-			if (m_Parameters.emplace_back(this).readOperands(_pReader, _grammar, op, operands) == false) return false;
+			if (m_Parameters.emplace_back(this, spv::Op::OpNop).readOperands(_reader, _grammar, op, operands) == false) return false;
 			break;
 		case spv::Op::OpLabel:
-			if (addBasicBlock().read(_pReader, _grammar) == false) return false;
+			if (addBasicBlock().read(_reader, _grammar) == false) return false;
 			break;
 		case spv::Op::OpFunctionEnd:
 			return true; // FunctionEnd has no operands
 		default:
-			getModule()->logError("Unexpected op-code for function");
+			m_pModule->logError("Unexpected op-code for function");
 			return false; // unexpected op code
 		}
 	}
 
-	getModule()->logError("Unexpected module end for function");
+	m_pModule->logError("Unexpected module end for function");
 	return false;
+}
+
+spvgentwo::Instruction* spvgentwo::Function::getReturnTypeInstr() const
+{
+	if (m_FunctionType.getSubTypes().empty() == false)
+	{
+		return m_pModule->addType(m_FunctionType.front());
+	}
+	return m_pModule->getErrorInstr();
+}
+
+spvgentwo::Instruction* spvgentwo::Function::getFunctionTypeInstr() const
+{
+	if (m_FunctionType.getSubTypes().empty() == false)
+	{
+		return m_pModule->addType(m_FunctionType);
+	}
+	return m_pModule->getErrorInstr();
 }
 
 const char* spvgentwo::Function::getName() const
@@ -106,16 +125,14 @@ const char* spvgentwo::Function::getName() const
 	return m_pModule->getName(&m_Function);
 }
 
-spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::remove(const BasicBlock* _pBB, BasicBlock* _pReplacement)
+spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::remove(const BasicBlock* _pBB, BasicBlock* _pReplacement, IAllocator* _pAllocator)
 {
-	List<Instruction*> uses(getAllocator());
+	List<Instruction*> uses(_pAllocator != nullptr ? _pAllocator : getAllocator());
 
 	if(_pBB == nullptr)
 	{
 		return uses;
 	}
-
-	Module* module = getModule();
 
 	const Instruction* opLabel = _pBB->getLabel();
 
@@ -132,7 +149,7 @@ spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::remove(const Basic
 
 	if (found == false)
 	{
-		module->logError("BasicBlock not found in function");
+		m_pModule->logError("BasicBlock not found in function");
 		return uses;
 	}
 
@@ -148,12 +165,12 @@ spvgentwo::List<spvgentwo::Instruction*> spvgentwo::Function::remove(const Basic
 		}
 	};
 
-	module->iterateInstructions(gatherUse);
+	m_pModule->iterateInstructions(gatherUse);
 
 	return uses;
 }
 
-spvgentwo::Instruction* spvgentwo::Function::getParameter(unsigned int _index)
+spvgentwo::Instruction* spvgentwo::Function::getParameter(unsigned int _index) const
 {
 	auto it = m_Parameters.begin() + _index;
 	return it == nullptr ? nullptr : it.operator->();
@@ -163,18 +180,18 @@ spvgentwo::Instruction* spvgentwo::Function::variable(Instruction* _pPtrType, co
 {
 	if (empty())
 	{
-		getModule()->logInfo("Implicitly added function entry basic block");
+		m_pModule->logInfo("Implicitly added function entry basic block");
 		addBasicBlock("FunctionEntry");
 	}
 
 	BasicBlock& funcEntry = **m_pBegin;
 
 	// insert var instruction after label
-	Instruction* pVar = funcEntry.emplace_front(&funcEntry).opVariable(_pPtrType, spv::StorageClass::Function, _pInitialzer);
+	Instruction* pVar = funcEntry.emplace_front(&funcEntry, spv::Op::OpNop).opVariable(_pPtrType, spv::StorageClass::Function, _pInitialzer);
 
 	if (_pName != nullptr)
 	{
-		getModule()->addName(pVar, _pName);
+		m_pModule->addName(pVar, _pName);
 	}
 
 	return pVar;
@@ -182,50 +199,83 @@ spvgentwo::Instruction* spvgentwo::Function::variable(Instruction* _pPtrType, co
 
 spvgentwo::Instruction* spvgentwo::Function::variable(const Type& _ptrType, const char* _pName, Instruction* _pInitialzer)
 {
-	Instruction* type = _ptrType.isPointer() ? getModule()->addType(_ptrType) : getModule()->addType(_ptrType.wrapPointer(spv::StorageClass::Function));
+	Instruction* type = _ptrType.isPointer() ? m_pModule->addType(_ptrType) : m_pModule->addType(_ptrType.wrapPointer(spv::StorageClass::Function));
 
 	return variable(type, _pName, _pInitialzer);
 }
 
-spvgentwo::Instruction* spvgentwo::Function::setReturnType(Instruction* _pReturnType)
+bool spvgentwo::Function::setReturnType(Instruction* _pReturnType)
 {
-	if (m_pFunctionType == nullptr)
+	if (const Type* type = _pReturnType->getType(); type != nullptr)
 	{
-		m_pFunctionType = m_pModule->compositeType(spv::Op::OpTypeFunction, _pReturnType);
-		m_pReturnType = _pReturnType;
+		return setReturnType(*type);
 	}
-
-	return m_pFunctionType;
+	else
+	{
+		m_pModule->logInfo("_pReturnType has not type");
+		return false;
+	}
 }
 
-spvgentwo::Instruction* spvgentwo::Function::setFunctionType(Instruction* _pFunctionType)
+bool spvgentwo::Function::setReturnType(const Type& _returnType)
+{
+	auto& types = m_FunctionType.getSubTypes();
+	if (types.empty())
+	{
+		m_pModule->logInfo("Result type of functions was not initialized");
+		return false;
+	}
+	else
+	{
+		// Todo: check _returnType:
+		// Return Type is the type of the return value of functions of this type. It must be a concrete or abstract type, or a pointer
+		// to such a type.If the function has no return value, Return Type must be OpTypeVoid.
+
+		types.front() = _returnType;
+		return true;
+	}
+}
+
+bool spvgentwo::Function::setFunctionType(Instruction* _pFunctionType)
 {
 	if (_pFunctionType->getOperation() != spv::Op::OpTypeFunction)
 	{
-		getModule()->logInfo("_pFunctionType is not OpTypeFunction");
-		return getModule()->getErrorInstr();
+		m_pModule->logError("_pFunctionType is not OpTypeFunction");
+		return false;
 	}
 
-	if (m_pFunctionType == nullptr)
+	if (const Type* type = _pFunctionType->getType(); type != nullptr)
 	{
-		m_pFunctionType = _pFunctionType;
-
-		auto it = _pFunctionType->getFirstActualOperand(); // get ReturnType operand
-		m_pReturnType = it != nullptr ? it->getInstruction() : nullptr;
+		return setFunctionType( *type );
 	}
+	else
+	{
+		m_pModule->logInfo("_pFunctionType has no type");
+		return false;
+	}
+}
 
-	return m_pReturnType;
+bool spvgentwo::Function::setFunctionType(const Type& _functionType)
+{
+	if (_functionType != spv::Op::OpTypeFunction)
+	{
+		m_pModule->logError("_functionType is not OpTypeFunction");
+		return false;
+	}
+	m_FunctionType = _functionType;
+
+	return true;
 }
 
 spvgentwo::Instruction* spvgentwo::Function::finalize(const Flag<spv::FunctionControlMask> _control, const char* _pName)
 {
-	if (m_pReturnType == nullptr || m_pFunctionType == nullptr)
+	if (m_FunctionType.getSubTypes().empty())
 	{
-		getModule()->logError("Invalid ReturnType or FunctionType");
+		m_pModule->logError("Invalid ReturnType or FunctionType");
 		return &m_Function;
 	}
 
-	Instruction* pFunc = m_Function.opFunction(_control, m_pReturnType, m_pFunctionType);
+	Instruction* pFunc = m_Function.opFunction(_control, getReturnTypeInstr(), getFunctionTypeInstr());
 
 	if (_pName != nullptr && pFunc->isErrorInstr() == false)
 	{
@@ -233,6 +283,21 @@ spvgentwo::Instruction* spvgentwo::Function::finalize(const Flag<spv::FunctionCo
 	}
 
 	return pFunc;
+}
+
+bool spvgentwo::Function::isFinalized() const
+{
+	return (m_FunctionType.getSubTypes().size() == m_Parameters.size() + 1u) && m_Function == spv::Op::OpFunction;
+}
+
+spvgentwo::Flag<spvgentwo::spv::FunctionControlMask> spvgentwo::Function::getFunctionControl() const
+{
+	if (auto it = m_Function.getFirstActualOperand(); it != nullptr && it->isLiteral())
+	{
+		return Flag<spv::FunctionControlMask>{ it->literal.value };
+	}
+
+	return Flag<spv::FunctionControlMask>();
 }
 
 void spvgentwo::collectReferencedVariables(const Function& _func, List<Operand>& _outVarInstr, const GlobalInterfaceVersion _version, IAllocator* _pAllocator)

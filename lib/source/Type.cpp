@@ -1,10 +1,5 @@
 #include "spvgentwo/Type.h"
 
-spvgentwo::Type::Type(IAllocator* _pAllocator) :
-	m_subTypes(_pAllocator)
-{
-}
-
 spvgentwo::Type::Type(IAllocator* _pAllocator, const Type& _subType, const spv::Op _baseType) :
 	m_Type(_baseType),
 	m_subTypes(_pAllocator)
@@ -107,26 +102,6 @@ bool spvgentwo::Type::operator==(const Type& _other) const
 		m_subTypes == _other.m_subTypes;
 }
 
-const spvgentwo::Type& spvgentwo::Type::getBaseType() const
-{
-	if (m_subTypes.empty())
-	{
-		return *this;
-	}
-
-	return front().getBaseType();
-}
-
-spvgentwo::Type& spvgentwo::Type::getBaseType()
-{
-	if (m_subTypes.empty())
-	{
-		return *this;
-	}
-
-	return front().getBaseType();
-}
-
 const char* spvgentwo::Type::getString() const
 {
 #define SGT_RET(t, x) \
@@ -216,44 +191,31 @@ const char* spvgentwo::Type::getString() const
 	}
 
 	if (isArray()) return "array";
-	if (isRuntimeArray()) return "runtime array";
+	if (isRuntimeArray()) return "runtime_array";
 
 	if (isStruct()) return "struct";
 	if (isImage()) return "image";
-	if (isSampledImage()) return "sampled image";
+	if (isSampledImage()) return "sampled_image";
 	if (isSampler()) return "sampler";
 	if (isPointer()) return "pointer";
-	if (isForwardPointer()) return "forward pointer";
+	if (isForwardPointer()) return "forward_pointer";
+
+	if (isFunction()) return "function";
 
 	if (isOpaque()) return "opaque";
 
-	if (isFunction()) return "function";
 	if (isEvent()) return "event";
-	if (isReservedId()) return "reserved id";
+	if (isDeviceEvent()) return "device_event";
+	if (isReservedId()) return "reserved_id";
 
-	if (isDeviceEvent()) return "device event";
-	if (isPipe()) return "pipe";
 	if (isQueue()) return "queue";
+	if (isPipe()) return "pipe";
+	if (isPipeStorage()) return "pipe_storage";
+
+	if (isRayQueryKHR()) return "ray_query_khr";
+	if (isAccelerationStructure()) return "acceleration_structure_khr";
 
 	return nullptr;
-}
-
-spvgentwo::spv::Op spvgentwo::Type::getBaseTypeOp() const
-{
-	return getBaseType().m_Type;
-}
-
-bool spvgentwo::Type::isBaseTypeOf(const spv::Op _type) const
-{
-	return getBaseType().getType() == _type;
-}
-
-bool spvgentwo::Type::hasSameBase(const Type& _other, const bool _onlyCheckTyeOp) const
-{
-	const Type& lBase = getBaseType();
-	const Type& rBase = _other.getBaseType();
-
-	return _onlyCheckTyeOp ? lBase.m_Type == rBase.m_Type : lBase == rBase;
 }
 
 void spvgentwo::Type::setType(const spv::Op _type)
@@ -498,6 +460,13 @@ spvgentwo::Type& spvgentwo::Type::Queue()
 	return *this;
 }
 
+spvgentwo::Type& spvgentwo::Type::Pipe()
+{
+	reset();
+	m_Type = spv::Op::OpTypePipe;
+	return *this;
+}
+
 spvgentwo::Type& spvgentwo::Type::PipeStorage()
 {
 	reset();
@@ -568,6 +537,20 @@ spvgentwo::Type& spvgentwo::Type::Matrix(unsigned int _columns, unsigned int _ro
 	m_Type = spv::Op::OpTypeMatrix;
 	m_MatColumnCount = _columns; // length of the row
 	Member().Vector(_rows, _componentType);
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::RayQueryKHR()
+{
+	reset();
+	m_Type = spv::Op::OpTypeRayQueryKHR;
+	return *this;
+}
+
+spvgentwo::Type& spvgentwo::Type::AccelerationStructureKHR()
+{
+	reset();
+	m_Type = spv::Op::OpTypeAccelerationStructureKHR;
 	return *this;
 }
 

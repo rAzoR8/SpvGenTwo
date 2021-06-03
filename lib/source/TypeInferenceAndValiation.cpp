@@ -307,6 +307,12 @@ bool spvgentwo::defaultimpl::validateOperands(const spvgentwo::Instruction& _ins
 			return false;
 		}
 
+		if (it->instruction->isErrorInstr())
+		{
+			module->logError("ResultType operand is Error-Instruction from previous operation");
+			return false;
+		}
+
 		if (it->instruction->isType() == false)
 		{
 			module->logError("ResultType operand is not a OpType instruction");
@@ -325,7 +331,7 @@ bool spvgentwo::defaultimpl::validateOperands(const spvgentwo::Instruction& _ins
 
 		if (it->isId() == false)
 		{
-			module->logError("ResultId operand is not a spv::id");
+			module->logError("ResultId operand is not a spv::Id");
 			return false;
 		}
 	}
@@ -348,7 +354,7 @@ bool spvgentwo::defaultimpl::validateOperands(const spvgentwo::Instruction& _ins
 			}
 			else if (op.instruction->isErrorInstr())
 			{
-				module->logError("Error instructions (result of invalid constrution)");
+				module->logError("Error instructions (result of invalid constrution/operation)");
 				return false;
 			}
 			break;
@@ -417,12 +423,12 @@ bool spvgentwo::defaultimpl::validateImageOperandType(const Instruction& _instr)
 	if (drefCompoOrMask && drefCompoOrMask->isLiteral())
 	{
 		imageOp1 = drefCompoOrMask.next();
-		opMask = drefCompoOrMask->getLiteral().value;
+		opMask = static_cast<spv::ImageOperandsMask>(drefCompoOrMask->getLiteral().value);
 	}
 	else if(drefCompoOrMask && drefCompoOrMask->isInstruction())
 	{
 		imageOp1 = drefCompoOrMask + 2u;
-		if (drefCompoOrMask.next()) opMask = drefCompoOrMask.next()->getLiteral().value;
+		if (drefCompoOrMask.next()) opMask = static_cast<spv::ImageOperandsMask>(drefCompoOrMask.next()->getLiteral().value);
 	}
 
 	Instruction* op1 = imageOp1 != nullptr ? imageOp1->getInstruction() : nullptr;

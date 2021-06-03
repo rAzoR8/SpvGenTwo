@@ -2,26 +2,13 @@
 
 #include "spvgentwo/String.h"
 #include "spvgentwo/Module.h"
+#include "spvgentwo/ModuleTemplate.inl"
 #include "spvgentwo/Grammar.h"
 
 #include <cstdio>
 
 namespace
 {
-	// _outBuffer must have space for at least 10 digits ( max length is log10(UINT_MAX) ~ 9.6 )
-	void uintToString(unsigned int _value, char* _outBuffer)
-	{
-		unsigned int len = 0u; // count length of our string
-		for (unsigned int val = _value; val != 0u; val /= 10u, ++len) {}
-		len = _value == 0u ? 1u : len;
-
-		do
-		{
-			_outBuffer[--len] = '0' + (_value % 10u);
-			_value /= 10u;
-		} while (_value != 0 && len > 0u);
-	}
-
 	template <class T, unsigned int SIZE>
 	bool printConstData(const spvgentwo::Constant& _c, char(&_buffer)[SIZE], const char* _pFormat)
 	{
@@ -73,7 +60,7 @@ namespace
 			}
 
 			_printer << "%";
-			_printer.append(op.id, colors.operandId, colors.defaultText);
+			_printer.append(static_cast<unsigned int>(op.id), colors.operandId, colors.defaultText);
 			return true;
 		}
 		else if (op.isInstruction())
@@ -81,11 +68,6 @@ namespace
 			if (op.instruction == nullptr)
 			{
 				_printer.append("INVALID-INSTRPTR", colors.error, colors.defaultText);
-				return false;
-			}
-			else if (op.instruction->getResultId() == InvalidId)
-			{
-				_printer.append("INVALID-INSTRID", colors.error, colors.defaultText);
 				return false;
 			}
 
@@ -115,9 +97,15 @@ namespace
 				}
 			}
 
+			if (op.instruction->getResultId() == InvalidId)
+			{
+				_printer.append("INVALID-INSTRID", colors.error, colors.defaultText);
+				return false;
+			}
+
 			// fallback
 			_printer << "%";
-			_printer.append(op.instruction->getResultId(), colors.operandId, colors.defaultText);
+			_printer.append(static_cast<unsigned int>(op.instruction->getResultId()), colors.operandId, colors.defaultText);
 			return true;	
 		}
 		else if (op.isBranchTarget())
@@ -127,12 +115,7 @@ namespace
 				_printer.append("INVALID-BASICBLOCKPTR", colors.error, colors.defaultText);
 				return false;
 			}
-			else if (spv::Id id = op.branchTarget->getLabel()->getResultId(); id == InvalidId)
-			{
-				_printer.append("INVALID-INSTRID", colors.error, colors.defaultText);
-				return false;
-			}
-
+	
 			_printer << "%";
 			if (const char* name = op.branchTarget->getName(); _options & ModulePrinter::PrintOptionsBits::OperandName && name != nullptr && stringLength(name) > 1)
 			{
@@ -140,7 +123,13 @@ namespace
 			}
 			else
 			{
-				_printer.append(op.branchTarget->getLabel()->getResultId(), colors.operandId, colors.defaultText);
+				if (spv::Id id = op.branchTarget->getLabel()->getResultId(); id == InvalidId)
+				{
+					_printer.append("INVALID-INSTRID", colors.error, colors.defaultText);
+					return false;
+				}
+
+				_printer.append(static_cast<unsigned int>(op.branchTarget->getLabel()->getResultId()), colors.operandId, colors.defaultText);
 			}
 			return true;
 		}
@@ -219,6 +208,8 @@ void spvgentwo::ModulePrinter::ModuleStringPrinter::append(const char* _pStr, co
 
 bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const Grammar& _grammar, IModulePrinter& _printer, PrintOptions _options, const char* _pIndentation)
 {
+	bool success = true;
+
 	auto* instrInfo = _grammar.getInfo(static_cast<unsigned int>(_instr.getOperation()));
 	const auto& colors = _printer.getColorScheme();
 
@@ -234,12 +225,12 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 			if (auto id = _instr.getResultId(); id != InvalidId)
 			{
 				_printer << "%";
-				_printer.append(id, colors.resultId, colors.defaultText);
+				_printer.append(static_cast<unsigned int>(id), colors.resultId, colors.defaultText);
 			}
 			else
 			{
 				_printer.append("INVALID-RESULTID", colors.error, colors.defaultText);
-				return false; // invalid instruction
+				success = false; // invalid instruction
 			}
 		}
 	}
@@ -292,7 +283,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 						bit = bases->begin();
 					}
 
-					printOperand(_instr, *it, *bit, _grammar, _printer, _options);
+					success &= printOperand(_instr, *it, *bit, _grammar, _printer, _options);
 				}
 
 				continue;
@@ -304,7 +295,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 			}
 		}
 
-		printOperand(_instr, *it, info, _grammar, _printer, _options);
+		success &= printOperand(_instr, *it, info, _grammar, _printer, _options);
 		// need to increment 'it' after this part
 
 		if (info.kind == Grammar::OperandKind::LiteralSpecConstantOpInteger)
@@ -328,7 +319,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 			}
 
 			_printer << " [";
-			printInstruction(constInstr, _grammar, _printer, _options ^ PrintOptionsBits::ResultId, nullptr);
+			success &= printInstruction(constInstr, _grammar, _printer, _options ^ PrintOptionsBits::ResultId, nullptr);
 			_printer << "]";
 		}
 		else if (Grammar::hasOperandParameters(info.kind))
@@ -338,9 +329,19 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 				auto pit = params->begin();
 				auto pend = params->end();
 
-				for (++it; it != end && pit != pend; ++it, ++pit)
+				for (++it; it != end && pit != pend; ++pit)
 				{
-					printOperand(_instr, *it, *pit, _grammar, _printer, _options);
+					if (pit->kind == Grammar::OperandKind::LiteralString)
+					{
+						_printer << " \"";
+						it = appendLiteralString(_printer, it, end, colors.string, colors.defaultText);
+						_printer << "\"";
+
+						continue;
+					}
+
+					success &= printOperand(_instr, *it, *pit, _grammar, _printer, _options);
+					++it;
 				}
 			}
 		}
@@ -348,7 +349,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 		{
 			while(++it != end)
 			{
-				printOperand(_instr, *it, info, _grammar, _printer, _options);			
+				success &= printOperand(_instr, *it, info, _grammar, _printer, _options);			
 			}
 		}
 		else
@@ -357,7 +358,7 @@ bool spvgentwo::ModulePrinter::printInstruction(const Instruction& _instr, const
 		}
 	}
 
-	return true;
+	return success;
 }
 
 bool spvgentwo::ModulePrinter::printModule(const Module& _module, const Grammar& _grammar, IModulePrinter& _printer, PrintOptions _options, const char* _pIndentation)
@@ -365,7 +366,7 @@ bool spvgentwo::ModulePrinter::printModule(const Module& _module, const Grammar&
 	if (_options & PrintOptionsBits::Preamble)
 	{
 		_printer << "# SPIR-V Version " << _module.getMajorVersion() << "." << _module.getMinorVersion() << "\n";
-		_printer << "# Generator " << _module.getSpvGenerator() << "\n";
+		_printer << "# Generator " << _module.getGeneratorId() << " | " << _module.getGeneratorVersion() << "\n";
 		_printer << "# Bound " << _module.getSpvBound() << "\n";
 		_printer << "# Schema " << _module.getSpvSchema() << "\n\n";
 	}
@@ -435,7 +436,7 @@ bool spvgentwo::ModulePrinter::IModulePrinter::append(const Constant& _constant,
 void spvgentwo::ModulePrinter::IModulePrinter::append(unsigned int _literal, const char* _pushColor, const char* _popColor)
 {
 	char buf[11] = { '\0' }; // max length is log10(UINT_MAX) ~ 9.6 + null terminator -> 11
-	uintToString(_literal, buf);
+	uintToString(_literal, buf, 10, 10u);
 
 	append(buf, _pushColor, _popColor);
 }

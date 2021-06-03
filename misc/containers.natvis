@@ -45,6 +45,7 @@
   <Type Name="spvgentwo::Constant">
     <DisplayString Condition="m_Type.m_Type == spvgentwo::spv::Op::OpTypeInt">{{ {m_Operation} value={*(int*)m_literalData.m_pData} type={m_Type} }}</DisplayString>
     <DisplayString Condition="m_Type.m_Type == spvgentwo::spv::Op::OpTypeFloat">{{ {m_Operation} value={*(float*)m_literalData.m_pData} type={m_Type} }}</DisplayString>
+    <DisplayString Condition="m_Type.m_Type == spvgentwo::spv::Op::OpTypeBool">{{ {m_Operation} value={*(bool*)m_literalData.m_pData} type={m_Type} }}</DisplayString>
     <DisplayString >{{ {m_Operation} {m_Type} }}</DisplayString>
   </Type>
 
@@ -67,14 +68,26 @@
       <Item Name="[size]" ExcludeView="simple">m_elements</Item>
       <Item Name="[capacity]" ExcludeView="simple">m_capacity</Item>
       <ArrayItems>
-        <Size>m_elements</Size>
+        <Size>m_capacity</Size>
         <ValuePointer>m_pData</ValuePointer>
       </ArrayItems>
     </Expand>
   </Type>
 
+  <Type Name="spvgentwo::HashMap&lt;*&gt;" Inheritable="false">
+    <DisplayString>{{ elements={m_Elements} }}</DisplayString>
+    <Expand>
+      <Item Name="[elements]" ExcludeView="simple">m_Elements</Item>
+      <Item Name="[buckets]" ExcludeView="simple">m_Buckets</Item>
+      <ArrayItems>
+        <Size>m_Buckets</Size>
+        <ValuePointer>m_pBuckets</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
   <Type Name="spvgentwo::String">
-    <DisplayString Condition="m_pData != 0">{m_pData}</DisplayString>
+    <DisplayString Condition="m_pData != 0">{{  [{m_elements}] {m_pData} }}</DisplayString>
     <DisplayString Condition="m_pData == 0">empty</DisplayString>
 
     <Expand>
@@ -82,9 +95,20 @@
       <Item Name="[size]" ExcludeView="simple">m_elements</Item>
       <Item Name="[capacity]" ExcludeView="simple">m_capacity</Item>
       <ArrayItems>
-        <Size>m_elements</Size>
+        <Size>m_capacity</Size>
         <ValuePointer>m_pData</ValuePointer>
       </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="spvgentwo::EntryIterator&lt;*&gt;" Inheritable="false">
+    <DisplayString Condition="m_pEntry != 0">{{ [{(void*)m_pEntry}]={m_pEntry->m_data} }}</DisplayString>
+    <DisplayString Condition="m_pEntry == 0">empty</DisplayString>
+
+    <Expand>
+      <Item Name="[data]" ExcludeView="simple" Condition="m_pEntry != 0">m_pEntry->m_data</Item>
+      <Item Name="[prev]" ExcludeView="simple" Condition="m_pEntry != 0">m_pEntry->m_pPrev</Item>
+      <Item Name="[next]" ExcludeView="simple" Condition="m_pEntry != 0">m_pEntry->m_pNext</Item>
     </Expand>
   </Type>
 

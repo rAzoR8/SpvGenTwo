@@ -48,9 +48,9 @@ namespace spvgentwo
 		bool getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const;
 
 		// manual instruction add
-		Instruction* addInstruction() { return &emplace_back(this); }
+		Instruction* addInstruction();
 
-		Instruction* operator->() { return &emplace_back(this); }
+		Instruction* operator->() { return &emplace_back(this, spv::Op::OpNop); }
 
 		template <class ExtInstr>
 		ExtInstr* ext() { return reinterpret_cast<ExtInstr*>(addInstruction()); }
@@ -61,9 +61,9 @@ namespace spvgentwo
 		// return last operation
 		operator Instruction* () const { return m_pLast != nullptr ? m_pLast->operator->() : nullptr; };
 
-		void write(IWriter* _pWriter);
+		void write(IWriter& _writer) const;
 
-		bool read(IReader* _pReader, const Grammar& _grammar);
+		bool read(IReader& _reader, const Grammar& _grammar);
 
 		// remove instruction from this block (if it is in this block). OpLabel can't be removed. Returns true if the instruction was removed
 		bool remove(const Instruction* _pInstr);
