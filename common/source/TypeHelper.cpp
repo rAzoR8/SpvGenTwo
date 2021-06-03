@@ -138,6 +138,19 @@ namespace
 		}
 		else if (_type.isPointer())
 		{
+			if (_pOpTypeInstr != nullptr && _pOpTypeInstr->isType() == false)
+			{
+				if (const char* name = instrName(_pOpTypeInstr->getResultTypeInstr()); name != nullptr)
+				{
+					insert(name);
+				}
+				else if(const Instruction* type = _pOpTypeInstr->getResultTypeInstr(); type != nullptr && type->getType() != nullptr)
+				{
+					insert(type->getType()->front().getString());
+				}
+				insert(" ");
+			}
+
 			if (const char* name = instrName(_pOpTypeInstr); name != nullptr)
 			{
 				insert(name);
