@@ -64,7 +64,7 @@ SpvGenTwoLinker.exe -l exportA.spv -l exportB.spv -c import.spv -o linked.spv -t
 ```cpp
 ; SPIR-V
 ; Version: 1.0
-; Generator: Unknown(250); 0
+; Generator: SpvGenTwo SPIR-V IR Tools(30); 0
 ; Bound: 14
 ; Schema: 0
                OpCapability Linkage
@@ -104,7 +104,7 @@ SpvGenTwoLinker.exe -l exportA.spv -l exportB.spv -c import.spv -o linked.spv -t
 ```cpp
 ; SPIR-V
 ; Version: 1.0
-; Generator: Unknown(250); 0
+; Generator: SpvGenTwo SPIR-V IR Tools(30); 0
 ; Bound: 26
 ; Schema: 0
                OpCapability Linkage
@@ -160,7 +160,7 @@ SpvGenTwoLinker.exe -l exportA.spv -l exportB.spv -c import.spv -o linked.spv -t
 ```cpp
 ; SPIR-V
 ; Version: 1.0
-; Generator: Unknown(250); 0
+; Generator: SpvGenTwo SPIR-V IR Tools(30); 0
 ; Bound: 26
 ; Schema: 0
                OpCapability Linkage
@@ -216,7 +216,7 @@ SpvGenTwoLinker.exe -l exportA.spv -l exportB.spv -c import.spv -o linked.spv -t
 ```cpp
 ; SPIR-V
 ; Version: 1.0
-; Generator: Unknown(250); 0
+; Generator: SpvGenTwo SPIR-V IR Tools(30); 0
 ; Bound: 64
 ; Schema: 0
                OpCapability Shader

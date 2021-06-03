@@ -79,7 +79,7 @@ The resulting SPIR-V binary when disassembled using `spirv-dis`:
 ```cpp
 ; SPIR-V
 ; Version: 1.0
-; Generator: Unknown(250); 0
+; Generator: SpvGenTwo SPIR-V IR Tools(30); 0
 ; Bound: 20
 ; Schema: 0
                OpCapability Shader
