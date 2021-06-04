@@ -81,7 +81,7 @@ namespace spvgentwo
 
 			void append(const char* _pStr, const char* _pushColor = nullptr, const char* _popColor = nullptr) final { m_strFunc(_pStr, _pushColor, _popColor); }
 
-			bool append(const Constant& _constant, const char* _pushColor = nullptr, const char* _popColor = nullptr) final { m_constantFunc(_constant, _pushColor, _popColor); };
+			bool append(const Constant& _constant, const char* _pushColor = nullptr, const char* _popColor = nullptr) final { return m_constantFunc(_constant, _pushColor, _popColor); };
 
 		private:
 			FuncStr m_strFunc{};
