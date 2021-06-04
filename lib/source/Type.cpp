@@ -135,7 +135,7 @@ const char* spvgentwo::Type::getString() const
 		}
 		else if (m_VecComponentCount == 4)
 		{
-			SGT_RET(b, "_3");
+			SGT_RET(b, "_4");
 		}		
 	} 
 	if (isMatrix())
