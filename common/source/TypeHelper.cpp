@@ -12,7 +12,7 @@ namespace
 
 		Instruction::Iterator op = nullptr;
 
-		if (_pOpTypeInstr != nullptr)
+		if (_pOpTypeInstr != nullptr) // get subtype if possible
 		{
 			if (_pOpTypeInstr->isType())
 			{
@@ -101,14 +101,10 @@ namespace
 			// return type
 			insertSubType(*it, 0u, op != nullptr ? op->getInstruction() : nullptr);
 
-			insert(" "); // func name
 			if (const char* name = instrName(_pOpTypeInstr); name != nullptr)
 			{
+				insert(" "); // func name
 				insert(name);
-			}
-			else
-			{
-				insert("UNNAMED_FUNCTION");
 			}
 
 			// parameters
@@ -138,29 +134,14 @@ namespace
 		}
 		else if (_type.isPointer())
 		{
-			if (_pOpTypeInstr != nullptr && _pOpTypeInstr->isType() == false)
-			{
-				if (const char* name = instrName(_pOpTypeInstr->getResultTypeInstr()); name != nullptr)
-				{
-					insert(name);
-				}
-				else if(const Instruction* type = _pOpTypeInstr->getResultTypeInstr(); type != nullptr && type->getType() != nullptr)
-				{
-					insert(type->getType()->front().getString());
-				}
-				insert(" ");
-			}
+			insertSubType(_type.front(), 0u, op != nullptr ? op->getInstruction() : nullptr);
+			insert("*");
 
 			if (const char* name = instrName(_pOpTypeInstr); name != nullptr)
 			{
+				insert(" ");
 				insert(name);
 			}
-			else // parameter type
-			{
-				insertSubType(_type.front(), 0u, _pOpTypeInstr); // or pass subtype instr?
-			}
-
-			insert("*");
 		}
 		else if (_type.isArray())
 		{
