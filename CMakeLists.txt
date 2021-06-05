@@ -50,7 +50,7 @@ function(cmake_add_warnings target_project)
 if(${SPVGENTWO_ENABLE_WARNINGS})
 	target_compile_options(${target_project} PRIVATE
 	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-		-Werror -Wall -Wextra -pedantic-errors>
+		-Werror -Wall -Wextra -pedantic-errors -Wno-unknown-pragmas>
 	$<$<CXX_COMPILER_ID:MSVC>:
 		/WX /W4 /permissive->)
 
