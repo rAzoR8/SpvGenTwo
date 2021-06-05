@@ -170,7 +170,7 @@ namespace
 			instr->assignResultId(false);
 		}
 		return instr;
-	};
+	}
 
 	template<class Func>
 	inline spvgentwo::Instruction* addTypeOrConstants(Func _func, spvgentwo::Module& _module, spvgentwo::LinkerHelper::LinkerOptions _options)

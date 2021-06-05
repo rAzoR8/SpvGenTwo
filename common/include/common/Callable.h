@@ -246,7 +246,7 @@ namespace spvgentwo
 		Callable(ReturnType(*_func)(Args..., ...)) : m_func{ _func }{}
 
 		// consume alloctor without using it
-		Callable(spvgentwo::IAllocator* _pAllocator, ReturnType(*_func)(Args..., ...)) : m_func{ _func }	{}
+		Callable([[maybe_unused]] spvgentwo::IAllocator* _pAllocator, ReturnType(*_func)(Args..., ...)) : m_func{ _func } {}
 
 		virtual ~Callable() {}
 

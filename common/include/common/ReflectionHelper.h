@@ -48,5 +48,5 @@ namespace spvgentwo
 		// get the literal value of _decoration used to decorate _pTarget instruction (type or variable)
 		// _pOutDecoration can be used to receive the OpDecoration instruction associated to the target & decoration type
 		unsigned int getDecorationLiteralFromTarget(spv::Decoration _decoration, const Instruction* _pTarget, const Instruction** _pOutDecoration = nullptr);
-	};
+	}
 } // !spvgentwo

@@ -614,7 +614,7 @@ spvgentwo::Type spvgentwo::Type::wrapVector(const unsigned int _elements) const
 	Type vec(m_subTypes.getAllocator());
 	vec.Vector(_elements, this);
 	return vec;
-};
+}
 
 spvgentwo::Type spvgentwo::Type::wrapMatrix(const unsigned int _columns) const
 {
