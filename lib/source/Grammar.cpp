@@ -7486,24 +7486,24 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 	m_operandNames.emplaceUnique(Hash64(35u, 2u), "RayQueryCommittedIntersectionGeneratedKHR");
 	m_operandNames.emplaceUnique(Hash64(36u, 0u), "RayQueryCandidateIntersectionTriangleKHR");
 	m_operandNames.emplaceUnique(Hash64(36u, 1u), "RayQueryCandidateIntersectionAABBKHR");
-};
+}
 const Grammar::Instruction* Grammar::getInfo(unsigned int _opcode, Extension _extension) const
 {
 	return m_instructions.get(Hash64(_opcode, static_cast<unsigned int>(_extension)));
-};
+}
 const char* Grammar::getOperandName(OperandKind _kind, unsigned int _literalValue) const
 {
 	const char** name = m_operandNames.get(Hash64(static_cast<unsigned int>(_kind), _literalValue));
 	return name == nullptr ? nullptr : *name;
-};
+}
 const Vector<Grammar::Operand>* Grammar::getOperandParameters(OperandKind _kind, unsigned int _literalValue) const
 {
 	return m_operandParameters.get(Hash64(static_cast<unsigned int>(_kind), _literalValue));
-};
+}
 const Vector<Grammar::Operand>* Grammar::getOperandBases(OperandKind _kind) const
 {
 	return m_operandBases.get(_kind);
-};
+}
 bool Grammar::hasOperandParameters(OperandKind _kind)
 {
 	switch (_kind) {
@@ -7514,4 +7514,4 @@ bool Grammar::hasOperandParameters(OperandKind _kind)
 	case OperandKind::ExecutionMode: return true;
 	case OperandKind::Decoration: return true;
 	};
-};
+}
