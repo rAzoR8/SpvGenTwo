@@ -613,7 +613,7 @@ namespace spvgentwo
 	template <class T, class ...Elems>
 	auto make_array(T&& first, T&& second, Elems&& ... _elements) {
 		return const_array_t<traits::remove_cvref_t<T>, 2 + sizeof...(_elements)>{stdrep::forward<T>(first), stdrep::forward<T>(second), stdrep::forward<Elems>(_elements)...};
-	};
+	}
 #pragma endregion
 
 	template <>
