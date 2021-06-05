@@ -183,7 +183,7 @@ namespace spvgentwo
 		Instruction* constant(const T& _value, const bool _spec = false, const char* _pName = nullptr);
 
 		template <class T>
-		Instruction* specConstant(const T& _value, const char* _pName = nullptr) { return constant<T>(_value, true, _pName); };
+		Instruction* specConstant(const T& _value, const char* _pName = nullptr) { return constant<T>(_value, true, _pName); }
 		
 		void setMemoryModel(const spv::AddressingModel _addressModel, const spv::MemoryModel _memoryModel);
 
