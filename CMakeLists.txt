@@ -32,14 +32,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-if (MSVC)
-	#enforce strictness on msvc
-    add_compile_options(/W4 /permissive-)
-endif()
-
 #this project
 project(SpvGenTwo VERSION 1.0 DESCRIPTION "SPIR-V codegen library")
 
+cmake_option(SPVGENTWO_ENABLE_WARNINGS "Enable Warnings" TRUE)
 cmake_option(SPVGENTWO_LOGGING "Enable Logging" TRUE)
 cmake_option(SPVGENTWO_REPLACE_PLACEMENTNEW "Don't use replacement new from <new>" TRUE)
 cmake_option(SPVGENTWO_REPLACE_TRAITS "Use custom traits instead of <type_traits>" TRUE)
@@ -48,6 +44,20 @@ cmake_option(SPVGENTWO_BUILD_DISASSEMBLER "Build disassembler" FALSE)
 cmake_option(SPVGENTWO_BUILD_REFLECT "Build reflect" FALSE)
 cmake_option(SPVGENTWO_BUILD_LINKER "Build linker" FALSE)
 cmake_option(SPVGENTWO_DEBUG_HEAP_ALLOC "Log heap allocations" FALSE)
+
+function(cmake_add_warnings target_project)
+
+if(${SPVGENTWO_ENABLE_WARNINGS})
+	target_compile_options(${target_project} PRIVATE
+	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+		-Werror -Wall -Wextra -pedantic-errors>
+	$<$<CXX_COMPILER_ID:MSVC>:
+		/WX /W4 /permissive->)
+
+	message(STATUS "Warnings enabled for ${target_project}")
+endif()
+
+endfunction()
 
 #lib sources
 add_sources("misc/*.natvis" "lib_sources")
@@ -59,6 +69,7 @@ add_include_folder("lib/include" "lib_includes")
 #lib project
 add_library(SpvGenTwoLib "${lib_sources}")
 target_include_directories(SpvGenTwoLib PUBLIC "${lib_includes}")
+cmake_add_warnings(SpvGenTwoLib)
 
 #common sources - shared between tools, examples and tests
 add_sources("common/source/*.cpp" "common_sources")
@@ -70,6 +81,7 @@ add_library(SpvGenTwoCommon "${common_sources}")
 target_include_directories(SpvGenTwoCommon PRIVATE "${lib_includes}")
 target_include_directories(SpvGenTwoCommon PUBLIC "${common_includes}")
 target_link_libraries(SpvGenTwoCommon PRIVATE SpvGenTwoLib)
+cmake_add_warnings(SpvGenTwoCommon)
 
 #disassembler project
 if(${SPVGENTWO_BUILD_DISASSEMBLER})
@@ -80,6 +92,7 @@ if(${SPVGENTWO_BUILD_DISASSEMBLER})
 	add_executable(SpvGenTwoDisassembler "${dis_sources}")
 	target_include_directories(SpvGenTwoDisassembler PUBLIC "${dis_includes};${common_includes}")
 	target_link_libraries(SpvGenTwoDisassembler PRIVATE SpvGenTwoLib SpvGenTwoCommon)
+	cmake_add_warnings(SpvGenTwoDisassembler)
 endif()
 
 #reflection project
@@ -91,6 +104,7 @@ if(${SPVGENTWO_BUILD_REFLECT})
 	add_executable(SpvGenTwoReflect "${refl_sources}")
 	target_include_directories(SpvGenTwoReflect PUBLIC "${refl_includes};${common_includes}")
 	target_link_libraries(SpvGenTwoReflect PRIVATE SpvGenTwoLib SpvGenTwoCommon)
+	cmake_add_warnings(SpvGenTwoReflect)
 endif()
 
 #reflection project
@@ -102,6 +116,7 @@ if(${SPVGENTWO_BUILD_LINKER})
 	add_executable(SpvGenTwoLinker "${linker_sources}")
 	target_include_directories(SpvGenTwoLinker PUBLIC "${linker_includes};${common_includes}")
 	target_link_libraries(SpvGenTwoLinker PRIVATE SpvGenTwoLib SpvGenTwoCommon)
+	cmake_add_warnings(SpvGenTwoLinker)
 endif()
 
 #example project
