@@ -1172,7 +1172,8 @@ bool spvgentwo::Module::read(IReader& _reader, const Grammar& _grammar)
 
 		if (spv::IsTypeOp(op) || isSpecOrConstantOp(op))
 		{
-			if (m_TypesAndConstants.emplace_back(this, spv::Op::OpNop).readOperands(_reader, _grammar, op, operands) == false) return false;
+			if (m_TypesAndConstants.emplace_back(this, spv::Op::OpNop).readOperands(_reader, _grammar, op, operands) == false)
+				return false;
 			continue;
 		}
 
@@ -1230,7 +1231,9 @@ bool spvgentwo::Module::read(IReader& _reader, const Grammar& _grammar)
 			break;
 		}
 		case spv::Op::OpMemoryModel:
-			if (m_MemoryModel.readOperands(_reader, _grammar, op, operands) == false) return false; break;
+			if (m_MemoryModel.readOperands(_reader, _grammar, op, operands) == false)
+				return false;
+			break;
 		case spv::Op::OpEntryPoint:
 		{
 			EntryPoint* ep = &m_EntryPoints.emplace_back(this);
@@ -1272,17 +1275,25 @@ bool spvgentwo::Module::read(IReader& _reader, const Grammar& _grammar)
 			break;
 		case spv::Op::OpExecutionMode:
 		case spv::Op::OpExecutionModeId:
-			if (addExtensionModeInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
+			if (addExtensionModeInstr()->readOperands(_reader, _grammar, op, operands) == false)
+				return false;
+			break;
 		case spv::Op::OpString:
 		case spv::Op::OpSourceExtension:
 		case spv::Op::OpSource:
 		case spv::Op::OpSourceContinued:
-			if (addSourceStringInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
+			if (addSourceStringInstr()->readOperands(_reader, _grammar, op, operands) == false)
+				return false;
+			break;
 		case spv::Op::OpName:
 		case spv::Op::OpMemberName:
-			if (addNameInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
+			if (addNameInstr()->readOperands(_reader, _grammar, op, operands) == false)
+				return false;
+			break;
 		case spv::Op::OpModuleProcessed:
-			if (addModuleProccessedInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
+			if (addModuleProccessedInstr()->readOperands(_reader, _grammar, op, operands) == false)
+				return false;
+			break;
 		case spv::Op::OpDecorate:
 		case spv::Op::OpMemberDecorate:
 		case spv::Op::OpDecorationGroup:
@@ -1291,9 +1302,12 @@ bool spvgentwo::Module::read(IReader& _reader, const Grammar& _grammar)
 		case spv::Op::OpDecorateId:
 		case spv::Op::OpDecorateString:
 		case spv::Op::OpMemberDecorateString:
-			if (addDecorationInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
+			if (addDecorationInstr()->readOperands(_reader, _grammar, op, operands) == false)
+				return false;
+			break;
 		case spv::Op::OpVariable:
-			if (addGlobalVariableInstr()->readOperands(_reader, _grammar, op, operands) == false) return false;
+			if (addGlobalVariableInstr()->readOperands(_reader, _grammar, op, operands) == false)
+				return false;
 			
 			// check if storage type != function
 			if (m_GlobalVariables.last()->getStorageClass() == spv::StorageClass::Function)
@@ -1304,10 +1318,14 @@ bool spvgentwo::Module::read(IReader& _reader, const Grammar& _grammar)
 
 			break;
 		case spv::Op::OpUndef:
-			if(addUndefInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
+			if(addUndefInstr()->readOperands(_reader, _grammar, op, operands) == false)
+				return false;
+			break;
 		case spv::Op::OpLine:
 		case spv::Op::OpNoLine:
-			if (addLineInstr()->readOperands(_reader, _grammar, op, operands) == false) return false; break;
+			if (addLineInstr()->readOperands(_reader, _grammar, op, operands) == false)
+				return false;
+			break;
 		case spv::Op::OpFunction:
 		{
 			Instruction opFunc(this, spv::Op::OpNop);
