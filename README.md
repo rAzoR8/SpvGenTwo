@@ -152,6 +152,8 @@ Use the supplied CMakeLists.txt to generate project files for your build system.
 * `SPVGENTWO_REPLACE_PLACEMENTNEW` is set to TRUE by default. If FALSE, placement-new will be included from `<new>` header.
 * `SPVGENTWO_REPLACE_TRAITS` is set to TRUE by default. If FALSE, `<type_traits>` and `<utility>` header will be included under `spvgentwo::stdrep` namespace.
 * `SPVGENTWO_LOGGING` is set to TRUE by default, calls to module.log() will have not effect if FALSE.
+* `SPVGENTWO_ENABLE_WARNINGS` is set to TRUE by default and will enable most pedantic warnings-as-errors for all targets except the examples.
+* `SPVGENTWO_ENABLE_OPERANDVALIDATION` is set to TRUE by default and enables an additional validation step for every makeOp/opXZY call which is not necessary for non-development builds.
 
 Note that I mainly develop on windows using clang and MSVC but I'll also try to support GCC/linux.
 
