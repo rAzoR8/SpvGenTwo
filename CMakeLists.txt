@@ -35,6 +35,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 #this project
 project(SpvGenTwo VERSION 1.0 DESCRIPTION "SPIR-V codegen library")
 
+cmake_option(SPVGENTWO_ENABLE_OPERANDVALIDATION "Enable instruction operand validation via ITypeInferenceAndVailation" TRUE)
 cmake_option(SPVGENTWO_ENABLE_WARNINGS "Enable Warnings" TRUE)
 cmake_option(SPVGENTWO_LOGGING "Enable Logging" TRUE)
 cmake_option(SPVGENTWO_REPLACE_PLACEMENTNEW "Don't use replacement new from <new>" TRUE)
