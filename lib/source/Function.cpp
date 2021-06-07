@@ -304,7 +304,7 @@ void spvgentwo::collectReferencedVariables(const Function& _func, List<Operand>&
 {
 	struct VisitedBB
 	{
-		VisitedBB(BasicBlock* _pBB) : pBB(_pBB), visited(false) {}
+		explicit VisitedBB(BasicBlock* _pBB) : pBB(_pBB), visited(false) {}
 		BasicBlock* pBB = nullptr;
 		bool visited = false;
 		bool operator==(const BasicBlock* _pBB) const { return pBB == _pBB; }

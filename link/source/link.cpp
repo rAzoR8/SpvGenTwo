@@ -92,7 +92,7 @@ int patch(Module& _module, const HeapList<Target>& _targets, const char* _out)
 	return 0;
 }
 
-int link(HeapList<Module>& _libs, Module& _target, const LinkerHelper::LinkerOptions& _options, const char* _out)
+int link(const HeapList<Module>& _libs, Module& _target, const LinkerHelper::LinkerOptions& _options, const char* _out)
 {
 	bool success = true;
 	for (const Module& lib : _libs)
