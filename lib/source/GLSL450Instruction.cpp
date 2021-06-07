@@ -31,7 +31,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const gl
 
 	if (leftType == nullptr || rightType == nullptr) return error();
 
-	if (leftType->isScalarOrVectorOf(spv::Op::OpTypeFloat) && *rightType == *rightType)
+	if (leftType->isScalarOrVectorOf(spv::Op::OpTypeFloat) && *leftType == *rightType)
 	{
 		return opExtInst(returnType, ExtName, static_cast<unsigned int>(_op), _pOp1, _pOp2);
 	}
@@ -90,7 +90,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(const glsl
 
 	if (leftType == nullptr || rightType == nullptr) return error();
 
-	if (leftType->isScalarOrVectorOf(spv::Op::OpTypeInt) && _signed == leftType->getBaseType().getIntSign()  && *rightType == *rightType)
+	if (leftType->isScalarOrVectorOf(spv::Op::OpTypeInt) && _signed == leftType->getBaseType().getIntSign()  && *leftType == *rightType)
 	{
 		return opExtInst(returnType, ExtName, static_cast<unsigned int>(_op), _pOp1, _pOp2);
 	}
