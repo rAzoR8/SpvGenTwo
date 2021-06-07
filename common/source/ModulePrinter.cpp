@@ -409,6 +409,7 @@ bool spvgentwo::ModulePrinter::IModulePrinter::append(const Constant& _constant,
 			append(*data ? "true" : "false", _pushColor, _popColor);
 			return true;
 		}
+		return false;
 	}
 
 	char buf[64]{ '\0' };
@@ -418,7 +419,7 @@ bool spvgentwo::ModulePrinter::IModulePrinter::append(const Constant& _constant,
 	if (!printed && t.isS16())	printed = printConstData<short>(_constant, buf, "%d");
 	if (!printed && t.isS32())	printed = printConstData<int>(_constant, buf, "%d");
 	if (!printed && t.isS64())	printed = printConstData<long long>(_constant, buf, "%lld");
-	if (!printed && t.isU8())	printed = printConstData<unsigned short>(_constant, buf, "%u");
+	if (!printed && t.isU8())	printed = printConstData<unsigned char>(_constant, buf, "%u");
 	if (!printed && t.isU16())	printed = printConstData<unsigned short>(_constant, buf, "%u");
 	if (!printed && t.isU32())	printed = printConstData<unsigned int>(_constant, buf, "%u");
 	if (!printed && t.isU64())	printed = printConstData<unsigned long long>(_constant, buf, "%llu");
