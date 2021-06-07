@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+    <builddir>spvgentwo-cppcheck-build-dir</builddir>
+    <platform>Unspecified</platform>
+    <analyze-all-vs-configs>false</analyze-all-vs-configs>
+    <check-headers>true</check-headers>
+    <check-unused-templates>true</check-unused-templates>
+    <max-ctu-depth>2</max-ctu-depth>
+    <max-template-recursion>100</max-template-recursion>
+    <includedir>
+        <dir name="../lib/include/spvgentwo/"/>
+        <dir name="../common/include/common/"/>
+        <dir name="../dis/include/dis/"/>
+        <dir name="../link/include/link/"/>
+        <dir name="../refl/include/refl/"/>
+    </includedir>
+    <defines>
+        <define name="SPVGENTWO_ENABLE_OPERANDVALIDATION=1"/>
+        <define name="SPVGENTWO_ENABLE_WARNINGS=1"/>
+        <define name="SPVGENTWO_LOGGING=1"/>
+        <define name="SPVGENTWO_REPLACE_PLACEMENTNEW=1"/>
+        <define name="SPVGENTWO_REPLACE_TRAITS=1"/>
+    </defines>
+    <paths>
+        <dir name="../lib/source"/>
+        <dir name="../common/source"/>
+        <dir name="../dis/source"/>
+        <dir name="../link/source"/>
+        <dir name="../refl/source"/>
+    </paths>
+</project>
