@@ -480,3 +480,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opMatrixTimesVector(Instruction*
 	return error();
 }
 ```
+
+* if you added a new arithmetic instruction that operates on a certain (argument) type, please check if `getTypeFromOp()` from  [SpvDefines.h](lib/include/spvgentwo/SpvDefines.h) needs to be updated.
+
+* after adding support for a new SPIR-V instruction, please update the coverage table in the [ReadMe](README.md#Coverage)
