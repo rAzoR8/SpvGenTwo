@@ -340,41 +340,41 @@ namespace spvgentwo
 #pragma region SampleMethods
 		// Implicit
 		template <class ...ImageOperands>
-		Instruction* opImageSampleImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate)
+		Instruction* opImageSampleImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageSampleImplicitLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::MaskNone);
+			return opImageSample(spv::Op::OpImageSampleImplicitLod, _pSampledImage, _pCoordinate, nullptr, _imageOperands, _operands...);
 		}
 
 		// Explicit
 		template <class ...ImageOperands>
-		Instruction* opImageSampleExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pLodLevel)
+		Instruction* opImageSampleExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pLodLevel, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageSampleExplicitLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::Lod, _pLodLevel);
+			return opImageSample(spv::Op::OpImageSampleExplicitLod, _pSampledImage, _pCoordinate, nullptr, _imageOperands | spv::ImageOperandsMask::Lod, _pLodLevel, _operands...);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageSampleExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pGrad)
+		Instruction* opImageSampleExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pGrad, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageSampleExplicitLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::Grad, _pGrad);
+			return opImageSample(spv::Op::OpImageSampleExplicitLod, _pSampledImage, _pCoordinate, nullptr, _imageOperands | spv::ImageOperandsMask::Grad, _pGrad, _operands...);
 		}
 
 		// Proj
 		template <class ...ImageOperands>
-		Instruction* opImageSampleProjImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate)
+		Instruction* opImageSampleProjImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjImplicitLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::MaskNone);
+			return opImageSample(spv::Op::OpImageSampleProjImplicitLod, _pSampledImage, _pCoordinate, nullptr, _imageOperands, _operands...);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageSampleProjExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pLodLevel)
+		Instruction* opImageSampleProjExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pLodLevel, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjExplicitLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::Lod, _pLodLevel);
+			return opImageSample(spv::Op::OpImageSampleProjExplicitLod, _pSampledImage, _pCoordinate, nullptr, _imageOperands | spv::ImageOperandsMask::Lod, _pLodLevel, _operands...);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageSampleProjExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pGrad)
+		Instruction* opImageSampleProjExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pGrad, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjExplicitLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::Grad, _pGrad);
+			return opImageSample(spv::Op::OpImageSampleProjExplicitLod, _pSampledImage, _pCoordinate, nullptr, _imageOperands | spv::ImageOperandsMask::Grad, _pGrad, _operands...);
 		}
 
 		//
@@ -383,68 +383,63 @@ namespace spvgentwo
 
 		// Implicit
 		template <class ...ImageOperands>
-		Instruction* opImageSampleDrefImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference)
+		Instruction* opImageSampleDrefImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageSampleDrefImplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::MaskNone);
+			return opImageSample(spv::Op::OpImageSampleDrefImplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, _imageOperands, _operands...);
 		}
 
 		// Explicit
 		template <class ...ImageOperands>
-		Instruction* opImageSampleDrefExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pLodLevel)
+		Instruction* opImageSampleDrefExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pLodLevel, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageSampleDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::Lod, _pLodLevel);
+			return opImageSample(spv::Op::OpImageSampleDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, _imageOperands | spv::ImageOperandsMask::Lod, _pLodLevel, _operands...);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageSampleDrefExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pGrad)
+		Instruction* opImageSampleDrefExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pGrad, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageSampleDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::Grad, _pGrad);
+			return opImageSample(spv::Op::OpImageSampleDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, _imageOperands | spv::ImageOperandsMask::Grad, _pGrad, _operands...);
 		}
 
 		// Proj
 		template <class ...ImageOperands>
-		Instruction* opImageSampleProjDrefImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference)
+		Instruction* opImageSampleProjDrefImplictLod(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjDrefImplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::MaskNone);
+			return opImageSample(spv::Op::OpImageSampleProjDrefImplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, _imageOperands, _operands...);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageSampleProjDrefExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pLodLevel)
+		Instruction* opImageSampleProjDrefExplicitLodLevel(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pLodLevel, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::Lod, _pLodLevel);
+			return opImageSample(spv::Op::OpImageSampleProjDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, _imageOperands | spv::ImageOperandsMask::Lod, _pLodLevel, _operands...);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageSampleProjDrefExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pGrad)
+		Instruction* opImageSampleProjDrefExplicitLodGrad(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, Instruction* _pGrad, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageSampleProjDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::Grad, _pGrad);
+			return opImageSample(spv::Op::OpImageSampleProjDrefExplicitLod, _pSampledImage, _pCoordinate, _pDepthReference, _imageOperands | spv::ImageOperandsMask::Grad, _pGrad, _operands...);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageFetch(Instruction* _pImage, Instruction* _pCoordinate)
+		Instruction* opImageFetch(Instruction* _pImage, Instruction* _pCoordinate, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageFetch, _pImage, _pCoordinate, nullptr, spv::ImageOperandsMask::MaskNone);
+			return opImageSample(spv::Op::OpImageFetch, _pImage, _pCoordinate, nullptr, _imageOperands, _operands...);
 		}
 
 		// Gather
 		template <class ...ImageOperands>
-		Instruction* opImageGather(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pComponent)
+		Instruction* opImageGather(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pComponent, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageGather, _pSampledImage, _pCoordinate, _pComponent, spv::ImageOperandsMask::MaskNone);
+			return opImageSample(spv::Op::OpImageGather, _pSampledImage, _pCoordinate, _pComponent, _imageOperands, _operands...);
 		}
 
 		template <class ...ImageOperands>
-		Instruction* opImageDrefGather(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference)
+		Instruction* opImageDrefGather(Instruction* _pSampledImage, Instruction* _pCoordinate, Instruction* _pDepthReference, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands)
 		{
-			return opImageSample(spv::Op::OpImageDrefGather, _pSampledImage, _pCoordinate, _pDepthReference, spv::ImageOperandsMask::MaskNone);
+			return opImageSample(spv::Op::OpImageDrefGather, _pSampledImage, _pCoordinate, _pDepthReference, _imageOperands, _operands...);
 		}
 
 #pragma endregion
-
-		// Just need alias func to opImageSample
-		// Instruction* OpImageFetch(); TODO
-		// Instruction* OpImageGather(); TODO
-		// Instruction* OpImageDrefGather(); TODO
 
 		// Instruction* OpImageRead(); TODO
 		// Instruction* OpImageWrite(); TODO
