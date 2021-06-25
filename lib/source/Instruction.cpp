@@ -1340,7 +1340,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opUConvert(Instruction* _pUintVe
 
 	if (type == nullptr) return error();
 
-	if (Type t = type->getBaseType(); t.isScalarOrVectorOf(spv::Op::OpTypeInt, 0u, 0u, Sign::Unsigned) && t.getIntWidth() != _bitWidth)
+	if (Type t = *type; t.isScalarOrVectorOf(spv::Op::OpTypeInt, 0u, 0u, Sign::Unsigned) && t.getBaseType().getIntWidth() != _bitWidth)
 	{
 		t.getBaseType().setIntWidth(_bitWidth);
 		return makeOp(spv::Op::OpUConvert, getModule()->addType(t), InvalidId, _pUintVec);
@@ -1357,7 +1357,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSConvert(Instruction* _pSIntVe
 
 	if (type == nullptr) return error();
 
-	if (Type t = type->getBaseType(); t.isScalarOrVectorOf(spv::Op::OpTypeInt, 0u, 0u, Sign::Signed) && t.getIntWidth() != _bitWidth)
+	if (Type t = *type; t.isScalarOrVectorOf(spv::Op::OpTypeInt, 0u, 0u, Sign::Signed) && t.getBaseType().getIntWidth() != _bitWidth)
 	{
 		t.getBaseType().setIntWidth(_bitWidth);
 		return makeOp(spv::Op::OpSConvert, getModule()->addType(t), InvalidId, _pSIntVec);
@@ -1374,7 +1374,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFConvert(Instruction* _pFloatV
 
 	if (type == nullptr) return error();
 
-	if (Type t = type->getBaseType(); t.isScalarOrVectorOf(spv::Op::OpTypeFloat) && t.getFloatWidth() != _bitWidth)
+	// copy type for manipulation
+	if (Type t = *type; t.isScalarOrVectorOf(spv::Op::OpTypeFloat) && t.getBaseType().getFloatWidth() != _bitWidth)
 	{
 		t.getBaseType().setFloatWidth(_bitWidth);
 		return makeOp(spv::Op::OpFConvert, getModule()->addType(t), InvalidId, _pFloatVec);
