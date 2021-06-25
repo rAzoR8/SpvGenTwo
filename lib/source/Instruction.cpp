@@ -1467,6 +1467,59 @@ spvgentwo::Instruction* spvgentwo::Instruction::error() const
 	return getModule()->getErrorInstr();
 }
 
+bool spvgentwo::Instruction::checkImageCoordinateType(const Type* _pImageType, const Type* _pCoordType, Flag<CheckImgCoord> _args) const
+{
+	if (_pImageType->isImage() == false)
+		return false;
+
+	Module* module = getModule();
+
+	unsigned int dim = getImageDimension(_pImageType->getImageDimension());
+
+	if(dim == 0u)
+	{
+		module->logError("Image dimension not supported/implemented");
+		return false;
+	}
+
+	if (_pImageType->getImageArray())
+	{
+		dim += 1u;
+	}
+
+	if (_args & CheckImgCoord::IsProjective)
+	{
+		dim += 1u;
+	}
+
+	if (dim > 1u && _pCoordType->getVectorComponentCount() < dim)
+	{
+		module->logError("Dimension of coordinates does not match image type");
+		return false;
+	}
+
+	if (_pCoordType->isScalarOrVectorOf(spv::Op::OpTypeInt))
+	{
+		if (_args.none(CheckImgCoord::CanBeInt, CheckImgCoord::MustBeInt))
+		{
+			module->logError("Image operation does not support integer coordinates");
+			return false;
+		}
+	}
+	else if (_args & CheckImgCoord::MustBeInt)
+	{
+		module->logError("Coordinate type must be scalar or vector of integer");
+		return false;
+	}
+	else if (_pCoordType->isScalarOrVectorOf(spv::Op::OpTypeFloat) == false)
+	{
+		module->logError("Coordinate type must be scalar or vector of float");
+		return false;
+	}
+
+	return true;
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)
 {
 	if (_pLeft == nullptr) return error();

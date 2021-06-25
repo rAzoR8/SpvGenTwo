@@ -277,9 +277,9 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | opExecutionMode | &#10004; |
 | OpCapability | &#10004; |
 | OpExecutionModeId | &#10004; |
-| OpTypeXXX | via `Module::addType()` |
-| OpConstantXXX | via `Module::addConstant()` |
-| OpSpecConstantXXX | via `Module::addConstant()` |
+| OpTypeXXX | via `Module::addType()/type<T>` |
+| OpConstantXXX | via `Module::addConstant()/constant<T>(T t)` |
+| OpSpecConstantXXX | via `Module::addConstant()/constant<T>(T t)` |
 | OpSpecConstantOp | &#10004; |
 | OpFunction | &#10004; |
 | OpFunctionParameter | &#10004; |
@@ -319,11 +319,11 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpImageSampleProjExplicitLod | &#10004; |
 | OpImageSampleProjDrefImplicitLod | &#10004; |
 | OpImageSampleProjDrefExplicitLod | &#10004; |
-| OpImageFetch | via generic `opImageSample` |
-| OpImageGather | via generic `opImageSample` |
-| OpImageDrefGather | via generic `opImageSample` |
-| OpImageRead | &#9744; |
-| OpImageWrite | &#9744; |
+| OpImageFetch | &#10004; |
+| OpImageGather | &#10004; |
+| OpImageDrefGather | &#10004; |
+| OpImageRead | &#10004; |
+| OpImageWrite | &#10004; |
 | OpImage | &#9744; |
 | OpImageQueryFormat | &#9744; |
 | OpImageQueryOrder | &#9744; |

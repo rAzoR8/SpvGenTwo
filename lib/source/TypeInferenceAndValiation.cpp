@@ -218,7 +218,6 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpImageFetch:
 	case spv::Op::OpImageGather:
 	case spv::Op::OpImageDrefGather:
-	case spv::Op::OpImageRead:
 	{
 		if (type1 == nullptr) break;
 
@@ -242,6 +241,17 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	}		
 		break;
 
+	case spv::Op::OpImageRead:
+	{
+		// Result Type must be a scalar or vector of floating-point type or integer type. It must be a scalar or vector with
+		// component type the same as Sampled Type of the OpTypeImage(unless that Sampled Type is OpTypeVoid)
+
+		if (type1 == nullptr || type1->isImage() == false) break;
+
+		Type t(module->newType().fromImageFormat(type1->getImageFormat(), true)); // Norm as float
+
+		return module->addType(t);
+	}
 	case spv::Op::OpConvertFToU:
 	{
 		if (type1 == nullptr) return module->getErrorInstr();
@@ -249,7 +259,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		Type t(*type1);
 		Type& base = t.getBaseType();
 		base.setType(spv::Op::OpTypeInt);
-		base.setIntSign(false); // int/float with stays the same
+		base.setIntSign(false); // int/float width stays the same
 
 		return module->addType(t);
 	}
@@ -260,7 +270,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		Type t(*type1);
 		Type& base = t.getBaseType();
 		base.setType(spv::Op::OpTypeInt);
-		base.setIntSign(true);
+		base.setIntSign(true); // int/float width stays the same
 
 		return module->addType(t);
 	}
@@ -381,6 +391,7 @@ bool spvgentwo::defaultimpl::validateOperands(const spvgentwo::Instruction& _ins
 
 	switch (_instr.getOperation())
 	{
+	case spv::Op::OpImageRead:
 	case spv::Op::OpImageFetch:
 	case spv::Op::OpImageDrefGather:
 	case spv::Op::OpImageGather:
@@ -449,7 +460,7 @@ bool spvgentwo::defaultimpl::validateImageOperandType(const Instruction& _instr)
 
 	for (unsigned int i = 0u; opMask != spv::ImageOperandsMask::MaskNone && i < (unsigned int)spv::ImageOperandsShift::ZeroExtend; ++i)
 	{
-		// TODO: get operands  within the loop and dont return in the switch
+		// TODO: get operands within the loop and dont return in the switch
 		spv::ImageOperandsMask mask = static_cast<spv::ImageOperandsMask>(1u << i);
 		if ((opMask & mask) == mask)
 		{
@@ -491,7 +502,15 @@ bool spvgentwo::defaultimpl::validateImageOperandType(const Instruction& _instr)
 			case spv::ImageOperandsMask::ConstOffsets:
 				break; // not implemented yet
 			case spv::ImageOperandsMask::Sample:
-				return module->logError(type1->isInt(), "Sample operand must be of type int");
+				if (op != spv::Op::OpImageFetch &&
+					op != spv::Op::OpImageRead &&
+					op != spv::Op::OpImageWrite &&
+					op != spv::Op::OpImageSparseFetch &&
+					op != spv::Op::OpImageSparseRead) {
+					module->logError("Sample operand can only be used with OpImageFetch,OpImageRead,OpImageWrite,OpImageSparseFetch or OpImageSparseRead");
+					return false;
+				}
+				return module->logError(type1->isInt() && imageType->getImageMultiSampled(), "Sample operand must be of type int & the image must be MS");
 			case spv::ImageOperandsMask::MinLod:
 				return module->logError(type1->isFloat(), "MinLod operand must be of type float");
 			case spv::ImageOperandsMask::MakeTexelAvailableKHR:
