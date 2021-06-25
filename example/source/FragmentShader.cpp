@@ -11,12 +11,29 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
 
     // configure capabilities and extensions
     module.addCapability(spv::Capability::Shader);
+    module.addCapability(spv::Capability::StorageImageExtendedFormats);
+    module.addCapability(spv::Capability::Float16);
+    module.addCapability(spv::Capability::Int8);
 
     // global variables
-    Instruction* uniColor = module.uniform<glsl::vec4>(u8"u_color", module.constant(make_vector(0.f, 0.f, 0.f, 1.f))); // use initializer
-    Instruction* uniTex = module.uniform(u8"u_baseColor", dyn_sampled_image_t{}); //default 2d float texture
-    Instruction* inUV = module.input<glsl::vec2>(u8"v_inUV"); // varying input UVs
+    Instruction* const uniColor = module.uniform<glsl::vec4>(u8"u_color", module.constant(make_vector(0.f, 0.f, 0.f, 1.f))); // use initializer
+    Instruction* const uniTex = module.uniform(u8"u_baseColor", dyn_sampled_image_t{}); //default 2d float texture
+    Instruction* const inUV = module.input<glsl::vec2>(u8"v_inUV"); // varying input UVs
 
+    dyn_image_t imgDesc{ dyn_scalar_t{spv::Op::OpTypeFloat, 16u} };
+    imgDesc.format = spv::ImageFormat::Rg16;
+    Instruction* const uniImgRawRG16 = module.uniform(u8"u_imgRG16", imgDesc);
+
+    // 3d volume tex
+    imgDesc.dimension = spv::Dim::Dim3D;
+    imgDesc.sampledType = { spv::Op::OpTypeInt, 8u };
+    imgDesc.format = spv::ImageFormat::Rgba8ui;
+
+    Instruction* const uni3DImgRawRGBA8 = module.uniform(u8"u_img3DRGABA8", imgDesc);
+
+    Instruction* const constCoord2D = module.constant(make_vector(0u, 1u));
+    Instruction* const constCoord3D = module.constant(make_vector(0u, 1u, 2u));
+    
     // void main(); entry point
     {
         EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Fragment, "main");
@@ -37,6 +54,12 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
 			{
                 trueBB->opKill(); // discard pixel if baseColor.a < u_color.a
 			});
+
+        Instruction* rawImgRg16 = merge->opLoad(uniImgRawRG16);
+        Instruction* rawTexelRG = merge->opImageRead(rawImgRg16, constCoord2D);
+
+        Instruction* rawImgRgba8 = merge->opLoad(uni3DImgRawRGBA8);
+        Instruction* rawTexelRGBA = merge->opImageRead(rawImgRgba8, constCoord3D);
 
         merge.returnValue();
     }

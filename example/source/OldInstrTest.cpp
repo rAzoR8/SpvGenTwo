@@ -30,7 +30,7 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 	dyn_sampled_image_t img{ spv::Op::OpTypeFloat };
 
-	Instruction* uniNormal = module.uniform<dyn_sampled_image_t>("u_normalMap", img);
+	Instruction* uniNormal = module.uniform<dyn_sampled_image_t>(u8"u_normalMap", img);
 
 	img.imageType.samplerAccess = SamplerImageAccess::Sampled;
 
