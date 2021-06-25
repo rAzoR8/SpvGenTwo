@@ -333,10 +333,6 @@ namespace spvgentwo
 
 		Instruction* opSampledImage(Instruction* _pImage, Instruction* _pSampler);
 
-		// generic base case with image operands
-		template <class ...ImageOperands>
-		Instruction* genericImageOp(const spv::Op _imageOp, Instruction* _pTargetImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent, const Flag<spv::ImageOperandsMask> _imageOperands, ImageOperands... _operands);
-
 #pragma region SampleMethods
 		// Implicit
 		template <class ...ImageOperands>
@@ -739,6 +735,10 @@ namespace spvgentwo
 		// creates literals
 		template <class T, class ...Args>
 		void makeOpInternal(T&& first, Args&& ... _args);
+
+		// generic base case with image operands
+		template <class ...ImageOperands>
+		Instruction* genericImageOp(const spv::Op _imageOp, Instruction* _pTargetImage, Instruction* _pCoordinate, Instruction* _pDrefOrCompnent, const Flag<spv::ImageOperandsMask> _imageOperands, ImageOperands... _operands);
 
 		// checks types based on passed _type and_sign
 		Instruction* scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign);
