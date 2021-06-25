@@ -272,12 +272,12 @@ spvgentwo::EntryPoint& spvgentwo::Module::addEntryPoint()
 	return m_EntryPoints.emplace_back(this);
 }
 
-spvgentwo::Type spvgentwo::Module::newType()
+spvgentwo::Type spvgentwo::Module::newType() const
 {
 	return Type(m_pAllocator);
 }
 
-spvgentwo::Constant spvgentwo::Module::newConstant()
+spvgentwo::Constant spvgentwo::Module::newConstant() const
 {
 	return Constant(m_pAllocator);
 }
