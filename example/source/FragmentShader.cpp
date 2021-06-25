@@ -14,6 +14,7 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
     module.addCapability(spv::Capability::StorageImageExtendedFormats);
     module.addCapability(spv::Capability::Float16);
     module.addCapability(spv::Capability::Int8);
+    module.addCapability(spv::Capability::Kernel);
 
     // global variables
     Instruction* const uniColor = module.uniform<glsl::vec4>(u8"u_color", module.constant(make_vector(0.f, 0.f, 0.f, 1.f))); // use initializer
@@ -23,6 +24,11 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
     dyn_image_t imgDesc{ dyn_scalar_t{spv::Op::OpTypeFloat, 16u} };
     imgDesc.format = spv::ImageFormat::Rg16;
     Instruction* const uniImgRawRG16 = module.uniform(u8"u_imgRG16", imgDesc);
+
+    imgDesc.format = spv::ImageFormat::Rg32f;
+    imgDesc.sampledType.bits = 32u;
+    imgDesc.accessQualifier = spv::AccessQualifier::WriteOnly;
+    Instruction* const uniImgRawStorageRG32 = module.uniform(u8"u_imgStorageRG32", imgDesc);
 
     // 3d volume tex
     imgDesc.dimension = spv::Dim::Dim3D;
@@ -56,10 +62,17 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
 			});
 
         Instruction* rawImgRg16 = merge->opLoad(uniImgRawRG16);
-        Instruction* rawTexelRG = merge->opImageRead(rawImgRg16, constCoord2D);
+        Instruction* rawTexelRG16 = merge->opImageRead(rawImgRg16, constCoord2D);
 
         Instruction* rawImgRgba8 = merge->opLoad(uni3DImgRawRGBA8);
-        Instruction* rawTexelRGBA = merge->opImageRead(rawImgRgba8, constCoord3D);
+        Instruction* rawTexelRGBA7 = merge->opImageRead(rawImgRgba8, constCoord3D);
+
+        Instruction* offsetCoord = merge->Add(constCoord2D, module.constant(make_vector(8u, 16u)));
+        Instruction* rg32 = merge->opFConvert(rawTexelRG16, 32u);
+        rg32 = merge->Mul(rg32, module.constant(0.5f));
+
+        Instruction* rawStorageImgRG32 = merge->opLoad(uniImgRawStorageRG32);
+        merge->opImageWrite(rawStorageImgRG32, offsetCoord, rg32);
 
         merge.returnValue();
     }

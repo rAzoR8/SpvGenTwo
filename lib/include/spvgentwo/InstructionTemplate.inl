@@ -637,11 +637,11 @@ namespace spvgentwo
 
 		if (_imageOperands)
 		{
-			return makeOp(spv::Op::OpImageRead, _pImage, _pCoordinate, _pTexel, literal_t{ _imageOperands }, _operands...);
+			return makeOp(spv::Op::OpImageWrite, _pImage, _pCoordinate, _pTexel, literal_t{ _imageOperands }, _operands...);
 		}
 		else
 		{
-			return makeOp(spv::Op::OpImageRead, _pImage, _pCoordinate, _pTexel);
+			return makeOp(spv::Op::OpImageWrite, _pImage, _pCoordinate, _pTexel);
 		}
 	}
 } // !spvgentwo
