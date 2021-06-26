@@ -1376,6 +1376,36 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageQueryOrder(Instruction* _
 	return makeOp(spv::Op::OpImageQueryOrder, InvalidInstr, InvalidId, _pImage);
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQuerySizeLod(Instruction* _pImage, Instruction* _pLoDInt)
+{
+	const Type* type = _pImage->getType();
+	if (type == nullptr) return error();
+
+	if (type->isImage() == false)
+	{
+		getModule()->logError("Operand of OpImageQuerySizeLod is not of type OpTypeImage");
+		return error();
+	}
+	else if (spv::Dim d = type->getImageDimension(); d != spv::Dim::Dim1D && d != spv::Dim::Dim2D && d != spv::Dim::Dim3D && d != spv::Dim::Cube)
+	{
+		getModule()->logError("Dimension of OpImageQuerySizeLod operand _pImage is not 1D, 2D, 3D or Cube");
+		return error();
+	}
+	else if (type->getImageMultiSampled())
+	{
+		getModule()->logError("Operand _pImage of OpImageQuerySizeLod must not be MS 1 (multi sampled)");
+		return error();
+	}
+	else if (const Type* lodType = _pLoDInt->getType(); lodType == nullptr || lodType->isUInt() == false)
+	{
+		getModule()->logError("Operand _pLoDInt of OpImageQuerySizeLod must be of type unsinged scalar integer");
+		return error();
+	}	
+
+	return makeOp(spv::Op::OpImageQuerySizeLod, InvalidInstr, InvalidId, _pImage, _pLoDInt);
+
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opUConvert(Instruction* _pUintVec, unsigned int _bitWidth)
 {
 	const Type* type = _pUintVec->getType();

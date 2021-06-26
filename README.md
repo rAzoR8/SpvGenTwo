@@ -325,9 +325,9 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpImageRead | &#10004; |
 | OpImageWrite | &#10004; |
 | OpImage | &#10004; |
-| OpImageQueryFormat | &#9744; |
-| OpImageQueryOrder | &#9744; |
-| OpImageQuerySizeLod | &#9744; |
+| OpImageQueryFormat | &#10004; |
+| OpImageQueryOrder | &#10004; |
+| OpImageQuerySizeLod | &#10004; |
 | OpImageQuerySize | &#9744; |
 | OpImageQueryLod | &#9744; |
 | OpImageQueryLevels | &#9744; |

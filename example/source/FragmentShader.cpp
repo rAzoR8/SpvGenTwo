@@ -52,10 +52,11 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
         Instruction* mask = bb->opLoad(uniColor);
         Instruction* alphaMask = bb->opVectorExtractDynamic(mask, module.constant(3u)); // extract alpha channel
 
-        Instruction* unknownSampledImg = bb->opLoad(uniImageUnknownFmt);
-        Instruction* unknownImg = bb->opImage(unknownSampledImg);
+        Instruction* const unknownSampledImg = bb->opLoad(uniImageUnknownFmt);
+        Instruction* const unknownImg = bb->opImage(unknownSampledImg);
         Instruction* format = bb->opImageQueryFormat(unknownImg);
         Instruction* channelOrder = bb->opImageQueryOrder(unknownImg);
+        Instruction* sizeDim = bb->opImageQuerySizeLod(unknownImg, module.constant(0u));
 
         Instruction* color = bb->opLoad(uniTex);
         Instruction* uv = bb->opLoad(inUV);

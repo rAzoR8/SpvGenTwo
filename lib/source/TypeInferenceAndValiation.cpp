@@ -263,6 +263,22 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpImageQueryFormat:
 	case spv::Op::OpImageQueryOrder:
 		return module->type<unsigned int>();
+	case spv::Op::OpImageQuerySizeLod:
+	{
+		if (type1 == nullptr || type1->isImage() == false) break;
+		//Result Type must be an integer type scalar or vector.The number of components must be
+		//	1 for the 1D dimensionality,
+		//	2 for the 2D and Cube dimensionalities,
+		//	3 for the 3D dimensionality,
+		//	plus 1 more if the image type is arrayed. This vector is filled in
+		//	with(width[, height][, depth][, elements]) where elements is the
+		//	number of layers in an image array, or the number of cubes in a
+		//	cube - map array.
+
+		auto dim = getImageDimension(type1->getImageDimension()) + (type1->getImageArray() ? 1u : 0u);
+
+		return module->addType(module->newType().Vector(dim).UIntM());
+	}
 	case spv::Op::OpConvertFToU:
 	{
 		if (type1 == nullptr) return module->getErrorInstr();
