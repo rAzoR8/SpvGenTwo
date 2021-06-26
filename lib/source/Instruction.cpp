@@ -1334,6 +1334,20 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 	return error();
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opImage(Instruction* _pSampledImage)
+{
+	const Type* type = _pSampledImage->getType();
+	if (type == nullptr) return error();
+
+	if (type->isSampledImage() == false)
+	{
+		getModule()->logError("Operand of OpImage is not of type SampledImage");
+		return error();
+	}
+
+	return makeOp(spv::Op::OpImage, _pSampledImage->getResultTypeInstr()->getFirstActualOperand()->getInstruction(), InvalidId, _pSampledImage);
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opUConvert(Instruction* _pUintVec, unsigned int _bitWidth)
 {
 	const Type* type = _pUintVec->getType();

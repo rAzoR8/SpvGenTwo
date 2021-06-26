@@ -446,7 +446,7 @@ namespace spvgentwo
 		template <class ...ImageOperands>
 		Instruction* opImageWrite(Instruction* _pImage, Instruction* _pCoordinate, Instruction* _pTexel, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands);
 
-		// Instruction* OpImage(); TODO
+		 Instruction* opImage(Instruction* _pSampledImage);
 		// Instruction* OpImageQueryFormat(); TODO
 
 		// Instruction* OpImageQueryFormat(); TODO

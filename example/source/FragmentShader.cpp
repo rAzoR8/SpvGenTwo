@@ -52,6 +52,8 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
         Instruction* color = bb->opLoad(uniTex);
         Instruction* uv = bb->opLoad(inUV);
 
+        Instruction* underlyingImage = bb->opImage(color);
+
         Instruction* baseColor = bb->opImageSampleImplictLod(color, uv);
         Instruction* alpha = bb->opVectorExtractDynamic(baseColor, module.constant(3u)); // extract alpha channel
 

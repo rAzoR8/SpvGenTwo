@@ -10,7 +10,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 {
 	Module* module = _instr.getModule();
 	auto op1 = _instr.getFirstActualOperand();
-	auto op2 = op1 + 1u;
+	auto op2 = op1.next();
 
 	Instruction* typeInstr1 = op1 != nullptr && op1->isInstruction() && op1->instruction != nullptr ? op1->instruction->getResultTypeInstr() : nullptr;
 	Instruction* typeInstr2 = op2 != nullptr && op2->isInstruction() && op2->instruction != nullptr ? op2->instruction->getResultTypeInstr() : nullptr;
@@ -251,6 +251,14 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		Type t(module->newType().fromImageFormat(type1->getImageFormat(), true)); // Norm as float
 
 		return module->addType(t);
+	}
+
+	case spv::Op::OpImage:
+	{
+		if (type1 == nullptr || type1->isSampledImage() == false) break;
+
+		// Sampled Image must have type OpTypeSampledImage whose Image Type is the same as Result Type.
+		return typeInstr1->getFirstActualOperand()->getInstruction();
 	}
 	case spv::Op::OpConvertFToU:
 	{
