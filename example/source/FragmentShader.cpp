@@ -25,16 +25,19 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
     imgDesc.format = spv::ImageFormat::Rg16;
     Instruction* const uniImgRawRG16 = module.uniform(u8"u_imgRG16", imgDesc);
 
+    imgDesc.format = spv::ImageFormat::Unknown;
+    Instruction* const uniImageUnknownFmt = module.uniform(u8"u_imgUnknownFmt", dyn_sampled_image_t{ imgDesc });
+
     imgDesc.format = spv::ImageFormat::Rg32f;
     imgDesc.sampledType.bits = 32u;
     imgDesc.accessQualifier = spv::AccessQualifier::WriteOnly;
+    imgDesc.samplerAccess = SamplerImageAccess::Unknown;
     Instruction* const uniImgRawStorageRG32 = module.uniform(u8"u_imgStorageRG32", imgDesc);
 
     // 3d volume tex
     imgDesc.dimension = spv::Dim::Dim3D;
     imgDesc.sampledType = { spv::Op::OpTypeInt, 8u };
     imgDesc.format = spv::ImageFormat::Rgba8ui;
-
     Instruction* const uni3DImgRawRGBA8 = module.uniform(u8"u_img3DRGABA8", imgDesc);
 
     Instruction* const constCoord2D = module.constant(make_vector(0u, 1u));
@@ -49,11 +52,13 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
         Instruction* mask = bb->opLoad(uniColor);
         Instruction* alphaMask = bb->opVectorExtractDynamic(mask, module.constant(3u)); // extract alpha channel
 
+        Instruction* unknownSampledImg = bb->opLoad(uniImageUnknownFmt);
+        Instruction* unknownImg = bb->opImage(unknownSampledImg);
+        Instruction* format = bb->opImageQueryFormat(unknownImg);
+        Instruction* channelOrder = bb->opImageQueryOrder(unknownImg);
+
         Instruction* color = bb->opLoad(uniTex);
         Instruction* uv = bb->opLoad(inUV);
-
-        Instruction* underlyingImage = bb->opImage(color);
-
         Instruction* baseColor = bb->opImageSampleImplictLod(color, uv);
         Instruction* alpha = bb->opVectorExtractDynamic(baseColor, module.constant(3u)); // extract alpha channel
 

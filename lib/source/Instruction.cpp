@@ -1341,11 +1341,39 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImage(Instruction* _pSampledIm
 
 	if (type->isSampledImage() == false)
 	{
-		getModule()->logError("Operand of OpImage is not of type SampledImage");
+		getModule()->logError("Operand of OpImage is not of type OpTypeSampledImage");
 		return error();
 	}
 
 	return makeOp(spv::Op::OpImage, _pSampledImage->getResultTypeInstr()->getFirstActualOperand()->getInstruction(), InvalidId, _pSampledImage);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQueryFormat(Instruction* _pImage)
+{
+	const Type* type = _pImage->getType();
+	if (type == nullptr) return error();
+
+	if (type->isImage() == false || type->getImageFormat() != spv::ImageFormat::Unknown)
+	{
+		getModule()->logError("Operand of OpImageQueryFormat is not of type OpTypeImage with Unknown ImageFormat");
+		return error();
+	}
+
+	return makeOp(spv::Op::OpImageQueryFormat, InvalidInstr, InvalidId, _pImage);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQueryOrder(Instruction* _pImage)
+{
+	const Type* type = _pImage->getType();
+	if (type == nullptr) return error();
+
+	if (type->isImage() == false || type->getImageFormat() != spv::ImageFormat::Unknown)
+	{
+		getModule()->logError("Operand of OpImageQueryOrder is not of type OpTypeImage with Unknown ImageFormat");
+		return error();
+	}
+
+	return makeOp(spv::Op::OpImageQueryOrder, InvalidInstr, InvalidId, _pImage);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opUConvert(Instruction* _pUintVec, unsigned int _bitWidth)

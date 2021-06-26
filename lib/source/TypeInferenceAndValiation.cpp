@@ -260,6 +260,9 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		// Sampled Image must have type OpTypeSampledImage whose Image Type is the same as Result Type.
 		return typeInstr1->getFirstActualOperand()->getInstruction();
 	}
+	case spv::Op::OpImageQueryFormat:
+	case spv::Op::OpImageQueryOrder:
+		return module->type<unsigned int>();
 	case spv::Op::OpConvertFToU:
 	{
 		if (type1 == nullptr) return module->getErrorInstr();

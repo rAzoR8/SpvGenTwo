@@ -447,10 +447,10 @@ namespace spvgentwo
 		Instruction* opImageWrite(Instruction* _pImage, Instruction* _pCoordinate, Instruction* _pTexel, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands);
 
 		 Instruction* opImage(Instruction* _pSampledImage);
-		// Instruction* OpImageQueryFormat(); TODO
 
-		// Instruction* OpImageQueryFormat(); TODO
-		// Instruction* OpImageQueryOrder(); TODO
+		 Instruction* opImageQueryFormat(Instruction* _pImage);
+		 Instruction* opImageQueryOrder(Instruction* _pImage);
+
 		// Instruction* OpImageQuerySizeLod(); TODO
 		// Instruction* OpImageQuerySize(); TODO
 		// Instruction* OpImageQueryLod(); TODO
