@@ -57,6 +57,7 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
         Instruction* format = bb->opImageQueryFormat(unknownImg);
         Instruction* channelOrder = bb->opImageQueryOrder(unknownImg);
         Instruction* sizeDim = bb->opImageQuerySizeLod(unknownImg, module.constant(0u));
+        sizeDim = bb->opImageQuerySize(unknownImg);
 
         Instruction* color = bb->opLoad(uniTex);
         Instruction* uv = bb->opLoad(inUV);

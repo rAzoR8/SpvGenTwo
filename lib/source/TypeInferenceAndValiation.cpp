@@ -264,6 +264,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpImageQueryOrder:
 		return module->type<unsigned int>();
 	case spv::Op::OpImageQuerySizeLod:
+	case spv::Op::OpImageQuerySize:
 	{
 		if (type1 == nullptr || type1->isImage() == false) break;
 		//Result Type must be an integer type scalar or vector.The number of components must be

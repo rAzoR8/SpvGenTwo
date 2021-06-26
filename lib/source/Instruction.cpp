@@ -1403,7 +1403,31 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageQuerySizeLod(Instruction*
 	}	
 
 	return makeOp(spv::Op::OpImageQuerySizeLod, InvalidInstr, InvalidId, _pImage, _pLoDInt);
+}
 
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQuerySize(Instruction* _pImage)
+{
+	const Type* type = _pImage->getType();
+	if (type == nullptr) return error();
+
+	if (type->isImage() == false)
+	{
+		getModule()->logError("Operand of OpImageQuerySize is not of type OpTypeImage");
+		return error();
+	}
+	else if (spv::Dim d = type->getImageDimension(); d != spv::Dim::Dim1D && d != spv::Dim::Dim2D && d != spv::Dim::Dim3D && d != spv::Dim::Cube && d != spv::Dim::Rect)
+	{
+		getModule()->logError("Dimension of OpImageQuerySize operand _pImage is not 1D, 2D, 3D, Cube or Rect");
+		return error();
+	}
+	else if (d != spv::Dim::Rect && type->getImageMultiSampled() == false && type->getImageSamplerAccess() == SamplerImageAccess::Sampled)
+	{
+		// Additionally, if its Dim is 1D, 2D, 3D, or Cube, it must also have either an MS of 1 or a Sampled of 0 or 2.
+		getModule()->logError("Operand _pImage of OpImageQuerySize must have either an MS of 1 or a Sampled of 0 or 2");
+		return error();
+	}
+
+	return makeOp(spv::Op::OpImageQuerySize, InvalidInstr, InvalidId, _pImage);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opUConvert(Instruction* _pUintVec, unsigned int _bitWidth)
