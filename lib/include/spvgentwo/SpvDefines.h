@@ -436,7 +436,7 @@ namespace spvgentwo
 		}
 	}
 
-	// returns number of dimensions for spv::Dim, or 0u if input is unimplemented
+	// returns number of dimensions of an image (surface/layer) for spv::Dim, or 0u if input is unimplemented
 	constexpr unsigned int getImageDimension(spv::Dim _dim)
 	{
 		switch (_dim)
@@ -445,11 +445,11 @@ namespace spvgentwo
 		case spv::Dim::Buffer:
 			return 1u;
 		case spv::Dim::Dim2D:
+		case spv::Dim::Cube:
 		case spv::Dim::Rect:
 		case spv::Dim::SubpassData:
 			return 2u;
 		case spv::Dim::Dim3D:
-		case spv::Dim::Cube:
 			return 3u;
 		default:
 			return 0u;
