@@ -251,14 +251,14 @@ namespace spvgentwo
 		Instruction* addDecorationInstr();
 
 		// creates new empty type using this modules allocator
-		Type newType();
+		Type newType() const;
 
 		// creates new type, calls make with Args using this modules allocator
 		template <class T, class ... Props>
-		Type newType(const Props& ... _props);
+		Type newType(const Props& ... _props) const;
 
 		// creates new empty constant using this modules allocator
-		Constant newConstant();
+		Constant newConstant() const;
 
 		// add empty instruction which must be OpVarible with StorageClass != function
 		Instruction* addGlobalVariableInstr(const char* _pName = nullptr);

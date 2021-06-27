@@ -554,6 +554,136 @@ spvgentwo::Type& spvgentwo::Type::AccelerationStructureKHR()
 	return *this;
 }
 
+spvgentwo::Type& spvgentwo::Type::fromImageFormat(spv::ImageFormat _format, bool _NormAsFloat)
+{
+	reset();
+
+	auto norm = [_NormAsFloat](Type& _elem, unsigned int _bits)
+	{
+		if (_NormAsFloat)
+		{
+			_elem.Float(_bits);
+		}
+		else
+		{
+			_elem.Int(_bits);
+		}
+	};
+
+	// plain formats like Rgba8 are UNorms:
+	// https://www.khronos.org/registry/vulkan/specs/1.2/html/chap36.html#spirvenv-image-formats
+
+	switch (_format)
+	{
+	case spvgentwo::spv::ImageFormat::Rgba32f:
+		VectorElement(4).Float(32);
+		break;
+	case spvgentwo::spv::ImageFormat::Rgba16f:
+		VectorElement(4).Float(16);
+		break;
+	case spvgentwo::spv::ImageFormat::Rg32f:
+		VectorElement(2).Float(32);
+		break;
+	case spvgentwo::spv::ImageFormat::Rg16f:
+		VectorElement(2).Float(16);
+		break;
+	case spvgentwo::spv::ImageFormat::R32f:
+		Float(32);
+		break;
+	case spvgentwo::spv::ImageFormat::R16f:
+		Float(16);
+		break;
+	case spvgentwo::spv::ImageFormat::Rgba8:
+	case spvgentwo::spv::ImageFormat::Rgba8Snorm:
+		norm(VectorElement(4), 8);
+		break;
+	case spvgentwo::spv::ImageFormat::Rgba16:
+	case spvgentwo::spv::ImageFormat::Rgba16Snorm:
+		norm(VectorElement(4), 16);
+		break;
+	case spvgentwo::spv::ImageFormat::Rg16:
+	case spvgentwo::spv::ImageFormat::Rg16Snorm:
+		norm(VectorElement(2), 16);
+		break;
+	case spvgentwo::spv::ImageFormat::Rg8:
+	case spvgentwo::spv::ImageFormat::Rg8Snorm:
+		norm(VectorElement(2), 8);
+		break;
+	case spvgentwo::spv::ImageFormat::R16:
+	case spvgentwo::spv::ImageFormat::R16Snorm:
+		norm(*this, 16);
+		break;
+	case spvgentwo::spv::ImageFormat::R8:
+	case spvgentwo::spv::ImageFormat::R8Snorm:
+		norm(*this, 8);
+		break;
+	case spvgentwo::spv::ImageFormat::Rgba32i:
+		VectorElement(4).Int(32);
+		break;
+	case spvgentwo::spv::ImageFormat::Rgba16i:
+		VectorElement(4).Int(16);
+		break;
+	case spvgentwo::spv::ImageFormat::Rgba8i:
+		VectorElement(4).Int(8);
+		break;
+	case spvgentwo::spv::ImageFormat::Rg32i:
+		VectorElement(2).Int(32);
+		break;
+	case spvgentwo::spv::ImageFormat::Rg16i:
+		VectorElement(2).Int(16);
+		break;
+	case spvgentwo::spv::ImageFormat::Rg8i:
+		VectorElement(2).Int(8);
+		break;
+	case spvgentwo::spv::ImageFormat::R64i:
+		Int(64);
+		break;
+	case spvgentwo::spv::ImageFormat::R32i:
+		Int(32);
+		break;
+	case spvgentwo::spv::ImageFormat::R16i:
+		Int(16);
+		break;
+	case spvgentwo::spv::ImageFormat::R8i:
+		Int(8);
+		break;
+	case spvgentwo::spv::ImageFormat::Rgba32ui:
+		VectorElement(4).UInt(32);
+		break;
+	case spvgentwo::spv::ImageFormat::Rgba16ui:
+		VectorElement(4).UInt(16);
+		break;
+	case spvgentwo::spv::ImageFormat::Rgba8ui:
+		VectorElement(4).UInt(8);
+		break;
+	case spvgentwo::spv::ImageFormat::Rg32ui:
+		VectorElement(2).UInt(32);
+		break;
+	case spvgentwo::spv::ImageFormat::Rg16ui:
+		VectorElement(2).UInt(16);
+		break;
+	case spvgentwo::spv::ImageFormat::Rg8ui:
+		VectorElement(2).UInt(8);
+		break;
+	case spvgentwo::spv::ImageFormat::R64ui:
+		UInt(64);
+		break;
+	case spvgentwo::spv::ImageFormat::R32ui:
+		UInt(32);
+		break;
+	case spvgentwo::spv::ImageFormat::R16ui:
+		UInt(16);
+		break;
+	case spvgentwo::spv::ImageFormat::R8ui:
+		UInt(8);
+		break;
+	default:
+		break;
+	}
+
+	return *this;
+}
+
 spvgentwo::Type& spvgentwo::Type::Member(const Type* _pSubType)
 {
 	if (_pSubType == nullptr)

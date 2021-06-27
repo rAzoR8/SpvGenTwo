@@ -1329,9 +1329,138 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 		return makeOp(spv::Op::OpSampledImage, InvalidInstr, InvalidId, _pImage, _pSampler);
 	}
 
-	getModule()->logError("Image or sampler type does not match (storage / subpass image not allowed)");
+	getModule()->logError("OpSampledImage: image or sampler type does not match (storage / subpass image not allowed)");
 	
 	return error();
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opImage(Instruction* _pSampledImage)
+{
+	const Type* type = _pSampledImage->getType();
+	if (type == nullptr) return error();
+
+	if (type->isSampledImage() == false)
+	{
+		getModule()->logError("Operand _pSampledImage of OpImage is not of type OpTypeSampledImage");
+		return error();
+	}
+
+	return makeOp(spv::Op::OpImage, _pSampledImage->getResultTypeInstr()->getFirstActualOperand()->getInstruction(), InvalidId, _pSampledImage);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQueryFormat(Instruction* _pImage)
+{
+	const Type* type = _pImage->getType();
+	if (type == nullptr) return error();
+
+	if (type->isImage() == false || type->getImageFormat() != spv::ImageFormat::Unknown)
+	{
+		getModule()->logError("Operand _pImage of OpImageQueryFormat is not of type OpTypeImage with Unknown ImageFormat");
+		return error();
+	}
+
+	return makeOp(spv::Op::OpImageQueryFormat, InvalidInstr, InvalidId, _pImage);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQueryOrder(Instruction* _pImage)
+{
+	const Type* type = _pImage->getType();
+	if (type == nullptr) return error();
+
+	if (type->isImage() == false || type->getImageFormat() != spv::ImageFormat::Unknown)
+	{
+		getModule()->logError("Operand _pImage of OpImageQueryOrder is not of type OpTypeImage with Unknown ImageFormat");
+		return error();
+	}
+
+	return makeOp(spv::Op::OpImageQueryOrder, InvalidInstr, InvalidId, _pImage);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQuerySizeLod(Instruction* _pImage, Instruction* _pLoDInt)
+{
+	const Type* type = _pImage->getType();
+	if (type == nullptr) return error();
+
+	if (type->isImage() == false)
+	{
+		getModule()->logError("Operand of OpImageQuerySizeLod is not of type OpTypeImage");
+		return error();
+	}
+	else if (spv::Dim d = type->getImageDimension(); d != spv::Dim::Dim1D && d != spv::Dim::Dim2D && d != spv::Dim::Dim3D && d != spv::Dim::Cube)
+	{
+		getModule()->logError("Dimension of OpImageQuerySizeLod operand _pImage is not 1D, 2D, 3D or Cube");
+		return error();
+	}
+	else if (type->getImageMultiSampled())
+	{
+		getModule()->logError("Operand _pImage of OpImageQuerySizeLod must not be MS 1 (multi sampled)");
+		return error();
+	}
+	else if (const Type* lodType = _pLoDInt->getType(); lodType == nullptr || lodType->isUInt() == false)
+	{
+		getModule()->logError("Operand _pLoDInt of OpImageQuerySizeLod must be of type unsinged scalar integer");
+		return error();
+	}	
+
+	return makeOp(spv::Op::OpImageQuerySizeLod, InvalidInstr, InvalidId, _pImage, _pLoDInt);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQuerySize(Instruction* _pImage)
+{
+	const Type* type = _pImage->getType();
+	if (type == nullptr) return error();
+
+	if (type->isImage() == false)
+	{
+		getModule()->logError("Operand of OpImageQuerySize is not of type OpTypeImage");
+		return error();
+	}
+	else if (spv::Dim d = type->getImageDimension(); d != spv::Dim::Dim1D && d != spv::Dim::Dim2D && d != spv::Dim::Dim3D && d != spv::Dim::Cube && d != spv::Dim::Rect)
+	{
+		getModule()->logError("Dimension of OpImageQuerySize operand _pImage is not 1D, 2D, 3D, Cube or Rect");
+		return error();
+	}
+	else if (d != spv::Dim::Rect && type->getImageMultiSampled() == false && type->getImageSamplerAccess() == SamplerImageAccess::Sampled)
+	{
+		// Additionally, if its Dim is 1D, 2D, 3D, or Cube, it must also have either an MS of 1 or a Sampled of 0 or 2.
+		getModule()->logError("Operand _pImage of OpImageQuerySize must have either an MS of 1 or a Sampled of 0 or 2");
+		return error();
+	}
+
+	return makeOp(spv::Op::OpImageQuerySize, InvalidInstr, InvalidId, _pImage);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQueryLod(Instruction* _pSampledImage, Instruction* _pCoordinate)
+{
+	return genericImageOp(spv::Op::OpImageQueryLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::MaskNone);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQueryLevels(Instruction* _pImage)
+{
+	const Type* type = _pImage->getType();
+	if (type == nullptr) return error();
+
+	if (spv::Dim d = type->getImageDimension(); type->isImage() == false || (d != spv::Dim::Dim1D && d != spv::Dim::Dim2D && d != spv::Dim::Dim3D && d != spv::Dim::Cube))
+	{
+		getModule()->logError("Operand _pImage of OpImageQueryLevels is not of type OpTypeImage with dimension 1D, 2D, 3D or Cube");
+		return error();
+	}
+
+	return makeOp(spv::Op::OpImageQueryLevels, InvalidInstr, InvalidId, _pImage);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQuerySamples(Instruction* _pImage)
+{
+	const Type* type = _pImage->getType();
+	if (type == nullptr) return error();
+
+	if (type->isImage() == false || type->getImageDimension() != spv::Dim::Dim2D || type->getImageMultiSampled() == false)
+	{
+		getModule()->logError("Operand _pImage of OpImageQuerySamples is not of type OpTypeImage with dimension 2D and MS 1");
+		return error();
+	}
+
+	return makeOp(spv::Op::OpImageQuerySamples, InvalidInstr, InvalidId, _pImage);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opUConvert(Instruction* _pUintVec, unsigned int _bitWidth)
@@ -1340,7 +1469,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opUConvert(Instruction* _pUintVe
 
 	if (type == nullptr) return error();
 
-	if (Type t = type->getBaseType(); t.isScalarOrVectorOf(spv::Op::OpTypeInt, 0u, 0u, Sign::Unsigned) && t.getIntWidth() != _bitWidth)
+	if (Type t = *type; t.isScalarOrVectorOf(spv::Op::OpTypeInt, 0u, 0u, Sign::Unsigned) && t.getBaseType().getIntWidth() != _bitWidth)
 	{
 		t.getBaseType().setIntWidth(_bitWidth);
 		return makeOp(spv::Op::OpUConvert, getModule()->addType(t), InvalidId, _pUintVec);
@@ -1357,7 +1486,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSConvert(Instruction* _pSIntVe
 
 	if (type == nullptr) return error();
 
-	if (Type t = type->getBaseType(); t.isScalarOrVectorOf(spv::Op::OpTypeInt, 0u, 0u, Sign::Signed) && t.getIntWidth() != _bitWidth)
+	if (Type t = *type; t.isScalarOrVectorOf(spv::Op::OpTypeInt, 0u, 0u, Sign::Signed) && t.getBaseType().getIntWidth() != _bitWidth)
 	{
 		t.getBaseType().setIntWidth(_bitWidth);
 		return makeOp(spv::Op::OpSConvert, getModule()->addType(t), InvalidId, _pSIntVec);
@@ -1374,7 +1503,8 @@ spvgentwo::Instruction* spvgentwo::Instruction::opFConvert(Instruction* _pFloatV
 
 	if (type == nullptr) return error();
 
-	if (Type t = type->getBaseType(); t.isScalarOrVectorOf(spv::Op::OpTypeFloat) && t.getFloatWidth() != _bitWidth)
+	// copy type for manipulation
+	if (Type t = *type; t.isScalarOrVectorOf(spv::Op::OpTypeFloat) && t.getBaseType().getFloatWidth() != _bitWidth)
 	{
 		t.getBaseType().setFloatWidth(_bitWidth);
 		return makeOp(spv::Op::OpFConvert, getModule()->addType(t), InvalidId, _pFloatVec);
@@ -1465,6 +1595,59 @@ spvgentwo::Instruction* spvgentwo::Instruction::toSpecOp()
 spvgentwo::Instruction* spvgentwo::Instruction::error() const
 {
 	return getModule()->getErrorInstr();
+}
+
+bool spvgentwo::Instruction::checkImageCoordinateType(const Type* _pImageType, const Type* _pCoordType, Flag<CheckImgCoord> _args) const
+{
+	if (_pImageType->isImage() == false)
+		return false;
+
+	Module* module = getModule();
+
+	unsigned int dim = getImageDimension(_pImageType->getImageDimension());
+
+	if(dim == 0u)
+	{
+		module->logError("Image dimension not supported/implemented");
+		return false;
+	}
+
+	if (_pImageType->getImageArray())
+	{
+		dim += 1u;
+	}
+
+	if (_args & CheckImgCoord::IsProjective)
+	{
+		dim += 1u;
+	}
+
+	if (dim > 1u && _pCoordType->getVectorComponentCount() < dim)
+	{
+		module->logError("Dimension of coordinates does not match image type");
+		return false;
+	}
+
+	if (_pCoordType->isScalarOrVectorOf(spv::Op::OpTypeInt))
+	{
+		if (_args.none(CheckImgCoord::CanBeInt, CheckImgCoord::MustBeInt))
+		{
+			module->logError("Image operation does not support integer coordinates");
+			return false;
+		}
+	}
+	else if (_args & CheckImgCoord::MustBeInt)
+	{
+		module->logError("Coordinate type must be scalar or vector of integer");
+		return false;
+	}
+	else if (_pCoordType->isScalarOrVectorOf(spv::Op::OpTypeFloat) == false)
+	{
+		module->logError("Coordinate type must be scalar or vector of float");
+		return false;
+	}
+
+	return true;
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::scalarVecOp(spv::Op _op, spv::Op _type, Sign _sign, Instruction* _pLeft, Instruction* _pRight, const char* _pErrorMsg, bool _checkSign)

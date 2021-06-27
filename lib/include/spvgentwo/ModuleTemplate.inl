@@ -104,7 +104,7 @@ namespace spvgentwo
 	}
 
 	template<class T, class ... Props>
-	inline Type Module::newType(const Props& ... _props)
+	inline Type Module::newType(const Props& ... _props) const
 	{
 		Type t(m_pAllocator);
 		t.make<T>(_props...);

@@ -254,6 +254,11 @@ namespace spvgentwo
 
 		Type& AccelerationStructureKHR();
 
+		// form a vector or scalar type from ImageFormat, one channel per vector component
+		// packed formats like R11fG11fB10f and Rgb10A2 etc are not supported and the result type will be void
+		// _NormAsFloat interprets signed normalized component formats as floats instead of integers
+		Type& fromImageFormat(spv::ImageFormat _format, bool _normAsFloat);
+
 		constexpr Iterator begin() const { return m_subTypes.begin(); }
 		constexpr Iterator end() const { return m_subTypes.end(); }
 

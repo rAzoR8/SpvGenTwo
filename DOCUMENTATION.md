@@ -12,6 +12,7 @@ SpvGenTwo is build around building-blocks that are somewhat similar to SPIR-V's 
 * [Parsing](#Parsing)
 * [Types](#Types)
 * [Constants](#Constants)
+* [Implementing new Instructions](#Implementing-New-Instructions)
 
 # Operands
 There are four kinds of [operands](lib/include/spvgentwo/Operand.h) in SpvGenTwo:
@@ -44,12 +45,12 @@ union {
 | Instruction Word Number   | Contents  |
 |---|---|
 | 0  | Opcode: The 16 high-order bits are the WordCount of the instruction. The 16 low-order bits are the opcode enumerant. |
-| 1  | Optional instruction type <id> (presence determined by opcode). |
-| . | Optional instruction Result <id> (presence determined by opcode). |
+| 1  | Optional instruction Type __ID__ (presence determined by opcode). |
+| . | Optional instruction Result __ID__ (presence determined by opcode). |
 | . | Operand 1 (if needed) |
 | . | Operand 2 (if needed) |
 | ... | ... |
-| WordCount - 1 | Operand N (N is determined by WordCount minus the 1 to 3 words used for the opcode, instruction type <id>, and instruction Result <id>). |
+| WordCount - 1 | Operand N (N is determined by WordCount minus the 1 to 3 words used for the opcode, instruction Type __ID__, and instruction Result __ID__). |
 
 In SpvGenTwo the Instruction class roughly looks like this:
 
@@ -271,7 +272,9 @@ Function& funcAdd = module.addFunction<float, float, float>("add", spv::Function
 The `Module` class exposes the following interface for parsing and serializing binary SPIR-V programs (see [SpvGenTwoDisassembler](dis/source/dis.cpp) for example code):
 
 ```cpp
-BinaryFileReader reader(spv);
+HeapAllocator alloc; // #include "common/HeapAllocator.h
+
+BinaryFileReader reader(alloc, "myShader.spv");
 Grammar gram(&alloc);
 
 Module module(&alloc, &logger);
@@ -402,3 +405,82 @@ The resulting SPIR-V looks something like this:
                OpReturn
                OpFunctionEnd
 ```
+
+# Implementing new Instructions
+
+When adding support for new SPIR-V instructions to __SpvGenTwo__ it helps to follow this guide to make sure all the required parts are implemented:
+
+* if the implementation of the new instruction requires template parameters, make sure to put it into `InstructionTemplate.inl` instead of `Instruction.cpp`.
+* if some error occured during forming of the new instruction, make sure to log a clear error message via `getModule()->logError("Clear error message");` and return the __error__ instruction via `return error();`
+* return _this_-pointer when the instruction has a ResultID operand, return `void` if it doesnt. Note that `Instruction::makeOp(...)` returns _this_-pointer if successfull.
+
+### Instruction.cpp
+```cpp
+// No result operand
+void spvgentwo::Instruction::opExtension(const char* _pExtName)
+{
+	makeOp(spv::Op::OpExtension, _pExtName);
+}
+```
+* if the ResultType operand is fixed (always the same type, independent of operands), create the OpType instruction in your new opMyNewInstruction(...) using `Instruction* type = Module.addType(...)` or `Module.type<MyType>()` and pass it to `Instruction::makeOp(spv::Op::OpMyNewInstruciton, type, InvalidId, ...)` but don't add it to your __Instruction::opMyNewInstruction()__ signature.
+
+### Instruction.cpp
+```cpp
+// Result operand
+spvgentwo::Instruction* spvgentwo::Instruction::opUndef(Instruction* _pResultType)
+{
+	if (_pResultType->isType())
+	{
+		return makeOp(spv::Op::OpUndef, _pResultType, InvalidId);
+	}
+	getModule()->logError("opUndef ResultType is not a type instruction");
+	return error();
+}
+```
+
+* if the ResultType operand can be inferred from the other operands, implement inference rules in [TypeInferenceAndValiation](lib/source/TypeInferenceAndValiation.cpp) `defaultimpl::inferResultType(const spvgentwo::Instruction& _instr)` and omit the parameter from the new __Instruction::opMyNewInstruction(...)__ signature, but pass __InvalidInstruction__ as the 2nd operand to `makeOp()`. __SpvGenTwo__ should always try to make IR generation as easy as possible for users, otherwise they could always just use `Instruction::makeOp(...)` and pass all operands explictly.
+
+### TypeInferenceAndValiation.cpp
+```cpp
+spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo::Instruction& _instr)
+{
+    ...
+    switch (_instr.getOperation())
+	{
+	case spv::Op::OpMatrixTimesVector:
+		if (type1 == nullptr) return module->getErrorInstr();
+
+		// Matrix must be an OpTypeMatrix whose Column Type is Result Type.
+		if (type1->isMatrix())
+		{
+			return (typeInstr1->begin() + 1u)->getInstruction();
+		}
+		break;
+    ...
+    }
+}
+```
+
+### Instruction.cpp
+```cpp
+spvgentwo::Instruction* spvgentwo::Instruction::opMatrixTimesVector(Instruction* _pMatrix, Instruction* _pVector)
+{
+	const Type* pMatType = _pMatrix->getType();
+	const Type* pVecType = _pVector->getType();
+
+	if (pVecType == nullptr || pMatType == nullptr) return error();
+
+	if (pVecType->isVectorOfFloat() && pMatType->isMatrix() && pMatType->hasSameBase(*pVecType) && pMatType->getMatrixColumnCount() == pVecType->getVectorComponentCount())
+	{
+		return makeOp(spv::Op::OpMatrixTimesVector, InvalidInstr, InvalidId, _pMatrix, _pVector);
+	}
+
+	getModule()->logError("Operand of OpMatrixTimesVector is not a vector or matrix of float type");
+
+	return error();
+}
+```
+
+* if you added a new arithmetic instruction that operates on a certain (argument) type, please check if `getTypeFromOp()` from  [SpvDefines.h](lib/include/spvgentwo/SpvDefines.h) needs to be updated.
+
+* after adding support for a new SPIR-V instruction, please update the coverage table in the [ReadMe](README.md#Coverage)

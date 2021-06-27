@@ -10,7 +10,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 {
 	Module* module = _instr.getModule();
 	auto op1 = _instr.getFirstActualOperand();
-	auto op2 = op1 + 1u;
+	auto op2 = op1.next();
 
 	Instruction* typeInstr1 = op1 != nullptr && op1->isInstruction() && op1->instruction != nullptr ? op1->instruction->getResultTypeInstr() : nullptr;
 	Instruction* typeInstr2 = op2 != nullptr && op2->isInstruction() && op2->instruction != nullptr ? op2->instruction->getResultTypeInstr() : nullptr;
@@ -218,7 +218,6 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpImageFetch:
 	case spv::Op::OpImageGather:
 	case spv::Op::OpImageDrefGather:
-	case spv::Op::OpImageRead:
 	{
 		if (type1 == nullptr) break;
 
@@ -242,6 +241,55 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	}		
 		break;
 
+	case spv::Op::OpImageRead:
+	{
+		// Result Type must be a scalar or vector of floating-point type or integer type. It must be a scalar or vector with
+		// component type the same as Sampled Type of the OpTypeImage(unless that Sampled Type is OpTypeVoid)
+
+		if (type1 == nullptr || type1->isImage() == false) break;
+
+		Type t(module->newType().fromImageFormat(type1->getImageFormat(), true)); // Norm as float
+
+		return module->addType(t);
+	}
+
+	case spv::Op::OpImage:
+	{
+		if (type1 == nullptr || type1->isSampledImage() == false) break;
+
+		// Sampled Image must have type OpTypeSampledImage whose Image Type is the same as Result Type.
+		return typeInstr1->getFirstActualOperand()->getInstruction();
+	}
+	case spv::Op::OpImageQueryFormat:
+	case spv::Op::OpImageQueryOrder:
+	case spv::Op::OpImageQueryLevels:
+	case spv::Op::OpImageQuerySamples:
+		return module->type<unsigned int>();
+
+	case spv::Op::OpImageQuerySizeLod:
+	case spv::Op::OpImageQuerySize:
+	{
+		if (type1 == nullptr || type1->isImage() == false) break;
+		//Result Type must be an integer type scalar or vector.The number of components must be
+		//	1 for the 1D dimensionality,
+		//	2 for the 2D and Cube dimensionalities,
+		//	3 for the 3D dimensionality,
+		//	plus 1 more if the image type is arrayed. This vector is filled in
+		//	with(width[, height][, depth][, elements]) where elements is the
+		//	number of layers in an image array, or the number of cubes in a
+		//	cube - map array.
+
+		auto dim = getImageDimension(type1->getImageDimension()) + (type1->getImageArray() ? 1u : 0u);
+
+		return module->addType(module->newType().Vector(dim).UIntM());
+	}
+	case spv::Op::OpImageQueryLod:
+		//Result Type must be a two - component floating - point type vector.
+		//	The first component of the result contains the mipmap array layer.
+		//	The second component of the result contains the implicit level of
+		//	detail relative to the base level.
+		return module->type<vector_t<float, 2>>();
+
 	case spv::Op::OpConvertFToU:
 	{
 		if (type1 == nullptr) return module->getErrorInstr();
@@ -249,7 +297,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		Type t(*type1);
 		Type& base = t.getBaseType();
 		base.setType(spv::Op::OpTypeInt);
-		base.setIntSign(false); // int/float with stays the same
+		base.setIntSign(false); // int/float width stays the same
 
 		return module->addType(t);
 	}
@@ -260,7 +308,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 		Type t(*type1);
 		Type& base = t.getBaseType();
 		base.setType(spv::Op::OpTypeInt);
-		base.setIntSign(true);
+		base.setIntSign(true); // int/float width stays the same
 
 		return module->addType(t);
 	}
@@ -381,6 +429,7 @@ bool spvgentwo::defaultimpl::validateOperands(const spvgentwo::Instruction& _ins
 
 	switch (_instr.getOperation())
 	{
+	case spv::Op::OpImageRead:
 	case spv::Op::OpImageFetch:
 	case spv::Op::OpImageDrefGather:
 	case spv::Op::OpImageGather:
@@ -449,7 +498,7 @@ bool spvgentwo::defaultimpl::validateImageOperandType(const Instruction& _instr)
 
 	for (unsigned int i = 0u; opMask != spv::ImageOperandsMask::MaskNone && i < (unsigned int)spv::ImageOperandsShift::ZeroExtend; ++i)
 	{
-		// TODO: get operands  within the loop and dont return in the switch
+		// TODO: get operands within the loop and dont return in the switch
 		spv::ImageOperandsMask mask = static_cast<spv::ImageOperandsMask>(1u << i);
 		if ((opMask & mask) == mask)
 		{
@@ -491,7 +540,15 @@ bool spvgentwo::defaultimpl::validateImageOperandType(const Instruction& _instr)
 			case spv::ImageOperandsMask::ConstOffsets:
 				break; // not implemented yet
 			case spv::ImageOperandsMask::Sample:
-				return module->logError(type1->isInt(), "Sample operand must be of type int");
+				if (op != spv::Op::OpImageFetch &&
+					op != spv::Op::OpImageRead &&
+					op != spv::Op::OpImageWrite &&
+					op != spv::Op::OpImageSparseFetch &&
+					op != spv::Op::OpImageSparseRead) {
+					module->logError("Sample operand can only be used with OpImageFetch,OpImageRead,OpImageWrite,OpImageSparseFetch or OpImageSparseRead");
+					return false;
+				}
+				return module->logError(type1->isInt() && imageType->getImageMultiSampled(), "Sample operand must be of type int & the image must be MS");
 			case spv::ImageOperandsMask::MinLod:
 				return module->logError(type1->isFloat(), "MinLod operand must be of type float");
 			case spv::ImageOperandsMask::MakeTexelAvailableKHR:

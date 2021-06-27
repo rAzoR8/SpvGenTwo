@@ -277,9 +277,9 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | opExecutionMode | &#10004; |
 | OpCapability | &#10004; |
 | OpExecutionModeId | &#10004; |
-| OpTypeXXX | via `Module::addType()` |
-| OpConstantXXX | via `Module::addConstant()` |
-| OpSpecConstantXXX | via `Module::addConstant()` |
+| OpTypeXXX | via `Module::addType()/type<T>` |
+| OpConstantXXX | via `Module::addConstant()/constant<T>(T t)` |
+| OpSpecConstantXXX | via `Module::addConstant()/constant<T>(T t)` |
 | OpSpecConstantOp | &#10004; |
 | OpFunction | &#10004; |
 | OpFunctionParameter | &#10004; |
@@ -319,19 +319,19 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpImageSampleProjExplicitLod | &#10004; |
 | OpImageSampleProjDrefImplicitLod | &#10004; |
 | OpImageSampleProjDrefExplicitLod | &#10004; |
-| OpImageFetch | via generic `opImageSample` |
-| OpImageGather | via generic `opImageSample` |
-| OpImageDrefGather | via generic `opImageSample` |
-| OpImageRead | &#9744; |
-| OpImageWrite | &#9744; |
-| OpImage | &#9744; |
-| OpImageQueryFormat | &#9744; |
-| OpImageQueryOrder | &#9744; |
-| OpImageQuerySizeLod | &#9744; |
-| OpImageQuerySize | &#9744; |
-| OpImageQueryLod | &#9744; |
-| OpImageQueryLevels | &#9744; |
-| OpImageQuerySamples | &#9744; |
+| OpImageFetch | &#10004; |
+| OpImageGather | &#10004; |
+| OpImageDrefGather | &#10004; |
+| OpImageRead | &#10004; |
+| OpImageWrite | &#10004; |
+| OpImage | &#10004; |
+| OpImageQueryFormat | &#10004; |
+| OpImageQueryOrder | &#10004; |
+| OpImageQuerySizeLod | &#10004; |
+| OpImageQuerySize | &#10004; |
+| OpImageQueryLod | &#10004; |
+| OpImageQueryLevels | &#10004; |
+| OpImageQuerySamples | &#10004; |
 | OpConvertFToU | &#10004; |
 | OpConvertFToS | &#10004; |
 | OpConvertSToF | &#10004; |
