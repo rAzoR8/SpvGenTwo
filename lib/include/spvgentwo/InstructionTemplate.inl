@@ -553,7 +553,7 @@ namespace spvgentwo
 			coordCheckArgs |= CheckImgCoord::CanBeInt;
 			break;
 		case spv::Op::OpImageDrefGather:
-			isDref = true;
+			isDref = true; [[fallthrough]];
 		case spv::Op::OpImageGather:
 			isSampled = true;
 			isComponent = !isDref;
