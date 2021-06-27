@@ -480,21 +480,25 @@ namespace spvgentwo
 	{
 		Module& module = *getModule();
 		const Type* type = _pTargetImage->getType();
-		const Type* imageType = type->isSampledImage() ? &type->front() : type;
 		const Type* coordType = _pCoordinate->getType();
 
-		if (type == nullptr || imageType == nullptr || coordType == nullptr) return error();
+		if (type == nullptr || coordType == nullptr)
+		{
+			return error();		
+		}
+
+		if (type->isImage() == false && type->isSampledImage() == false)
+		{
+			return error();
+		}
+
+		const Type* imageType = type->isSampledImage() ? &type->front() : type;
 
 		bool isDref = false;
 		bool isComponent = false;
-		bool checkCoords = false;
+		bool isSampled = false; // type must be OpTypeSampledImage
 
 		Flag<CheckImgCoord> coordCheckArgs;
-
-		auto checkCoordinateType = [&]() -> bool
-		{
-			return checkCoords ? checkImageCoordinateType(imageType, coordType, coordCheckArgs) : true;
-		};
 
 		auto checkDrefComponent = [&]() -> bool
 		{
@@ -530,42 +534,45 @@ namespace spvgentwo
 		{
 		case spv::Op::OpImageRead:
 		//case spv::Op::OpImageSparseRead:
-			if (type->isImage() == false || (imageType->getImageSamplerAccess() == SamplerImageAccess::Sampled))
+			if (imageType->getImageSamplerAccess() == SamplerImageAccess::Sampled)
 			{
 				module.logError("OpImageRead requires _pTargetImage of type OpImage. Its 'Sampled' operand must NOT be 1.");
 				return error();
 			}
-			checkCoords = true; coordCheckArgs |= CheckImgCoord::MustBeInt;
+			isSampled = false;
+			coordCheckArgs |= CheckImgCoord::MustBeInt;
 			break;
 		//case spv::Op::OpImageSparseFetch:
 		case spv::Op::OpImageFetch:
-			if (type->isImage() == false || (imageType->getImageSamplerAccess() != SamplerImageAccess::Sampled) || (imageType->getImageDimension() == spv::Dim::Cube))
+			if ((imageType->getImageSamplerAccess() != SamplerImageAccess::Sampled) || (imageType->getImageDimension() == spv::Dim::Cube))
 			{
 				module.logError("OpImageFetch requires _pTargetImage of type OpImage. Its Dim operand cannot be Cube, and its 'Sampled' operand must be 1.");
 				return error();
 			}
-			checkCoords = true; coordCheckArgs |= CheckImgCoord::CanBeInt;
+			isSampled = false;
+			coordCheckArgs |= CheckImgCoord::CanBeInt;
 			break;
 		case spv::Op::OpImageDrefGather:
+			isDref = true;
 		case spv::Op::OpImageGather:
-			isComponent = _imageOp == spv::Op::OpImageGather;
-			isDref = _imageOp == spv::Op::OpImageDrefGather;
-			checkCoords = true; coordCheckArgs |= CheckImgCoord::CanBeInt;
+			isSampled = true;
+			isComponent = !isDref;
+			coordCheckArgs |= CheckImgCoord::CanBeInt;
 			if (spv::Dim d = imageType->getImageDimension(); d != spv::Dim::Dim2D && d != spv::Dim::Cube && d != spv::Dim::Rect)
 			{
 				module.logError("OpImageGather requres Dim of sampled image to be 2D, Cube or Rect");
 				return error();
 			}
 			break;
-		case spv::Op::OpImageSampleImplicitLod: checkCoords = true; break;
-		case spv::Op::OpImageSampleExplicitLod: checkCoords = true; coordCheckArgs |= CheckImgCoord::CanBeInt; break;
-		case spv::Op::OpImageSampleProjImplicitLod: checkCoords = true; coordCheckArgs |= CheckImgCoord::IsProjective; coordCheckArgs |= CheckImgCoord::CanBeInt; break;
-		case spv::Op::OpImageSampleProjExplicitLod: checkCoords = true; coordCheckArgs |= CheckImgCoord::IsProjective;  break;
-		case spv::Op::OpImageSampleDrefImplicitLod: checkCoords = true; isDref = true; break;
-		case spv::Op::OpImageSampleDrefExplicitLod: checkCoords = true;  isDref = true; break;
-		case spv::Op::OpImageSampleProjDrefImplicitLod: checkCoords = true; coordCheckArgs |= CheckImgCoord::IsProjective; isDref = true; break;
-		case spv::Op::OpImageSampleProjDrefExplicitLod: checkCoords = true; coordCheckArgs |= CheckImgCoord::IsProjective; isDref = true; break;
-		case spv::Op::OpImageQueryLod: checkCoords = true; coordCheckArgs |= CheckImgCoord::CanBeInt; break;
+		case spv::Op::OpImageSampleImplicitLod:			isSampled = true; break;
+		case spv::Op::OpImageSampleExplicitLod:			isSampled = true; coordCheckArgs |= CheckImgCoord::CanBeInt; break;
+		case spv::Op::OpImageSampleProjImplicitLod:		isSampled = true; coordCheckArgs |= CheckImgCoord::CanBeInt; coordCheckArgs |= CheckImgCoord::IsProjective; break;
+		case spv::Op::OpImageSampleProjExplicitLod:		isSampled = true; coordCheckArgs |= CheckImgCoord::IsProjective; break;
+		case spv::Op::OpImageSampleDrefImplicitLod:		isSampled = true; isDref = true; break;
+		case spv::Op::OpImageSampleDrefExplicitLod:		isSampled = true; isDref = true; break;
+		case spv::Op::OpImageSampleProjDrefImplicitLod: isSampled = true; coordCheckArgs |= CheckImgCoord::IsProjective; isDref = true; break;
+		case spv::Op::OpImageSampleProjDrefExplicitLod: isSampled = true; coordCheckArgs |= CheckImgCoord::IsProjective; isDref = true; break;
+		case spv::Op::OpImageQueryLod:					isSampled = true; coordCheckArgs |= CheckImgCoord::CanBeInt; break;
 
 			break;
 		default:
@@ -573,7 +580,18 @@ namespace spvgentwo
 			return error();
 		}
 
-		if (!checkDrefComponent() || !checkCoordinateType())
+		if (isSampled && type->isSampledImage() == false)
+		{
+			module.logError("_imageOp requires _pTargetImage operand to be of type OpTypeSampledImage");
+			return error();
+		}
+		else if (!isSampled && type->isImage() == false)
+		{
+			module.logError("_imageOp requires _pTargetImage operand to be of type OpTypeImage");
+			return error();
+		}
+
+		if (!checkDrefComponent() || !checkImageCoordinateType(imageType, coordType, coordCheckArgs))
 		{
 			return error();
 		}
