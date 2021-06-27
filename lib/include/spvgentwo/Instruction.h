@@ -292,7 +292,10 @@ namespace spvgentwo
 		Instruction* opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstElementIndex, ConstInstr* ... _pIndices);
 
 		// Instruction* OpPtrAccessChain(); TODO
-		// Instruction* OpArrayLength(); TODO
+
+		//Structure must be a logical pointer to an OpTypeStruct whose last	member is a run-time array.
+		Instruction* opArrayLength(Instruction* _pStructure, unsigned int _ArrayMemberIndex);
+
 		// Instruction* OpGenericPtrMemSemantics(); TODO
 		// Instruction* OpInBoundsPtrAccessChain(); TODO
 

@@ -120,14 +120,16 @@ The resulting SPIR-V binary when disassembled using `spirv-dis`:
 
 Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
 
-* [FunctionCall Example](example/source/FunctionCall.cpp)
+* [Types Example](example/source/Types.cpp)
+* [Constants Example](example/source/Constants.cpp)
 * [ControlFlow Example](example/source/ControlFlow.cpp)
 * [FunctionCall Example](example/source/FunctionCall.cpp)
 * [Extensions Example](example/source/Extensions.cpp)
-* [Constants Example](example/source/Constants.cpp)
-* [Types Example](example/source/Types.cpp)
 * [ExpressionGraph Example](example/source/ExpressionGraph.cpp)
 * [Linkage Example](example/source/Linkage.cpp)
+* [FragmentShader Example](example/source/FragmentShader.cpp)
+* [GeometryShader Example](example/source/GeometryShader.cpp)
+* [ComputeShader Example](example/source/ComputeShader.cpp)
 
 # Project Structure
 
@@ -294,7 +296,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpAccessChain | &#10004; |
 | OpInBoundsAccessChain | &#10004; |
 | OpPtrAccessChain | &#9744; |
-| OpArrayLength | &#9744; |
+| OpArrayLength | &#10004; |
 | OpGenericPtrMemSemantics | &#9744; |
 | OpInBoundsPtrAccessChain | &#9744; |
 | OpDecorate | &#10004; |

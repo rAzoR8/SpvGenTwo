@@ -264,6 +264,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpImageQueryOrder:
 	case spv::Op::OpImageQueryLevels:
 	case spv::Op::OpImageQuerySamples:
+	case spv::Op::OpArrayLength:
 		return module->type<unsigned int>();
 
 	case spv::Op::OpImageQuerySizeLod:

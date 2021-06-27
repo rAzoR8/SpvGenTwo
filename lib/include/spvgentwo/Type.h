@@ -192,10 +192,17 @@ namespace spvgentwo
 
 		// makes this an array
 		Type& Array(const unsigned int _elements = 0u, const Type* _elementType = nullptr);
+		// add new member of type run-time array, returns this structure
+		Type& ArrayM(const unsigned int _elements = 0u, const Type* _elementType = nullptr) { Member().Array(_elements, _elementType); return *this; }
 		// makes this an array, returns element type
 		Type& ArrayElement(const unsigned int _elements) { Array(_elements); return Member(); }
 
+		// makes this an run-time
 		Type& RuntimeArray(const Type* _elementType = nullptr);
+		// add new member of type run-time array, returns this structure
+		Type& RuntimeArrayM(const Type* _elementType = nullptr) { Member().RuntimeArray(_elementType); return *this; }
+		// makes this an run-time array, returns element type
+		Type& RuntimeArrayElement() { RuntimeArray(); return Member(); }
 
 		// makes this a function
 		Type& Function();

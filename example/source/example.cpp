@@ -17,6 +17,7 @@
 #include "example/ExpressionGraph.h"
 #include "example/GeometryShader.h"
 #include "example/FragmentShader.h"
+#include "example/ComputeShader.h"
 #include "example/Linkage.h"
 
 #include <cstdarg>
@@ -76,6 +77,15 @@ int main()
 	TestLogger log;
 	HeapAllocator alloc; // custom user allocator
 	const Grammar gram(&alloc);
+
+	// fragment shader example
+	if (BinaryFileWriter writer(alloc, "compute.spv"); writer.isOpen())
+	{
+		examples::computeShader(&alloc, &log).finalizeAndWrite(writer);
+		writer.close();
+		system("spirv-dis compute.spv");
+		assert(system("spirv-val compute.spv") == 0);
+	}
 
 	{
 		Module libA, libB, consumer;

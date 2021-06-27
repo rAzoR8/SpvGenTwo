@@ -1022,6 +1022,21 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAccessChain(Instruction* _pBas
 	return error();
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opArrayLength(Instruction* _pStructure, unsigned int _ArrayMemberIndex)
+{
+	const Type* type = _pStructure->getType();
+	if (type == nullptr) return error();
+
+
+	if (type->isPointer() == false || type->front().isStruct() == false || type->front().back().isRuntimeArray() == false)
+	{
+		getModule()->logError("Operand _pStructure of OpArrayLength must be a logical pointer to an OpTypeStruct whose last	member is a run-time array");
+		return error();
+	} 
+
+	return makeOp(spv::Op::OpArrayLength, InvalidInstr, InvalidId, _pStructure, literal_t{ _ArrayMemberIndex });
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLeft, Instruction* _pRight)
 {
 	const Type* pLeftType = _pLeft->getType();
