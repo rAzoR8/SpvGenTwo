@@ -26,6 +26,10 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
     imgDesc.format = spv::ImageFormat::Rg16;
     Instruction* const uniImgRawRG16 = module.uniform(u8"u_imgRG16", imgDesc);
 
+    imgDesc.multiSampled = true;
+    Instruction* const uniImgRawRG16MS = module.uniform(u8"u_imgRG16MS", imgDesc);
+    imgDesc.multiSampled = false;
+
     imgDesc.format = spv::ImageFormat::Unknown;
     Instruction* const uniImageUnknownFmt = module.uniform(u8"u_imgUnknownFmt", dyn_sampled_image_t{ imgDesc });
 
@@ -60,6 +64,10 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
         Instruction* sizeDim = bb->opImageQuerySizeLod(unknownImg, module.constant(0u));
         sizeDim = bb->opImageQuerySize(unknownImg);
         Instruction* lod = bb->opImageQueryLod(unknownSampledImg, constCoord2D);
+        Instruction* levels = bb->opImageQueryLevels(unknownImg);
+
+        Instruction* msImg = bb->opLoad(uniImgRawRG16MS);
+        Instruction* samples = bb->opImageQuerySamples(msImg);
 
         Instruction* color = bb->opLoad(uniTex);
         Instruction* uv = bb->opLoad(inUV);

@@ -1329,7 +1329,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 		return makeOp(spv::Op::OpSampledImage, InvalidInstr, InvalidId, _pImage, _pSampler);
 	}
 
-	getModule()->logError("Image or sampler type does not match (storage / subpass image not allowed)");
+	getModule()->logError("OpSampledImage: image or sampler type does not match (storage / subpass image not allowed)");
 	
 	return error();
 }
@@ -1341,7 +1341,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImage(Instruction* _pSampledIm
 
 	if (type->isSampledImage() == false)
 	{
-		getModule()->logError("Operand of OpImage is not of type OpTypeSampledImage");
+		getModule()->logError("Operand _pSampledImage of OpImage is not of type OpTypeSampledImage");
 		return error();
 	}
 
@@ -1355,7 +1355,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageQueryFormat(Instruction* 
 
 	if (type->isImage() == false || type->getImageFormat() != spv::ImageFormat::Unknown)
 	{
-		getModule()->logError("Operand of OpImageQueryFormat is not of type OpTypeImage with Unknown ImageFormat");
+		getModule()->logError("Operand _pImage of OpImageQueryFormat is not of type OpTypeImage with Unknown ImageFormat");
 		return error();
 	}
 
@@ -1369,7 +1369,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageQueryOrder(Instruction* _
 
 	if (type->isImage() == false || type->getImageFormat() != spv::ImageFormat::Unknown)
 	{
-		getModule()->logError("Operand of OpImageQueryOrder is not of type OpTypeImage with Unknown ImageFormat");
+		getModule()->logError("Operand _pImage of OpImageQueryOrder is not of type OpTypeImage with Unknown ImageFormat");
 		return error();
 	}
 
@@ -1433,6 +1433,34 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageQuerySize(Instruction* _p
 spvgentwo::Instruction* spvgentwo::Instruction::opImageQueryLod(Instruction* _pSampledImage, Instruction* _pCoordinate)
 {
 	return genericImageOp(spv::Op::OpImageQueryLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::MaskNone);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQueryLevels(Instruction* _pImage)
+{
+	const Type* type = _pImage->getType();
+	if (type == nullptr) return error();
+
+	if (spv::Dim d = type->getImageDimension(); type->isImage() == false || (d != spv::Dim::Dim1D && d != spv::Dim::Dim2D && d != spv::Dim::Dim3D && d != spv::Dim::Cube))
+	{
+		getModule()->logError("Operand _pImage of OpImageQueryLevels is not of type OpTypeImage with dimension 1D, 2D, 3D or Cube");
+		return error();
+	}
+
+	return makeOp(spv::Op::OpImageQueryLevels, InvalidInstr, InvalidId, _pImage);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQuerySamples(Instruction* _pImage)
+{
+	const Type* type = _pImage->getType();
+	if (type == nullptr) return error();
+
+	if (type->isImage() == false || type->getImageDimension() != spv::Dim::Dim2D || type->getImageMultiSampled() == false)
+	{
+		getModule()->logError("Operand _pImage of OpImageQuerySamples is not of type OpTypeImage with dimension 2D and MS 1");
+		return error();
+	}
+
+	return makeOp(spv::Op::OpImageQuerySamples, InvalidInstr, InvalidId, _pImage);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opUConvert(Instruction* _pUintVec, unsigned int _bitWidth)

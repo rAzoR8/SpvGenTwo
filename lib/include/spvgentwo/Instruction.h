@@ -446,17 +446,21 @@ namespace spvgentwo
 		template <class ...ImageOperands>
 		Instruction* opImageWrite(Instruction* _pImage, Instruction* _pCoordinate, Instruction* _pTexel, const Flag<spv::ImageOperandsMask> _imageOperands = spv::ImageOperandsMask::MaskNone, ImageOperands... _operands);
 
-		 Instruction* opImage(Instruction* _pSampledImage);
+		Instruction* opImage(Instruction* _pSampledImage);
 
-		 Instruction* opImageQueryFormat(Instruction* _pImage);
-		 Instruction* opImageQueryOrder(Instruction* _pImage);
+		Instruction* opImageQueryFormat(Instruction* _pImage);
 
-		 Instruction* opImageQuerySizeLod(Instruction* _pImage, Instruction* _pLoDInt);
-		 Instruction* opImageQuerySize(Instruction* _pImage);
+		Instruction* opImageQueryOrder(Instruction* _pImage);
 
-		 Instruction* opImageQueryLod(Instruction* _pSampledImage, Instruction* _pCoordinate);
-		// Instruction* OpImageQueryLevels(); TODO
-		// Instruction* OpImageQuerySamples(); TODO
+		Instruction* opImageQuerySizeLod(Instruction* _pImage, Instruction* _pLoDInt);
+
+		Instruction* opImageQuerySize(Instruction* _pImage);
+
+		Instruction* opImageQueryLod(Instruction* _pSampledImage, Instruction* _pCoordinate);
+
+		Instruction* opImageQueryLevels(Instruction* _pImage);
+
+		Instruction* opImageQuerySamples(Instruction* _pImage);
 
 		Instruction* opConvertFToU(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpConvertFToU, _pFloatVec, nullptr, "Operand of OpConvertFToU is not a scalar or vector of float type", false); }
 
