@@ -15,13 +15,14 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
     module.addCapability(spv::Capability::Float16);
     module.addCapability(spv::Capability::Int8);
     module.addCapability(spv::Capability::Kernel);
+    module.addCapability(spv::Capability::ImageQuery);
 
     // global variables
     Instruction* const uniColor = module.uniform<glsl::vec4>(u8"u_color", module.constant(make_vector(0.f, 0.f, 0.f, 1.f))); // use initializer
     Instruction* const uniTex = module.uniform(u8"u_baseColor", dyn_sampled_image_t{}); //default 2d float texture
     Instruction* const inUV = module.input<glsl::vec2>(u8"v_inUV"); // varying input UVs
 
-    dyn_image_t imgDesc{ dyn_scalar_t{spv::Op::OpTypeFloat, 16u} };
+    dyn_image_t imgDesc{ dyn_scalar_t{spv::Op::OpTypeFloat, 16u}, spv::Dim::Dim2D };
     imgDesc.format = spv::ImageFormat::Rg16;
     Instruction* const uniImgRawRG16 = module.uniform(u8"u_imgRG16", imgDesc);
 
@@ -58,6 +59,7 @@ spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, s
         Instruction* channelOrder = bb->opImageQueryOrder(unknownImg);
         Instruction* sizeDim = bb->opImageQuerySizeLod(unknownImg, module.constant(0u));
         sizeDim = bb->opImageQuerySize(unknownImg);
+        Instruction* lod = bb->opImageQueryLod(unknownSampledImg, constCoord2D);
 
         Instruction* color = bb->opLoad(uniTex);
         Instruction* uv = bb->opLoad(inUV);

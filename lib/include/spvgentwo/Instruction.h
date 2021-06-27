@@ -454,7 +454,7 @@ namespace spvgentwo
 		 Instruction* opImageQuerySizeLod(Instruction* _pImage, Instruction* _pLoDInt);
 		 Instruction* opImageQuerySize(Instruction* _pImage);
 
-		// Instruction* OpImageQueryLod(); TODO
+		 Instruction* opImageQueryLod(Instruction* _pSampledImage, Instruction* _pCoordinate);
 		// Instruction* OpImageQueryLevels(); TODO
 		// Instruction* OpImageQuerySamples(); TODO
 

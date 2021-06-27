@@ -1430,6 +1430,11 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageQuerySize(Instruction* _p
 	return makeOp(spv::Op::OpImageQuerySize, InvalidInstr, InvalidId, _pImage);
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opImageQueryLod(Instruction* _pSampledImage, Instruction* _pCoordinate)
+{
+	return genericImageOp(spv::Op::OpImageQueryLod, _pSampledImage, _pCoordinate, nullptr, spv::ImageOperandsMask::MaskNone);
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opUConvert(Instruction* _pUintVec, unsigned int _bitWidth)
 {
 	const Type* type = _pUintVec->getType();

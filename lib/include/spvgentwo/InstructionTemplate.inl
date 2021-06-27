@@ -532,7 +532,7 @@ namespace spvgentwo
 		//case spv::Op::OpImageSparseRead:
 			if (type->isImage() == false || (imageType->getImageSamplerAccess() == SamplerImageAccess::Sampled))
 			{
-				module.logError("OpImageRead requires _pTargetImage of type opImage. Its 'Sampled' operand must NOT be 1.");
+				module.logError("OpImageRead requires _pTargetImage of type OpImage. Its 'Sampled' operand must NOT be 1.");
 				return error();
 			}
 			checkCoords = true; coordCheckArgs |= CheckImgCoord::MustBeInt;
@@ -541,7 +541,7 @@ namespace spvgentwo
 		case spv::Op::OpImageFetch:
 			if (type->isImage() == false || (imageType->getImageSamplerAccess() != SamplerImageAccess::Sampled) || (imageType->getImageDimension() == spv::Dim::Cube))
 			{
-				module.logError("OpImageFetch requires _pTargetImage of type opImage. Its Dim operand cannot be Cube, and its 'Sampled' operand must be 1.");
+				module.logError("OpImageFetch requires _pTargetImage of type OpImage. Its Dim operand cannot be Cube, and its 'Sampled' operand must be 1.");
 				return error();
 			}
 			checkCoords = true; coordCheckArgs |= CheckImgCoord::CanBeInt;
@@ -551,7 +551,7 @@ namespace spvgentwo
 			isComponent = _imageOp == spv::Op::OpImageGather;
 			isDref = _imageOp == spv::Op::OpImageDrefGather;
 			checkCoords = true; coordCheckArgs |= CheckImgCoord::CanBeInt;
-			if (imageType->getImageDimension() != spv::Dim::Dim2D && imageType->getImageDimension() != spv::Dim::Cube && imageType->getImageDimension() != spv::Dim::Rect)
+			if (spv::Dim d = imageType->getImageDimension(); d != spv::Dim::Dim2D && d != spv::Dim::Cube && d != spv::Dim::Rect)
 			{
 				module.logError("OpImageGather requres Dim of sampled image to be 2D, Cube or Rect");
 				return error();
@@ -565,6 +565,7 @@ namespace spvgentwo
 		case spv::Op::OpImageSampleDrefExplicitLod: checkCoords = true;  isDref = true; break;
 		case spv::Op::OpImageSampleProjDrefImplicitLod: checkCoords = true; coordCheckArgs |= CheckImgCoord::IsProjective; isDref = true; break;
 		case spv::Op::OpImageSampleProjDrefExplicitLod: checkCoords = true; coordCheckArgs |= CheckImgCoord::IsProjective; isDref = true; break;
+		case spv::Op::OpImageQueryLod: checkCoords = true; coordCheckArgs |= CheckImgCoord::CanBeInt; break;
 
 			break;
 		default:

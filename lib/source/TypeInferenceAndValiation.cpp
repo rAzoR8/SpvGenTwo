@@ -280,6 +280,13 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 
 		return module->addType(module->newType().Vector(dim).UIntM());
 	}
+	case spv::Op::OpImageQueryLod:
+		//Result Type must be a two - component floating - point type vector.
+		//	The first component of the result contains the mipmap array layer.
+		//	The second component of the result contains the implicit level of
+		//	detail relative to the base level.
+		return module->type<vector_t<float, 2>>();
+
 	case spv::Op::OpConvertFToU:
 	{
 		if (type1 == nullptr) return module->getErrorInstr();
