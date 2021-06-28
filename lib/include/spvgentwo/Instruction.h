@@ -551,15 +551,21 @@ namespace spvgentwo
 
 		Instruction* opAll(Instruction* _pBoolVec);
 
-		// Instruction* OpIsNan(); TODO
-		// Instruction* OpIsInf(); TODO
-		// Instruction* OpIsFinite(); TODO
-		// Instruction* OpIsNormal(); TODO
-		// Instruction* OpSignBitSet(); TODO
+		Instruction* opIsNan(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpIsNan, _pFloatVec, nullptr, "Operand of OpIsNan is not a scalar or vector of float type", false); }
 
-		// Instruction* OpLessOrGreater(); TODO
-		// Instruction* OpOrdered(); TODO
-		// Instruction* OpUnordered(); TODO
+		Instruction* opIsInf(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpIsInf, _pFloatVec, nullptr, "Operand of OpIsInf is not a scalar or vector of float type", false); }
+
+		Instruction* opIsFinite(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpIsFinite, _pFloatVec, nullptr, "Operand of OpIsFinite is not a scalar or vector of float type", false); }
+
+		Instruction* opIsNormal(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpIsNormal, _pFloatVec, nullptr, "Operand of OpIsNormal is not a scalar or vector of float type", false); }
+
+		Instruction* opSignBitSet(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpSignBitSet, _pFloatVec, nullptr, "Operand of OpSignBitSet is not a scalar or vector of float type", false); }
+
+		// Instruction* OpLessOrGreater(); DEPRECATED
+		
+		Instruction* opOrdered(Instruction* _pFloatVec1, Instruction* _pFloatVec2) { return scalarVecOp(spv::Op::OpOrdered, _pFloatVec1, _pFloatVec2, "Operand of OpOrdered is not a scalar or vector of bool type"); }
+
+		Instruction* opUnordered(Instruction* _pFloatVec1, Instruction* _pFloatVec2) { return scalarVecOp(spv::Op::OpUnordered, _pFloatVec1, _pFloatVec2, "Operand of OpUnordered is not a scalar or vector of bool type"); }
 
 		Instruction* opLogicalEqual(Instruction* _pBoolVec1, Instruction* _pBoolVec2) { return scalarVecOp(spv::Op::OpLogicalEqual, _pBoolVec1, _pBoolVec2, "Operand of OpLogicalEqual is not a scalar or vector of bool type"); }
 

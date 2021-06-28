@@ -625,7 +625,6 @@ spvgentwo::Instruction* spvgentwo::Instruction::Div(Instruction* _pLeft, Instruc
 	{
 		Instruction* one = nullptr;
 
-		// TODO: find a better way to construct constants from a Type with a value thats not exaclty of type, e.g. getModule()->constant(lType, 1)
 		if (rType->isF32())
 		{
 			one = getModule()->constant(1.f);
@@ -634,19 +633,13 @@ spvgentwo::Instruction* spvgentwo::Instruction::Div(Instruction* _pLeft, Instruc
 		{
 			one = getModule()->constant(1.0);
 		}
-		else if (rType->isInt(32u))
-		{
-			one = getModule()->constant(1u);
-		}
-		else if (rType->isInt(64u))
-		{
-			one = getModule()->constant(1ull);
-		}
+		// there is no OpVectorTimes Scalar (Mul) for integer types
 
 		if (one != nullptr)
 		{			
 			// vec / scalar => vec * ( 1 / scalar )
-			return (*bb)->Mul(_pLeft, Div(one, _pRight));
+			Instruction* factor = Div(one, _pRight); // this instruction
+			return (*bb)->Mul(_pLeft, factor); // new instruction (BasicBlock->operator)
 		}
 	}
 

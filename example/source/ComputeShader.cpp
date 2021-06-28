@@ -33,6 +33,19 @@ spvgentwo::Module examples::computeShader(spvgentwo::IAllocator* _pAllocator, sp
 
 		Instruction* arLength = bb->opArrayLength(uniRtArray, 0u);
 
+		Instruction* f3 = entry.variable(make_vector(1.f, -3.f, 1.f / -0.01f));
+		f3 = bb->opLoad(f3);
+
+		Instruction* g3 = bb->Div(f3, module.constant(-0.0f));
+
+		bb->opIsNan(g3);
+		bb->opIsInf(f3);
+		bb->opIsFinite(g3);
+		bb->opIsNormal(f3);
+		bb->opSignBitSet(g3);
+		bb->opOrdered(f3, g3);
+		bb->opUnordered(f3, g3);
+
 		bb.returnValue();
 	}
 
