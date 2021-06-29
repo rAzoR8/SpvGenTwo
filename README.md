@@ -301,9 +301,9 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpInBoundsPtrAccessChain | &#9744; |
 | OpDecorate | &#10004; |
 | OpMemberDecorate | &#10004; |
-| OpDecorationGroup | &#9744; |
-| OpGroupDecorate | &#9744; |
-| OpGroupMemberDecorate | &#9744; |
+| OpDecorationGroup | Deperecated |
+| OpGroupDecorate | Deperecated|
+| OpGroupMemberDecorate |Deperecated|
 | OpVectorExtractDynamic | &#10004; |
 | OpVectorInsertDynamic | &#10004; |
 | OpVectorShuffle | &#10004; |
@@ -379,14 +379,14 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpSMulExtended | &#9744; |
 | OpAny | &#10004; |
 | OpAll | &#10004; |
-| OpIsNan | &#9744; |
-| OpIsInf | &#9744; |
-| OpIsFinite | &#9744; |
-| OpIsNormal | &#9744; |
-| OpSignBitSet | &#9744; |
-| OpLessOrGreater | &#9744; |
-| OpOrdered | &#9744; |
-| OpUnordered | &#9744; |
+| OpIsNan | &#10004; |
+| OpIsInf | &#10004; |
+| OpIsFinite | &#10004; |
+| OpIsNormal | &#10004; |
+| OpSignBitSet | &#10004; |
+| OpLessOrGreater | Deperecated |
+| OpOrdered | &#10004; |
+| OpUnordered | &#10004; |
 | OpLogicalEqual | &#10004; |
 | OpLogicalNotEqual | &#10004; |
 | OpLogicalOr | &#10004; |
