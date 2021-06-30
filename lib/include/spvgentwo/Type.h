@@ -111,6 +111,10 @@ namespace spvgentwo
 		constexpr bool isBaseTypeOf(const spv::Op _type) const { return getBaseType().getType() == _type; }
 		constexpr bool hasSameBase(const Type& _other, const bool _onlyCheckTypeOp = false) const;
 
+		// checks if this, or any subtype equals _sub/_type
+		bool containsType(const Type& _sub) const;
+		bool containsType(const spv::Op _type) const;
+
 		// dimension, bits, elements
 		constexpr unsigned int getIntWidth() const { return m_IntWidth; }
 		void setIntWidth(const unsigned int _width) { m_IntWidth = _width; }

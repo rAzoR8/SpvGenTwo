@@ -25,6 +25,10 @@ spvgentwo::Module examples::computeShader(spvgentwo::IAllocator* _pAllocator, sp
 
 	Instruction* uniRtArray = module.uniform(stArray, "u_RtArray");
 
+	using complex = array_t<vector_t<float, 4>, 8>;
+
+	Instruction* uniArray = module.uniform<complex>("u_Array");
+
 	// void main(); entry point
 	{
 		EntryPoint& entry = module.addEntryPoint(spv::ExecutionModel::Kernel, "main");
@@ -45,6 +49,9 @@ spvgentwo::Module examples::computeShader(spvgentwo::IAllocator* _pAllocator, sp
 		bb->opSignBitSet(g3);
 		bb->opOrdered(f3, g3);
 		bb->opUnordered(f3, g3);
+
+		Instruction* target = entry.variable<complex>("func_Array");
+		bb->opCopyMemory(target, uniArray);		
 
 		bb.returnValue();
 	}

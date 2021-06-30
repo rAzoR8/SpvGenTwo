@@ -273,8 +273,8 @@ namespace spvgentwo
 		template <class ... Operands>
 		void opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<spv::MemoryAccessMask> _memOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands);
 
-		// Instruction* OpCopyMemory(); TODO
-		// Instruction* OpCopyMemorySized(); TODO
+		void opCopyMemory(Instruction* _pTargetPtr, Instruction* _pSourcePtr, Flag<spv::MemoryAccessMask> _targetMemOperands = spv::MemoryAccessMask::MaskNone, Flag<spv::MemoryAccessMask> _sourceMemOperands = spv::MemoryAccessMask::MaskNone);
+		// void OpCopyMemorySized(); TODO
 
 		// ConstInstr must be OpConstant (unsigne int) Instruction
 		template <class ... ConstInstr>
