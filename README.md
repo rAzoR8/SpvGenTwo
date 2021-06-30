@@ -291,7 +291,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpImageTexelPointer | &#9744; |
 | OpLoad | &#10004; |
 | OpStore | &#10004; |
-| OpCopyMemory | &#9744; |
+| OpCopyMemory | &#10004; |
 | OpCopyMemorySized | &#9744; |
 | OpAccessChain | &#10004; |
 | OpInBoundsAccessChain | &#10004; |
