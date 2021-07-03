@@ -11,6 +11,8 @@ spvgentwo::Module examples::computeShader(spvgentwo::IAllocator* _pAllocator, sp
 	// configure capabilities and extensions
 	module.addCapability(spv::Capability::Shader);
 	module.addCapability(spv::Capability::Kernel);
+	module.addCapability(spv::Capability::Addresses);
+	module.addCapability(spv::Capability::Int64);
 
 	// global variables
 
@@ -51,7 +53,8 @@ spvgentwo::Module examples::computeShader(spvgentwo::IAllocator* _pAllocator, sp
 		bb->opUnordered(f3, g3);
 
 		Instruction* target = entry.variable<complex>("func_Array");
-		bb->opCopyMemory(target, uniArray);		
+		auto* zero = module.constant(1ull);
+		bb->opCopyMemorySized(target, uniArray, zero);		
 
 		bb.returnValue();
 	}

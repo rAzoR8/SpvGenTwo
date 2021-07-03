@@ -2,6 +2,7 @@
 
 #include "Type.h"
 #include "Module.h"
+#include "Instruction.h"
 
 namespace spvgentwo
 {
@@ -319,6 +320,12 @@ namespace spvgentwo
 			return error();
 		}
 
+		if(_memOperands.empty() && sizeof...(_operands) > 0)
+		{
+			getModule()->logError("OpLoad: no MemoryAccessMask provided for _operands...");
+			return error();
+		}
+
 		// Result Type is the type of the loaded object.It must be a type with ﬁxed size; i.e., it cannot be, nor include, any OpTypeRuntimeArray types.
 		// Pointer is the pointer to load through.Its type must be an OpTypePointer whose Type operand is the same as Result Type.
 		Instruction* pResultType = getModule()->addType(ptrType->front());
@@ -337,6 +344,12 @@ namespace spvgentwo
 		if (ptrtype == nullptr || valtype == nullptr)
 			return;
 
+		if (_memOperands.empty() && sizeof...(_operands) > 0)
+		{
+			getModule()->logError("OpStore: no MemoryAccessMask provided for _operands...");
+			return;
+		}
+
 		if (ptrtype->isPointer() && ptrtype->front() == *valtype)
 		{
 			makeOp(spv::Op::OpStore, _pPointerToVar, _valueToStore, literal_t{ _memOperands }, _operands...);
@@ -344,6 +357,132 @@ namespace spvgentwo
 		else
 		{
 			getModule()->logError("Type of _pPointerToVar is not a pointer or the type pointed to does not match the type of _valueToStore");
+		}
+	}
+
+	template<class ...Operands>
+	inline void Instruction::opCopyMemorySizedImpl(Instruction* _pTargetPtr, Instruction* _pSourcePtr, Instruction* _pSizeInt, Flag<spv::MemoryAccessMask> _targetMemOperands, Flag<spv::MemoryAccessMask> _sourceMemOperands, Operands ..._operands)
+	{
+		Module* module = getModule();
+
+		const Type* targetType = _pTargetPtr->getType();
+		const Type* sourceType = _pSourcePtr->getType();
+
+		if (targetType == nullptr || sourceType == nullptr)
+		{
+			return;
+		}
+
+		//  If present, any Memory Operands must begin with a memory operand literal.If not present, it is the same as
+		//	specifying the memory operand None. Before version 1.4, at most one memory operands mask can be provided.
+		//	Starting with version 1.4 two masks can be provided, as described in Memory Operands. If no masks or only one
+		//	mask is present, it applies to both Source and Target. If two masks are present, the first applies to Target and must not
+		//	include MakePointerVisible, and the second applies to Source and must not include MakePointerAvailable
+
+		if (targetType->isPointer() == false || sourceType->isPointer() == false)
+		{
+			module->logError("Operand of OpCopyMemory is not a pointer type");
+			return;
+		}
+		else if (targetType->containsType(spv::Op::OpTypeRuntimeArray) || sourceType->containsType(spv::Op::OpTypeRuntimeArray))
+		{
+			module->logError("Operand of OpCopyMemory must not contain any OpTypeRuntimeArray");
+			return;
+		}
+		else if (targetType->front() != sourceType->front())
+		{
+			module->logError("Operand types for _pTargetPtr and _pSourcePtr of OpCopyMemory don't match");
+			return;
+		}
+
+		if(_pSizeInt != nullptr)
+		{
+			const Type* sizeType = _pSizeInt->getType();
+			if (sizeType == nullptr) return;
+
+			//  Size is the number of bytes to copy. It must have a scalar integer type. If it is a
+			//	constant instruction, the constant value must not be 0. It is invalid for both the
+			//	constant’s type to have Signedness of 1 and to have the sign bit set. Otherwise,
+			//	as a run - time value, Size is treated as unsigned, and if its value is 0, no memory
+			//	access is made.
+
+			if(sizeType->isInt() == false)
+			{
+				module->logError("Operand _pSizeInt of OpCopyMemorySized must be of type scalar integer");
+				return;
+			}
+
+			if (_pSizeInt->isConstant())
+			{
+				if(sizeType->isSigned())
+				{
+					module->logError("Operand _pSizeInt of OpCopyMemorySized must be of type scalar unsigned integer if OpConstant");
+					return;
+				}
+
+				bool constZero = true;
+				for(unsigned int val : _pSizeInt->getConstant()->getData()) // could be 64bit for some reason
+				{
+					if(val != 0u)
+					{
+						constZero = false;
+						break;
+					}
+				}
+
+				if(constZero)
+				{
+					module->logError("Operand _pSizeInt of OpCopyMemorySized must be not be 0 valued OpConstant");
+					return;
+				}
+			}
+		}
+
+		auto makeOpCopyMemory = [&](auto... args)
+		{
+			if(_pSizeInt == nullptr)
+			{
+				makeOp(spv::Op::OpCopyMemory, _pTargetPtr, _pSourcePtr, args...);
+			}
+			else
+			{
+				makeOp(spv::Op::OpCopyMemorySized, _pTargetPtr, _pSourcePtr, _pSizeInt, args...);
+			}
+		};
+
+		// no memory operands provided
+		if (_targetMemOperands.empty() && _sourceMemOperands.empty())
+		{
+			if constexpr (sizeof...(_operands) > 0) 
+			{
+				module->logError("OpCopyMemory: no MemoryAccessMask provided for _operands...");
+				return;
+			}
+
+			makeOpCopyMemory();
+			return; // early out
+		}
+
+		if (module->getSpvVersion() <= makeVersion(1u, 4u) && _sourceMemOperands)
+		{
+			module->logError("Operand _sourceMemOperands of OpCopyMemory not supported before SPIR-V 1.5");
+			return;
+		}
+
+		if (_sourceMemOperands.empty())
+		{
+			makeOpCopyMemory(literal_t{ _targetMemOperands }, _operands...);
+		}
+		else // both operands masks set
+		{
+			if ((_targetMemOperands & spv::MemoryAccessMask::MakePointerVisible) ||
+				(_sourceMemOperands & spv::MemoryAccessMask::MakePointerAvailable))
+			{
+				module->logError("Operand of OpCopyMemory: _targetMemOperands may not include MakePointerVisible and _sourceMemOperands may not include MakePointerAvailable");
+				return;
+			}
+
+			makeOpCopyMemory(literal_t{ _targetMemOperands }, literal_t{ _sourceMemOperands }, _operands...);
 		}
 	}
 

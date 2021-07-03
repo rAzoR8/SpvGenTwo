@@ -978,49 +978,6 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResult
 	}
 }
 
-void spvgentwo::Instruction::opCopyMemory(Instruction* _pTargetPtr, Instruction* _pSourcePtr, Flag<spv::MemoryAccessMask> _targetMemOperands, Flag<spv::MemoryAccessMask> _sourceMemOperands)
-{
-	Module* module = getModule();
-
-	const Type* targetType = _pTargetPtr->getType();
-	const Type* sourceType = _pSourcePtr->getType();
-
-	if (targetType == nullptr || sourceType == nullptr)
-	{
-		return;
-	}
-
-	if(targetType->isPointer() == false || sourceType->isPointer() == false)
-	{
-		module->logError("Operand of OpCopyMemory is not a pointer type");
-		return;
-	}
-	else if(targetType->containsType(spv::Op::OpTypeRuntimeArray) || sourceType->containsType(spv::Op::OpTypeRuntimeArray))
-	{
-		module->logError("Operand of OpCopyMemory must not contain any OpTypeRuntimeArray");
-		return;
-	}
-	else if (targetType->front() != sourceType->front())
-	{
-		module->logError("Operand types for _pTargetPtr and _pSourcePtr of OpCopyMemory don't match");
-		return;
-	}
-
-	if(module->getSpvVersion() <= makeVersion(1u, 4u))
-	{
-		if (_sourceMemOperands != spv::MemoryAccessMask::MaskNone)
-		{
-			module->logWarning("Operand _sourceMemOperands of OpCopyMemory will be ignored for SPIR-V 1.4 and below");
-		}
-
-		makeOp(spv::Op::OpCopyMemory, _pTargetPtr, _pSourcePtr, literal_t{_targetMemOperands});
-	}
-	else
-	{
-		makeOp(spv::Op::OpCopyMemory, _pTargetPtr, _pSourcePtr, literal_t{_targetMemOperands}, literal_t{_sourceMemOperands});	
-	}
-}
-
 spvgentwo::Instruction* spvgentwo::Instruction::opAccessChain(Instruction* _pBase, const List<unsigned int>& _indices)
 {
 	// Base must be a pointer, pointing to the base of a composite object.

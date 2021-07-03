@@ -273,8 +273,17 @@ namespace spvgentwo
 		template <class ... Operands>
 		void opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<spv::MemoryAccessMask> _memOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands);
 
-		void opCopyMemory(Instruction* _pTargetPtr, Instruction* _pSourcePtr, Flag<spv::MemoryAccessMask> _targetMemOperands = spv::MemoryAccessMask::MaskNone, Flag<spv::MemoryAccessMask> _sourceMemOperands = spv::MemoryAccessMask::MaskNone);
-		// void OpCopyMemorySized(); TODO
+		template <class ... Operands>
+		void opCopyMemory(Instruction* _pTargetPtr, Instruction* _pSourcePtr, Flag<spv::MemoryAccessMask> _targetMemOperands = spv::MemoryAccessMask::MaskNone, Flag<spv::MemoryAccessMask> _sourceMemOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands)
+		{
+			opCopyMemorySizedImpl(_pTargetPtr, _pSourcePtr, nullptr, _targetMemOperands, _sourceMemOperands, _operands...);
+		}
+		
+		template <class ... Operands>
+		void opCopyMemorySized(Instruction* _pTargetPtr, Instruction* _pSourcePtr, Instruction* _pSizeInBytesInt, Flag<spv::MemoryAccessMask> _targetMemOperands = spv::MemoryAccessMask::MaskNone, Flag<spv::MemoryAccessMask> _sourceMemOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands)
+		{
+			opCopyMemorySizedImpl(_pTargetPtr, _pSourcePtr, _pSizeInBytesInt, _targetMemOperands, _sourceMemOperands, _operands...);
+		}
 
 		// ConstInstr must be OpConstant (unsigne int) Instruction
 		template <class ... ConstInstr>
@@ -683,6 +692,7 @@ namespace spvgentwo
 		template <class ... VarInst>
 		Instruction* opPhi(Instruction* _pVar, VarInst* ... _variables);
 
+		// Non-Standard helper
 		Instruction* opPhiDynamic(const List<Instruction*>& _variables);
 
 		template <class ...LoopControlParams>
@@ -734,6 +744,9 @@ namespace spvgentwo
 	protected:
 		// return error instr
 		[[nodiscard]] Instruction* error() const;
+
+		template <class ... Operands>
+		void opCopyMemorySizedImpl(Instruction* _pTargetPtr, Instruction* _pSourcePtr, Instruction* _pSizeInt, Flag<spv::MemoryAccessMask> _targetMemOperands = spv::MemoryAccessMask::MaskNone, Flag<spv::MemoryAccessMask> _sourceMemOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands);
 
 		enum class CheckImgCoord
 		{

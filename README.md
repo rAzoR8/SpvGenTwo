@@ -292,7 +292,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpLoad | &#10004; |
 | OpStore | &#10004; |
 | OpCopyMemory | &#10004; |
-| OpCopyMemorySized | &#9744; |
+| OpCopyMemorySized | &#10004; |
 | OpAccessChain | &#10004; |
 | OpInBoundsAccessChain | &#10004; |
 | OpPtrAccessChain | &#9744; |
