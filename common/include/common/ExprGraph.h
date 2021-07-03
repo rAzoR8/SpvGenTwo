@@ -50,8 +50,8 @@ namespace spvgentwo
 		{
 			if constexpr (args == ExprArgs::FunctionPtrLists)
 			{
-				auto inputs = transform(_pExitNode->inputs(), [](auto& edge) -> Func* {return &edge.pTarget->data().get(); });
-				auto outputs = transform(_pExitNode->outputs(), [](auto& edge) -> Func* {return &edge.pTarget->data().get(); });
+				auto inputs = algo::transform(_pExitNode->inputs(), [](auto& edge) -> Func* {return &edge.pTarget->data().get(); });
+				auto outputs = algo::transform(_pExitNode->outputs(), [](auto& edge) -> Func* {return &edge.pTarget->data().get(); });
 				expr(inputs, outputs);
 			}
 			else
