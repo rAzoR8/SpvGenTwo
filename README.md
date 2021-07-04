@@ -343,8 +343,8 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpFConvert | &#10004; |
 | OpQuantizeToF16 | &#10004; |
 | OpConvertPtrToU | &#10004; |
-| OpSatConvertSToU | &#9744; |
-| OpSatConvertUToS | &#9744; |
+| OpSatConvertSToU | &#10004; |
+| OpSatConvertUToS | &#10004; |
 | OpConvertUToPtr | &#9744; |
 | OpPtrCastToGeneric | &#9744; |
 | OpGenericCastToPtr | &#9744; |

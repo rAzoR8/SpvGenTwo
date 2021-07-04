@@ -314,9 +314,9 @@ namespace spvgentwo
 		template <class ... Decorations>
 		void opMemberDecorate(Instruction* _pTargetStructType, unsigned int _memberIndex, spv::Decoration _decoration, Decorations ... _decorations);
 
-		// Instruction* OpDecorationGroup(); TODO
-		// Instruction* OpGroupDecorate(); TODO
-		// Instruction* OpGroupMemberDecorate(); TODO
+		// Instruction* OpDecorationGroup(); Deprecated
+		// Instruction* OpGroupDecorate(); Deprecated
+		// Instruction* OpGroupMemberDecorate(); Deprecated
 
 		Instruction* opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt);
 
@@ -493,8 +493,10 @@ namespace spvgentwo
 
 		Instruction* opConvertPtrToU(Instruction* _pPhysPtr, unsigned int _bitWidth);
 
-		// Instruction* OpSatConvertSToU(); TODO
-		// Instruction* OpSatConvertUToS(); TODO
+		Instruction* opSatConvertSToU(Instruction* _pSignedInt) { return scalarVecOp(spv::Op::OpSatConvertSToU, _pSignedInt, nullptr, "Operand of OpSatConvertSToU is not a scalar or vector of signed integer type"); }
+		
+		Instruction* opSatConvertUToS(Instruction* _pSignedInt) { return scalarVecOp(spv::Op::OpSatConvertUToS, _pSignedInt, nullptr, "Operand of OpSatConvertUToS is not a scalar or vector of unsigned integer type"); }
+
 		// Instruction* OpConvertUToPtr(); TODO
 		// Instruction* OpPtrCastToGeneric(); TODO
 		// Instruction* OpGenericCastToPtr(); TODO

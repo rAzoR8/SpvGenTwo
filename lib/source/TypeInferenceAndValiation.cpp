@@ -62,6 +62,10 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpDPdyFine:
 	case spv::Op::OpDPdxCoarse:
 	case spv::Op::OpDPdyCoarse:
+
+	case spv::Op::OpSatConvertSToU: // spec doesnt specify signedness of result type but Kernel-Cap dictates unsigned int.
+	case spv::Op::OpSatConvertUToS: // i assume the parameter type is a valid integer type in Kernel-Cap, so just use that
+
 		return typeInstr1;
 	case spv::Op::OpIAddCarry:
 	case spv::Op::OpISubBorrow:

@@ -163,6 +163,7 @@ namespace spvgentwo
 		case spv::Op::OpSNegate:
 		case spv::Op::OpSRem:
 		case spv::Op::OpConvertSToF:
+
 			_sign = Sign::Signed;
 			return spv::Op::OpTypeInt;
 
@@ -186,6 +187,9 @@ namespace spvgentwo
 		case spv::Op::OpBitwiseOr:
 		case spv::Op::OpBitwiseXor:
 		case spv::Op::OpBitwiseAnd:
+		case spv::Op::OpSatConvertUToS:
+		case spv::Op::OpSatConvertSToU:
+
 			_sign = Sign::Any;
 			return spv::Op::OpTypeInt;
 
@@ -205,6 +209,8 @@ namespace spvgentwo
 		case spv::Op::OpUMulExtended:
 		case spv::Op::OpUSubSatINTEL:
 		case spv::Op::OpConvertUToF:
+		case spv::Op::OpConvertUToPtr:
+
 			_sign = Sign::Unsigned;
 			return spv::Op::OpTypeInt;
 

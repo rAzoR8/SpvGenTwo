@@ -56,6 +56,9 @@ spvgentwo::Module examples::computeShader(spvgentwo::IAllocator* _pAllocator, sp
 		auto* zero = module.constant(1ull);
 		bb->opCopyMemorySized(target, uniArray, zero);		
 
+		bb->opSatConvertSToU(module.constant(13u));
+		bb->opSatConvertUToS(module.constant(1337u));
+
 		bb.returnValue();
 	}
 
