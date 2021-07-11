@@ -57,6 +57,11 @@ Module examples::types(IAllocator* _pAllocator, ILogger* _pLogger)
 		// add complex dynamic C++ type
 		type = module.type<dyn_sampled_image_t>(img);
 
+		auto ty = [&module](){ return module.newType(); };
+
+		Type t(ty());
+		module.addType(t.Struct(ty().Float(), ty().UInt(), ty().Bool()));
+
 		bb.returnValue();
 	}
 

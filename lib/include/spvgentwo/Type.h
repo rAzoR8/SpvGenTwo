@@ -197,6 +197,10 @@ namespace spvgentwo
 		// makes this a struct
 		Type& Struct(const Type* _pSubType = nullptr);
 
+		// make this a struct with _firstMember and _memberTypes as subtypes, returns this sturcture
+		template <class ...Types>
+		Type& Struct(const Type& _firstMember, const Types& ... _memberTypes);
+
 		// makes this an array
 		Type& Array(const unsigned int _elements = 0u, const Type* _elementType = nullptr);
 		// add new member of type run-time array, returns this structure
@@ -718,6 +722,18 @@ namespace spvgentwo
 		{
 			setProperties(_props...);
 		}
+	}
+
+	template<class ...Types>
+	inline Type& Type::Struct(const Type& _firstMember, const Types& ..._memberTypes)
+	{
+		reset();
+		m_Type = spv::Op::OpTypeStruct;
+
+		m_subTypes.emplace_back(_firstMember);
+		(m_subTypes.emplace_back(_memberTypes), ...);
+
+		return *this;
 	}
 
 	template<class T, class ...Props>
