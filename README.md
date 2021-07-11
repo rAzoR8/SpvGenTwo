@@ -373,10 +373,10 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpMatrixTimesMatrix | &#10004; |
 | OpOuterProduct | &#10004; |
 | OpDot | &#10004; |
-| OpIAddCarry | &#9744; |
-| OpISubBorrow | &#9744; |
-| OpUMulExtended | &#9744; |
-| OpSMulExtended | &#9744; |
+| OpIAddCarry | &#10004; |
+| OpISubBorrow | &#10004; |
+| OpUMulExtended | &#10004; |
+| OpSMulExtended | &#10004; |
 | OpAny | &#10004; |
 | OpAll | &#10004; |
 | OpIsNan | &#10004; |

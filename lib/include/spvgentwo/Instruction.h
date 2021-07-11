@@ -553,10 +553,13 @@ namespace spvgentwo
 
 		Instruction* opDot(Instruction* _pLeft, Instruction* _pRight);
 
-		// Instruction* OpIAddCarry(); TODO
-		// Instruction* OpISubBorrow(); TODO
-		// Instruction* OpUMulExtended(); TODO
-		// Instruction* OpSMulExtended(); TODO
+		Instruction* opIAddCarry(Instruction* _pUIntVec1, Instruction* _pUIntVec2) { return scalarVecOp(spv::Op::OpIAddCarry, _pUIntVec1, _pUIntVec2, "Operand of OpIAddCarry is not a scalar or vector of unsigned int type"); }
+		
+		Instruction* opISubBorrow(Instruction* _pUIntVec1, Instruction* _pUIntVec2) { return scalarVecOp(spv::Op::OpISubBorrow, _pUIntVec1, _pUIntVec2, "Operand of OpISubBorrow is not a scalar or vector of unsigned int type"); }
+
+		Instruction* opUMulExtended(Instruction* _pUIntVec1, Instruction* _pUIntVec2) { return scalarVecOp(spv::Op::OpUMulExtended, _pUIntVec1, _pUIntVec2, "Operand of OpUMulExtended is not a scalar or vector of unsigned int type"); }
+
+		Instruction* OpSMulExtended(Instruction* _pSIntVec1, Instruction* _pSIntVec2) { return scalarVecOp(spv::Op::OpSMulExtended, _pSIntVec1, _pSIntVec2, "Operand of OpSMulExtended is not a scalar or vector of signed int type"); }
 
 		Instruction* opAny(Instruction* _pBoolVec);
 

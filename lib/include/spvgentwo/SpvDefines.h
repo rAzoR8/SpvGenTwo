@@ -169,7 +169,6 @@ namespace spvgentwo
 
 		case spv::Op::OpTypeInt:
 		case spv::Op::OpIAdd:
-		case spv::Op::OpIAddCarry:
 		case spv::Op::OpIAddSatINTEL:
 		case spv::Op::OpIAverageINTEL:
 		case spv::Op::OpIAverageRoundedINTEL:
@@ -178,7 +177,6 @@ namespace spvgentwo
 		case spv::Op::OpIMul:
 		case spv::Op::OpIMul32x16INTEL:
 		case spv::Op::OpISub:
-		case spv::Op::OpISubBorrow:
 		case spv::Op::OpISubSatINTEL:
 		case spv::Op::OpNot:
 		case spv::Op::OpShiftRightLogical:
@@ -210,6 +208,11 @@ namespace spvgentwo
 		case spv::Op::OpUSubSatINTEL:
 		case spv::Op::OpConvertUToF:
 		case spv::Op::OpConvertUToPtr:
+
+			// The member type must be a scalar or vector of integer type, whose Signedness operand is 0
+			// Operand 1 and Operand 2 must have the same type as the members of Result Type. => unsigned int
+		case spv::Op::OpIAddCarry:
+		case spv::Op::OpISubBorrow:
 
 			_sign = Sign::Unsigned;
 			return spv::Op::OpTypeInt;

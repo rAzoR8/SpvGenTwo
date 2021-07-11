@@ -59,6 +59,13 @@ spvgentwo::Module examples::computeShader(spvgentwo::IAllocator* _pAllocator, sp
 		bb->opSatConvertSToU(module.constant(13u));
 		bb->opSatConvertUToS(module.constant(1337u));
 
+		Instruction* intVec1 = module.constant(make_vector(0u, 3u, 4u));
+		Instruction* intVec2 = module.constant(make_vector(3u, 0u, 4u));
+
+		bb->opIAddCarry(intVec1, intVec2);
+		bb->opISubBorrow(intVec2, intVec1);
+		bb->opUMulExtended(intVec1, intVec1);
+
 		bb.returnValue();
 	}
 

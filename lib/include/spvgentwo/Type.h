@@ -167,6 +167,9 @@ namespace spvgentwo
 		// return new subtype, if _pSubType is not nullptr, returned member type is a copy of _pSubType
 		Type& Member(const Type* _pSubType = nullptr);
 
+		// return new subtype, if _pSubType is not nullptr, returns this structure
+		Type& MemberM(const Type* _pSubType = nullptr) { Member(_pSubType); return *this; }
+
 		// makes this a void type
 		Type& Void();
 
