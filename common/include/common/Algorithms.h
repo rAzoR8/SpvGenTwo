@@ -2,7 +2,7 @@
 
 #include "spvgentwo/stdreplacement.h"
 
-namespace spvgentwo
+namespace spvgentwo::algo
 {
 	// transform a Container<Elem> to a Container<Func(Elem)>
 	template <class Elem, template <typename T> class Container, class Func>
@@ -33,5 +33,33 @@ namespace spvgentwo
 		}
 
 		return output;
+	}
+
+	template <class Elem, template <typename T> class Container, class Func>
+	bool any(const Container<Elem>& _input, const Func& _func)
+	{
+		static_assert(traits::is_invocable_v<Func, const Elem&>, "Func not invocable with const Elem&");
+	
+		for (const Elem& elem : _input)
+		{
+			if (_func(elem))
+				return true;
+		}
+
+		return false;
+	}
+
+	template <class Elem, template <typename T> class Container, class Func>
+	bool all(const Container<Elem>& _input, const Func& _func)
+	{
+		static_assert(traits::is_invocable_v<Func, const Elem&>, "Func not invocable with const Elem&");
+
+		for (const Elem& elem : _input)
+		{
+			if (_func(elem) == false)
+				return false;
+		}
+
+		return true;
 	}
 } //!spvgentwo

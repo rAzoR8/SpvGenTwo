@@ -62,10 +62,22 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpDPdyFine:
 	case spv::Op::OpDPdxCoarse:
 	case spv::Op::OpDPdyCoarse:
+
+	case spv::Op::OpSatConvertSToU: // spec doesnt specify signedness of result type but Kernel-Cap dictates unsigned int.
+	case spv::Op::OpSatConvertUToS: // i assume the parameter type is a valid integer type in Kernel-Cap, so just use that
+
 		return typeInstr1;
+
 	case spv::Op::OpIAddCarry:
 	case spv::Op::OpISubBorrow:
-		return module->compositeType(spv::Op::OpTypeStruct, typeInstr1, typeInstr2);
+	case spv::Op::OpUMulExtended:
+	case spv::Op::OpSMulExtended:
+		if (type1 == nullptr || type2 == nullptr) return module->getErrorInstr();
+
+		// Result Type must be from OpTypeStruct. The struct must have two members, and the two members must be the same type.
+		// The member type must be a scalar or vector of integer type, whose Signedness operand is 0. (we assume sign is correct,  excpects signed)
+
+		return module->addType(type1->wrapStruct().MemberM(type2));
 	case spv::Op::OpVectorTimesScalar:
 		return checkType(spv::Op::OpTypeVector, typeInstr1);
 	case spv::Op::OpMatrixTimesScalar:
@@ -264,6 +276,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	case spv::Op::OpImageQueryOrder:
 	case spv::Op::OpImageQueryLevels:
 	case spv::Op::OpImageQuerySamples:
+	case spv::Op::OpArrayLength:
 		return module->type<unsigned int>();
 
 	case spv::Op::OpImageQuerySizeLod:

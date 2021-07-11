@@ -625,7 +625,6 @@ spvgentwo::Instruction* spvgentwo::Instruction::Div(Instruction* _pLeft, Instruc
 	{
 		Instruction* one = nullptr;
 
-		// TODO: find a better way to construct constants from a Type with a value thats not exaclty of type, e.g. getModule()->constant(lType, 1)
 		if (rType->isF32())
 		{
 			one = getModule()->constant(1.f);
@@ -634,19 +633,13 @@ spvgentwo::Instruction* spvgentwo::Instruction::Div(Instruction* _pLeft, Instruc
 		{
 			one = getModule()->constant(1.0);
 		}
-		else if (rType->isInt(32u))
-		{
-			one = getModule()->constant(1u);
-		}
-		else if (rType->isInt(64u))
-		{
-			one = getModule()->constant(1ull);
-		}
+		// there is no OpVectorTimes Scalar (Mul) for integer types
 
 		if (one != nullptr)
 		{			
 			// vec / scalar => vec * ( 1 / scalar )
-			return (*bb)->Mul(_pLeft, Div(one, _pRight));
+			Instruction* factor = Div(one, _pRight); // this instruction
+			return (*bb)->Mul(_pLeft, factor); // new instruction (BasicBlock->operator)
 		}
 	}
 
@@ -977,11 +970,11 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVariable(Instruction* _pResult
 {
 	if (_pInitializer == nullptr)
 	{
-		return makeOp(spv::Op::OpVariable, _pResultType, InvalidId, _storageClass);
+		return makeOp(spv::Op::OpVariable, _pResultType, InvalidId, literal_t{ _storageClass });
 	}
 	else
 	{
-		return makeOp(spv::Op::OpVariable, _pResultType, InvalidId, _storageClass, _pInitializer);
+		return makeOp(spv::Op::OpVariable, _pResultType, InvalidId, literal_t{ _storageClass }, _pInitializer);
 	}
 }
 
@@ -1020,6 +1013,21 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAccessChain(Instruction* _pBas
 	getModule()->logError("Failed to deduct composite type of base operand for OpAccessChain");
 
 	return error();
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opArrayLength(Instruction* _pStructure, unsigned int _ArrayMemberIndex)
+{
+	const Type* type = _pStructure->getType();
+	if (type == nullptr) return error();
+
+
+	if (type->isPointer() == false || type->front().isStruct() == false || type->front().back().isRuntimeArray() == false)
+	{
+		getModule()->logError("Operand _pStructure of OpArrayLength must be a logical pointer to an OpTypeStruct whose last	member is a run-time array");
+		return error();
+	} 
+
+	return makeOp(spv::Op::OpArrayLength, InvalidInstr, InvalidId, _pStructure, literal_t{ _ArrayMemberIndex });
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opOuterProduct(Instruction* _pLeft, Instruction* _pRight)
