@@ -120,14 +120,16 @@ The resulting SPIR-V binary when disassembled using `spirv-dis`:
 
 Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
 
-* [FunctionCall Example](example/source/FunctionCall.cpp)
+* [Types Example](example/source/Types.cpp)
+* [Constants Example](example/source/Constants.cpp)
 * [ControlFlow Example](example/source/ControlFlow.cpp)
 * [FunctionCall Example](example/source/FunctionCall.cpp)
 * [Extensions Example](example/source/Extensions.cpp)
-* [Constants Example](example/source/Constants.cpp)
-* [Types Example](example/source/Types.cpp)
 * [ExpressionGraph Example](example/source/ExpressionGraph.cpp)
 * [Linkage Example](example/source/Linkage.cpp)
+* [FragmentShader Example](example/source/FragmentShader.cpp)
+* [GeometryShader Example](example/source/GeometryShader.cpp)
+* [ComputeShader Example](example/source/ComputeShader.cpp)
 
 # Project Structure
 
@@ -289,19 +291,19 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpImageTexelPointer | &#9744; |
 | OpLoad | &#10004; |
 | OpStore | &#10004; |
-| OpCopyMemory | &#9744; |
-| OpCopyMemorySized | &#9744; |
+| OpCopyMemory | &#10004; |
+| OpCopyMemorySized | &#10004; |
 | OpAccessChain | &#10004; |
 | OpInBoundsAccessChain | &#10004; |
 | OpPtrAccessChain | &#9744; |
-| OpArrayLength | &#9744; |
+| OpArrayLength | &#10004; |
 | OpGenericPtrMemSemantics | &#9744; |
 | OpInBoundsPtrAccessChain | &#9744; |
 | OpDecorate | &#10004; |
 | OpMemberDecorate | &#10004; |
-| OpDecorationGroup | &#9744; |
-| OpGroupDecorate | &#9744; |
-| OpGroupMemberDecorate | &#9744; |
+| OpDecorationGroup | Deperecated |
+| OpGroupDecorate | Deperecated|
+| OpGroupMemberDecorate |Deperecated|
 | OpVectorExtractDynamic | &#10004; |
 | OpVectorInsertDynamic | &#10004; |
 | OpVectorShuffle | &#10004; |
@@ -341,8 +343,8 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpFConvert | &#10004; |
 | OpQuantizeToF16 | &#10004; |
 | OpConvertPtrToU | &#10004; |
-| OpSatConvertSToU | &#9744; |
-| OpSatConvertUToS | &#9744; |
+| OpSatConvertSToU | &#10004; |
+| OpSatConvertUToS | &#10004; |
 | OpConvertUToPtr | &#9744; |
 | OpPtrCastToGeneric | &#9744; |
 | OpGenericCastToPtr | &#9744; |
@@ -371,20 +373,20 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpMatrixTimesMatrix | &#10004; |
 | OpOuterProduct | &#10004; |
 | OpDot | &#10004; |
-| OpIAddCarry | &#9744; |
-| OpISubBorrow | &#9744; |
-| OpUMulExtended | &#9744; |
-| OpSMulExtended | &#9744; |
+| OpIAddCarry | &#10004; |
+| OpISubBorrow | &#10004; |
+| OpUMulExtended | &#10004; |
+| OpSMulExtended | &#10004; |
 | OpAny | &#10004; |
 | OpAll | &#10004; |
-| OpIsNan | &#9744; |
-| OpIsInf | &#9744; |
-| OpIsFinite | &#9744; |
-| OpIsNormal | &#9744; |
-| OpSignBitSet | &#9744; |
-| OpLessOrGreater | &#9744; |
-| OpOrdered | &#9744; |
-| OpUnordered | &#9744; |
+| OpIsNan | &#10004; |
+| OpIsInf | &#10004; |
+| OpIsFinite | &#10004; |
+| OpIsNormal | &#10004; |
+| OpSignBitSet | &#10004; |
+| OpLessOrGreater | Deperecated |
+| OpOrdered | &#10004; |
+| OpUnordered | &#10004; |
 | OpLogicalEqual | &#10004; |
 | OpLogicalNotEqual | &#10004; |
 | OpLogicalOr | &#10004; |

@@ -111,6 +111,10 @@ namespace spvgentwo
 		constexpr bool isBaseTypeOf(const spv::Op _type) const { return getBaseType().getType() == _type; }
 		constexpr bool hasSameBase(const Type& _other, const bool _onlyCheckTypeOp = false) const;
 
+		// checks if this, or any subtype equals _sub/_type
+		bool containsType(const Type& _sub) const;
+		bool containsType(const spv::Op _type) const;
+
 		// dimension, bits, elements
 		constexpr unsigned int getIntWidth() const { return m_IntWidth; }
 		void setIntWidth(const unsigned int _width) { m_IntWidth = _width; }
@@ -163,6 +167,9 @@ namespace spvgentwo
 		// return new subtype, if _pSubType is not nullptr, returned member type is a copy of _pSubType
 		Type& Member(const Type* _pSubType = nullptr);
 
+		// return new subtype, if _pSubType is not nullptr, returns this structure
+		Type& MemberM(const Type* _pSubType = nullptr) { Member(_pSubType); return *this; }
+
 		// makes this a void type
 		Type& Void();
 
@@ -190,12 +197,23 @@ namespace spvgentwo
 		// makes this a struct
 		Type& Struct(const Type* _pSubType = nullptr);
 
+		// make this a struct with _firstMember and _memberTypes as subtypes, returns this sturcture
+		template <class ...Types>
+		Type& Struct(const Type& _firstMember, const Types& ... _memberTypes);
+
 		// makes this an array
 		Type& Array(const unsigned int _elements = 0u, const Type* _elementType = nullptr);
+		// add new member of type run-time array, returns this structure
+		Type& ArrayM(const unsigned int _elements = 0u, const Type* _elementType = nullptr) { Member().Array(_elements, _elementType); return *this; }
 		// makes this an array, returns element type
 		Type& ArrayElement(const unsigned int _elements) { Array(_elements); return Member(); }
 
+		// makes this an run-time
 		Type& RuntimeArray(const Type* _elementType = nullptr);
+		// add new member of type run-time array, returns this structure
+		Type& RuntimeArrayM(const Type* _elementType = nullptr) { Member().RuntimeArray(_elementType); return *this; }
+		// makes this an run-time array, returns element type
+		Type& RuntimeArrayElement() { RuntimeArray(); return Member(); }
 
 		// makes this a function
 		Type& Function();
@@ -704,6 +722,18 @@ namespace spvgentwo
 		{
 			setProperties(_props...);
 		}
+	}
+
+	template<class ...Types>
+	inline Type& Type::Struct(const Type& _firstMember, const Types& ..._memberTypes)
+	{
+		reset();
+		m_Type = spv::Op::OpTypeStruct;
+
+		m_subTypes.emplace_back(_firstMember);
+		(m_subTypes.emplace_back(_memberTypes), ...);
+
+		return *this;
 	}
 
 	template<class T, class ...Props>

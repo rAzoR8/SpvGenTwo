@@ -273,8 +273,17 @@ namespace spvgentwo
 		template <class ... Operands>
 		void opStore(Instruction* _pPointerToVar, Instruction* _valueToStore, const Flag<spv::MemoryAccessMask> _memOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands);
 
-		// Instruction* OpCopyMemory(); TODO
-		// Instruction* OpCopyMemorySized(); TODO
+		template <class ... Operands>
+		void opCopyMemory(Instruction* _pTargetPtr, Instruction* _pSourcePtr, Flag<spv::MemoryAccessMask> _targetMemOperands = spv::MemoryAccessMask::MaskNone, Flag<spv::MemoryAccessMask> _sourceMemOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands)
+		{
+			opCopyMemorySizedImpl(_pTargetPtr, _pSourcePtr, nullptr, _targetMemOperands, _sourceMemOperands, _operands...);
+		}
+		
+		template <class ... Operands>
+		void opCopyMemorySized(Instruction* _pTargetPtr, Instruction* _pSourcePtr, Instruction* _pSizeInBytesInt, Flag<spv::MemoryAccessMask> _targetMemOperands = spv::MemoryAccessMask::MaskNone, Flag<spv::MemoryAccessMask> _sourceMemOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands)
+		{
+			opCopyMemorySizedImpl(_pTargetPtr, _pSourcePtr, _pSizeInBytesInt, _targetMemOperands, _sourceMemOperands, _operands...);
+		}
 
 		// ConstInstr must be OpConstant (unsigne int) Instruction
 		template <class ... ConstInstr>
@@ -292,7 +301,10 @@ namespace spvgentwo
 		Instruction* opInBoundsAccessChain(Instruction* _pResultType, Instruction* _pBase, Instruction* _pConstElementIndex, ConstInstr* ... _pIndices);
 
 		// Instruction* OpPtrAccessChain(); TODO
-		// Instruction* OpArrayLength(); TODO
+
+		//Structure must be a logical pointer to an OpTypeStruct whose last	member is a run-time array.
+		Instruction* opArrayLength(Instruction* _pStructure, unsigned int _ArrayMemberIndex);
+
 		// Instruction* OpGenericPtrMemSemantics(); TODO
 		// Instruction* OpInBoundsPtrAccessChain(); TODO
 
@@ -302,9 +314,9 @@ namespace spvgentwo
 		template <class ... Decorations>
 		void opMemberDecorate(Instruction* _pTargetStructType, unsigned int _memberIndex, spv::Decoration _decoration, Decorations ... _decorations);
 
-		// Instruction* OpDecorationGroup(); TODO
-		// Instruction* OpGroupDecorate(); TODO
-		// Instruction* OpGroupMemberDecorate(); TODO
+		// Instruction* OpDecorationGroup(); Deprecated
+		// Instruction* OpGroupDecorate(); Deprecated
+		// Instruction* OpGroupMemberDecorate(); Deprecated
 
 		Instruction* opVectorExtractDynamic(Instruction* _pVector, Instruction* _pIndexInt);
 
@@ -481,8 +493,10 @@ namespace spvgentwo
 
 		Instruction* opConvertPtrToU(Instruction* _pPhysPtr, unsigned int _bitWidth);
 
-		// Instruction* OpSatConvertSToU(); TODO
-		// Instruction* OpSatConvertUToS(); TODO
+		Instruction* opSatConvertSToU(Instruction* _pSignedInt) { return scalarVecOp(spv::Op::OpSatConvertSToU, _pSignedInt, nullptr, "Operand of OpSatConvertSToU is not a scalar or vector of signed integer type"); }
+		
+		Instruction* opSatConvertUToS(Instruction* _pSignedInt) { return scalarVecOp(spv::Op::OpSatConvertUToS, _pSignedInt, nullptr, "Operand of OpSatConvertUToS is not a scalar or vector of unsigned integer type"); }
+
 		// Instruction* OpConvertUToPtr(); TODO
 		// Instruction* OpPtrCastToGeneric(); TODO
 		// Instruction* OpGenericCastToPtr(); TODO
@@ -539,24 +553,33 @@ namespace spvgentwo
 
 		Instruction* opDot(Instruction* _pLeft, Instruction* _pRight);
 
-		// Instruction* OpIAddCarry(); TODO
-		// Instruction* OpISubBorrow(); TODO
-		// Instruction* OpUMulExtended(); TODO
-		// Instruction* OpSMulExtended(); TODO
+		Instruction* opIAddCarry(Instruction* _pUIntVec1, Instruction* _pUIntVec2) { return scalarVecOp(spv::Op::OpIAddCarry, _pUIntVec1, _pUIntVec2, "Operand of OpIAddCarry is not a scalar or vector of unsigned int type"); }
+		
+		Instruction* opISubBorrow(Instruction* _pUIntVec1, Instruction* _pUIntVec2) { return scalarVecOp(spv::Op::OpISubBorrow, _pUIntVec1, _pUIntVec2, "Operand of OpISubBorrow is not a scalar or vector of unsigned int type"); }
+
+		Instruction* opUMulExtended(Instruction* _pUIntVec1, Instruction* _pUIntVec2) { return scalarVecOp(spv::Op::OpUMulExtended, _pUIntVec1, _pUIntVec2, "Operand of OpUMulExtended is not a scalar or vector of unsigned int type"); }
+
+		Instruction* OpSMulExtended(Instruction* _pSIntVec1, Instruction* _pSIntVec2) { return scalarVecOp(spv::Op::OpSMulExtended, _pSIntVec1, _pSIntVec2, "Operand of OpSMulExtended is not a scalar or vector of signed int type"); }
 
 		Instruction* opAny(Instruction* _pBoolVec);
 
 		Instruction* opAll(Instruction* _pBoolVec);
 
-		// Instruction* OpIsNan(); TODO
-		// Instruction* OpIsInf(); TODO
-		// Instruction* OpIsFinite(); TODO
-		// Instruction* OpIsNormal(); TODO
-		// Instruction* OpSignBitSet(); TODO
+		Instruction* opIsNan(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpIsNan, _pFloatVec, nullptr, "Operand of OpIsNan is not a scalar or vector of float type", false); }
 
-		// Instruction* OpLessOrGreater(); TODO
-		// Instruction* OpOrdered(); TODO
-		// Instruction* OpUnordered(); TODO
+		Instruction* opIsInf(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpIsInf, _pFloatVec, nullptr, "Operand of OpIsInf is not a scalar or vector of float type", false); }
+
+		Instruction* opIsFinite(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpIsFinite, _pFloatVec, nullptr, "Operand of OpIsFinite is not a scalar or vector of float type", false); }
+
+		Instruction* opIsNormal(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpIsNormal, _pFloatVec, nullptr, "Operand of OpIsNormal is not a scalar or vector of float type", false); }
+
+		Instruction* opSignBitSet(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpSignBitSet, _pFloatVec, nullptr, "Operand of OpSignBitSet is not a scalar or vector of float type", false); }
+
+		// Instruction* OpLessOrGreater(); DEPRECATED
+		
+		Instruction* opOrdered(Instruction* _pFloatVec1, Instruction* _pFloatVec2) { return scalarVecOp(spv::Op::OpOrdered, _pFloatVec1, _pFloatVec2, "Operand of OpOrdered is not a scalar or vector of bool type"); }
+
+		Instruction* opUnordered(Instruction* _pFloatVec1, Instruction* _pFloatVec2) { return scalarVecOp(spv::Op::OpUnordered, _pFloatVec1, _pFloatVec2, "Operand of OpUnordered is not a scalar or vector of bool type"); }
 
 		Instruction* opLogicalEqual(Instruction* _pBoolVec1, Instruction* _pBoolVec2) { return scalarVecOp(spv::Op::OpLogicalEqual, _pBoolVec1, _pBoolVec2, "Operand of OpLogicalEqual is not a scalar or vector of bool type"); }
 
@@ -674,6 +697,7 @@ namespace spvgentwo
 		template <class ... VarInst>
 		Instruction* opPhi(Instruction* _pVar, VarInst* ... _variables);
 
+		// Non-Standard helper
 		Instruction* opPhiDynamic(const List<Instruction*>& _variables);
 
 		template <class ...LoopControlParams>
@@ -725,6 +749,9 @@ namespace spvgentwo
 	protected:
 		// return error instr
 		[[nodiscard]] Instruction* error() const;
+
+		template <class ... Operands>
+		void opCopyMemorySizedImpl(Instruction* _pTargetPtr, Instruction* _pSourcePtr, Instruction* _pSizeInt, Flag<spv::MemoryAccessMask> _targetMemOperands = spv::MemoryAccessMask::MaskNone, Flag<spv::MemoryAccessMask> _sourceMemOperands = spv::MemoryAccessMask::MaskNone, Operands ... _operands);
 
 		enum class CheckImgCoord
 		{

@@ -766,3 +766,31 @@ spvgentwo::Type spvgentwo::Type::wrapStruct() const
 	st.Struct(this);
 	return st;
 }
+
+bool spvgentwo::Type::containsType(const Type& _sub) const
+{
+	if (*this == _sub)
+		return true;
+
+	for (const Type& sub : m_subTypes)
+	{
+		if (sub.containsType(_sub))
+			return true;
+	}
+
+	return false;
+}
+
+bool spvgentwo::Type::containsType(const spv::Op _type) const
+{
+	if (m_Type == _type)
+		return true;
+
+	for (const Type& sub : m_subTypes)
+	{
+		if (sub.containsType(_type))
+			return true;
+	}
+
+	return false;
+}

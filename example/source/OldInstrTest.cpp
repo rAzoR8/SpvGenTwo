@@ -71,6 +71,8 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 
 		Instruction* intvec = module.constant(const_vector_t<int, 3>{1, -3, 2});
 
+		bb->OpSMulExtended(intvec, intvec);
+
 		Instruction* signs = bb.ext<GLSL>()->opSSign(intvec);
 		Instruction* abs = bb.ext<GLSL>()->opSAbs(signs);
 		Instruction* smin = bb.ext<GLSL>()->opSMin(abs, signs);

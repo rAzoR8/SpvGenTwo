@@ -58,6 +58,7 @@ namespace spvgentwo
 		constexpr operator bool() const { return mask != 0u; }
 		constexpr operator unsigned int() const { return mask; }
 		constexpr operator Enum() const { return static_cast<Enum>(mask); }
+		constexpr bool empty() const { return mask == 0u; }
 
 		template <class ... TEnum> // check if any of the enum flags is set
 		constexpr bool any(Enum _first, TEnum ... _enums) const { return (mask & detail::bit_or(_first, _enums...)) != 0u; }
