@@ -1214,8 +1214,14 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 
 	if (trueType == nullptr || falseType == nullptr || condType == nullptr) return error();
 
-	if (*trueType == *falseType && condType->isScalarOrVectorOf(spv::Op::OpTypeBool) && 
-		condType->getScalarOrVectorLength() == trueType->getScalarOrVectorLength())
+	if(*trueType != *falseType)
+	{
+		getModule()->logError("Object argument types of opSelect are not identical");
+		return error();
+	}
+
+	if (condType->isBool() || // scalar, ignore object dimensions
+		(condType->isVectorOfBool() && trueType->isVector() && condType->getVectorComponentCount() == trueType->getVectorComponentCount()))
 	{
 		// Before version1.4, results are only computed per component.
 		// Before version1.4, Result Type must be a pointer, scalar, or vector. Starting with version 1.4, Result Type can additionally be a composite type other than a vector.
