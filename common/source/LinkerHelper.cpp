@@ -288,6 +288,20 @@ namespace
 					reported = true;
 				}	
 			}
+			else if (*lib == spv::Op::OpString)
+			{
+				if (_options & LinkerOptionBits::ImportReferencedStrings)
+				{
+					cInstr = module->addSourceStringInstr();
+					if (transferInstruction(lib, cInstr, _cache, _options) == false) return false;
+					cached = true;
+				}
+				else
+				{
+					operandError("OpString", "Use \'ImportReferencedStrings\'.");
+					reported = true;
+				}
+			}
 			else if (*lib == spv::Op::OpFunction)
 			{
 				operandError("OpFunction", "Use \'ImportReferencedFunctions\'.");
@@ -598,6 +612,34 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	// lib -> consumer
 	InstrLookup cache(pAllocator);
 
+	auto copy = [&](const List<Instruction>& _in, auto addFunc) -> bool
+	{
+		for (const Instruction& src : _in)
+		{
+			Instruction* cSrc = addFunc();
+			if (transferInstruction(&src, cSrc, cache, _options) == false)
+				return false;
+
+			printInstruction(_options, &src, " -> ", cSrc);
+		}
+		return true;
+	};
+
+	if (_options & LinkerOptionBits::CopyOpSourceStringInstructions)
+	{
+		success &= copy(_lib.getSourceStrings(), [&]() -> Instruction* { return _consumer.addSourceStringInstr(); });
+	}
+
+	if (_options & LinkerOptionBits::CopyOpLineInstructions)
+	{
+		success &= copy(_lib.getLines(), [&]() -> Instruction* { return _consumer.addLineInstr(); });
+	}
+
+	if (_options & LinkerOptionBits::CopyOpModuleProcessedInstructions)
+	{
+		success &= copy(_lib.getModulesProcessed(), [&]() -> Instruction* { return _consumer.addLineInstr(); });
+	}
+
 	if (_options & LinkerOptionBits::ImportReferencedFunctions)
 	{
 		// gather all functions called from all the iFuncs we want to import
@@ -744,34 +786,6 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 				}
 			}
 		}
-	}
-
-	auto copy = [&](const List<Instruction>& _in, auto addFunc) -> bool
-	{
-		for (const Instruction& src : _in)
-		{
-			Instruction* cSrc = addFunc();
-			if (transferInstruction(&src, cSrc, cache, _options) == false)
-				return false;
-
-			printInstruction(_options, &src, " -> ", cSrc);
-		}
-		return true;
-	};
-
-	if (_options & LinkerOptionBits::CopyOpSourceStringInstructions)
-	{
-		success &= copy(_lib.getSourceStrings(), [&]() -> Instruction* { return _consumer.addSourceStringInstr(); });
-	}
-
-	if (_options & LinkerOptionBits::CopyOpLineInstructions)
-	{
-		success &= copy(_lib.getLines(), [&]() -> Instruction* { return _consumer.addLineInstr(); });
-	}
-
-	if (_options & LinkerOptionBits::CopyOpModuleProcessedInstructions)
-	{
-		success &= copy(_lib.getModulesProcessed(), [&]() -> Instruction* { return _consumer.addLineInstr(); });
 	}
 
 	if (_options & LinkerOptionBits::UpdateEntryPointGlobalVarInterface)

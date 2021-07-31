@@ -40,13 +40,14 @@ namespace spvgentwo
 			ImportReferencedNames = 1 << 4, // referencing imported symbol
 			ImportReferencedFunctions = 1 << 5, // functions called from an imported function, but were not exported themselves
 			ImportReferencedVariables = 1 << 6, // global variables referenced in (auto) imported functions
-			AssignResultIDs = 1 << 7, // on-the-fligh assing ResultIds while transfering instructions from lib to consumber module (leaves original IDs intact, can improve performance if module.assignIDs() is not used)
+			ImportReferencedStrings = 1 << 7, // global strings referenced in OpLine etc
+			AssignResultIDs = 1 << 8, // on-the-fligh assing ResultIds while transfering instructions from lib to consumber module (leaves original IDs intact, can improve performance if module.assignIDs() is not used)
 			RemoveLinkageCapability = 1 << 8, // remove linkage capability from the consumer library if all imports and exports have been resolved
-			AutoAddRequiredCapabilitiesAndExtensions = 1 << 9, // instead of copying ALL Capabilities & Extensions from the all libs to the consumer module, use LinkerOptions.grammar to select only required Caps & Exts for the consumer module.
-			UpdateEntryPointGlobalVarInterface = 1 << 10, // Add global variables referenced by the consumer EntryPoints to their OpEntryPoint, this should always be switched on unless Module.finalizeEntryPoints() is called after linking.
-			CopyOpSourceStringInstructions = 1 << 11, // Copy OpString, OpSource, OpSourceContinued and OpSourceExtension instructions from lib to consumer module
-			CopyOpLineInstructions = 1 << 12, // Copy OpLine, OpNoLine
-			CopyOpModuleProcessedInstructions = 1 << 13, // Copy OpModuleProcessed
+			AutoAddRequiredCapabilitiesAndExtensions = 1 << 10, // instead of copying ALL Capabilities & Extensions from the all libs to the consumer module, use LinkerOptions.grammar to select only required Caps & Exts for the consumer module.
+			UpdateEntryPointGlobalVarInterface = 1 << 11, // Add global variables referenced by the consumer EntryPoints to their OpEntryPoint, this should always be switched on unless Module.finalizeEntryPoints() is called after linking.
+			CopyOpSourceStringInstructions = 1 << 12, // Copy OpString, OpSource, OpSourceContinued and OpSourceExtension instructions from lib to consumer module
+			CopyOpLineInstructions = 1 << 13, // Copy OpLine, OpNoLine
+			CopyOpModuleProcessedInstructions = 1 << 14, // Copy OpModuleProcessed
 			All = CopyOpModuleProcessedInstructions | (CopyOpModuleProcessedInstructions - 1)
 		};
 
