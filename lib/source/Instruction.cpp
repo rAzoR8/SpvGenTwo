@@ -1230,7 +1230,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 
 		bool pre14 = trueType->isScalar() || trueType->isVector() || trueType->isPointer();
 
-		if((trueType->isComposite() && pre14 == false) || condType->isBool() && trueType->isVector())
+		if((trueType->isComposite() && pre14 == false) || (condType->isBool() && trueType->isVector()))
 		{
 			module->ensureSpvVersion(1u, 4u);
 		}
