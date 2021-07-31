@@ -199,6 +199,15 @@ void spvgentwo::Module::reset()
 	m_Lines.clear();
 }
 
+void spvgentwo::Module::ensureSpvVersion(unsigned char _major, unsigned char _minor)
+{
+	auto newVersion = makeVersion(_major, _minor);
+	if (newVersion > m_spvVersion)
+	{
+		m_spvVersion = newVersion;
+	}
+}
+
 spvgentwo::Function& spvgentwo::Module::addFunction()
 {
 	return m_Functions.emplace_back(this);
@@ -693,14 +702,17 @@ spvgentwo::spv::Id spvgentwo::Module::assignIDs(const Grammar* _pGrammar)
 			{
 				for (const spv::Capability& c : info->capabilities)
 				{
+					logDebug("Adding SPIR-V capability %u", static_cast<unsigned>(c)); // TODO: get name of capability
 					addCapability(c);
 				}
 				for (const spv::Extension& e : info->extensions)
 				{
+					logDebug("Adding SPIR-V extension %s for use of %s", spv::ExtensionNames[static_cast<unsigned>(e)], info->name);
 					addExtension(e);
 				}
 				if (info->version > maxVersion)
 				{
+					logDebug("Bumped SPIR-V version from %u to %u for use of %s", maxVersion, info->version, info->name);
 					maxVersion = info->version;
 				}
 			}
