@@ -1211,8 +1211,9 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 	const Type* trueType = _pTrueObj->getType();
 	const Type* falseType = _pFalseObj->getType();
 	const Type* condType = _pCondBool->getType();
+	Module* module = getModule();
 
-	if (trueType == nullptr || falseType == nullptr || condType == nullptr) return error();
+	if (trueType == nullptr || falseType == nullptr || condType == nullptr || module == nullptr) return error();
 
 	if(*trueType != *falseType)
 	{
@@ -1224,20 +1225,27 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 		(condType->isVectorOfBool() && trueType->isVector() && condType->getVectorComponentCount() == trueType->getVectorComponentCount()))
 	{
 		// Before version1.4, results are only computed per component.
-		// Before version1.4, Result Type must be a pointer, scalar, or vector. Starting with version 1.4, Result Type can additionally be a composite type other than a vector.
+		// Before version1.4, Result Type must be a pointer, scalar, or vector. 
+		// Starting with version 1.4, Result Type can additionally be a composite type other than a vector.
 
-		if (trueType->isScalar() || trueType->isVector() || trueType->isPointer() ||
-			(getModule()->getSpvVersion() >= makeVersion(1u, 4u) && trueType->isComposite()))
+		bool pre14 = trueType->isScalar() || trueType->isVector() || trueType->isPointer();
+
+		if((trueType->isComposite() && pre14 == false) || condType->isBool() && trueType->isVector())
+		{
+			module->ensureSpvVersion(1u, 4u);
+		}
+
+		if (pre14 || trueType->isComposite())
 		{
 			return makeOp(spv::Op::OpSelect, _pTrueObj->getResultTypeInstr(), InvalidId, _pCondBool, _pTrueObj, _pFalseObj);
 		}
 
-		getModule()->logError("Object arguments of opSelect are not of type Scalar|Vector|Pointer|Composite");
+		module->logError("Object arguments of opSelect are not of type Scalar|Vector|Pointer|Composite");
 
 		return error();
 	}
 
-	getModule()->logError("Condition type does not match extent of object arguments");
+	module->logError("Condition type does not match extent of object arguments");
 
 	return error();
 }
