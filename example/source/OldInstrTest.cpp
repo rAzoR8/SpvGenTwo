@@ -218,9 +218,9 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* vecType = module.type<vector_t<float, 3>>();
 		Instruction* newVec3 = bb->opCompositeConstruct(vecType, x, y, z);
 		Instruction* updatedVec3 = bb->opVectorInsertDynamic(newVec3, extracted, index);
-		Instruction* shuffledVec4 = bb->opVectorShuffle(newVec3, updatedVec3, 0u, 1u, 1u, 2u);
+		Instruction* shuffledVec4a = bb->opVectorShuffle(newVec3, updatedVec3, 0u, 1u, 1u, 2u);
 		Instruction* undefVec3 = bb->opUndef(vecType);
-		shuffledVec4 = bb->opVectorShuffle(undefVec3, updatedVec3, 1u, 2u, 3u, 0u);
+		Instruction* shuffledVec4b = bb->opVectorShuffle(undefVec3, updatedVec3, 1u, 2u, 3u, 0u);
 
 		Instruction* coord = module.constant(make_vector(0.5f, 0.5f));
 		Instruction* normal = bb->opLoad(uniNormal);
@@ -237,6 +237,9 @@ Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* uniX = bb->opLoad(uniformComp);
 
 		Instruction* cond = bb.Equal(uniX, uniY);
+
+		bb->opSelect(cond, shuffledVec4a, shuffledVec4b);
+		bb->opSelect(module.constant(make_vector(true, false, false, true)), shuffledVec4a, shuffledVec4b);
 
 		Instruction* res1 = nullptr;
 		Instruction* res2 = nullptr;

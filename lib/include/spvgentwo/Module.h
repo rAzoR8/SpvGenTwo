@@ -32,7 +32,8 @@ namespace spvgentwo
 
 		unsigned int getSpvVersion() const { return m_spvVersion; }
 		void setSpvVersion(unsigned int _version) { m_spvVersion = _version; }
-		void setSpvVersion(unsigned char _major, unsigned char _minor) { m_spvBound = makeVersion(_major, _minor); }
+		void setSpvVersion(unsigned char _major, unsigned char _minor) { m_spvVersion = makeVersion(_major, _minor); }
+		void ensureSpvVersion(unsigned char _major, unsigned char _minor);
 
 		unsigned int getMajorVersion() const { return spvgentwo::getMajorVersion(m_spvVersion); }
 		unsigned int getMinorVersion() const { return spvgentwo::getMinorVersion(m_spvVersion); }
