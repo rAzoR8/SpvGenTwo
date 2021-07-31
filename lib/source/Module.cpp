@@ -683,7 +683,7 @@ void spvgentwo::Module::setMemoryModel(const spv::AddressingModel _addressModel,
 spvgentwo::spv::Id spvgentwo::Module::assignIDs(const Grammar* _pGrammar)
 {
 	unsigned int maxId = 0u;
-	unsigned int maxVersion = makeVersion(1u, 0u);
+	unsigned int maxVersion = m_spvVersion;
 
 	iterateInstructions([&maxId, &maxVersion, _pGrammar, this](Instruction& instr)
 	{
