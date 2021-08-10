@@ -635,7 +635,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 	if (_options & LinkerOptionBits::CopyOpModuleProcessedInstructions)
 	{
-		success &= copy(_lib.getModulesProcessed(), [&]() -> Instruction* { return _consumer.addLineInstr(); });
+		success &= copy(_lib.getModulesProcessed(), [&]() -> Instruction* { return _consumer.addModuleProccessedInstr(); });
 	}
 
 	if (_options & LinkerOptionBits::ImportReferencedFunctions)
