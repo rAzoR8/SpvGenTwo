@@ -619,8 +619,6 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 			Instruction* cSrc = addFunc();
 			if (transferInstruction(&src, cSrc, cache, _options) == false)
 				return false;
-
-			printInstruction(_options, &src, " -> ", cSrc);
 		}
 		return true;
 	};
