@@ -37,6 +37,7 @@ Currently, GLSL shader compilers do no support SPIR-V import/export attributes s
     -ImportReferencedNames or -refnames
     -ImportReferencedFunctions or -reffuncs
     -ImportReferencedVariables or -refvars
+    -ImportReferencedStrings or -refstrings
     -RemoveLinkageCapability or -rmcap
     -AutoAddRequiredCapabilitiesAndExtensions or -addcaps
     -UpdateEntryPointGlobalVarInterface or -variface

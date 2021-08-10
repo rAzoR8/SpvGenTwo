@@ -288,6 +288,20 @@ namespace
 					reported = true;
 				}	
 			}
+			else if (*lib == spv::Op::OpString)
+			{
+				if (_options & LinkerOptionBits::ImportReferencedStrings)
+				{
+					cInstr = module->addSourceStringInstr();
+					if (transferInstruction(lib, cInstr, _cache, _options) == false) return false;
+					cached = true;
+				}
+				else
+				{
+					operandError("OpString", "Use \'ImportReferencedStrings\'.");
+					reported = true;
+				}
+			}
 			else if (*lib == spv::Op::OpFunction)
 			{
 				operandError("OpFunction", "Use \'ImportReferencedFunctions\'.");
@@ -598,6 +612,32 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	// lib -> consumer
 	InstrLookup cache(pAllocator);
 
+	auto copy = [&](const List<Instruction>& _in, auto addFunc) -> bool
+	{
+		for (const Instruction& src : _in)
+		{
+			Instruction* cSrc = addFunc();
+			if (transferInstruction(&src, cSrc, cache, _options) == false)
+				return false;
+		}
+		return true;
+	};
+
+	if (_options & LinkerOptionBits::CopyOpSourceStringInstructions)
+	{
+		success &= copy(_lib.getSourceStrings(), [&]() -> Instruction* { return _consumer.addSourceStringInstr(); });
+	}
+
+	if (_options & LinkerOptionBits::CopyOpLineInstructions)
+	{
+		success &= copy(_lib.getLines(), [&]() -> Instruction* { return _consumer.addLineInstr(); });
+	}
+
+	if (_options & LinkerOptionBits::CopyOpModuleProcessedInstructions)
+	{
+		success &= copy(_lib.getModulesProcessed(), [&]() -> Instruction* { return _consumer.addModuleProccessedInstr(); });
+	}
+
 	if (_options & LinkerOptionBits::ImportReferencedFunctions)
 	{
 		// gather all functions called from all the iFuncs we want to import
@@ -665,44 +705,12 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		else { allImportsResolved = false; }
 	}
 
-	if (hasExports == false && allImportsResolved && (_options & LinkerOptionBits::RemoveLinkageCapability)) 
+	if (_options & LinkerOptionBits::ImportReferencedNames)
 	{
-		info("Removing Capability::Linkage from consumer module");
-		_consumer.removeCapability(spv::Capability::Linkage);
-	}
-
-	const auto version = _lib.getSpvVersion() > _consumer.getSpvVersion() ? _lib.getSpvVersion() : _consumer.getSpvVersion();
-	_consumer.setSpvVersion(version);
-	info("Merged SPIR-V version: %u.%u [%u->%u]", getMajorVersion(version), getMinorVersion(version), _consumer.getSpvVersion(), version);
-
-	// only add required capabilities & extensions
-	if (_options.grammar != nullptr && (_options & LinkerOptionBits::AutoAddRequiredCapabilitiesAndExtensions))
-	{
-		_consumer.addRequiredCapabilities(*_options.grammar);
-		_consumer.addRequiredExtensions(*_options.grammar);
-	}
-	else // import all capabilities
-	{
-		for (const auto& [cap, instr] : _lib.getCapabilities())
-		{
-			if (cap != spv::Capability::Linkage)
-			{
-				_consumer.addCapability(cap);			
-			}
-		}
-
-		for (const auto& [name, instr] : _lib.getExtensions())
-		{
-			_consumer.addExtension(name.c_str());
-		}
-	}
-
-	if(_options & LinkerOptionBits::ImportReferencedNames)
-	{
-		for(const Instruction& name : _lib.getNames())
+		for (const Instruction& name : _lib.getNames())
 		{
 			const Instruction* lTarget = name.getFirstActualOperand()->getInstruction();
-			if(Instruction** ppCTarget = cache[lTarget]; ppCTarget != nullptr)
+			if (Instruction** ppCTarget = cache[lTarget]; ppCTarget != nullptr)
 			{
 				Instruction* cTarget = *ppCTarget;
 
@@ -729,7 +737,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 	if (_options & LinkerOptionBits::ImportReferencedDecorations)
 	{
-		for(const Instruction& lDeco : _lib.getDecorations())
+		for (const Instruction& lDeco : _lib.getDecorations())
 		{
 			if (ReflectionHelper::getSpvDecorationKindFromDecoration(&lDeco) != spv::Decoration::LinkageAttributes)
 			{
@@ -737,42 +745,45 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 				if (Instruction** ppCTarget = cache[lTarget]; ppCTarget != nullptr)
 				{
 					Instruction* cDeco = _consumer.addDecorationInstr();
-					// TODO check if we already added those decorations?
 					success &= transferInstruction(&lDeco, cDeco, cache, _options);
-
-					printInstruction(_options, &lDeco, " -> ", cDeco);
 				}
 			}
 		}
 	}
 
-	auto copy = [&](const List<Instruction>& _in, auto addFunc) -> bool
+	// only add required capabilities & extensions
+	if (_options.grammar != nullptr && (_options & LinkerOptionBits::AutoAddRequiredCapabilitiesAndExtensions))
 	{
-		for (const Instruction& src : _in)
+		_consumer.addRequiredCapabilities(*_options.grammar);
+		_consumer.addRequiredExtensions(*_options.grammar);
+		_consumer.setRequiredVersion(*_options.grammar);
+	}
+	else // import all capabilities
+	{
+		for (const auto& [cap, instr] : _lib.getCapabilities())
 		{
-			Instruction* cSrc = addFunc();
-			if (transferInstruction(&src, cSrc, cache, _options) == false)
-				return false;
-
-			printInstruction(_options, &src, " -> ", cSrc);
+			if (cap != spv::Capability::Linkage)
+			{
+				_consumer.addCapability(cap);			
+			}
 		}
-		return true;
-	};
 
-	if (_options & LinkerOptionBits::CopyOpSourceStringInstructions)
-	{
-		success &= copy(_lib.getSourceStrings(), [&]() -> Instruction* { return _consumer.addSourceStringInstr(); });
+		for (const auto& [name, instr] : _lib.getExtensions())
+		{
+			_consumer.addExtension(name.c_str());
+		}
 	}
 
-	if (_options & LinkerOptionBits::CopyOpLineInstructions)
+	if (hasExports == false && allImportsResolved && (_options & LinkerOptionBits::RemoveLinkageCapability))
 	{
-		success &= copy(_lib.getLines(), [&]() -> Instruction* { return _consumer.addLineInstr(); });
+		info("Removing Capability::Linkage from consumer module");
+		_consumer.removeCapability(spv::Capability::Linkage);
 	}
 
-	if (_options & LinkerOptionBits::CopyOpModuleProcessedInstructions)
-	{
-		success &= copy(_lib.getModulesProcessed(), [&]() -> Instruction* { return _consumer.addLineInstr(); });
-	}
+	// consumer 1.4, [lib -> consumer version]
+	const auto version = _lib.getSpvVersion() > _consumer.getSpvVersion() ? _lib.getSpvVersion() : _consumer.getSpvVersion();
+	info("Merged SPIR-V version: %u.%u [Lib %u -> %u Consumer]", getMajorVersion(version), getMinorVersion(version), _lib.getSpvVersion(), version);
+	_consumer.setSpvVersion(version); // must be set before finalize
 
 	if (_options & LinkerOptionBits::UpdateEntryPointGlobalVarInterface)
 	{

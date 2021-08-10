@@ -184,6 +184,7 @@ int main(int argc, char* argv[])
 		FLAGOPTION(ImportReferencedNames, refnames),
 		FLAGOPTION(ImportReferencedFunctions, reffuncs),
 		FLAGOPTION(ImportReferencedVariables, refvars),
+		FLAGOPTION(ImportReferencedStrings, refstrings),
 		//FLAGOPTION(AssignResultIDs, asid), // already on by default
 		FLAGOPTION(RemoveLinkageCapability, rmcap),
 		FLAGOPTION(AutoAddRequiredCapabilitiesAndExtensions, addcaps),
