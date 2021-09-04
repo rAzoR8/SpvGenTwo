@@ -313,9 +313,9 @@ namespace
 				{
 					for (const auto& [name, instr] : lib->getModule()->getExtInstrImports())
 					{
-						if (&instr == lib && module->getExtensionInstructionImport(name.c_str()) == nullptr)
+						if (&instr == lib) // this is the extension we are looking for
 						{
-							cInstr = module->addExtensionInstructionImport(name.c_str());
+							cInstr = module->addExtensionInstructionImport(name.c_str()); // unique add / lookup
 							break;
 						}
 					}
