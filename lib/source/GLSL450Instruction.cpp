@@ -4,7 +4,7 @@
 #include "spvgentwo/InstructionTemplate.inl"
 #include "spvgentwo/ModuleTemplate.inl"
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const glslstd450::Op _op, Instruction* _pFloat, const bool _no64Bit)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const glslstd450::Op _op, Instruction* _pFloat, const bool _no64Bit, Instruction* _pResultType)
 {
 	Instruction* pTypeInstr = _pFloat->getResultTypeInstr();
 	if (pTypeInstr == nullptr) return error();
@@ -13,7 +13,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const gl
 
 	if ((pType->isFloat() || pType->isVectorOfFloat()) && (_no64Bit ? pType->getBaseType().getFloatWidth() <= 32u : true))
 	{
-		return opExtInst(pTypeInstr, ExtName, static_cast<unsigned int>(_op), _pFloat);
+		return opExtInst(_pResultType != nullptr ? _pResultType : pTypeInstr, ExtName, static_cast<unsigned int>(_op), _pFloat);
 	}
 
 	getModule()->logError("Operands of scalarOrFloatVec1 opeartion are not vector or scalar of float");
@@ -21,18 +21,18 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const gl
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pResultType)
 {
-	Instruction* returnType = _pOp1->getResultTypeInstr();
-	if (returnType == nullptr) return error();
-
-	const Type* leftType = returnType->getType();
+	const Type* leftType = _pOp1->getType();
 	const Type* rightType = _pOp2->getType();
 
 	if (leftType == nullptr || rightType == nullptr) return error();
 
 	if (leftType->isScalarOrVectorOf(spv::Op::OpTypeFloat) && *leftType == *rightType)
 	{
+		Instruction* returnType = _pResultType != nullptr ? _pResultType : _pOp1->getResultTypeInstr();
+		if (returnType == nullptr) return error();
+
 		return opExtInst(returnType, ExtName, static_cast<unsigned int>(_op), _pOp1, _pOp2);
 	}
 
@@ -41,12 +41,9 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const gl
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Instruction* _pResultType)
 {
-	Instruction* returnType = _pOp1->getResultTypeInstr();
-	if (returnType == nullptr) return error();
-
-	const Type* type1 = returnType->getType();
+	const Type* type1 = _pOp1->getType();
 	const Type* type2 = _pOp2->getType();
 	const Type* type3 = _pOp3->getType();
 
@@ -54,6 +51,9 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(const gl
 
 	if (type1->isScalarOrVectorOf(spv::Op::OpTypeFloat) && *type1 == *type2 && *type2 == *type3)
 	{
+		Instruction* returnType = _pResultType != nullptr ? _pResultType : _pOp1->getResultTypeInstr();
+		if (returnType == nullptr) return error();
+
 		return opExtInst(returnType, ExtName, static_cast<unsigned int>(_op), _pOp1, _pOp2, _pOp3);
 	}
 
@@ -62,7 +62,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(const gl
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(const glslstd450::Op _op, Instruction* _pInt, const bool _signed)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(const glslstd450::Op _op, Instruction* _pInt, const bool _signed, Instruction* _pResultType)
 {
 	Instruction* pTypeInstr = _pInt->getResultTypeInstr();
 	if (pTypeInstr == nullptr) return error();
@@ -72,7 +72,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(const glsl
 
 	if (pType->isScalarOrVectorOf(spv::Op::OpTypeInt) && _signed == pType->getBaseType().getIntSign())
 	{
-		return opExtInst(pTypeInstr, ExtName, static_cast<unsigned int>(_op), _pInt);
+		return opExtInst(_pResultType != nullptr ? _pResultType : pTypeInstr, ExtName, static_cast<unsigned int>(_op), _pInt);
 	}
 
 	getModule()->logError("Operands of scalarOrInt1 opeartion are not vector or scalar of int");
@@ -80,18 +80,18 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(const glsl
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed, Instruction* _pResultType)
 {
-	Instruction* returnType = _pOp1->getResultTypeInstr();
-	if (returnType == nullptr) return error();
-
-	const Type* leftType = returnType->getType();
+	const Type* leftType = _pOp1->getType();
 	const Type* rightType = _pOp2->getType();
 
 	if (leftType == nullptr || rightType == nullptr) return error();
 
 	if (leftType->isScalarOrVectorOf(spv::Op::OpTypeInt) && _signed == leftType->getBaseType().getIntSign()  && *leftType == *rightType)
 	{
+		Instruction* returnType = _pResultType != nullptr ? _pResultType : _pOp1->getResultTypeInstr();
+		if (returnType == nullptr) return error();
+
 		return opExtInst(returnType, ExtName, static_cast<unsigned int>(_op), _pOp1, _pOp2);
 	}
 
@@ -100,12 +100,9 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(const glsl
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed, Instruction* _pResultType)
 {
-	Instruction* returnType = _pOp1->getResultTypeInstr();
-	if (returnType == nullptr) return error();
-
-	const Type* type1 = returnType->getType();
+	const Type* type1 = _pOp1->getType();
 	const Type* type2 = _pOp2->getType();
 	const Type* type3 = _pOp3->getType();
 
@@ -113,6 +110,9 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(const glsl
 
 	if (type1->isScalarOrVectorOf(spv::Op::OpTypeInt) && _signed == type1->getBaseType().getIntSign() && *type1 == *type2 && *type2 == *type3)
 	{
+		Instruction* returnType = _pResultType != nullptr ? _pResultType : _pOp1->getResultTypeInstr();
+		if (returnType == nullptr) return error();
+
 		return opExtInst(returnType, ExtName, static_cast<unsigned int>(_op), _pOp1, _pOp2, _pOp3);
 	}
 
@@ -213,18 +213,26 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opDeterminant(Instruction*
 
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opMatrixInverse(Instruction* _pMatrix)
 {
-	Instruction* _pTypeInstr = _pMatrix->getResultTypeInstr();
-	if (_pTypeInstr == nullptr) return error();
+	Instruction* pTypeInstr = _pMatrix->getResultTypeInstr();
+	if (pTypeInstr == nullptr) return error();
 
-	const Type* pType = _pTypeInstr->getType();
+	const Type* pType = pTypeInstr->getType();
 	if (pType == nullptr) return error();
 
 	if (pType->isSqareMatrix())
 	{
-		return opExtInst(_pTypeInstr, ExtName, static_cast<unsigned int>(glslstd450::Op::MatrixInverse), _pMatrix);
+		return opExtInst(pTypeInstr, ExtName, static_cast<unsigned int>(glslstd450::Op::MatrixInverse), _pMatrix);
 	}
 
 	getModule()->logError("Operand of opMatrixInverse is not a square matirx");
 
 	return error();
+}
+
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opModfStruct(Instruction* _pFloat)
+{
+	Instruction* pTypeInstr = _pFloat->getResultTypeInstr();
+	if (pTypeInstr == nullptr) return error();
+
+	return scalarOrFloatVec1(glslstd450::Op::ModfStruct, _pFloat, false, getModule()->compositeType(spv::Op::OpTypeStruct, pTypeInstr, pTypeInstr));
 }

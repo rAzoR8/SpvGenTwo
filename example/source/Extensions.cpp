@@ -61,25 +61,27 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
         }
 
         // SpvGenTwo comes with GLSL extension instructions (GLSL450Intruction derives from Instruction>
-        Instruction* vec3 = module.constant(make_vector(1.f, 2.f, 3.f));
+        Instruction* const vec3 = module.constant(make_vector(1.f, 2.f, 3.f));
 
         // BasicBlock template function ext<T> adds a new Instruction and casts it to type T
         // this works as long as T does not add any data members and just functionally extends the Instruction class
-        Instruction* cross = bb.ext<GLSL>()->opCross(vec3, vec3); // use GLSL.std.450 extension
+        Instruction* const cross = bb.ext<GLSL>()->opCross(vec3, vec3); // use GLSL.std.450 extension
        
-        Instruction* norm = bb.ext<GLSL>()->opNormalize(cross);
+        Instruction* const norm = bb.ext<GLSL>()->opNormalize(cross);
 
-        Instruction* ff = bb.ext<GLSL>()->opFaceForward(vec3, norm, cross);
+        Instruction* const ff = bb.ext<GLSL>()->opFaceForward(vec3, norm, cross);
 
-        Instruction* refl = bb.ext<GLSL>()->opReflect(vec3, norm);
+        Instruction* const refl = bb.ext<GLSL>()->opReflect(vec3, norm);
 
-        Instruction* eta = bb->opDot(refl, ff);
+        Instruction* const eta = bb->opDot(refl, ff);
 
-        Instruction* refr = bb.ext<GLSL>()->opRefract(refl, ff, eta);
+        Instruction* const refr = bb.ext<GLSL>()->opRefract(refl, ff, eta);
 
-        Instruction* len = bb.ext<GLSL>()->opLength(refr);
+        Instruction* const len = bb.ext<GLSL>()->opLength(refr);
 
-        Instruction* dist = bb.ext<GLSL>()->opDistance(refl, refr);
+        Instruction* const dist = bb.ext<GLSL>()->opDistance(refl, refr);
+
+        Instruction* const modf = bb.ext<GLSL>()->opModfStruct(refl);
 
         entry->opReturn();
     }

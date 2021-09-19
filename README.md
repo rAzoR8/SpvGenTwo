@@ -301,9 +301,9 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpInBoundsPtrAccessChain | &#9744; |
 | OpDecorate | &#10004; |
 | OpMemberDecorate | &#10004; |
-| OpDecorationGroup | Deperecated |
-| OpGroupDecorate | Deperecated|
-| OpGroupMemberDecorate |Deperecated|
+| OpDecorationGroup | Deprecated |
+| OpGroupDecorate | Deprecated|
+| OpGroupMemberDecorate |Deprecated|
 | OpVectorExtractDynamic | &#10004; |
 | OpVectorInsertDynamic | &#10004; |
 | OpVectorShuffle | &#10004; |
@@ -384,7 +384,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpIsFinite | &#10004; |
 | OpIsNormal | &#10004; |
 | OpSignBitSet | &#10004; |
-| OpLessOrGreater | Deperecated |
+| OpLessOrGreater | Deprecated |
 | OpOrdered | &#10004; |
 | OpUnordered | &#10004; |
 | OpLogicalEqual | &#10004; |
@@ -524,8 +524,8 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | InverseSqrt | &#10004; |
 | Determinant | &#10004; |
 | MatrixInverse | &#10004; |
-| Modf | &#9744; |
-| ModfStruct | &#9744; |
+| Modf | Deprecated |
+| ModfStruct | &#10004; |
 | FMin | &#10004; |
 | UMin | &#10004; |
 | SMin | &#10004; |
@@ -540,7 +540,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | Step | &#10004; |
 | SmoothStep | &#10004; |
 | Fma | &#10004; |
-| Frexp | &#9744; |
+| Frexp | Deprecated |
 | FrexpStruct | &#9744; |
 | Ldexp | &#9744; |
 | PackSnorm4x8 | &#9744; |

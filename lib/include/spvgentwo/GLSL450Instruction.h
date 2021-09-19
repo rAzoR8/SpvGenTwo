@@ -56,8 +56,9 @@ namespace spvgentwo
 		Instruction* opDeterminant(Instruction* _pMatrix);
 		Instruction* opMatrixInverse(Instruction* _pMatrix);
 
-		// Modf TODO
-		// ModfStruct TODO
+		// Modf Deprecated
+
+		Instruction* opModfStruct(Instruction* _pFloat);
 
 		Instruction* opFMin(Instruction* _pX, Instruction* _pY) { return scalarOrFloatVec2(glslstd450::Op::FMin, _pX, _pY); }
 		Instruction* opUMin(Instruction* _pX, Instruction* _pY) { return scalarOrIntVec2(glslstd450::Op::UMin, _pX, _pY, false); }
@@ -113,13 +114,13 @@ namespace spvgentwo
 		// NClamp TODO
 
 	private:
-		Instruction* scalarOrFloatVec1(const glslstd450::Op _op, Instruction* _pFloat, const bool _no64Bit = false);
-		Instruction* scalarOrFloatVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2);
-		Instruction* scalarOrFloatVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3);
+		Instruction* scalarOrFloatVec1(const glslstd450::Op _op, Instruction* _pFloat, const bool _no64Bit = false, Instruction* _pResultType = nullptr);
+		Instruction* scalarOrFloatVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pResultType = nullptr);
+		Instruction* scalarOrFloatVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Instruction* _pResultType = nullptr);
 
-		Instruction* scalarOrIntVec1(const glslstd450::Op _op, Instruction* _pSInt, const bool _signed);
-		Instruction* scalarOrIntVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed);
-		Instruction* scalarOrIntVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed);
+		Instruction* scalarOrIntVec1(const glslstd450::Op _op, Instruction* _pSInt, const bool _signed, Instruction* _pResultType = nullptr);
+		Instruction* scalarOrIntVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed, Instruction* _pResultType = nullptr);
+		Instruction* scalarOrIntVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed, Instruction* _pResultType = nullptr);
 	};
 
 	// namespace for shortening extension names
