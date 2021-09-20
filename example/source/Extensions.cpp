@@ -83,6 +83,8 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
 
         Instruction* const modf = bb.ext<GLSL>()->opModfStruct(refl);
 
+        Instruction* const frexp = bb.ext<GLSL>()->opFrexpStruct(refr);
+
         entry->opReturn();
     }
 

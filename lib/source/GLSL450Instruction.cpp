@@ -121,6 +121,26 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(const glsl
 	return error();
 }
 
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opFrexpStruct(Instruction* _pFloat)
+{
+	Instruction* significantType = _pFloat->getResultTypeInstr();
+	if (significantType == nullptr) return error();
+
+
+	// Result Type must be an OpTypeStruct with two members. Member 0 must have the same type as the type of x.
+	// Member 0 holds the significand. Member 1 must be a scalar or vector with integer component type, with 32 - bit
+	// component width. Member 1 holds the exponent. These two members and x must have the same number of
+	// components.
+
+	Type exponent(*significantType->getType());
+	exponent.front().Int(32);
+
+	Module* module = getModule();
+	Instruction* exponentType = module->addType(exponent);
+
+	return scalarOrFloatVec1(glslstd450::Op::FrexpStruct, _pFloat, false, module->compositeType(spv::Op::OpTypeStruct, significantType, exponentType));
+}
+
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opLength(Instruction* _pX)
 {
 	const Type* type = _pX->getType();

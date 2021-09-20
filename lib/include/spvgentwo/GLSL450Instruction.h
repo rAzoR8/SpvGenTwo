@@ -56,8 +56,7 @@ namespace spvgentwo
 		Instruction* opDeterminant(Instruction* _pMatrix);
 		Instruction* opMatrixInverse(Instruction* _pMatrix);
 
-		// Modf Deprecated
-
+		// opModf DEPRECATED
 		Instruction* opModfStruct(Instruction* _pFloat);
 
 		Instruction* opFMin(Instruction* _pX, Instruction* _pY) { return scalarOrFloatVec2(glslstd450::Op::FMin, _pX, _pY); }
@@ -80,8 +79,9 @@ namespace spvgentwo
 		Instruction* opSmoothStep(Instruction* _pEdge0, Instruction* _pEdge1, Instruction* _pX) { return scalarOrFloatVec3(glslstd450::Op::SmoothStep, _pEdge0, _pEdge1, _pX); }
 		Instruction* opFma(Instruction* _pA, Instruction* _pB, Instruction* _pC) { return scalarOrFloatVec3(glslstd450::Op::Fma, _pA, _pB, _pC); }
 
-		// Frexp TODO
-		// FrexpStruct TODO
+		// Frexp DEPRECATED
+		Instruction* opFrexpStruct(Instruction* _pFloat);
+
 		// PackSnorm4x8 TODO
 		// PackUnorm4x8 TODO
 		// PackSnorm2x16 TODO
