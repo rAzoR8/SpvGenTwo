@@ -141,6 +141,26 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opFrexpStruct(Instruction*
 	return scalarOrFloatVec1(glslstd450::Op::FrexpStruct, _pFloat, false, module->compositeType(spv::Op::OpTypeStruct, significantType, exponentType));
 }
 
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opLdexp(Instruction* _pFloatX, Instruction* _pIntExp)
+{
+	Instruction* resultType = _pFloatX->getResultTypeInstr();
+	if (resultType == nullptr) return error();
+
+	const Type* xType = resultType->getType();
+	const Type* expType = _pIntExp->getType();
+
+	if (xType == nullptr || expType == nullptr) return error();
+
+	if (xType->isScalarOrVectorOfSameLength(*expType) && xType->getBaseType().isFloat() && expType->getBaseType().isInt())
+	{
+		return opExtInst(resultType, ExtName, static_cast<unsigned int>(glslstd450::Op::Ldexp), _pFloatX, _pIntExp);
+	}
+
+	getModule()->logError("Operands of opLdexp opeartion are not vector or scalar of float (x) or int (expt)");
+
+	return error();
+}
+
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opLength(Instruction* _pX)
 {
 	const Type* type = _pX->getType();

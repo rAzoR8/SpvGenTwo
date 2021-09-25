@@ -542,7 +542,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | Fma | &#10004; |
 | Frexp | Deprecated |
 | FrexpStruct | &#10004; |
-| Ldexp | &#9744; |
+| Ldexp | &#10004; |
 | PackSnorm4x8 | &#9744; |
 | PackUnorm4x8 | &#9744; |
 | PackSnorm2x16 | &#9744; |

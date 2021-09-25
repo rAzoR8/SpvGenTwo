@@ -85,6 +85,10 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
 
         Instruction* const frexp = bb.ext<GLSL>()->opFrexpStruct(refr);
 
+        Instruction* const expInt = bb->opCompositeExtract(frexp, 1u); // extract the exponent
+
+        Instruction* const ldexp = bb.ext<GLSL>()->opLdexp(ff, expInt);
+
         entry->opReturn();
     }
 

@@ -73,14 +73,15 @@ namespace spvgentwo
 
 		Instruction* opFMix(Instruction* _pX, Instruction* _pY, Instruction* _pA) { return scalarOrFloatVec3(glslstd450::Op::FMix, _pX, _pY, _pA); }
 		
-		// IMix TODO
+		// IMix removed in v0.99, Revision 3
 		
 		Instruction* opStep(Instruction* _pEdge, Instruction* _pX) { return scalarOrFloatVec2(glslstd450::Op::Step, _pEdge, _pX); }
 		Instruction* opSmoothStep(Instruction* _pEdge0, Instruction* _pEdge1, Instruction* _pX) { return scalarOrFloatVec3(glslstd450::Op::SmoothStep, _pEdge0, _pEdge1, _pX); }
 		Instruction* opFma(Instruction* _pA, Instruction* _pB, Instruction* _pC) { return scalarOrFloatVec3(glslstd450::Op::Fma, _pA, _pB, _pC); }
 
 		// Frexp DEPRECATED
-		Instruction* opFrexpStruct(Instruction* _pFloat);
+		Instruction* opFrexpStruct(Instruction* _pFloat);		
+		Instruction* opLdexp(Instruction* _pFloatX, Instruction* _pIntExp);
 
 		// PackSnorm4x8 TODO
 		// PackUnorm4x8 TODO
