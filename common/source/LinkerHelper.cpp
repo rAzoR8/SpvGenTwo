@@ -641,7 +641,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 	if (_options & LinkerOptionBits::ImportReferencedFunctions)
 	{
 		// gather all functions called from all the iFuncs we want to import
-		HashMap <Function*, Instruction*> calledFuncs(pAllocator, static_cast<unsigned int>(_lib.getFunctions().size())); // Func -> OpFunctionCall
+		HashMap <Function*, Function*> calledFuncs(pAllocator, static_cast<unsigned int>(_lib.getFunctions().size())); // lib Func -> consumer Function
 		for (const ImportSymbol& func : iFuncs)
 		{
 			Function* target = func.lib->getFunction();
@@ -649,7 +649,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 			for (auto& src : fcg)
 			{
-				for (auto& [node, call] : src.outputs())
+				for (auto& [node, call] : src.outputs()) // dont really care about the call
 				{
 					Function* callee = node->data();
 					if (callee != target) // not interested in the exported function
@@ -665,7 +665,13 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 
 						if (exported == false)
 						{
-							calledFuncs.emplaceUnique(callee, call); // dont really care about the call						
+							// if we didn't add this function before (call from another site)
+							if (auto& n = calledFuncs.emplaceUnique(callee, nullptr); n.kv.value == nullptr)
+							{
+								// cache the OpFunctions so that we can transfer the instructions in any order and transfering OpFunctionCall works
+								n.kv.value = &_consumer.addFunction();
+								cache.emplaceUnique(callee->getFunction(), assignId(n.kv.value->getFunction(), _options)); // OpFunction
+							}
 						}
 					}
 				}
@@ -673,7 +679,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 		}
 
 		// transfer functions from lib to consumer
-		for (auto& [lFunc, call] : calledFuncs)
+		for (auto& [lFunc, cFunc] : calledFuncs)
 		{
 			{
 				String sig(pAllocator);
@@ -681,7 +687,7 @@ bool spvgentwo::LinkerHelper::import(const Module& _lib, Module& _consumer, cons
 				info("Auto importing referenced function \'%s\'", sig.c_str());
 			}
 
-			success &= transferFunction(*lFunc, _consumer.addFunction(), cache, _options);
+			success &= transferFunction(*lFunc, *cFunc, cache, _options);
 		}
 	}
 
