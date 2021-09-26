@@ -33,7 +33,7 @@ void spvgentwo::FunctionCallGraph::add(const Function& _func)
 					}
 					else
 					{
-						dst = srcIt.operator->();
+						dst = dstIt.operator->();
 					}
 
 					src->connect(dst, &instr);
