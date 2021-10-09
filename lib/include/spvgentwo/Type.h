@@ -48,7 +48,7 @@ namespace spvgentwo
 
 	struct dyn_sampled_image_t { dyn_image_t imageType; struct dyntype_desc_tag {};};
 
-	struct dyn_vector_t { dyn_scalar_t elementType; unsigned int elements;  struct dyntype_desc_tag {};};
+	struct dyn_vector_t { dyn_scalar_t elementType; unsigned int elements; struct dyntype_desc_tag {};};
 	struct dyn_matrix_t { dyn_vector_t columnType; unsigned int columns; /*length of the row*/ struct dyntype_desc_tag {};};
 
 	template<class T, unsigned int N>

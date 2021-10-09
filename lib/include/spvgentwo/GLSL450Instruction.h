@@ -83,18 +83,19 @@ namespace spvgentwo
 		Instruction* opFrexpStruct(Instruction* _pFloat);		
 		Instruction* opLdexp(Instruction* _pFloatX, Instruction* _pIntExp);
 
-		// PackSnorm4x8 TODO
-		// PackUnorm4x8 TODO
-		// PackSnorm2x16 TODO
-		// PackUnorm2x16 TODO
-		// PackHalf2x16 TODO
-		// PackDouble2x32 TODO
-		// UnpackSnorm2x16 TODO
-		// UnpackUnorm2x16 TODO
-		// UnpackHalf2x16 TODO
-		// UnpackSnorm4x8 TODO
-		// UnpackUnorm4x8 TODO
-		// UnpackDouble2x32 TODO
+		Instruction* opPackSnorm4x8(Instruction* _pFloatVec4) { return packNorm(glslstd450::Op::PackSnorm4x8, _pFloatVec4, 4u); }
+		Instruction* opPackUnorm4x8(Instruction* _pFloatVec4) { return packNorm(glslstd450::Op::PackUnorm4x8, _pFloatVec4, 4u); }
+		Instruction* opPackSnorm2x16(Instruction* _pFloatVec2) { return packNorm(glslstd450::Op::PackSnorm2x16, _pFloatVec2, 2u); }
+		Instruction* opPackUnorm2x16(Instruction* _pFloatVec2) { return packNorm(glslstd450::Op::PackUnorm2x16, _pFloatVec2, 2u); }
+		Instruction* opPackHalf2x16(Instruction* _pFloatVec2) { return packNorm(glslstd450::Op::PackHalf2x16, _pFloatVec2, 2u); }
+		Instruction* opPackDouble2x32(Instruction* _pIntVec2);
+
+		Instruction* opUnpackSnorm4x8(Instruction* _pInt32) { return unpackNorm(glslstd450::Op::UnpackSnorm4x8, _pInt32, 4u); }
+		Instruction* opUnpackUnorm4x8(Instruction* _pInt32) { return unpackNorm(glslstd450::Op::UnpackUnorm4x8, _pInt32, 4u); }
+		Instruction* opUnpackSnorm2x16(Instruction* _pInt32) { return unpackNorm(glslstd450::Op::UnpackSnorm2x16, _pInt32, 2u); }
+		Instruction* opUnpackUnorm2x16(Instruction* _pInt32) { return unpackNorm(glslstd450::Op::UnpackUnorm2x16, _pInt32, 2u); }
+		Instruction* opUnpackHalf2x16(Instruction* _pInt32) { return unpackNorm(glslstd450::Op::UnpackHalf2x16, _pInt32, 2u); }
+		Instruction* opUnpackDouble2x32(Instruction* _pDouble);
 
 		Instruction* opLength(Instruction* _pX);
 		Instruction* opDistance(Instruction* _pP1, Instruction* _pP2);
@@ -115,13 +116,16 @@ namespace spvgentwo
 		// NClamp TODO
 
 	private:
-		Instruction* scalarOrFloatVec1(const glslstd450::Op _op, Instruction* _pFloat, const bool _no64Bit = false, Instruction* _pResultType = nullptr);
-		Instruction* scalarOrFloatVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pResultType = nullptr);
-		Instruction* scalarOrFloatVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Instruction* _pResultType = nullptr);
+		Instruction* scalarOrFloatVec1(glslstd450::Op _op, Instruction* _pFloat, const bool _no64Bit = false, Instruction* _pResultType = nullptr);
+		Instruction* scalarOrFloatVec2(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pResultType = nullptr);
+		Instruction* scalarOrFloatVec3(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Instruction* _pResultType = nullptr);
 
-		Instruction* scalarOrIntVec1(const glslstd450::Op _op, Instruction* _pSInt, const bool _signed, Instruction* _pResultType = nullptr);
-		Instruction* scalarOrIntVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed, Instruction* _pResultType = nullptr);
-		Instruction* scalarOrIntVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed, Instruction* _pResultType = nullptr);
+		Instruction* scalarOrIntVec1(glslstd450::Op _op, Instruction* _pSInt, const bool _signed, Instruction* _pResultType = nullptr);
+		Instruction* scalarOrIntVec2(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed, Instruction* _pResultType = nullptr);
+		Instruction* scalarOrIntVec3(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed, Instruction* _pResultType = nullptr);
+
+		Instruction* packNorm(glslstd450::Op _op, Instruction* _pFloatVec, unsigned int _vecComponents);
+		Instruction* unpackNorm(glslstd450::Op _op, Instruction* _pIntScalar, unsigned int _vecComponents);
 	};
 
 	// namespace for shortening extension names

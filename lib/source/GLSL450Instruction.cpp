@@ -4,7 +4,7 @@
 #include "spvgentwo/InstructionTemplate.inl"
 #include "spvgentwo/ModuleTemplate.inl"
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const glslstd450::Op _op, Instruction* _pFloat, const bool _no64Bit, Instruction* _pResultType)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(glslstd450::Op _op, Instruction* _pFloat, const bool _no64Bit, Instruction* _pResultType)
 {
 	Instruction* pTypeInstr = _pFloat->getResultTypeInstr();
 	if (pTypeInstr == nullptr) return error();
@@ -16,12 +16,12 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec1(const gl
 		return opExtInst(_pResultType != nullptr ? _pResultType : pTypeInstr, ExtName, static_cast<unsigned int>(_op), _pFloat);
 	}
 
-	getModule()->logError("Operands of scalarOrFloatVec1 opeartion are not vector or scalar of float");
+	getModule()->logError("Operands of scalarOrFloatVec1 are not vector or scalar of float");
 
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pResultType)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pResultType)
 {
 	const Type* leftType = _pOp1->getType();
 	const Type* rightType = _pOp2->getType();
@@ -36,12 +36,12 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec2(const gl
 		return opExtInst(returnType, ExtName, static_cast<unsigned int>(_op), _pOp1, _pOp2);
 	}
 
-	getModule()->logError("Operands of scalarOrFloatVec2 opeartion are not vector or scalar of float");
+	getModule()->logError("Operands of scalarOrFloatVec2 are not vector or scalar of float");
 
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Instruction* _pResultType)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Instruction* _pResultType)
 {
 	const Type* type1 = _pOp1->getType();
 	const Type* type2 = _pOp2->getType();
@@ -57,12 +57,12 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(const gl
 		return opExtInst(returnType, ExtName, static_cast<unsigned int>(_op), _pOp1, _pOp2, _pOp3);
 	}
 
-	getModule()->logError("Operands of scalarOrFloatVec3 opeartion are not vector or scalar of float");
+	getModule()->logError("Operands of scalarOrFloatVec3 are not vector or scalar of float");
 
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(const glslstd450::Op _op, Instruction* _pInt, const bool _signed, Instruction* _pResultType)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(glslstd450::Op _op, Instruction* _pInt, const bool _signed, Instruction* _pResultType)
 {
 	Instruction* pTypeInstr = _pInt->getResultTypeInstr();
 	if (pTypeInstr == nullptr) return error();
@@ -75,12 +75,12 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(const glsl
 		return opExtInst(_pResultType != nullptr ? _pResultType : pTypeInstr, ExtName, static_cast<unsigned int>(_op), _pInt);
 	}
 
-	getModule()->logError("Operands of scalarOrInt1 opeartion are not vector or scalar of int");
+	getModule()->logError("Operands of scalarOrInt1 are not vector or scalar of int");
 
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed, Instruction* _pResultType)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed, Instruction* _pResultType)
 {
 	const Type* leftType = _pOp1->getType();
 	const Type* rightType = _pOp2->getType();
@@ -95,12 +95,12 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(const glsl
 		return opExtInst(returnType, ExtName, static_cast<unsigned int>(_op), _pOp1, _pOp2);
 	}
 
-	getModule()->logError("Operands of scalarOrIntVec2 opeartion are not vector or scalar of int");
+	getModule()->logError("Operands of scalarOrIntVec2 are not vector or scalar of int");
 
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(const glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed, Instruction* _pResultType)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed, Instruction* _pResultType)
 {
 	const Type* type1 = _pOp1->getType();
 	const Type* type2 = _pOp2->getType();
@@ -116,7 +116,42 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(const glsl
 		return opExtInst(returnType, ExtName, static_cast<unsigned int>(_op), _pOp1, _pOp2, _pOp3);
 	}
 
-	getModule()->logError("Operands of scalarOrIntVec3 opeartion are not vector or scalar of int");
+	getModule()->logError("Operands of scalarOrIntVec3 are not vector or scalar of int");
+
+	return error();
+}
+
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::packNorm(glslstd450::Op _op, Instruction* _pFloatVec, unsigned int _vecComponents)
+{
+	const Type* type = _pFloatVec->getType();
+
+	if (type == nullptr) return error();
+
+	if (type->isVectorOfFloat(_vecComponents, 32u))
+	{
+		return opExtInst(getModule()->type<sgt_int32_t>(), ExtName, static_cast<unsigned int>(_op), _pFloatVec);
+	}
+
+	getModule()->logError("Operand of packNorm is not a float vector with %u components of 32bit-width", _vecComponents);
+
+	return error();
+}
+
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::unpackNorm(glslstd450::Op _op, Instruction* _pIntScalar, unsigned int _vecComponents)
+{
+	const Type* type = _pIntScalar->getType();
+
+	if (type == nullptr) return error();
+
+	if (type->isInt(32u))
+	{
+		Type t(getAllocator());
+		t.VectorElement(_vecComponents).Float(32u);
+
+		return opExtInst(getModule()->addType(t), ExtName, static_cast<unsigned int>(_op), _pIntScalar);
+	}
+
+	getModule()->logError("Operand of packNorm is not a float vector with %u components of 32bit-width", _vecComponents);
 
 	return error();
 }
@@ -157,6 +192,38 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opLdexp(Instruction* _pFlo
 	}
 
 	getModule()->logError("Operands of opLdexp opeartion are not vector or scalar of float (x) or int (expt)");
+
+	return error();
+}
+
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opPackDouble2x32(Instruction* _pIntVec2)
+{
+	const Type* type = _pIntVec2->getType();
+
+	if (type == nullptr) return error();
+
+	if (type->isVectorOfInt(2, 32u))
+	{
+		return opExtInst(getModule()->type<double>(), ExtName, static_cast<unsigned int>(glslstd450::Op::PackDouble2x32), _pIntVec2);
+	}
+
+	getModule()->logError("Operand of PackDouble2x32 is not a int vector with 2 components of 32bit-width");
+
+	return error();
+}
+
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opUnpackDouble2x32(Instruction* _pDouble)
+{
+	const Type* type = _pDouble->getType();
+
+	if (type == nullptr) return error();
+
+	if (type->isF64())
+	{
+		return opExtInst(getModule()->type<vector_t<int, 2>>(), ExtName, static_cast<unsigned int>(glslstd450::Op::UnpackDouble2x32), _pDouble);
+	}
+
+	getModule()->logError("Operand of UnpackDouble2x32 is not a int vector with 2 components of 32bit-width");
 
 	return error();
 }

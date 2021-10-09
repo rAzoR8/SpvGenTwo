@@ -12,11 +12,11 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
 	Module module(_pAllocator, spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR, _pLogger);
    
     module.addCapability(spv::Capability::Shader);
+    module.addCapability(spv::Capability::Float64);
 
     // use Vulkan Memory Model
     module.addCapability(spv::Capability::VulkanMemoryModelKHR);
     module.addExtension(u8"SPV_KHR_vulkan_memory_model"); // add extension by string
-
 
     // Instruction* extId = module.getExtensionInstructionImport("GLSL.std.450");
 
@@ -88,6 +88,30 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
         Instruction* const expInt = bb->opCompositeExtract(frexp, 1u); // extract the exponent
 
         Instruction* const ldexp = bb.ext<GLSL>()->opLdexp(ff, expInt);
+
+        Instruction* const vec4 = module.constant(make_vector(1.f, 2.f, 3.f, 4.f));
+
+        Instruction* const vec2 = module.constant(make_vector(1.f, 2.f));
+
+        Instruction* const ivec2 = module.constant(make_vector(1, 2));
+
+        Instruction* pack = bb.ext<GLSL>()->opPackSnorm4x8(vec4);
+        bb.ext<GLSL>()->opUnpackSnorm4x8(pack);
+
+        pack = bb.ext<GLSL>()->opPackUnorm4x8(vec4);
+        bb.ext<GLSL>()->opUnpackUnorm4x8(pack);
+
+        pack = bb.ext<GLSL>()->opPackSnorm2x16(vec2);
+        bb.ext<GLSL>()->opUnpackSnorm2x16(pack);
+
+        pack = bb.ext<GLSL>()->opPackUnorm2x16(vec2);
+        bb.ext<GLSL>()->opUnpackUnorm2x16(pack);
+
+        pack = bb.ext<GLSL>()->opPackHalf2x16(vec2);
+        bb.ext<GLSL>()->opUnpackHalf2x16(pack);
+
+        pack = bb.ext<GLSL>()->opPackDouble2x32(ivec2);
+        bb.ext<GLSL>()->opUnpackDouble2x32(pack);
 
         entry->opReturn();
     }
