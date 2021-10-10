@@ -13,6 +13,7 @@ SpvGenTwo is build around building-blocks that are somewhat similar to SPIR-V's 
 * [Types](#Types)
 * [Constants](#Constants)
 * [Implementing new Instructions](#Implementing-New-Instructions)
+* [Extension Instructions](#Extension-Instructions)
 
 # Operands
 There are four kinds of [operands](lib/include/spvgentwo/Operand.h) in SpvGenTwo:
@@ -484,3 +485,25 @@ spvgentwo::Instruction* spvgentwo::Instruction::opMatrixTimesVector(Instruction*
 * if you added a new arithmetic instruction that operates on a certain (argument) type, please check if `getTypeFromOp()` from  [SpvDefines.h](lib/include/spvgentwo/SpvDefines.h) needs to be updated.
 
 * after adding support for a new SPIR-V instruction, please update the coverage table in the [ReadMe](README.md#Coverage)
+
+## Extension instructions
+
+Instructions from SPIR-V extension sets such as [GLSL.std.450](https://www.khronos.org/registry/SPIR-V/specs/unified1/GLSL.std.450.html) can be implemented by deriving from the Instruction and then using `opExtInst` with the extension name string and the corresponding op-codes.
+
+```cpp
+class GLSL450Intruction : protected Instruction
+{
+public:
+    using Instruction::Instruction;
+
+    static constexpr const char* ExtName = "GLSL.std.450";
+
+    Instruction* opRound(Instruction* _pFloat)
+    {
+        // glslstd450::Op::Round = 1
+        return opExtInst(_pFloat->getResultTypeInstr(), ExtName, static_cast<unsigned int>(glslstd450::Op::Round), _pFloat);
+    }
+};
+```
+
+The new instruction extension class can then be used via `BasicBlock.ext<GLSL450Intruction>()` as seen in [Extensions.cpp](example/source/Extensions.cpp).

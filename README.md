@@ -562,9 +562,9 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | FaceForward | &#10004; |
 | Reflect | &#10004; |
 | Refract | &#10004; |
-| FindILsb | &#9744; |
-| FindSMsb | &#9744; |
-| FindUMsb | &#9744; |
+| FindILsb | &#10004; |
+| FindSMsb | &#10004; |
+| FindUMsb | &#10004; |
 | InterpolateAtCentroid | &#9744; |
 | InterpolateAtSample | &#9744; |
 | InterpolateAtOffset | &#9744; |

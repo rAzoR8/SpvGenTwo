@@ -65,29 +65,31 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
 
         // BasicBlock template function ext<T> adds a new Instruction and casts it to type T
         // this works as long as T does not add any data members and just functionally extends the Instruction class
-        Instruction* const cross = bb.ext<GLSL>()->opCross(vec3, vec3); // use GLSL.std.450 extension
+        Instruction* const cross = bb.ext<GLSL450Intruction>()->opCross(vec3, vec3); // use GLSL.std.450 extension
        
-        Instruction* const norm = bb.ext<GLSL>()->opNormalize(cross);
+        // ext<T> is usefull for extension instruction derivates that are foreign to spvgentwo
+        // For GLSL 4.5 we have the glsl() and ext<GLSL>() shortcuts:
+        Instruction* const norm = bb.glsl()->opNormalize(cross);
 
         Instruction* const ff = bb.ext<GLSL>()->opFaceForward(vec3, norm, cross);
 
-        Instruction* const refl = bb.ext<GLSL>()->opReflect(vec3, norm);
+        Instruction* const refl = bb.glsl()->opReflect(vec3, norm);
 
         Instruction* const eta = bb->opDot(refl, ff);
 
-        Instruction* const refr = bb.ext<GLSL>()->opRefract(refl, ff, eta);
+        Instruction* const refr = bb.glsl()->opRefract(refl, ff, eta);
 
-        Instruction* const len = bb.ext<GLSL>()->opLength(refr);
+        Instruction* const len = bb.glsl()->opLength(refr);
 
-        Instruction* const dist = bb.ext<GLSL>()->opDistance(refl, refr);
+        Instruction* const dist = bb.glsl()->opDistance(refl, refr);
 
-        Instruction* const modf = bb.ext<GLSL>()->opModfStruct(refl);
+        Instruction* const modf = bb.glsl()->opModfStruct(refl);
 
-        Instruction* const frexp = bb.ext<GLSL>()->opFrexpStruct(refr);
+        Instruction* const frexp = bb.glsl()->opFrexpStruct(refr);
 
         Instruction* const expInt = bb->opCompositeExtract(frexp, 1u); // extract the exponent
 
-        Instruction* const ldexp = bb.ext<GLSL>()->opLdexp(ff, expInt);
+        Instruction* const ldexp = bb.glsl()->opLdexp(ff, expInt);
 
         Instruction* const vec4 = module.constant(make_vector(1.f, 2.f, 3.f, 4.f));
 
@@ -95,23 +97,27 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
 
         Instruction* const ivec2 = module.constant(make_vector(1, 2));
 
-        Instruction* pack = bb.ext<GLSL>()->opPackSnorm4x8(vec4);
-        bb.ext<GLSL>()->opUnpackSnorm4x8(pack);
+        Instruction* pack = bb.glsl()->opPackSnorm4x8(vec4);
+        bb.glsl()->opUnpackSnorm4x8(pack);
 
-        pack = bb.ext<GLSL>()->opPackUnorm4x8(vec4);
-        bb.ext<GLSL>()->opUnpackUnorm4x8(pack);
+        pack = bb.glsl()->opPackUnorm4x8(vec4);
+        bb.glsl()->opUnpackUnorm4x8(pack);
 
-        pack = bb.ext<GLSL>()->opPackSnorm2x16(vec2);
-        bb.ext<GLSL>()->opUnpackSnorm2x16(pack);
+        pack = bb.glsl()->opPackSnorm2x16(vec2);
+        bb.glsl()->opUnpackSnorm2x16(pack);
 
-        pack = bb.ext<GLSL>()->opPackUnorm2x16(vec2);
-        bb.ext<GLSL>()->opUnpackUnorm2x16(pack);
+        pack = bb.glsl()->opPackUnorm2x16(vec2);
+        bb.glsl()->opUnpackUnorm2x16(pack);
 
-        pack = bb.ext<GLSL>()->opPackHalf2x16(vec2);
-        bb.ext<GLSL>()->opUnpackHalf2x16(pack);
+        pack = bb.glsl()->opPackHalf2x16(vec2);
+        bb.glsl()->opUnpackHalf2x16(pack);
 
-        pack = bb.ext<GLSL>()->opPackDouble2x32(ivec2);
-        bb.ext<GLSL>()->opUnpackDouble2x32(pack);
+        pack = bb.glsl()->opPackDouble2x32(ivec2);
+        bb.glsl()->opUnpackDouble2x32(pack);
+
+        Instruction* const ilsb = bb.glsl()->opFindILsb(ivec2);
+        Instruction* const smsb = bb.glsl()->opFindSMsb(ivec2);
+        Instruction* const umsm = bb.glsl()->opFindUMsb(ivec2);
 
         entry->opReturn();
     }

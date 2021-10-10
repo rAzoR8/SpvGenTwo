@@ -17,10 +17,10 @@ namespace spvgentwo
 		Instruction* opTrunc(Instruction* _pFloat) { return scalarOrFloatVec1(glslstd450::Op::Trunc, _pFloat); }
 
 		Instruction* opFAbs(Instruction* _pFloat) { return scalarOrFloatVec1(glslstd450::Op::FAbs, _pFloat); }
-		Instruction* opSAbs(Instruction* _pSInt) { return scalarOrIntVec1(glslstd450::Op::SAbs, _pSInt, true); }
+		Instruction* opSAbs(Instruction* _pSInt) { return scalarOrIntVec1(glslstd450::Op::SAbs, _pSInt, Sign::Signed); }
 
 		Instruction* opFSign(Instruction* _pFloat) { return scalarOrFloatVec1(glslstd450::Op::FSign, _pFloat); }
-		Instruction* opSSign(Instruction* _pSInt) { return scalarOrIntVec1(glslstd450::Op::SSign, _pSInt, true); }
+		Instruction* opSSign(Instruction* _pSInt) { return scalarOrIntVec1(glslstd450::Op::SSign, _pSInt, Sign::Signed); }
 
 		Instruction* opFloor(Instruction* _pFloat) { return scalarOrFloatVec1(glslstd450::Op::Floor, _pFloat); }
 		Instruction* opCeil(Instruction* _pFloat) { return scalarOrFloatVec1(glslstd450::Op::Ceil, _pFloat); }
@@ -60,16 +60,16 @@ namespace spvgentwo
 		Instruction* opModfStruct(Instruction* _pFloat);
 
 		Instruction* opFMin(Instruction* _pX, Instruction* _pY) { return scalarOrFloatVec2(glslstd450::Op::FMin, _pX, _pY); }
-		Instruction* opUMin(Instruction* _pX, Instruction* _pY) { return scalarOrIntVec2(glslstd450::Op::UMin, _pX, _pY, false); }
-		Instruction* opSMin(Instruction* _pX, Instruction* _pY) { return scalarOrIntVec2(glslstd450::Op::SMin, _pX, _pY, true); }
+		Instruction* opUMin(Instruction* _pX, Instruction* _pY) { return scalarOrIntVec2(glslstd450::Op::UMin, _pX, _pY, Sign::Unsigned); }
+		Instruction* opSMin(Instruction* _pX, Instruction* _pY) { return scalarOrIntVec2(glslstd450::Op::SMin, _pX, _pY, Sign::Signed); }
 
 		Instruction* opFMax(Instruction* _pX, Instruction* _pY) { return scalarOrFloatVec2(glslstd450::Op::FMax, _pX, _pY); }
-		Instruction* opUMax(Instruction* _pX, Instruction* _pY) { return scalarOrIntVec2(glslstd450::Op::UMax, _pX, _pY, false); }
-		Instruction* opSMax(Instruction* _pX, Instruction* _pY) { return scalarOrIntVec2(glslstd450::Op::SMax, _pX, _pY, true); }
+		Instruction* opUMax(Instruction* _pX, Instruction* _pY) { return scalarOrIntVec2(glslstd450::Op::UMax, _pX, _pY, Sign::Unsigned); }
+		Instruction* opSMax(Instruction* _pX, Instruction* _pY) { return scalarOrIntVec2(glslstd450::Op::SMax, _pX, _pY, Sign::Signed); }
 
 		Instruction* opFClamp(Instruction* _pX, Instruction* _pMin, Instruction* _pMax) { return scalarOrFloatVec3(glslstd450::Op::FClamp, _pX, _pMin, _pMax); }
-		Instruction* opUClamp(Instruction* _pX, Instruction* _pMin, Instruction* _pMax) { return scalarOrIntVec3(glslstd450::Op::UClamp, _pX, _pMin, _pMax, false); }
-		Instruction* opSClamp(Instruction* _pX, Instruction* _pMin, Instruction* _pMax) { return scalarOrIntVec3(glslstd450::Op::SClamp, _pX, _pMin, _pMax, true); }
+		Instruction* opUClamp(Instruction* _pX, Instruction* _pMin, Instruction* _pMax) { return scalarOrIntVec3(glslstd450::Op::UClamp, _pX, _pMin, _pMax, Sign::Unsigned); }
+		Instruction* opSClamp(Instruction* _pX, Instruction* _pMin, Instruction* _pMax) { return scalarOrIntVec3(glslstd450::Op::SClamp, _pX, _pMin, _pMax, Sign::Signed); }
 
 		Instruction* opFMix(Instruction* _pX, Instruction* _pY, Instruction* _pA) { return scalarOrFloatVec3(glslstd450::Op::FMix, _pX, _pY, _pA); }
 		
@@ -105,9 +105,10 @@ namespace spvgentwo
 		Instruction* opReflect(Instruction* _pI, Instruction* _pN) { return scalarOrFloatVec2(glslstd450::Op::Reflect, _pI, _pN); }
 		Instruction* opRefract(Instruction* _pIvec, Instruction* _pNvec, Instruction* _pEtaFloat);
 		
-		// FindILsb TODO
-		// FindSMsb TODO
-		// FindUMsb TODO
+		Instruction* opFindILsb(Instruction* _pIntVec) { return scalarOrIntVec1(glslstd450::Op::FindILsb, _pIntVec, Sign::Any); }
+		Instruction* opFindSMsb(Instruction* _pIntVec) { return scalarOrIntVec1(glslstd450::Op::FindSMsb, _pIntVec, Sign::Any); }
+		Instruction* opFindUMsb(Instruction* _pIntVec) { return scalarOrIntVec1(glslstd450::Op::FindUMsb, _pIntVec, Sign::Any); }
+
 		// InterpolateAtCentroid TODO
 		// InterpolateAtSample TODO
 		// InterpolateAtOffset TODO
@@ -120,9 +121,9 @@ namespace spvgentwo
 		Instruction* scalarOrFloatVec2(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pResultType = nullptr);
 		Instruction* scalarOrFloatVec3(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Instruction* _pResultType = nullptr);
 
-		Instruction* scalarOrIntVec1(glslstd450::Op _op, Instruction* _pSInt, const bool _signed, Instruction* _pResultType = nullptr);
-		Instruction* scalarOrIntVec2(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed, Instruction* _pResultType = nullptr);
-		Instruction* scalarOrIntVec3(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed, Instruction* _pResultType = nullptr);
+		Instruction* scalarOrIntVec1(glslstd450::Op _op, Instruction* _pInt, Sign _sign, Instruction* _pResultType = nullptr);
+		Instruction* scalarOrIntVec2(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Sign _sign, Instruction* _pResultType = nullptr);
+		Instruction* scalarOrIntVec3(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Sign _sign, Instruction* _pResultType = nullptr);
 
 		Instruction* packNorm(glslstd450::Op _op, Instruction* _pFloatVec, unsigned int _vecComponents);
 		Instruction* unpackNorm(glslstd450::Op _op, Instruction* _pIntScalar, unsigned int _vecComponents);

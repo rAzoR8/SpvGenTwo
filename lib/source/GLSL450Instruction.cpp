@@ -62,7 +62,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrFloatVec3(glslstd4
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(glslstd450::Op _op, Instruction* _pInt, const bool _signed, Instruction* _pResultType)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(glslstd450::Op _op, Instruction* _pInt, Sign _sign, Instruction* _pResultType)
 {
 	Instruction* pTypeInstr = _pInt->getResultTypeInstr();
 	if (pTypeInstr == nullptr) return error();
@@ -70,7 +70,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(glslstd450
 	const Type* pType = pTypeInstr->getType();
 	if (pType == nullptr) return error();
 
-	if (pType->isScalarOrVectorOf(spv::Op::OpTypeInt) && _signed == pType->getBaseType().getIntSign())
+	if (pType->isScalarOrVectorOf(spv::Op::OpTypeInt) && pType->getBaseType().hasSign(_sign))
 	{
 		return opExtInst(_pResultType != nullptr ? _pResultType : pTypeInstr, ExtName, static_cast<unsigned int>(_op), _pInt);
 	}
@@ -80,14 +80,14 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec1(glslstd450
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, const bool _signed, Instruction* _pResultType)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Sign _sign, Instruction* _pResultType)
 {
 	const Type* leftType = _pOp1->getType();
 	const Type* rightType = _pOp2->getType();
 
 	if (leftType == nullptr || rightType == nullptr) return error();
 
-	if (leftType->isScalarOrVectorOf(spv::Op::OpTypeInt) && _signed == leftType->getBaseType().getIntSign()  && *leftType == *rightType)
+	if (leftType->isScalarOrVectorOf(spv::Op::OpTypeInt) &&leftType->getBaseType().hasSign(_sign) && *leftType == *rightType)
 	{
 		Instruction* returnType = _pResultType != nullptr ? _pResultType : _pOp1->getResultTypeInstr();
 		if (returnType == nullptr) return error();
@@ -100,7 +100,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec2(glslstd450
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, const bool _signed, Instruction* _pResultType)
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(glslstd450::Op _op, Instruction* _pOp1, Instruction* _pOp2, Instruction* _pOp3, Sign _sign, Instruction* _pResultType)
 {
 	const Type* type1 = _pOp1->getType();
 	const Type* type2 = _pOp2->getType();
@@ -108,7 +108,7 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::scalarOrIntVec3(glslstd450
 
 	if (type1 == nullptr || type2 == nullptr || type3 == nullptr) return error();
 
-	if (type1->isScalarOrVectorOf(spv::Op::OpTypeInt) && _signed == type1->getBaseType().getIntSign() && *type1 == *type2 && *type2 == *type3)
+	if (type1->isScalarOrVectorOf(spv::Op::OpTypeInt) && type1->getBaseType().hasSign(_sign) && *type1 == *type2 && *type2 == *type3)
 	{
 		Instruction* returnType = _pResultType != nullptr ? _pResultType : _pOp1->getResultTypeInstr();
 		if (returnType == nullptr) return error();
