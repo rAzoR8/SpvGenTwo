@@ -299,7 +299,9 @@ namespace spvgentwo
 		constexpr bool isVoid() const { return m_Type == spv::Op::OpTypeVoid; }
 		constexpr bool isBool() const { return m_Type == spv::Op::OpTypeBool;	}
 		constexpr bool isPointer() const { return m_Type == spv::Op::OpTypePointer; }
+		constexpr bool isPointer(spv::StorageClass _storageClass) const { return isPointer() && m_StorageClass == _storageClass; }
 		constexpr bool isForwardPointer() const { return m_Type == spv::Op::OpTypeForwardPointer; }
+		constexpr bool isForwardPointer(spv::StorageClass _storageClass) const { return isForwardPointer() && m_StorageClass == _storageClass; }
 		constexpr bool isStruct() const { return m_Type == spv::Op::OpTypeStruct; }
 		constexpr bool isArray() const { return m_Type == spv::Op::OpTypeArray; }
 		constexpr bool isRuntimeArray() const { return m_Type == spv::Op::OpTypeRuntimeArray; }

@@ -13,6 +13,7 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
    
     module.addCapability(spv::Capability::Shader);
     module.addCapability(spv::Capability::Float64);
+    module.addCapability(spv::Capability::InterpolationFunction);
 
     // use Vulkan Memory Model
     module.addCapability(spv::Capability::VulkanMemoryModelKHR);
@@ -118,6 +119,13 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
         Instruction* const ilsb = bb.glsl()->opFindILsb(ivec2);
         Instruction* const smsb = bb.glsl()->opFindSMsb(ivec2);
         Instruction* const umsm = bb.glsl()->opFindUMsb(ivec2);
+
+        Instruction* const inputVar = module.input<vector_t<float, 4>>("interpolant");
+        Instruction* const interpolant = bb->opAccessChain(inputVar, 0u);
+
+        bb.glsl()->opInterpolateAtCentroid(interpolant);
+        bb.glsl()->opInterpolateAtSample(interpolant, module.constant(2));
+        bb.glsl()->opInterpolateAtOffset(interpolant, vec2);
 
         entry->opReturn();
     }

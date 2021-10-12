@@ -565,9 +565,9 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | FindILsb | &#10004; |
 | FindSMsb | &#10004; |
 | FindUMsb | &#10004; |
-| InterpolateAtCentroid | &#9744; |
-| InterpolateAtSample | &#9744; |
-| InterpolateAtOffset | &#9744; |
+| InterpolateAtCentroid | &#10004; |
+| InterpolateAtSample | &#10004; |
+| InterpolateAtOffset | &#10004; |
 | NMin | &#9744; |
 | NMax | &#9744; |
 | NClamp | &#9744; |

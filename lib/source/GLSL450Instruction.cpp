@@ -156,6 +156,50 @@ spvgentwo::Instruction* spvgentwo::GLSL450Intruction::unpackNorm(glslstd450::Op 
 	return error();
 }
 
+spvgentwo::Instruction* spvgentwo::GLSL450Intruction::interpolate(glslstd450::Op _op, Instruction* _pInterpolant, Instruction* _pSampleOffset)
+{
+	const Type* type = _pInterpolant->getType();
+	if (type == nullptr) return error();
+
+	if(type->isPointer(spv::StorageClass::Input) == false)
+	{
+		getModule()->logError("Operand 'interpolant' is not a pointer of storage class 'input'");
+		return error();
+	}
+
+	// get inner type
+	if (type->front().isScalarOrVectorOf(spv::Op::OpTypeFloat, 0u, 32u) == false)
+	{
+		getModule()->logError("Operand 'interpolant' is not a float vector with 32bit component width");
+		return error();
+	}
+
+	Instruction* resultType = getModule()->addType(type->front());
+
+	if (_op == glslstd450::Op::InterpolateAtCentroid)
+	{
+		return opExtInst(resultType, ExtName, static_cast<unsigned int>(_op), _pInterpolant);
+	}
+	else if (const Type* sampleoffset = _pSampleOffset->getType(); sampleoffset != nullptr && _op == glslstd450::Op::InterpolateAtSample)
+	{
+		if (sampleoffset->isInt(32u))
+		{
+			return opExtInst(resultType, ExtName, static_cast<unsigned int>(_op), _pInterpolant, _pSampleOffset);
+		}
+		getModule()->logError("Operand 'sample' is not a scalar 32bit integer");
+	}
+	else if (sampleoffset != nullptr && _op == glslstd450::Op::InterpolateAtOffset) 
+	{
+		if (sampleoffset->isVectorOfFloat(2u, 32u))
+		{
+			return opExtInst(resultType, ExtName, static_cast<unsigned int>(_op), _pInterpolant, _pSampleOffset);
+		}
+		getModule()->logError("Operand 'offset' is not a 2-component float vector with 32bit width");
+	}
+
+	return error();
+}
+
 spvgentwo::Instruction* spvgentwo::GLSL450Intruction::opFrexpStruct(Instruction* _pFloat)
 {
 	Instruction* significantType = _pFloat->getResultTypeInstr();

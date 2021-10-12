@@ -109,9 +109,10 @@ namespace spvgentwo
 		Instruction* opFindSMsb(Instruction* _pIntVec) { return scalarOrIntVec1(glslstd450::Op::FindSMsb, _pIntVec, Sign::Any); }
 		Instruction* opFindUMsb(Instruction* _pIntVec) { return scalarOrIntVec1(glslstd450::Op::FindUMsb, _pIntVec, Sign::Any); }
 
-		// InterpolateAtCentroid TODO
-		// InterpolateAtSample TODO
-		// InterpolateAtOffset TODO
+		Instruction* opInterpolateAtCentroid(Instruction* _pInterpolant) { return interpolate(glslstd450::Op::InterpolateAtCentroid, _pInterpolant, nullptr); }
+		Instruction* opInterpolateAtSample(Instruction* _pInterpolant, Instruction* _pSampleInt) { return interpolate(glslstd450::Op::InterpolateAtSample, _pInterpolant, _pSampleInt); }
+		Instruction* opInterpolateAtOffset(Instruction* _pInterpolant, Instruction* _pOffsetVec2) { return interpolate(glslstd450::Op::InterpolateAtOffset, _pInterpolant, _pOffsetVec2); }
+
 		// NMin TODO
 		// NMax TODO
 		// NClamp TODO
@@ -127,6 +128,8 @@ namespace spvgentwo
 
 		Instruction* packNorm(glslstd450::Op _op, Instruction* _pFloatVec, unsigned int _vecComponents);
 		Instruction* unpackNorm(glslstd450::Op _op, Instruction* _pIntScalar, unsigned int _vecComponents);
+
+		Instruction* interpolate(glslstd450::Op _op, Instruction* _pInterpolant, Instruction* _pSampleOffset);
 	};
 
 	// namespace for shortening extension names
