@@ -568,9 +568,9 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | InterpolateAtCentroid | &#10004; |
 | InterpolateAtSample | &#10004; |
 | InterpolateAtOffset | &#10004; |
-| NMin | &#9744; |
-| NMax | &#9744; |
-| NClamp | &#9744; |
+| NMin | &#10004; |
+| NMax | &#10004; |
+| NClamp | &#10004; |
 
 ## OpenCl.std.100
 

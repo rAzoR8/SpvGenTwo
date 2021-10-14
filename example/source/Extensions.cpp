@@ -123,9 +123,13 @@ spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvge
         Instruction* const inputVar = module.input<vector_t<float, 4>>("interpolant");
         Instruction* const interpolant = bb->opAccessChain(inputVar, 0u);
 
-        bb.glsl()->opInterpolateAtCentroid(interpolant);
-        bb.glsl()->opInterpolateAtSample(interpolant, module.constant(2));
-        bb.glsl()->opInterpolateAtOffset(interpolant, vec2);
+        Instruction* const ipolC = bb.glsl()->opInterpolateAtCentroid(interpolant);
+        Instruction* const ipolS = bb.glsl()->opInterpolateAtSample(interpolant, module.constant(2));
+        Instruction* const ipolO = bb.glsl()->opInterpolateAtOffset(interpolant, vec2);
+
+        bb.glsl()->opNMin(ipolC, ipolO);
+        bb.glsl()->opNMax(ipolS, ipolO);
+        bb.glsl()->opNClamp(ipolC, ipolO, ipolS);
 
         entry->opReturn();
     }

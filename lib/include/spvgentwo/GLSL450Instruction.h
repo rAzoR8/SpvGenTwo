@@ -113,9 +113,9 @@ namespace spvgentwo
 		Instruction* opInterpolateAtSample(Instruction* _pInterpolant, Instruction* _pSampleInt) { return interpolate(glslstd450::Op::InterpolateAtSample, _pInterpolant, _pSampleInt); }
 		Instruction* opInterpolateAtOffset(Instruction* _pInterpolant, Instruction* _pOffsetVec2) { return interpolate(glslstd450::Op::InterpolateAtOffset, _pInterpolant, _pOffsetVec2); }
 
-		// NMin TODO
-		// NMax TODO
-		// NClamp TODO
+		Instruction* opNMin(Instruction* _pX, Instruction* _pY) { return scalarOrFloatVec2(glslstd450::Op::NMin, _pX, _pY); }
+		Instruction* opNMax(Instruction* _pX, Instruction* _pY) { return scalarOrFloatVec2(glslstd450::Op::NMax, _pX, _pY); }
+		Instruction* opNClamp(Instruction* _pX, Instruction* _pMinVal, Instruction* _pMaxVal) { return scalarOrFloatVec3(glslstd450::Op::NClamp, _pX, _pMinVal, _pMaxVal); }
 
 	private:
 		Instruction* scalarOrFloatVec1(glslstd450::Op _op, Instruction* _pFloat, const bool _no64Bit = false, Instruction* _pResultType = nullptr);
