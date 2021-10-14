@@ -301,9 +301,9 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpInBoundsPtrAccessChain | &#9744; |
 | OpDecorate | &#10004; |
 | OpMemberDecorate | &#10004; |
-| OpDecorationGroup | Deperecated |
-| OpGroupDecorate | Deperecated|
-| OpGroupMemberDecorate |Deperecated|
+| OpDecorationGroup | Deprecated |
+| OpGroupDecorate | Deprecated|
+| OpGroupMemberDecorate |Deprecated|
 | OpVectorExtractDynamic | &#10004; |
 | OpVectorInsertDynamic | &#10004; |
 | OpVectorShuffle | &#10004; |
@@ -384,7 +384,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpIsFinite | &#10004; |
 | OpIsNormal | &#10004; |
 | OpSignBitSet | &#10004; |
-| OpLessOrGreater | Deperecated |
+| OpLessOrGreater | Deprecated |
 | OpOrdered | &#10004; |
 | OpUnordered | &#10004; |
 | OpLogicalEqual | &#10004; |
@@ -524,8 +524,8 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | InverseSqrt | &#10004; |
 | Determinant | &#10004; |
 | MatrixInverse | &#10004; |
-| Modf | &#9744; |
-| ModfStruct | &#9744; |
+| Modf | Deprecated |
+| ModfStruct | &#10004; |
 | FMin | &#10004; |
 | UMin | &#10004; |
 | SMin | &#10004; |
@@ -540,21 +540,21 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | Step | &#10004; |
 | SmoothStep | &#10004; |
 | Fma | &#10004; |
-| Frexp | &#9744; |
-| FrexpStruct | &#9744; |
-| Ldexp | &#9744; |
-| PackSnorm4x8 | &#9744; |
-| PackUnorm4x8 | &#9744; |
-| PackSnorm2x16 | &#9744; |
-| PackUnorm2x16 | &#9744; |
-| PackHalf2x16 | &#9744; |
-| PackDouble2x32 | &#9744; |
-| UnpackSnorm2x16 | &#9744; |
-| UnpackUnorm2x16 | &#9744; |
-| UnpackHalf2x16 | &#9744; |
-| UnpackSnorm4x8 | &#9744; |
-| UnpackUnorm4x8 | &#9744; |
-| UnpackDouble2x32 | &#9744; |
+| Frexp | Deprecated |
+| FrexpStruct | &#10004; |
+| Ldexp | &#10004; |
+| PackSnorm4x8 | &#10004; |
+| PackUnorm4x8 | &#10004; |
+| PackSnorm2x16 | &#10004; |
+| PackUnorm2x16 | &#10004; |
+| PackHalf2x16 | &#10004; |
+| PackDouble2x32 | &#10004; |
+| UnpackSnorm2x16 | &#10004; |
+| UnpackUnorm2x16 | &#10004; |
+| UnpackHalf2x16 | &#10004; |
+| UnpackSnorm4x8 | &#10004; |
+| UnpackUnorm4x8 | &#10004; |
+| UnpackDouble2x32 | &#10004; |
 | Length | &#10004; |
 | Distance | &#10004; |
 | Cross | &#10004; |
@@ -562,15 +562,15 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | FaceForward | &#10004; |
 | Reflect | &#10004; |
 | Refract | &#10004; |
-| FindILsb | &#9744; |
-| FindSMsb | &#9744; |
-| FindUMsb | &#9744; |
-| InterpolateAtCentroid | &#9744; |
-| InterpolateAtSample | &#9744; |
-| InterpolateAtOffset | &#9744; |
-| NMin | &#9744; |
-| NMax | &#9744; |
-| NClamp | &#9744; |
+| FindILsb | &#10004; |
+| FindSMsb | &#10004; |
+| FindUMsb | &#10004; |
+| InterpolateAtCentroid | &#10004; |
+| InterpolateAtSample | &#10004; |
+| InterpolateAtOffset | &#10004; |
+| NMin | &#10004; |
+| NMax | &#10004; |
+| NClamp | &#10004; |
 
 ## OpenCl.std.100
 

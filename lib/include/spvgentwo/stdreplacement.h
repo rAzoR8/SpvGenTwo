@@ -14,6 +14,9 @@ namespace spvgentwo
 	using sgt_uint32_t = decltype(0u);
 	using sgt_uint64_t = decltype(0ull);
 
+	using sgt_int32_t = decltype(0);
+	using sgt_int64_t = decltype(0ll);
+
 	static_assert(sizeof(sgt_uint32_t) == 4, "32bit integer type size mismatch");
 	static_assert(sizeof(sgt_uint64_t) == 8, "64bit integer type size mismatch");
 }

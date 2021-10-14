@@ -48,7 +48,7 @@ namespace spvgentwo
 
 	struct dyn_sampled_image_t { dyn_image_t imageType; struct dyntype_desc_tag {};};
 
-	struct dyn_vector_t { dyn_scalar_t elementType; unsigned int elements;  struct dyntype_desc_tag {};};
+	struct dyn_vector_t { dyn_scalar_t elementType; unsigned int elements; struct dyntype_desc_tag {};};
 	struct dyn_matrix_t { dyn_vector_t columnType; unsigned int columns; /*length of the row*/ struct dyntype_desc_tag {};};
 
 	template<class T, unsigned int N>
@@ -77,9 +77,9 @@ namespace spvgentwo
 	public:
 		using Iterator = List<Type>::Iterator;
 
-		constexpr Type(IAllocator* _pAllocator = nullptr, const spv::Op _type = spv::Op::OpTypeVoid);
-		Type(IAllocator* _pAllocator, const Type& _subType, const spv::Op _baseType = spv::Op::OpTypeVoid);
-		Type(IAllocator* _pAllocator, Type&& _subType, const spv::Op _baseType = spv::Op::OpTypeVoid);
+		constexpr Type(IAllocator* _pAllocator = nullptr, spv::Op _type = spv::Op::OpTypeVoid);
+		Type(IAllocator* _pAllocator, const Type& _subType, spv::Op _baseType = spv::Op::OpTypeVoid);
+		Type(IAllocator* _pAllocator, Type&& _subType, spv::Op _baseType = spv::Op::OpTypeVoid);
 
 		Type(Type&& _other) noexcept;
 		Type(const Type& _other);
@@ -97,7 +97,7 @@ namespace spvgentwo
 		void reset();
 
 		constexpr spv::Op getType() const { return m_Type; }
-		void setType(const spv::Op _type);
+		void setType(const spv::Op _type) { if(spv::IsTypeOp(_type)) m_Type = _type; }
 
 		// get inner most subtype
 		constexpr const Type& getBaseType() const;
@@ -108,40 +108,40 @@ namespace spvgentwo
 
 		constexpr spv::Op getBaseTypeOp() const { return getBaseType().m_Type; }
 
-		constexpr bool isBaseTypeOf(const spv::Op _type) const { return getBaseType().getType() == _type; }
-		constexpr bool hasSameBase(const Type& _other, const bool _onlyCheckTypeOp = false) const;
+		constexpr bool isBaseTypeOf(spv::Op _type) const { return getBaseType().getType() == _type; }
+		constexpr bool hasSameBase(const Type& _other, bool _onlyCheckTypeOp = false) const;
 
 		// checks if this, or any subtype equals _sub/_type
 		bool containsType(const Type& _sub) const;
-		bool containsType(const spv::Op _type) const;
+		bool containsType(spv::Op _type) const;
 
 		// dimension, bits, elements
 		constexpr unsigned int getIntWidth() const { return m_IntWidth; }
-		void setIntWidth(const unsigned int _width) { m_IntWidth = _width; }
+		void setIntWidth(unsigned int _width) { m_IntWidth = _width; }
 
 		constexpr unsigned int getFloatWidth() const { return m_FloatWidth; }
-		void setFloatWidth(const unsigned int _width) { m_FloatWidth = _width; }
+		void setFloatWidth(unsigned int _width) { m_FloatWidth = _width; }
 
 		constexpr unsigned int getImageDepth() const { return m_ImgDepth; }
-		void setImageDepth(const unsigned int _depth) { m_ImgDepth = _depth; }
+		void setImageDepth(unsigned int _depth) { m_ImgDepth = _depth; }
 
 		constexpr bool getIntSign() const { return m_IntSign; }
-		void setIntSign(const bool _sign) { m_IntSign = _sign; }
+		void setIntSign(bool _sign) { m_IntSign = _sign; }
 
 		constexpr spv::Dim getImageDimension() const { return m_ImgDimension; }
-		void setImageDimension(const spv::Dim _dim) { m_ImgDimension = _dim; }
+		void setImageDimension(spv::Dim _dim) { m_ImgDimension = _dim; }
 
 		constexpr bool getImageArray() const { return m_ImgArray; }
-		void setImageArray(const bool _array) { m_ImgArray = _array; }
+		void setImageArray(bool _array) { m_ImgArray = _array; }
 
 		constexpr bool getImageMultiSampled() const { return m_ImgMultiSampled; }
-		void setImageMultiSampled(const bool _ms) { m_ImgMultiSampled = _ms; }
+		void setImageMultiSampled(bool _ms) { m_ImgMultiSampled = _ms; }
 
 		constexpr SamplerImageAccess getImageSamplerAccess() const { return m_ImgSamplerAccess; }
-		void setImageSamplerAccess(const SamplerImageAccess _access) { m_ImgSamplerAccess = _access; }
+		void setImageSamplerAccess(SamplerImageAccess _access) { m_ImgSamplerAccess = _access; }
 
 		constexpr spv::ImageFormat getImageFormat() const { return m_ImgFormat; }
-		void setImageFormat(const spv::ImageFormat _format) { m_ImgFormat = _format; }
+		void setImageFormat(spv::ImageFormat _format) { m_ImgFormat = _format; }
 
 		constexpr unsigned int getVectorComponentCount() const { return m_VecComponentCount; }
 		void setVectorComponentCount(unsigned int _count) { m_VecComponentCount = _count; }
@@ -156,10 +156,10 @@ namespace spvgentwo
 		void setArrayLength(unsigned int _legnth) { m_ArrayLength = _legnth;}
 
 		constexpr spv::StorageClass getStorageClass() const { return m_StorageClass; }
-		void setStorageClass(const spv::StorageClass _storageClass) { m_StorageClass = _storageClass; }
+		void setStorageClass(spv::StorageClass _storageClass) { m_StorageClass = _storageClass; }
 		
 		constexpr spv::AccessQualifier getAccessQualifier() const { return m_AccessQualifier; }
-		void setAccessQualifier(const spv::AccessQualifier _access) { m_AccessQualifier = _access; }
+		void setAccessQualifier(spv::AccessQualifier _access) { m_AccessQualifier = _access; }
 
 		constexpr const List<Type>& getSubTypes() const { return m_subTypes; }
 		constexpr List<Type>& getSubTypes() { return m_subTypes; }
@@ -179,19 +179,19 @@ namespace spvgentwo
 		Type& Bool();
 		Type& BoolM() { Member().Bool(); return *this; }
 
-		Type& Int(const unsigned int _bits = 32u, const bool _sign = true);
-		Type& IntM(const unsigned int _bits = 32u, const bool _sign = true) { Member().Int(_bits, _sign); return *this; }
+		Type& Int(unsigned int _bits = 32u, bool _sign = true);
+		Type& IntM(unsigned int _bits = 32u, bool _sign = true) { Member().Int(_bits, _sign); return *this; }
 
-		Type& UInt(const unsigned int _bits = 32u) { return Int(_bits, false); }
-		Type& UIntM(const unsigned int _bits = 32u) { return IntM(_bits, false); }
+		Type& UInt(unsigned int _bits = 32u) { return Int(_bits, false); }
+		Type& UIntM(unsigned int _bits = 32u) { return IntM(_bits, false); }
 
-		Type& Float(const unsigned int _bits = 32u);
-		Type& FloatM(const unsigned int _bits = 32u) { Member().Float(_bits); return *this; }
+		Type& Float(unsigned int _bits = 32u);
+		Type& FloatM(unsigned int _bits = 32u) { Member().Float(_bits); return *this; }
 
 		Type& Double() { return Float(64u); };
 		Type& DoubleM() { Member().Float(64u); return *this; }
 
-		Type& Scalar(const spv::Op _base, const unsigned int _bits, const bool _sign);
+		Type& Scalar(spv::Op _base, unsigned int _bits, bool _sign);
 		Type& Scalar(const dyn_scalar_t& _scalarType);
 
 		// makes this a struct
@@ -202,11 +202,11 @@ namespace spvgentwo
 		Type& Struct(const Type& _firstMember, const Types& ... _memberTypes);
 
 		// makes this an array
-		Type& Array(const unsigned int _elements = 0u, const Type* _elementType = nullptr);
+		Type& Array(unsigned int _elements = 0u, const Type* _elementType = nullptr);
 		// add new member of type run-time array, returns this structure
-		Type& ArrayM(const unsigned int _elements = 0u, const Type* _elementType = nullptr) { Member().Array(_elements, _elementType); return *this; }
+		Type& ArrayM(unsigned int _elements = 0u, const Type* _elementType = nullptr) { Member().Array(_elements, _elementType); return *this; }
 		// makes this an array, returns element type
-		Type& ArrayElement(const unsigned int _elements) { Array(_elements); return Member(); }
+		Type& ArrayElement(unsigned int _elements) { Array(_elements); return Member(); }
 
 		// makes this an run-time
 		Type& RuntimeArray(const Type* _elementType = nullptr);
@@ -219,20 +219,20 @@ namespace spvgentwo
 		Type& Function();
 
 		// make this a pointer
-		Type& Pointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic, const Type* _innerType = nullptr);
-		Type& ForwardPointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic, const Type* _innerType = nullptr);
+		Type& Pointer(spv::StorageClass _storageClass = spv::StorageClass::Generic, const Type* _innerType = nullptr);
+		Type& ForwardPointer(spv::StorageClass _storageClass = spv::StorageClass::Generic, const Type* _innerType = nullptr);
 
 		Type& Sampler();
 
 		Type& Image(
-			const dyn_scalar_t _sampledType = {spv::Op::OpTypeFloat},
-			const spv::Dim _dim = spv::Dim::Dim2D,
-			const unsigned int _depth = 1u,
-			const bool _array = false,
-			const bool _multiSampled = false,
-			const SamplerImageAccess _sampled = SamplerImageAccess::Unknown,
-			const spv::ImageFormat _format = spv::ImageFormat::Unknown,
-			const spv::AccessQualifier _access = spv::AccessQualifier::Max);
+			dyn_scalar_t _sampledType = {spv::Op::OpTypeFloat},
+			spv::Dim _dim = spv::Dim::Dim2D,
+			unsigned int _depth = 1u,
+			bool _array = false,
+			bool _multiSampled = false,
+			SamplerImageAccess _sampled = SamplerImageAccess::Unknown,
+			spv::ImageFormat _format = spv::ImageFormat::Unknown,
+			spv::AccessQualifier _access = spv::AccessQualifier::Max);
 
 		Type& Image(const dyn_image_t& _imageType);
 
@@ -299,7 +299,9 @@ namespace spvgentwo
 		constexpr bool isVoid() const { return m_Type == spv::Op::OpTypeVoid; }
 		constexpr bool isBool() const { return m_Type == spv::Op::OpTypeBool;	}
 		constexpr bool isPointer() const { return m_Type == spv::Op::OpTypePointer; }
+		constexpr bool isPointer(spv::StorageClass _storageClass) const { return isPointer() && m_StorageClass == _storageClass; }
 		constexpr bool isForwardPointer() const { return m_Type == spv::Op::OpTypeForwardPointer; }
+		constexpr bool isForwardPointer(spv::StorageClass _storageClass) const { return isForwardPointer() && m_StorageClass == _storageClass; }
 		constexpr bool isStruct() const { return m_Type == spv::Op::OpTypeStruct; }
 		constexpr bool isArray() const { return m_Type == spv::Op::OpTypeArray; }
 		constexpr bool isRuntimeArray() const { return m_Type == spv::Op::OpTypeRuntimeArray; }
@@ -353,37 +355,40 @@ namespace spvgentwo
 		constexpr bool isRayQueryKHR() const { return m_Type == spv::Op::OpTypeRayQueryKHR; }
 		constexpr bool isAccelerationStructure() const { return m_Type == spv::Op::OpTypeAccelerationStructureKHR; }
 
-		constexpr bool isVectorOf(const spv::Op _type, const unsigned int _length = 0u, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return isVector() && front().getType() == _type && (_length == 0u || m_VecComponentCount == _length) && (_componentWidth == 0u || front().getIntWidth() == _componentWidth) && front().hasSign(_sign); }
+		constexpr bool isVectorOf(spv::Op _type, unsigned int _length = 0u, unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return isVector() && front().getType() == _type && (_length == 0u || m_VecComponentCount == _length) && (_componentWidth == 0u || front().getIntWidth() == _componentWidth) && front().hasSign(_sign); }
 
-		// does not check for type
-		constexpr bool isVectorOfLength(const unsigned int _length, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return isVector() && front().hasSign(_sign) && (_length == 0u || m_VecComponentCount == _length) && (_componentWidth == 0u || front().getIntWidth() == _componentWidth); }
-		constexpr bool isVectorOfInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return isVectorOfLength(_length, _componentWidth, _sign) && front().isInt(); }
-		constexpr bool isVectorOfSInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfInt(_length, _componentWidth, Sign::Signed); }
-		constexpr bool isVectorOfUInt(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfInt(_length, _componentWidth, Sign::Unsigned); }
-		constexpr bool isVectorOfFloat(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isFloat(); }
-		constexpr bool isVectorOfBool(const unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isBool(); }
+		// does not check for component type
+		constexpr bool isVectorOfLength(unsigned int _length, unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return isVector() && front().hasSign(_sign) && (_length == 0u || m_VecComponentCount == _length) && (_componentWidth == 0u || front().getIntWidth() == _componentWidth); }
+		constexpr bool isVectorOfInt(unsigned int _length = 0u, unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return isVectorOfLength(_length, _componentWidth, _sign) && front().isInt(); }
+		constexpr bool isVectorOfSInt(unsigned int _length = 0u, unsigned int _componentWidth = 0u) const { return isVectorOfInt(_length, _componentWidth, Sign::Signed); }
+		constexpr bool isVectorOfUInt(unsigned int _length = 0u, unsigned int _componentWidth = 0u) const { return isVectorOfInt(_length, _componentWidth, Sign::Unsigned); }
+		constexpr bool isVectorOfFloat(unsigned int _length = 0u, unsigned int _componentWidth = 0u) const { return isVectorOfLength(_length, _componentWidth) && front().isFloat(); }
+		constexpr bool isVectorOfBool(unsigned int _length = 0u) const { return isVectorOfLength(_length) && front().isBool(); }
 
-		constexpr bool isScalarOrVectorOf(const spv::Op _type, const unsigned int _length = 0u, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return (m_Type == _type && (_componentWidth == 0u || m_IntWidth == _componentWidth) && hasSign(_sign)) || isVectorOf(_type, _length, _componentWidth, _sign); }
-		constexpr bool isNumericalScalarOrVector(const unsigned int _length = 0u, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return (isNumerial() && (_componentWidth == 0u || m_IntWidth == _componentWidth) && hasSign(_sign)) || (isVectorOfLength(_length, _componentWidth, _sign) && front().isNumerial()); }
+		constexpr bool isScalarOrVectorOf(spv::Op _type, unsigned int _length = 0u, unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return (m_Type == _type && (_componentWidth == 0u || m_IntWidth == _componentWidth) && hasSign(_sign)) || isVectorOf(_type, _length, _componentWidth, _sign); }
+		constexpr bool isNumericalScalarOrVector(unsigned int _length = 0u, unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return (isNumerial() && (_componentWidth == 0u || m_IntWidth == _componentWidth) && hasSign(_sign)) || (isVectorOfLength(_length, _componentWidth, _sign) && front().isNumerial()); }
 
 		constexpr bool hasSameVectorLength(const Type& _other) const { return isVector() && _other.isVector() && m_VecComponentCount == _other.m_VecComponentCount; }
 		constexpr bool hasSameVectorLength(const Type& _other, const spv::Op _componentType) const { return isVectorOf(_componentType) && _other.isVectorOf(_componentType) && m_VecComponentCount == _other.m_VecComponentCount; }
-		constexpr bool isScalarOrVectorOfSameLength(const spv::Op _type, const Type& _other, bool _sameComponentWidth = true) const { return (!_sameComponentWidth || getBaseType().getIntWidth() == _other.getBaseType().getIntWidth()) && (hasSameVectorLength(_other, _type) || (m_Type == _type && _other.m_Type == _type && isScalar() && _other.isScalar())); }
-		constexpr bool hasSameComponentWidth(const Type& _other) const { const Type& a = getBaseType(); const Type& b = _other.getBaseType(); return a.getType() == b.getType() && a.getIntWidth() == b.getIntWidth(); }
 
-		constexpr bool isMatrixOf(const spv::Op _baseType, const unsigned int _columns = 0u, const unsigned int _rows = 0u, const unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return isMatrix() && getBaseTypeOp() == _baseType && (_columns == 0u || (getMatrixColumnCount() == _columns)) && (_rows == 0u || (front().getVectorComponentCount() == _rows)) && (_componentWidth == 0u || getBaseType().getFloatWidth() == _componentWidth) && getBaseType().hasSign(_sign); }
-		constexpr bool isMatrixOfFloat(const unsigned int _columns = 0u, const unsigned int _rows = 0u, const unsigned int _componentWidth = 0u) const { return isMatrixOf(spv::Op::OpTypeFloat, _columns, _rows, _componentWidth); }
-		constexpr bool isMatrixOfInt(const unsigned int _columns = 0u, const unsigned int _rows = 0u, const unsigned int _componentWidth = 0u, const Sign _sign = Sign::Any) const { return isMatrixOf(spv::Op::OpTypeInt, _columns, _rows, _componentWidth, _sign); }
+		constexpr bool isScalarOrVectorOfSameLength(const Type& _other, bool _sameComponentWidth = true) const { return (!_sameComponentWidth || getBaseType().getIntWidth() == _other.getBaseType().getIntWidth()) && (hasSameVectorLength(_other) || (isScalar() && _other.isScalar())); }
+		constexpr bool isScalarOrVectorOfSameLength(spv::Op _type, const Type& _other, bool _sameComponentWidth = true) const { return (!_sameComponentWidth || getBaseType().getIntWidth() == _other.getBaseType().getIntWidth()) && (hasSameVectorLength(_other, _type) || (m_Type == _type && _other.m_Type == _type && isScalar() && _other.isScalar())); }
+		
+		constexpr bool hasSameComponentWidth(const Type& _other) const { const Type& a = getBaseType(); const Type& b = _other.getBaseType(); return a.isNumerial() && b.isNumerial() && a.getIntWidth() == b.getIntWidth(); }
+
+		constexpr bool isMatrixOf(spv::Op _baseType, unsigned int _columns = 0u, unsigned int _rows = 0u, unsigned int _componentWidth = 0u, Sign _sign = Sign::Any) const { return isMatrix() && getBaseTypeOp() == _baseType && (_columns == 0u || (getMatrixColumnCount() == _columns)) && (_rows == 0u || (front().getVectorComponentCount() == _rows)) && (_componentWidth == 0u || getBaseType().getFloatWidth() == _componentWidth) && getBaseType().hasSign(_sign); }
+		constexpr bool isMatrixOfFloat(unsigned int _columns = 0u, unsigned int _rows = 0u, unsigned int _componentWidth = 0u) const { return isMatrixOf(spv::Op::OpTypeFloat, _columns, _rows, _componentWidth); }
+		constexpr bool isMatrixOfInt(unsigned int _columns = 0u, unsigned int _rows = 0u, unsigned int _componentWidth = 0u, const Sign _sign = Sign::Any) const { return isMatrixOf(spv::Op::OpTypeInt, _columns, _rows, _componentWidth, _sign); }
 
 		constexpr bool isSqareMatrix() const { return isMatrix() && m_MatColumnCount == front().getVectorComponentCount(); }
-		constexpr bool isSqareMatrixOf(const spv::Op _baseType) const { return isMatrixOf(_baseType) && m_MatColumnCount == front().getVectorComponentCount(); }
+		constexpr bool isSqareMatrixOf(spv::Op _baseType) const { return isMatrixOf(_baseType) && m_MatColumnCount == front().getVectorComponentCount(); }
 
 		// return 1 if type is a scalar, return component count if type is vector, 0 otherwise
 		constexpr unsigned int getScalarOrVectorLength() const { return isScalar() ? 1u : isVector() ? getVectorComponentCount() : 0u; }
 
 		// depth first traversal of type hierarchy using integer indices (static variant), returns the iterator of the last valid type accessed by index
 		template<class... Indices>
-		Iterator getSubType(const unsigned int _i, Indices... _indices) const;
+		Iterator getSubType(unsigned int _i, Indices... _indices) const;
 
 		// depth first traversal of type hierarchy using integer indices (dynamic variant), returns the iterator of the last valid type accessed by index
 		Iterator getSubType(const List<unsigned int>& _indices) const;
@@ -392,22 +397,22 @@ namespace spvgentwo
 		Type New() const;
 
 		// wraps a copy of this type in a new type of _baseType
-		Type wrap(const spv::Op _baseType) const;
+		Type wrap(spv::Op _baseType) const;
 
 		// moves this into wrap type of _baseType
-		Type moveWrap(const spv::Op _baseType);
+		Type moveWrap(spv::Op _baseType);
 
 		// wraps a copy of this into a new pointer of this type
-		Type wrapPointer(const spv::StorageClass _storageClass = spv::StorageClass::Generic) const;
+		Type wrapPointer(spv::StorageClass _storageClass = spv::StorageClass::Generic) const;
 
 		// wraps a copy of this into a new vector of _elements
-		Type wrapVector(const unsigned int _elements) const;
+		Type wrapVector(unsigned int _elements) const;
 
 		// wraps a copy of this column type into a matrix of _columns
-		Type wrapMatrix(const unsigned int _columns) const;
+		Type wrapMatrix(unsigned int _columns) const;
 
 		// wraps a copy of this into a new array of _elements
-		Type wrapArray(const unsigned int _elements) const;
+		Type wrapArray(unsigned int _elements) const;
 
 		// wraps this type into a new struct
 		Type wrapStruct() const;
@@ -443,7 +448,7 @@ namespace spvgentwo
 		List<Type> m_subTypes;
 	};
 
-	inline constexpr Type::Type(IAllocator* _pAllocator, const spv::Op _type) :
+	inline constexpr Type::Type(IAllocator* _pAllocator, spv::Op _type) :
 		m_Type(_type),
 		m_subTypes(_pAllocator)
 	{
@@ -469,7 +474,7 @@ namespace spvgentwo
 		return front().getBaseType();
 	}
 
-	inline constexpr bool Type::hasSameBase(const Type& _other, const bool _onlyCheckTyeOp) const
+	inline constexpr bool Type::hasSameBase(const Type& _other, bool _onlyCheckTyeOp) const
 	{
 		const Type& lBase = getBaseType();
 		const Type& rBase = _other.getBaseType();
@@ -670,7 +675,7 @@ namespace spvgentwo
 	};
 
 	template<class ...Indices>
-	inline List<Type>::Iterator Type::getSubType(const unsigned int _i, Indices ..._indices) const
+	inline List<Type>::Iterator Type::getSubType(unsigned int _i, Indices ..._indices) const
 	{
 		auto it = m_subTypes.begin() + (_i < m_subTypes.size() ? _i : 0u);
 

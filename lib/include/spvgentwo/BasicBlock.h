@@ -8,6 +8,7 @@ namespace spvgentwo
 	class Function;
 	class IAllocator;
 	class IWriter;
+	class GLSL450Intruction;
 
 	class BasicBlock : public List<Instruction>
 	{
@@ -54,6 +55,9 @@ namespace spvgentwo
 
 		template <class ExtInstr>
 		ExtInstr* ext() { return reinterpret_cast<ExtInstr*>(addInstruction()); }
+
+		// call ext<GLSL450Intruction>()
+		GLSL450Intruction* glsl();
 
 		// set return value of this block (used in function), returns opReturn/opReturnValue instruction
 		Instruction* returnValue(Instruction* _pValue = nullptr);

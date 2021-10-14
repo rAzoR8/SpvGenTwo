@@ -1,13 +1,13 @@
 #include "spvgentwo/Type.h"
 
-spvgentwo::Type::Type(IAllocator* _pAllocator, const Type& _subType, const spv::Op _baseType) :
+spvgentwo::Type::Type(IAllocator* _pAllocator, const Type& _subType, spv::Op _baseType) :
 	m_Type(_baseType),
 	m_subTypes(_pAllocator)
 {
 	m_subTypes.emplace_back(_subType);
 }
 
-spvgentwo::Type::Type(IAllocator* _pAllocator, Type&& _subType, const spv::Op _baseType) :
+spvgentwo::Type::Type(IAllocator* _pAllocator, Type&& _subType, spv::Op _baseType) :
 	m_Type(_baseType),
 	m_subTypes(_pAllocator)
 {
@@ -218,14 +218,6 @@ const char* spvgentwo::Type::getString() const
 	return nullptr;
 }
 
-void spvgentwo::Type::setType(const spv::Op _type)
-{
-	if (spv::IsTypeOp(_type))
-	{
-		m_Type = _type;
-	}
-}
-
 void spvgentwo::Type::reset()
 {
 	m_Type = spv::Op::OpTypeVoid;
@@ -259,7 +251,7 @@ spvgentwo::Type& spvgentwo::Type::Bool()
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Int(const unsigned int _bits, const bool _sign)
+spvgentwo::Type& spvgentwo::Type::Int(unsigned int _bits, bool _sign)
 {
 	reset();
 	m_Type = spv::Op::OpTypeInt;
@@ -268,7 +260,7 @@ spvgentwo::Type& spvgentwo::Type::Int(const unsigned int _bits, const bool _sign
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Float(const unsigned int _bits)
+spvgentwo::Type& spvgentwo::Type::Float(unsigned int _bits)
 {
 	reset();
 	m_Type = spv::Op::OpTypeFloat;
@@ -276,7 +268,7 @@ spvgentwo::Type& spvgentwo::Type::Float(const unsigned int _bits)
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Scalar(const spv::Op _base, const unsigned int _bits, const bool _sign)
+spvgentwo::Type& spvgentwo::Type::Scalar(spv::Op _base, unsigned int _bits, bool _sign)
 {
 	reset();
 	m_Type = _base;
@@ -309,7 +301,7 @@ spvgentwo::Type& spvgentwo::Type::Struct(const Type* _pSubType)
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Array(const unsigned int _elements, const Type* _pElementType)
+spvgentwo::Type& spvgentwo::Type::Array(unsigned int _elements, const Type* _pElementType)
 {
 	reset();
 	m_Type = spv::Op::OpTypeArray;
@@ -343,7 +335,7 @@ spvgentwo::Type& spvgentwo::Type::Function()
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Pointer(const spv::StorageClass _storageClass, const Type* _pInnerType)
+spvgentwo::Type& spvgentwo::Type::Pointer(spv::StorageClass _storageClass, const Type* _pInnerType)
 {
 	reset();
 	m_Type = spv::Op::OpTypePointer;
@@ -357,7 +349,7 @@ spvgentwo::Type& spvgentwo::Type::Pointer(const spv::StorageClass _storageClass,
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::ForwardPointer(const spv::StorageClass _storageClass, const Type* _pInnerType)
+spvgentwo::Type& spvgentwo::Type::ForwardPointer(spv::StorageClass _storageClass, const Type* _pInnerType)
 {
 	reset();
 	m_Type = spv::Op::OpTypeForwardPointer;
@@ -378,7 +370,7 @@ spvgentwo::Type& spvgentwo::Type::Sampler()
 	return *this;
 }
 
-spvgentwo::Type& spvgentwo::Type::Image(const dyn_scalar_t _sampledType, const spv::Dim _dim, const unsigned int _depth, const bool _array, const bool _multiSampled, const SamplerImageAccess _sampled, const spv::ImageFormat _format, const spv::AccessQualifier _access)
+spvgentwo::Type& spvgentwo::Type::Image(dyn_scalar_t _sampledType, spv::Dim _dim, unsigned int _depth, bool _array, bool _multiSampled, SamplerImageAccess _sampled, spv::ImageFormat _format, spv::AccessQualifier _access)
 {
 	reset();
 	m_Type = spv::Op::OpTypeImage;
@@ -722,38 +714,38 @@ spvgentwo::Type spvgentwo::Type::New() const
 	return Type(m_subTypes.getAllocator());
 }
 
-spvgentwo::Type spvgentwo::Type::wrap(const spv::Op _baseType) const
+spvgentwo::Type spvgentwo::Type::wrap(spv::Op _baseType) const
 {
 	 return Type(m_subTypes.getAllocator(), *this, _baseType);
 }
 
-spvgentwo::Type spvgentwo::Type::moveWrap(const spv::Op _baseType)
+spvgentwo::Type spvgentwo::Type::moveWrap(spv::Op _baseType)
 {
 	return Type(m_subTypes.getAllocator(), stdrep::move(*this), _baseType);
 }
 
-spvgentwo::Type spvgentwo::Type::wrapPointer(const spv::StorageClass _storageClass) const
+spvgentwo::Type spvgentwo::Type::wrapPointer(spv::StorageClass _storageClass) const
 {
 	Type vec(m_subTypes.getAllocator());
 	vec.Pointer(_storageClass, this);
 	return vec;
 }
 
-spvgentwo::Type spvgentwo::Type::wrapVector(const unsigned int _elements) const
+spvgentwo::Type spvgentwo::Type::wrapVector(unsigned int _elements) const
 {
 	Type vec(m_subTypes.getAllocator());
 	vec.Vector(_elements, this);
 	return vec;
 }
 
-spvgentwo::Type spvgentwo::Type::wrapMatrix(const unsigned int _columns) const
+spvgentwo::Type spvgentwo::Type::wrapMatrix(unsigned int _columns) const
 {
 	Type mat(m_subTypes.getAllocator());
 	mat.Matrix(_columns, this);
 	return mat;
 }
 
-spvgentwo::Type spvgentwo::Type::wrapArray(const unsigned int _elements) const
+spvgentwo::Type spvgentwo::Type::wrapArray(unsigned int _elements) const
 {
 	Type array(m_subTypes.getAllocator());
 	array.Array(_elements, this);
@@ -781,7 +773,7 @@ bool spvgentwo::Type::containsType(const Type& _sub) const
 	return false;
 }
 
-bool spvgentwo::Type::containsType(const spv::Op _type) const
+bool spvgentwo::Type::containsType(spv::Op _type) const
 {
 	if (m_Type == _type)
 		return true;

@@ -4,6 +4,7 @@
 #include "spvgentwo/Reader.h"
 
 #include "spvgentwo/InstructionTemplate.inl"
+#include "spvgentwo/GLSL450Instruction.h"
 
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, const char* _pName) : List(_pFunction->getAllocator()),
 	m_pFunction(_pFunction),
@@ -226,4 +227,9 @@ spvgentwo::BasicBlock& spvgentwo::BasicBlock::Loop(Instruction* _pCondition, Bas
 	_continue->opBranch(this); // back edge to loop merge
 
 	return mergeBB;
+}
+
+spvgentwo::GLSL450Intruction* spvgentwo::BasicBlock::glsl()
+{
+	return ext<GLSL450Intruction>();
 }
