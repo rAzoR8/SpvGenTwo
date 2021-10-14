@@ -536,7 +536,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | UClamp | &#10004; |
 | SClamp | &#10004; |
 | FMix | &#10004; |
-| IMix | &#9744; |
+| IMix | Removed in v0.99, Revision 3 |
 | Step | &#10004; |
 | SmoothStep | &#10004; |
 | Fma | &#10004; |
