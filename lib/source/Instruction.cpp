@@ -1850,7 +1850,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 
 		if(retType.instruction == nullptr || allowOverride)
 		{
-			pResultType = validator != nullptr ? validator->inferResultType(*this) : defaultimpl::inferResultType(*this);
+			pResultType = validator != nullptr ? validator->inferResultType(*this) : nullptr;
 			retType = pResultType;
 		}
 		else
@@ -1865,7 +1865,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 bool spvgentwo::Instruction::validateOperands()
 {
 	ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
-	return validator != nullptr ? validator->validateOperands(*this) : defaultimpl::validateOperands(*this);
+	return validator != nullptr ? validator->validateOperands(*this) : true;
 }
 
 bool spvgentwo::Instruction::isErrorInstr() const
