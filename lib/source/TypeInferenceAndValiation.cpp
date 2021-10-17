@@ -6,7 +6,131 @@
 
 using namespace spvgentwo;
 
-spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo::Instruction& _instr)
+namespace
+{
+	bool validateImageOperandType(const Instruction& _instr)
+	{
+		Module* module = _instr.getModule();
+		const spv::Op op = _instr.getOperation();
+		auto imgIt = _instr.getFirstActualOperand();
+		auto coordIt = imgIt.next();
+		auto drefCompoOrMask = coordIt.next();
+
+		if (imgIt == nullptr || coordIt == nullptr)
+		{
+			module->logError("Insufficient number of arguments");
+			return false;
+		}
+
+		const Type* imageType = imgIt->getInstruction()->getType();
+		const Type* coordType = coordIt->getInstruction()->getType();
+
+		Flag<spv::ImageOperandsMask> opMask = spv::ImageOperandsMask::MaskNone;
+		Instruction::Iterator imageOp1 = nullptr;
+
+		if (drefCompoOrMask && drefCompoOrMask->isLiteral())
+		{
+			imageOp1 = drefCompoOrMask.next();
+			opMask = static_cast<spv::ImageOperandsMask>(drefCompoOrMask->getLiteral().value);
+		}
+		else if (drefCompoOrMask && drefCompoOrMask->isInstruction())
+		{
+			imageOp1 = drefCompoOrMask + 2u;
+			if (drefCompoOrMask.next()) opMask = static_cast<spv::ImageOperandsMask>(drefCompoOrMask.next()->getLiteral().value);
+		}
+
+		Instruction* op1 = imageOp1 != nullptr ? imageOp1->getInstruction() : nullptr;
+		Instruction* op2 = imageOp1.next() != nullptr ? imageOp1.next()->getInstruction() : nullptr;
+		const Type* type1 = op1 != nullptr ? op1->getType() : nullptr;
+		const Type* type2 = op2 != nullptr ? op2->getType() : nullptr;;
+
+		auto checkCoordAndOperandDim = [&]() ->bool
+		{
+			unsigned int coordLength = coordType->getScalarOrVectorLength() - (imageType->getImageArray() ? 1u : 0u);
+			if (coordLength != type1->getScalarOrVectorLength() || coordLength != type2->getScalarOrVectorLength())
+			{
+				module->logError("Invalid derivative dimensions");
+				return false;
+			}
+			return true;
+		};
+
+		for (unsigned int i = 0u; opMask != spv::ImageOperandsMask::MaskNone && i < (unsigned int)spv::ImageOperandsShift::ZeroExtend; ++i)
+		{
+			// TODO: get operands within the loop and dont return in the switch
+			spv::ImageOperandsMask mask = static_cast<spv::ImageOperandsMask>(1u << i);
+			if ((opMask & mask) == mask)
+			{
+				switch (mask)
+				{
+				case spv::ImageOperandsMask::Bias:
+					return module->logError(type1->isFloat(), "Bias operand must be of type float");
+				case spv::ImageOperandsMask::Lod:
+					return module->logError(op == spv::Op::OpImageFetch ? type1->isInt() : type1->isFloat(), "Lod operand must be of type float (or int for OpImageFetch)");
+				case spv::ImageOperandsMask::Grad:
+					if (checkCoordAndOperandDim() == false)
+					{
+						return false;
+					}
+					if (type1->isBaseTypeOf(spv::Op::OpTypeFloat) == false || type2->isBaseTypeOf(spv::Op::OpTypeFloat))
+					{
+						module->logError("Explicit lod grad operands must be scalar or vector of float");
+						return false;
+					}
+					return true;
+				case spv::ImageOperandsMask::ConstOffset:
+					if (op1->isSpecOrConstant() == false)
+					{
+						module->logError("Image operand is not a constant op");
+						return false;
+					}
+					[[fallthrough]];
+				case spv::ImageOperandsMask::Offset:
+					if (checkCoordAndOperandDim() == false)
+					{
+						return false;
+					}
+					if (type1->isBaseTypeOf(spv::Op::OpTypeInt) == false || type2->isBaseTypeOf(spv::Op::OpTypeInt))
+					{
+						module->logError("Explicit lod grad operands must be scalar or vector of integer");
+						return false;
+					}
+					return true;
+				case spv::ImageOperandsMask::ConstOffsets:
+					break; // not implemented yet
+				case spv::ImageOperandsMask::Sample:
+					if (op != spv::Op::OpImageFetch &&
+						op != spv::Op::OpImageRead &&
+						op != spv::Op::OpImageWrite &&
+						op != spv::Op::OpImageSparseFetch &&
+						op != spv::Op::OpImageSparseRead) {
+						module->logError("Sample operand can only be used with OpImageFetch,OpImageRead,OpImageWrite,OpImageSparseFetch or OpImageSparseRead");
+						return false;
+					}
+					return module->logError(type1->isInt() && imageType->getImageMultiSampled(), "Sample operand must be of type int & the image must be MS");
+				case spv::ImageOperandsMask::MinLod:
+					return module->logError(type1->isFloat(), "MinLod operand must be of type float");
+				case spv::ImageOperandsMask::MakeTexelAvailableKHR:
+				case spv::ImageOperandsMask::MakeTexelVisibleKHR:
+				case spv::ImageOperandsMask::NonPrivateTexelKHR:
+				case spv::ImageOperandsMask::VolatileTexelKHR:
+					return true; // reserved, no type check
+				case spv::ImageOperandsMask::SignExtend:
+					break; // not implemented yet
+				case spv::ImageOperandsMask::ZeroExtend:
+					break; // not implemented yet
+				default:
+					module->logError("Unknown operand mask");
+					continue;
+				}
+			}
+		}
+
+		return true;
+	}
+}
+
+spvgentwo::Instruction* spvgentwo::ITypeInferenceAndVailation::inferResultType(const spvgentwo::Instruction& _instr) const
 {
 	Module* module = _instr.getModule();
 	auto op1 = _instr.getFirstActualOperand();
@@ -79,9 +203,11 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 
 		return module->addType(type1->wrapStruct().MemberM(type2));
 	case spv::Op::OpVectorTimesScalar:
-		return checkType(spv::Op::OpTypeVector, typeInstr1);
+		if (type1 != nullptr && type1->isVector()) return typeInstr1;
+		break;
 	case spv::Op::OpMatrixTimesScalar:
-		return checkType(spv::Op::OpTypeMatrix, typeInstr1);
+		if (type1 != nullptr && type1->isMatrix()) return typeInstr1;
+		break;
 	case spv::Op::OpVectorTimesMatrix:
 	{
 		if (type1 == nullptr) return module->getErrorInstr();
@@ -346,7 +472,7 @@ spvgentwo::Instruction* spvgentwo::defaultimpl::inferResultType(const spvgentwo:
 	return module->getErrorInstr();
 }
 
-bool spvgentwo::defaultimpl::validateOperands(const spvgentwo::Instruction& _instr)
+bool spvgentwo::ITypeInferenceAndVailation::validateOperands(const spvgentwo::Instruction& _instr) const
 {
 	bool resultId = false, resultType = false;
 	spv::HasResultAndType(_instr.getOperation(), &resultId, &resultType);
@@ -460,140 +586,4 @@ bool spvgentwo::defaultimpl::validateOperands(const spvgentwo::Instruction& _ins
 	}
 
 	return true;
-}
-
-bool spvgentwo::defaultimpl::validateImageOperandType(const Instruction& _instr)
-{
-	Module* module = _instr.getModule();
-	const spv::Op op = _instr.getOperation();
-	auto imgIt = _instr.getFirstActualOperand();
-	auto coordIt = imgIt.next();
-	auto drefCompoOrMask = coordIt.next();
-
-	if (imgIt == nullptr || coordIt == nullptr)
-	{
-		module->logError("Insufficient number of arguments");
-		return false;
-	}
-
-	const Type* imageType = imgIt->getInstruction()->getType();
-	const Type* coordType = coordIt->getInstruction()->getType();
-
-	Flag<spv::ImageOperandsMask> opMask = spv::ImageOperandsMask::MaskNone;
-	Instruction::Iterator imageOp1 = nullptr;
-
-	if (drefCompoOrMask && drefCompoOrMask->isLiteral())
-	{
-		imageOp1 = drefCompoOrMask.next();
-		opMask = static_cast<spv::ImageOperandsMask>(drefCompoOrMask->getLiteral().value);
-	}
-	else if(drefCompoOrMask && drefCompoOrMask->isInstruction())
-	{
-		imageOp1 = drefCompoOrMask + 2u;
-		if (drefCompoOrMask.next()) opMask = static_cast<spv::ImageOperandsMask>(drefCompoOrMask.next()->getLiteral().value);
-	}
-
-	Instruction* op1 = imageOp1 != nullptr ? imageOp1->getInstruction() : nullptr;
-	Instruction* op2 = imageOp1.next() != nullptr ? imageOp1.next()->getInstruction() : nullptr;
-	const Type* type1 = op1 != nullptr ? op1->getType() : nullptr;
-	const Type* type2 = op2 != nullptr ? op2->getType() : nullptr;;
-
-	auto checkCoordAndOperandDim = [&]() ->bool
-	{
-		unsigned int coordLength = coordType->getScalarOrVectorLength() - (imageType->getImageArray() ? 1u : 0u);
-		if (coordLength != type1->getScalarOrVectorLength() || coordLength != type2->getScalarOrVectorLength())
-		{
-			module->logError("Invalid derivative dimensions");
-			return false;
-		}
-		return true;
-	};
-
-	for (unsigned int i = 0u; opMask != spv::ImageOperandsMask::MaskNone && i < (unsigned int)spv::ImageOperandsShift::ZeroExtend; ++i)
-	{
-		// TODO: get operands within the loop and dont return in the switch
-		spv::ImageOperandsMask mask = static_cast<spv::ImageOperandsMask>(1u << i);
-		if ((opMask & mask) == mask)
-		{
-			switch (mask)
-			{
-			case spv::ImageOperandsMask::Bias:
-				return module->logError(type1->isFloat(), "Bias operand must be of type float");
-			case spv::ImageOperandsMask::Lod:
-				return module->logError(op == spv::Op::OpImageFetch ? type1->isInt() : type1->isFloat(), "Lod operand must be of type float (or int for OpImageFetch)");
-			case spv::ImageOperandsMask::Grad:
-				if (checkCoordAndOperandDim() == false)
-				{
-					return false;
-				}
-				if (type1->isBaseTypeOf(spv::Op::OpTypeFloat) == false || type2->isBaseTypeOf(spv::Op::OpTypeFloat))
-				{
-					module->logError("Explicit lod grad operands must be scalar or vector of float");
-					return false;
-				}
-				return true;
-			case spv::ImageOperandsMask::ConstOffset:
-				if (op1->isSpecOrConstant() == false)
-				{
-					module->logError("Image operand is not a constant op");
-					return false;
-				}
-				[[fallthrough]];
-			case spv::ImageOperandsMask::Offset:
-				if (checkCoordAndOperandDim() == false)
-				{
-					return false;
-				}
-				if (type1->isBaseTypeOf(spv::Op::OpTypeInt) == false || type2->isBaseTypeOf(spv::Op::OpTypeInt))
-				{
-					module->logError("Explicit lod grad operands must be scalar or vector of integer");
-					return false;
-				}
-				return true;
-			case spv::ImageOperandsMask::ConstOffsets:
-				break; // not implemented yet
-			case spv::ImageOperandsMask::Sample:
-				if (op != spv::Op::OpImageFetch &&
-					op != spv::Op::OpImageRead &&
-					op != spv::Op::OpImageWrite &&
-					op != spv::Op::OpImageSparseFetch &&
-					op != spv::Op::OpImageSparseRead) {
-					module->logError("Sample operand can only be used with OpImageFetch,OpImageRead,OpImageWrite,OpImageSparseFetch or OpImageSparseRead");
-					return false;
-				}
-				return module->logError(type1->isInt() && imageType->getImageMultiSampled(), "Sample operand must be of type int & the image must be MS");
-			case spv::ImageOperandsMask::MinLod:
-				return module->logError(type1->isFloat(), "MinLod operand must be of type float");
-			case spv::ImageOperandsMask::MakeTexelAvailableKHR:
-			case spv::ImageOperandsMask::MakeTexelVisibleKHR:
-			case spv::ImageOperandsMask::NonPrivateTexelKHR:
-			case spv::ImageOperandsMask::VolatileTexelKHR:
-				return true; // reserved, no type check
-			case spv::ImageOperandsMask::SignExtend:
-				break; // not implemented yet
-			case spv::ImageOperandsMask::ZeroExtend:
-				break; // not implemented yet
-			default:
-				module->logError("Unknown operand mask");
-				continue;
-			}
-		}
-	}	
-
-	return true;
-}
-
-const spvgentwo::Type* spvgentwo::selectType(const spv::Op _type, const Type* _left, const Type* _right)
-{
-	return _left->getType() == _type ? _left : (_right->getType() == _type ? _right : nullptr);
-}
-
-spvgentwo::Instruction* spvgentwo::selectType(const spv::Op _type, Instruction* _leftTypeInstr, Instruction* _rightTypeInstr)
-{
-	return _leftTypeInstr->getOperation() == _type ? _leftTypeInstr : (_rightTypeInstr->getOperation() == _type ? _rightTypeInstr : nullptr);
-}
-
-spvgentwo::Instruction* spvgentwo::checkType(const spv::Op _type, Instruction* _typeInstr)
-{
-	return _typeInstr->getOperation() == _type ? _typeInstr : nullptr;
 }

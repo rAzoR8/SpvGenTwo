@@ -2,11 +2,17 @@
 #include "spvgentwo/Writer.h"
 #include "spvgentwo/Reader.h"
 #include "spvgentwo/Logger.h"
+#include "spvgentwo/Grammar.h"
+#include "spvgentwo/TypeInferenceAndValiation.h"
 
 #include "spvgentwo/InstructionTemplate.inl"
 #include "spvgentwo/ModuleTemplate.inl"
 
-#include "spvgentwo/Grammar.h"
+
+namespace
+{
+	static spvgentwo::ITypeInferenceAndVailation sg_DefaultTypeInference{};
+}
 
 spvgentwo::Module::Module(IAllocator* _pAllocator, ILogger* _pLogger, ITypeInferenceAndVailation* _pTypeInferenceAndVailation) :
 	Module(_pAllocator, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger, _pTypeInferenceAndVailation) // use delegate constructor
