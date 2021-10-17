@@ -9,6 +9,8 @@ namespace spvgentwo
 	class HashMap
 	{
 	public:
+		using HashFunc = Hash64(*)(const Key& _key);
+
 		static constexpr auto DefaultBucktCount = 64u;
 
 		using Node = NodeT<Key, Value>;
@@ -23,7 +25,7 @@ namespace spvgentwo
 	public:
 
 		constexpr HashMap() = default;
-		HashMap(IAllocator* _pAllocator, unsigned int _buckets = DefaultBucktCount);
+		HashMap(IAllocator* _pAllocator, unsigned int _buckets = DefaultBucktCount, HashFunc _func = hash<Key>);
 		HashMap(HashMap&& _other) noexcept;
 
 		// computes bucket size as sizeof..(_keyvals) * 2 + 1 (number of nodes construected from args passed)
@@ -49,16 +51,16 @@ namespace spvgentwo
 
 		// only enable overload of Key type differs from Hash64
 		template <class T = Key, typename = stdrep::enable_if_t<stdrep::is_same_v<T, Key> && !stdrep::is_same_v<T, Hash64>>>
-		Value* get(const T& _key) const { return get(hash(_key)); }
+		Value* get(const T& _key) const { return get(m_pHashFunc(_key)); }
 
 		// retuns nullptr if not resident
-		Value* operator[](const Key& _key) const { return get(hash(_key)); }
+		Value* operator[](const Key& _key) const { return get(m_pHashFunc(_key)); }
 
 		TRange getRange(const Hash64 _hash) const;
 
 		// only enable overload of Key type differs from Hash64
 		template <class T = Key, typename = stdrep::enable_if_t<stdrep::is_same_v<T, Key> && !stdrep::is_same_v<T, Hash64>>>
-		TRange getRange(const T& _key) const { return getRange(hash(_key)); }
+		TRange getRange(const T& _key) const { return getRange(m_pHashFunc(_key)); }
 
 		Iterator find(const Key& _key) const;
 
@@ -71,7 +73,7 @@ namespace spvgentwo
 		unsigned int eraseRange(const Key& _key);
 
 		unsigned int count(const Hash64 _hash) const;
-		unsigned int count(const Key& _key) const { return count(hash(_key)); }
+		unsigned int count(const Key& _key) const { return count(m_pHashFunc(_key)); }
 
 		constexpr const Bucket& getBucket(const unsigned int _index) const { return m_pBuckets[_index]; }
 		constexpr unsigned int getBucketCount() const { return m_Buckets; }
@@ -91,11 +93,12 @@ namespace spvgentwo
 		Bucket* m_pBuckets = nullptr;
 		unsigned int m_Buckets = 0u;
 		unsigned int m_Elements = 0u;
+		HashFunc m_pHashFunc = nullptr;
 	};
 
 	template<class Key, class Value>
-	inline HashMap<Key, Value>::HashMap(IAllocator* _pAllocator, unsigned int _buckets) :
-		m_pAllocator(_pAllocator), m_Buckets(_buckets)
+	inline HashMap<Key, Value>::HashMap(IAllocator* _pAllocator, unsigned int _buckets, HashFunc _func) :
+		m_pAllocator(_pAllocator), m_Buckets(_buckets), m_pHashFunc(_func)
 	{
 		if (m_pAllocator != nullptr)
 		{
@@ -112,12 +115,14 @@ namespace spvgentwo
 		m_pAllocator(_other.m_pAllocator),
 		m_pBuckets(_other.m_pBuckets),
 		m_Buckets(_other.m_Buckets),
-		m_Elements(_other.m_Elements)
+		m_Elements(_other.m_Elements),
+		m_pHashFunc(_other.m_pHashFunc)
 	{
 		_other.m_pAllocator = nullptr;
 		_other.m_pBuckets = nullptr;
 		_other.m_Buckets = 0u;
 		_other.m_Elements = 0u;
+		_other.m_pHashFunc = nullptr;
 	}
 
 	template<class Key, class Value>
@@ -133,6 +138,7 @@ namespace spvgentwo
 			m_pBuckets = nullptr;
 			m_pAllocator = nullptr;
 			m_Elements = 0u;
+			m_pHashFunc = nullptr;
 		}
 	}
 
@@ -167,11 +173,13 @@ namespace spvgentwo
 		m_pAllocator = _other.m_pAllocator;
 		m_pBuckets = _other.m_pBuckets;
 		m_Elements = _other.m_Elements;
+		m_pHashFunc = _other.m_pHashFunc;
 
 		_other.m_Buckets = 0u;
 		_other.m_pAllocator = nullptr;
 		_other.m_pBuckets = nullptr;
 		_other.m_Elements = 0u;
+		_other.m_pHashFunc = nullptr;
 
 		return *this;
 	}
@@ -240,7 +248,7 @@ namespace spvgentwo
 		}
 		else
 		{
-			h = hash(_key);
+			h = m_pHashFunc(_key);
 		}
 
 		unsigned int keys = 0u;
@@ -292,7 +300,7 @@ namespace spvgentwo
 		}
 		else
 		{
-			h = hash(_key);
+			h = m_pHashFunc(_key);
 		}
 
 		const auto index = h % m_Buckets;
@@ -352,7 +360,7 @@ namespace spvgentwo
 		}
 		else
 		{
-			n.hash = hash(_key);
+			n.hash = m_pHashFunc(_key);
 		}
 
 		const auto index = n.hash % m_Buckets;
@@ -389,7 +397,7 @@ namespace spvgentwo
 		}
 		else
 		{
-			h = hash(_key);
+			h = m_pHashFunc(_key);
 		}
 
 		const auto index = h % m_Buckets;
