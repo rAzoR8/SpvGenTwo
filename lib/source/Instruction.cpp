@@ -1839,7 +1839,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 	{
 		if (empty() || front().isInstruction() == false)
 		{
-			getModule()->logError("result type operand not present or incorrect type");
+			getModule()->logError("Result type operand not present or incorrect type");
 			return pResultType;
 		}
 
@@ -1856,6 +1856,12 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 		else
 		{
 			pResultType = retType.instruction;
+		}
+
+		if(pResultType == nullptr)
+		{
+			getModule()->logError("Failed to infer result type for instruction");
+			return error();
 		}
 	}
 
