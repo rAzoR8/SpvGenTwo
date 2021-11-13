@@ -38,7 +38,7 @@ jobs:
     # Runs a single command using the runners shell
     - name: CMake
       working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DSPVGENTWO_BUILD_TESTS=TRUE -DSPVGENTWO_BUILD_EXAMPLES=TRUE -DSPVGENTWO_BUILD_DISASSEMBLER=TRUE -DSPVGENTWO_BUILD_REFLECT=TRUE -DSPVGENTWO_BUILD_LINKER=TRUE
+      run: cmake -S . -B $GITHUB_WORKSPACE -DSPVGENTWO_BUILD_TESTS=TRUE -DSPVGENTWO_BUILD_EXAMPLES=TRUE -DSPVGENTWO_BUILD_DISASSEMBLER=TRUE -DSPVGENTWO_BUILD_REFLECT=TRUE -DSPVGENTWO_BUILD_LINKER=TRUE
     
     - name: Build
       working-directory: ${{runner.workspace}}/build
