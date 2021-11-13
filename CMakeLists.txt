@@ -49,12 +49,31 @@ cmake_option(SPVGENTWO_DEBUG_HEAP_ALLOC "Log heap allocations" FALSE)
 function(cmake_add_warnings target_project)
 
 if(${SPVGENTWO_ENABLE_WARNINGS})
-	target_compile_options(${target_project} PRIVATE
-	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-		-Werror -Wall -Wextra -pedantic-errors -Wno-unknown-pragmas>
-	$<$<CXX_COMPILER_ID:MSVC>:
-		/WX /W4 /permissive->)
 
+	set(CXX_FLAGS_GNU_STYLE OFF)
+	set(CXX_FLAGS_MSVC_STYLE OFF)
+	
+	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+		set(CXX_FLAGS_GNU_STYLE ON)
+	elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+		set(CXX_FLAGS_GNU_STYLE ON)
+	elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+		if ("${CMAKE_CXX_SIMULATE_ID}" STREQUAL "MSVC")
+			set(CXX_FLAGS_MSVC_STYLE ON)
+		else ()
+			set(CXX_FLAGS_GNU_STYLE ON)
+		endif ()
+	elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+		set(CXX_FLAGS_MSVC_STYLE ON)
+	else ()
+		message(STATUS "Assuming GNU CXX")
+		set(CXX_FLAGS_GNU_STYLE ON)
+	endif ()
+
+	target_compile_options(${target_project} PRIVATE
+		$<$<BOOL:${CXX_FLAGS_GNU_STYLE}>:-Werror -Wall -Wextra -pedantic-errors -Wno-unknown-pragmas>    
+        $<$<BOOL:${CXX_FLAGS_MSVC_STYLE}>:/WX /W4 /permissive-> )
+		
 	message(STATUS "Warnings enabled for ${target_project}")
 endif()
 
