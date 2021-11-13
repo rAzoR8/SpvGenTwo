@@ -1,5 +1,11 @@
 #include <catch2/catch_test_macros.hpp>
 
+#include <catch2/reporters/catch_reporter_console.h>
+namespace Catch
+{
+	CATCH_REGISTER_REPORTER("console", ConsoleReporter)
+}
+
 static int Factorial( int number ) {
    return number <= 1 ? number : Factorial( number - 1 ) * number;  // fail
 // return number <= 1 ? 1      : Factorial( number - 1 ) * number;  // pass
