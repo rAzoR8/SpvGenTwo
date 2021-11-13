@@ -41,6 +41,7 @@ jobs:
       run: cmake $GITHUB_WORKSPACE -DSPVGENTWO_BUILD_TESTS=TRUE -DSPVGENTWO_BUILD_EXAMPLES=TRUE -DSPVGENTWO_BUILD_DISASSEMBLER=TRUE -DSPVGENTWO_BUILD_REFLECT=TRUE -DSPVGENTWO_BUILD_LINKER=TRUE
     
     - name: Build
+      working-directory: ${{runner.workspace}}/build
       run: cmake --build . --config $BUILD_TYPE -j4
 
     - name: Test
