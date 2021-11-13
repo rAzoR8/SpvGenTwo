@@ -44,6 +44,7 @@ cmake_option(SPVGENTWO_BUILD_EXAMPLES "Build examples" FALSE)
 cmake_option(SPVGENTWO_BUILD_DISASSEMBLER "Build disassembler" FALSE)
 cmake_option(SPVGENTWO_BUILD_REFLECT "Build reflect" FALSE)
 cmake_option(SPVGENTWO_BUILD_LINKER "Build linker" FALSE)
+cmake_option(SPVGENTWO_BUILD_TESTS "Build catch2 tests" FALSE)
 cmake_option(SPVGENTWO_DEBUG_HEAP_ALLOC "Log heap allocations" FALSE)
 
 function(cmake_add_warnings target_project)
@@ -148,6 +149,37 @@ if(${SPVGENTWO_BUILD_EXAMPLES})
 	add_executable(SpvGenTwoExample "${example_sources}")
 	target_include_directories(SpvGenTwoExample PUBLIC "${example_includes};${common_includes}")
 	target_link_libraries(SpvGenTwoExample PRIVATE SpvGenTwoLib SpvGenTwoCommon)
+endif()
+
+#test project
+if(${SPVGENTWO_BUILD_TESTS})
+
+	enable_testing()
+
+	Include(FetchContent)
+
+	FetchContent_Declare(
+	  Catch2
+	  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+	  GIT_TAG        v3.0.0-preview3
+	)
+
+	FetchContent_MakeAvailable(Catch2)
+
+	list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+	include(CTest)
+	include(Catch)
+
+	add_sources("test/source/*.cpp" "test_sources")
+	add_sources("test/include/example/*.h" "test_sources")
+	add_include_folder("test/include" "test_includes")
+
+	add_executable(SpvGenTwoTests "${test_sources}")
+	target_include_directories(SpvGenTwoTests PUBLIC "${test_includes};${common_includes}")
+	target_link_libraries(SpvGenTwoTests PRIVATE SpvGenTwoLib SpvGenTwoCommon Catch2::Catch2WithMain)
+	
+	catch_discover_tests(SpvGenTwoTests)
+	
 endif()
 
 message(STATUS "")
