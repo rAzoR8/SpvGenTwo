@@ -12,6 +12,10 @@ on:
   push:
     branches:
     - master
+    
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -28,9 +32,20 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2.3.1
       
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+      
     # Runs a single command using the runners shell
     - name: CMake
-      run: cmake -S . -B build -DSPVGENTWO_BUILD_EXAMPLES=TRUE -DSPVGENTWO_BUILD_DISASSEMBLER=TRUE -DSPVGENTWO_BUILD_REFLECT=TRUE -DSPVGENTWO_BUILD_LINKER=TRUE
+      working-directory: ${{runner.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -DSPVGENTWO_BUILD_TESTS=TRUE -DSPVGENTWO_BUILD_EXAMPLES=TRUE -DSPVGENTWO_BUILD_DISASSEMBLER=TRUE -DSPVGENTWO_BUILD_REFLECT=TRUE -DSPVGENTWO_BUILD_LINKER=TRUE
     
     - name: Build
-      run: cmake --build build -j4
+      run: cmake --build . --config $BUILD_TYPE -j4
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      # Execute tests defined by the CMake configuration.  
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      run: ctest -C $BUILD_TYPE
