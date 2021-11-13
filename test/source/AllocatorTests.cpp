@@ -1,9 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/reporters/catch_reporter_console.hpp>
+#include <catch2/catch_reporter_registrars.hpp>
 
-#include <catch2/reporters/catch_reporter_console.h>
 namespace Catch
 {
-	CATCH_REGISTER_REPORTER("console", ConsoleReporter)
+    CATCH_REGISTER_REPORTER("console", ConsoleReporter);
 }
 
 static int Factorial( int number ) {
