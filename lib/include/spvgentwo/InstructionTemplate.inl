@@ -381,19 +381,9 @@ namespace spvgentwo
 
 		if (targetType->isPointer() == false || sourceType->isPointer() == false)
 		{
-			module->logError("Operand of OpCopyMemory is not a pointer type");
+			module->logError("Operand of OpCopyMemory/Sized is not a pointer type");
 			return;
-		}
-		else if (targetType->containsType(spv::Op::OpTypeRuntimeArray) || sourceType->containsType(spv::Op::OpTypeRuntimeArray))
-		{
-			module->logError("Operand of OpCopyMemory must not contain any OpTypeRuntimeArray");
-			return;
-		}
-		else if (targetType->front() != sourceType->front())
-		{
-			module->logError("Operand types for _pTargetPtr and _pSourcePtr of OpCopyMemory don't match");
-			return;
-		}
+		}		
 
 		if(_pSizeInt != nullptr)
 		{
@@ -442,6 +432,22 @@ namespace spvgentwo
 		{
 			if(_pSizeInt == nullptr)
 			{
+				if( targetType->front().isVoid() || sourceType->front().isVoid() )
+				{
+					module->logError( "Operand of OpCopyMemory must not contain any pointer to OpTypeVoid" );
+					return;
+				}
+				else if( targetType->containsType( spv::Op::OpTypeRuntimeArray ) || sourceType->containsType( spv::Op::OpTypeRuntimeArray ) )
+				{
+					module->logError( "Operand of OpCopyMemory must not contain any OpTypeRuntimeArray" );
+					return;
+				}
+				else if( targetType->front() != sourceType->front() )
+				{
+					module->logError( "Operand types for _pTargetPtr and _pSourcePtr of OpCopyMemory don't match" );
+					return;
+				}
+
 				makeOp(spv::Op::OpCopyMemory, _pTargetPtr, _pSourcePtr, args...);
 			}
 			else
