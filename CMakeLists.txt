@@ -171,7 +171,7 @@ if(${SPVGENTWO_BUILD_TESTS})
 
 	add_executable(SpvGenTwoTests "${test_sources}")
 	target_include_directories(SpvGenTwoTests PUBLIC "${test_includes};${common_includes}")
-	target_link_libraries(SpvGenTwoTests SpvGenTwoLib SpvGenTwoCommon Catch2::Catch2WithMain)
+	target_link_libraries(SpvGenTwoTests PRIVATE SpvGenTwoLib SpvGenTwoCommon Catch2::Catch2WithMain)
 	
 	include(CTest)
 	include(Catch)
