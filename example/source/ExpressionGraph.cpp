@@ -1,9 +1,7 @@
 ﻿#include "example/ExpressionGraph.h"
 #include "common/ExprGraph.h"
 
-#include "spvgentwo/ModuleTemplate.inl"
-#include "spvgentwo/InstructionTemplate.inl"
-#include "spvgentwo/EntryPointTemplate.inl"
+#include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 
