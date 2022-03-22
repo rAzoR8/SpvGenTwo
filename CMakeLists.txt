@@ -153,9 +153,6 @@ endif()
 
 #test project
 if(${SPVGENTWO_BUILD_TESTS})
-
-	enable_testing()
-
 	Include(FetchContent)
 
 	FetchContent_Declare(
@@ -167,19 +164,19 @@ if(${SPVGENTWO_BUILD_TESTS})
 	FetchContent_MakeAvailable(Catch2)
 
 	list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
-	include(CTest)
-	include(Catch)
 
 	add_sources("test/source/*.cpp" "test_sources")
-	add_sources("test/include/example/*.h" "test_sources")
+	add_sources("test/include/test/*.h" "test_sources")
 	add_include_folder("test/include" "test_includes")
 
 	add_executable(SpvGenTwoTests "${test_sources}")
 	target_include_directories(SpvGenTwoTests PUBLIC "${test_includes};${common_includes}")
-	target_link_libraries(SpvGenTwoTests PRIVATE SpvGenTwoLib SpvGenTwoCommon Catch2::Catch2WithMain)
+	target_link_libraries(SpvGenTwoTests SpvGenTwoLib SpvGenTwoCommon Catch2::Catch2WithMain)
 	
+	include(CTest)
+	include(Catch)
 	catch_discover_tests(SpvGenTwoTests)
-	
+	enable_testing()
 endif()
 
 message(STATUS "")
