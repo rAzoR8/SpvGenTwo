@@ -1,6 +1,9 @@
 ﻿#include "example/ExpressionGraph.h"
 #include "common/ExprGraph.h"
 
+#include "spvgentwo/ModuleTemplate.inl"
+#include "spvgentwo/InstructionTemplate.inl"
+
 using namespace spvgentwo;
 
 enum class Op
