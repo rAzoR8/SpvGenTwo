@@ -3,6 +3,7 @@
 
 #include "spvgentwo/ModuleTemplate.inl"
 #include "spvgentwo/InstructionTemplate.inl"
+#include "spvgentwo/EntryPointTemplate.inl"
 
 using namespace spvgentwo;
 
