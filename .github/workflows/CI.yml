@@ -39,11 +39,6 @@ jobs:
     - name: Build
       run: cmake --build build --config Release -j4
 
-    - name: help
-      working-directory: ${{runner.workspace}}/build
-      - run: |
-          ls
-
     - name: Test2
       working-directory: ${{runner.workspace}}/build/bin/Release
       run: ctest
