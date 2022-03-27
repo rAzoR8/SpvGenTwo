@@ -1,14 +1,11 @@
-//#include <catch2/catch_test_macros.hpp>
-//#include <catch2/reporters/catch_reporter_console.hpp>
-//#include <catch2/catch_reporter_registrars.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/reporters/catch_reporter_console.hpp>
+#include <catch2/catch_reporter_registrars.hpp>
 
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch_all.hpp>
-
-//namespace Catch
-//{
-//    CATCH_REGISTER_REPORTER("console", ConsoleReporter);
-//}
+namespace Catch
+{
+    CATCH_REGISTER_REPORTER("console", ConsoleReporter);
+}
 
 static int Factorial( int number ) {
    return number <= 1 ? number : Factorial( number - 1 ) * number;  // fail
