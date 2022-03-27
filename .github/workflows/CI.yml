@@ -40,5 +40,5 @@ jobs:
       run: cmake --build build --config Release -j4
 
     - name: Test
-      working-directory: ${{runner.workspace}}
+      working-directory: ${{runner.workspace}}/build
       run: ctest -C Release
