@@ -1853,8 +1853,14 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 			pResultType = validator != nullptr ? validator->inferResultType(*this) : nullptr;
 			retType = pResultType;
 		}
-		else
+		else if( retType.instruction != nullptr )
 		{
+			if( retType.instruction->isType() == false )
+			{
+				getModule()->logError( "result type operand not is not a OpType instruction" );
+				return pResultType;
+			}
+
 			pResultType = retType.instruction;
 		}
 
