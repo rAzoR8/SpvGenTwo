@@ -72,6 +72,8 @@ namespace spvgentwo
 	template<class T, class ...Args>
 	inline void Instruction::makeOpInternal(T&& _first, Args&& ..._args)
 	{
+		static_assert(traits::is_same_base_type_v<T, sgt_nullptr_t> == false, "Can't deduce pointer type from nullptr");
+
 		if constexpr (traits::is_same_base_type_v<T, Instruction*>)
 		{
 			addOperand(stdrep::forward<T>(_first)); // same overload as above, just make it easier to debug	

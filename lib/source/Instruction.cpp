@@ -1839,7 +1839,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 	{
 		if (empty() || front().isInstruction() == false)
 		{
-			getModule()->logError("result type operand not present or incorrect type");
+			getModule()->logError("Result type operand not present or incorrect type");
 			return pResultType;
 		}
 
@@ -1850,12 +1850,24 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 
 		if(retType.instruction == nullptr || allowOverride)
 		{
-			pResultType = validator != nullptr ? validator->inferResultType(*this) : defaultimpl::inferResultType(*this);
+			pResultType = validator != nullptr ? validator->inferResultType(*this) : nullptr;
 			retType = pResultType;
 		}
-		else
+		else if( retType.instruction != nullptr )
 		{
+			if( retType.instruction->isType() == false )
+			{
+				getModule()->logError( "result type operand not is not a OpType instruction" );
+				return pResultType;
+			}
+
 			pResultType = retType.instruction;
+		}
+
+		if(pResultType == nullptr)
+		{
+			getModule()->logError("Failed to infer result type for instruction");
+			return error();
 		}
 	}
 
@@ -1865,7 +1877,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 bool spvgentwo::Instruction::validateOperands()
 {
 	ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
-	return validator != nullptr ? validator->validateOperands(*this) : defaultimpl::validateOperands(*this);
+	return validator != nullptr ? validator->validateOperands(*this) : true;
 }
 
 bool spvgentwo::Instruction::isErrorInstr() const

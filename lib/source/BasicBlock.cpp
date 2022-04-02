@@ -4,6 +4,7 @@
 #include "spvgentwo/Reader.h"
 
 #include "spvgentwo/InstructionTemplate.inl"
+#include "spvgentwo/ModuleTemplate.inl"
 #include "spvgentwo/GLSL450Instruction.h"
 
 spvgentwo::BasicBlock::BasicBlock(Function* _pFunction, const char* _pName) : List(_pFunction->getAllocator()),
@@ -109,7 +110,7 @@ spvgentwo::Instruction* spvgentwo::BasicBlock::returnValue(Instruction* _pValue)
 		ret->opReturn();
 		return ret;
 	}
-	else
+	else if(_pValue != nullptr)
 	{
 		if (const Type* t = _pValue->getType(); t != nullptr && *t == retType)
 		{

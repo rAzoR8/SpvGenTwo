@@ -12,7 +12,7 @@ on:
   push:
     branches:
     - master
-
+    
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "greet"
@@ -20,6 +20,7 @@ jobs:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false 
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
@@ -28,9 +29,17 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2.3.1
       
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+      
     # Runs a single command using the runners shell
     - name: CMake
-      run: cmake -S . -B build -DSPVGENTWO_BUILD_EXAMPLES=TRUE -DSPVGENTWO_BUILD_DISASSEMBLER=TRUE -DSPVGENTWO_BUILD_REFLECT=TRUE -DSPVGENTWO_BUILD_LINKER=TRUE
+      run: cmake -S . -B ${{runner.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DSPVGENTWO_BUILD_TESTS=TRUE -DSPVGENTWO_BUILD_EXAMPLES=TRUE -DSPVGENTWO_BUILD_DISASSEMBLER=TRUE -DSPVGENTWO_BUILD_REFLECT=TRUE -DSPVGENTWO_BUILD_LINKER=TRUE
     
     - name: Build
-      run: cmake --build build -j4
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config Release -j4
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      run: ctest -C Release
