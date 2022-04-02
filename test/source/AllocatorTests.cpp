@@ -7,22 +7,12 @@ namespace Catch
     CATCH_REGISTER_REPORTER("console", ConsoleReporter);
 }
 
-static int Factorial( int number ) {
-   return number <= 1 ? number : Factorial( number - 1 ) * number;  // fail
-// return number <= 1 ? 1      : Factorial( number - 1 ) * number;  // pass
-}
+#include "common/HeapAllocator.h"
+using namespace spvgentwo;
 
-TEST_CASE( "name_without_spaces", "[single-file]" ) {
-    REQUIRE( Factorial(0) == 0 );
-}
+TEST_CASE( "alignment", "[single-file]" ) {
+    HeapAllocator alloc;
 
-TEST_CASE( "Factorial of 0 is 1 (fail)", "[single-file]" ) {
-    REQUIRE( Factorial(0) == 1 );
-}
-
-TEST_CASE( "Factorials of 1 and higher are computed (pass)", "[single-file]" ) {
-    REQUIRE( Factorial(1) == 1 );
-    REQUIRE( Factorial(2) == 2 );
-    REQUIRE( Factorial(3) == 6 );
-    REQUIRE( Factorial(10) == 3628800 );
+    // not a power of two, must fail
+    REQUIRE( alloc.allocate( 10u, 3 ) == nullptr );
 }

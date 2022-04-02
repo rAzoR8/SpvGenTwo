@@ -173,7 +173,6 @@ if(${SPVGENTWO_BUILD_TESTS})
 	include(Catch)
 	enable_testing()
 	catch_discover_tests(SpvGenTwoTests)
-	#add_test(test_all SpvGenTwoTests)
 endif()
 
 message(STATUS "")
