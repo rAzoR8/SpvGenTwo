@@ -34,10 +34,11 @@ jobs:
       
     # Runs a single command using the runners shell
     - name: CMake
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSPVGENTWO_BUILD_TESTS=TRUE -DSPVGENTWO_BUILD_EXAMPLES=TRUE -DSPVGENTWO_BUILD_DISASSEMBLER=TRUE -DSPVGENTWO_BUILD_REFLECT=TRUE -DSPVGENTWO_BUILD_LINKER=TRUE
+      run: cmake -S . -B ${{runner.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DSPVGENTWO_BUILD_TESTS=TRUE -DSPVGENTWO_BUILD_EXAMPLES=TRUE -DSPVGENTWO_BUILD_DISASSEMBLER=TRUE -DSPVGENTWO_BUILD_REFLECT=TRUE -DSPVGENTWO_BUILD_LINKER=TRUE
     
     - name: Build
-      run: cmake --build build --config Release -j4
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config Release -j4
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
