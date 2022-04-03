@@ -18,6 +18,12 @@ ConsoleLogger g_logger;
 Grammar g_gram( &g_alloc );
 SpvValidator g_validator( &g_logger );
 
+bool valid( spvgentwo::Module&& _module )
+{
+	_module.finalize( &g_gram );
+	return g_validator.validate( _module );
+}
+
 bool valid( spvgentwo::Module& _module )
 {
 	_module.finalize( &g_gram );
@@ -77,7 +83,6 @@ TEST_CASE( "expressionGraph", "[Modules]" )
 TEST_CASE( "linking", "[Modules]" )
 {
 	Module libA, libB, consumer;
-
 
 	libA = test::linkageLibA( &g_alloc, &g_logger );
 	REQUIRE( valid( libA ) );
