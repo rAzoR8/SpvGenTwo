@@ -12,8 +12,8 @@ namespace spvgentwo
 	class HeapAllocator : public IAllocator
 	{
 	public:
-		void* allocate(const sgt_size_t _bytes, unsigned int _alignment) final;
-		void deallocate(void* _ptr, const sgt_size_t _bytes) final;
+		void* allocate(sgt_size_t _bytes, unsigned int _alignment) final;
+		void deallocate(void* _ptr, sgt_size_t _bytes) final;
 		~HeapAllocator() override;
 
 		static HeapAllocator* instance();

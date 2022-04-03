@@ -1,6 +1,6 @@
 #include "common/ExternalMemoryAllocator.h"
 
-void* spvgentwo::ExternalMemoryAllocator::allocate(const sgt_size_t _bytes, const unsigned int _aligment)
+void* spvgentwo::ExternalMemoryAllocator::allocate(sgt_size_t _bytes, unsigned int _aligment)
 {
 	const auto capacity = static_cast<sgt_size_t>(static_cast<const char*>(m_pEnd) - static_cast<const char*>(m_pCurrent));
 	void* ptr = alignPowerOf2(_aligment, _bytes, m_pCurrent, capacity);

@@ -7,7 +7,7 @@
 	#include <stdio.h>
 #endif
 
-void* spvgentwo::HeapAllocator::allocate(const sgt_size_t _bytes, unsigned int _alignment)
+void* spvgentwo::HeapAllocator::allocate(sgt_size_t _bytes, unsigned int _alignment)
 {
 	if (_alignment & (_alignment - 1)) // not a power of two
 	{
@@ -34,7 +34,7 @@ void* spvgentwo::HeapAllocator::allocate(const sgt_size_t _bytes, unsigned int _
 	return ptr;
 }
 
-void spvgentwo::HeapAllocator::deallocate(void* _ptr, const sgt_size_t _bytes)
+void spvgentwo::HeapAllocator::deallocate(void* _ptr, sgt_size_t _bytes)
 {
 	m_Deallocated += _bytes;
 

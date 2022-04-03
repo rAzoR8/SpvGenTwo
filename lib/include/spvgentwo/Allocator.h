@@ -40,13 +40,13 @@ namespace spvgentwo
 	class IAllocator
 	{
 	public:
-		virtual ~IAllocator() {}
+		virtual ~IAllocator() = default;
 
 		// alignment may only be a power of 2
-		[[nodiscard]] virtual void* allocate(const sgt_size_t _bytes, unsigned int _alignment) = 0;
-		virtual void deallocate(void* _ptr, const sgt_size_t _bytes = 0u) = 0;
+		[[nodiscard]] virtual void* allocate(sgt_size_t _bytes, unsigned int _alignment) = 0;
+		virtual void deallocate(void* _ptr, sgt_size_t _bytes = 0u) = 0;
 
-		[[nodiscard]] ScopedAllocation allocateScoped(const sgt_size_t _bytes, const unsigned int _alignment = 1u);
+		[[nodiscard]] ScopedAllocation allocateScoped(sgt_size_t _bytes, unsigned int _alignment);
 
 		template <class T, class ... Args>
 		T* construct(Args&& ..._args) noexcept

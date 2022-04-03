@@ -2,15 +2,10 @@
 #include <catch2/reporters/catch_reporter_console.hpp>
 #include <catch2/catch_reporter_registrars.hpp>
 
-namespace Catch
-{
-    CATCH_REGISTER_REPORTER("console", ConsoleReporter);
-}
-
 #include "common/HeapAllocator.h"
 using namespace spvgentwo;
 
-TEST_CASE( "alignment", "[single-file]" ) {
+TEST_CASE( "alignment", "[HeapAllocator]" ) {
     HeapAllocator alloc;
 
     // not a power of two, must fail
