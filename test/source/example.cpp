@@ -1,205 +1,93 @@
-#include <cstdlib> // system
 
-#include "spvgentwo/Logger.h"
 #include "spvgentwo/Grammar.h"
-
+#include "common/ConsoleLogger.h"
 #include "common/HeapAllocator.h"
-#include "common/BinaryFileWriter.h"
-#include "common/BinaryFileReader.h"
+
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/reporters/catch_reporter_console.hpp>
 
 // test
 #include "test/Modules.h"
-
-#include <cstdarg>
-#include <cassert>
-#include <cstdio>
+#include "test/SpvValidator.h"
 
 using namespace spvgentwo;
+using namespace test;
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#endif
+HeapAllocator g_alloc;
+ConsoleLogger g_logger;
+Grammar g_gram( &g_alloc );
+SpvValidator g_validator( &g_logger );
 
-class TestLogger : public ILogger 
+bool valid( spvgentwo::Module& _module )
 {
-public:
-	TestLogger() : ILogger(LogImpl) {}
-	static void LogImpl([[maybe_unused]] ILogger* _pInstance, LogLevel _level, const char* _pFormat, ...)
-	{
-		switch (_level)
-		{
-		case LogLevel::Debug:
-			printf("Debug: "); break;
-		case LogLevel::Info:
-			printf("Info: "); break;
-		case LogLevel::Warning:
-			printf("Warning: "); break;
-		case LogLevel::Error:
-			printf("Error: "); break;
-		case LogLevel::Fatal:
-			printf("Fatal: "); break;
-		default:
-			break;
-		}
+	_module.finalize( &g_gram );
+	return g_validator.validate( _module );
+}
 
-		char buf[256]{ '\0' };
-
-		va_list args;
-		va_start(args, _pFormat);
-		vsnprintf(buf, sizeof(buf), _pFormat, args);
-		va_end(args);
-
-		printf("%s\n", buf);
-
-#ifdef _WIN32
-		OutputDebugStringA(buf);
-		OutputDebugStringA("\n");
-#endif
-
-		assert(_level == LogLevel::Debug || _level == LogLevel::Info);
-	}
-
-};
-
-int foo()
+TEST_CASE( "types", "[Modules]" )
 {
-	TestLogger log;
-	HeapAllocator alloc; // custom user allocator
-	const Grammar gram(&alloc);
+	REQUIRE( valid( test::types( &g_alloc, &g_logger ) ) );
+}
 
-	// fragment shader example
-	if (BinaryFileWriter writer(alloc, "compute.spv"); writer.isOpen())
-	{
-		test::computeShader(&alloc, &log).finalizeAndWrite(writer);
-		writer.close();
-		system("spirv-dis compute.spv");
-		assert(system("spirv-val compute.spv") == 0);
-	}
+TEST_CASE( "constants", "[Modules]" )
+{
+	REQUIRE( valid( test::constants( &g_alloc, &g_logger ) ) );
+}
 
-	{
-		Module libA, libB, consumer;
-		// linkage export libA example
-		if (BinaryFileWriter writer(alloc, "exportA.spv"); writer.isOpen())
-		{
-			libA = test::linkageLibA(&alloc, &log);
-			libA.finalizeAndWrite(writer, &gram);
-			writer.close();
-			system("spirv-dis exportA.spv");
-			assert(system("spirv-val exportA.spv") == 0);
-		}
+TEST_CASE( "extensions", "[Modules]" )
+{
+	REQUIRE( valid( test::extensions( &g_alloc, &g_logger ) ) );
+}
 
-		// linkage export libA example
-		if (BinaryFileWriter writer(alloc, "exportB.spv"); writer.isOpen())
-		{
-			libB = test::linkageLibB(&alloc, &log);
-			libB.finalizeAndWrite(writer, &gram);
-			writer.close();
-			system("spirv-dis exportB.spv");
-			assert(system("spirv-val exportB.spv") == 0);
-		}
+TEST_CASE( "oldInstrTest", "[Modules]" )
+{
+	REQUIRE( valid( test::oldInstrTest( &g_alloc, &g_logger ) ) );
+}
 
-		// linkage import lib example
-		if (BinaryFileWriter writer(alloc, "import.spv"); writer.isOpen())
-		{
-			consumer = test::linkageConsumer(&alloc, &log);
-			consumer.finalizeAndWrite(writer);
-			writer.close();
-			system("spirv-dis import.spv");
-			assert(system("spirv-val import.spv") == 0);
-		}
+TEST_CASE( "functionCall", "[Modules]" )
+{
+	REQUIRE( valid( test::functionCall( &g_alloc, &g_logger ) ) );
+}
 
-		// linkage importing example
-		if (BinaryFileWriter writer(alloc, "linkageOutput.spv"); writer.isOpen())
-		{
-			assert(test::linkageLinked(libA, libB, consumer, &alloc, &gram));
-			consumer.finalizeAndWrite(writer);
-			writer.close();
-			system("spirv-dis linkageOutput.spv");
-			assert(system("spirv-val linkageOutput.spv") == 0);
-		}
-	}
+TEST_CASE( "controlFlow", "[Modules]" )
+{
+	REQUIRE( valid( test::controlFlow( &g_alloc, &g_logger ) ) );
+}
 
-	// expression graph example
-	if (BinaryFileWriter writer(alloc, "expressionGraph.spv"); writer.isOpen())
-	{
-		test::expressionGraph(&alloc, &log).finalizeAndWrite(writer);
-		writer.close();
-		system("spirv-dis expressionGraph.spv");
-		assert(system("spirv-val expressionGraph.spv") == 0);
-	}
+TEST_CASE( "geometryShader", "[Modules]" )
+{
+	REQUIRE( valid( test::geometryShader( &g_alloc, &g_logger ) ) );
+}
 
-	// old cli test
-	if (BinaryFileWriter writer(alloc, "oldInstrTest.spv"); writer.isOpen())
-	{
-		test::oldInstrTest(&alloc, &log).finalizeAndWrite(writer);
-		writer.close();
-		system("spirv-dis oldInstrTest.spv");
-		assert(system("spirv-val oldInstrTest.spv") == 0);
-	}
+TEST_CASE( "fragmentShader", "[Modules]" )
+{
+	REQUIRE( valid( test::fragmentShader( &g_alloc, &g_logger ) ) );
+}
 
-	// function call example
-	if (BinaryFileWriter writer(alloc, "functionCall.spv"); writer.isOpen())
-	{
-		test::functionCall(&alloc, &log).finalizeAndWrite(writer);
-		writer.close();
-		system("spirv-dis functionCall.spv");
-		assert(system("spirv-val functionCall.spv") == 0);
-	}
+TEST_CASE( "compute", "[Modules]" )
+{
+	REQUIRE( valid( test::computeShader( &g_alloc, &g_logger ) ) );
+}
 
-	// control flow example
-	if (BinaryFileWriter writer(alloc, "controlFlow.spv"); writer.isOpen())
-	{
-		test::controlFlow(&alloc, &log).finalizeAndWrite(writer);
-		writer.close();
-		system("spirv-dis controlFlow.spv");
-		assert(system("spirv-val controlFlow.spv") == 0);
-	}
+TEST_CASE( "expressionGraph", "[Modules]" )
+{
+	REQUIRE( valid( test::expressionGraph( &g_alloc, &g_logger ) ) );
+}
 
-	// extension example
-	if (BinaryFileWriter writer(alloc, "extensions.spv"); writer.isOpen())
-	{
-		test::extensions(&alloc, &log).finalizeAndWrite(writer);
-		writer.close();
-		system("spirv-dis extensions.spv");
-		assert(system("spirv-val extensions.spv") == 0);
-	}
+TEST_CASE( "linking", "[Modules]" )
+{
+	Module libA, libB, consumer;
 
-	// types example
-	if (BinaryFileWriter writer(alloc, "types.spv"); writer.isOpen())
-	{
-		test::types(&alloc, &log).finalizeAndWrite(writer, &gram);
-		writer.close();
-		system("spirv-dis types.spv");
-		assert(system("spirv-val types.spv") == 0);
-	}
 
-	// constants example
-	if (BinaryFileWriter writer(alloc, "constants.spv"); writer.isOpen())
-	{
-		test::constants(&alloc, &log).finalizeAndWrite(writer);
-		writer.close();
-		system("spirv-dis constants.spv");
-		assert(system("spirv-val constants.spv") == 0);
-	}
+	libA = test::linkageLibA( &g_alloc, &g_logger );
+	REQUIRE( valid( libA ) );
 
-	// geo shader example
-	if (BinaryFileWriter writer(alloc, "geometry.spv"); writer.isOpen())
-	{
-		test::geometryShader(&alloc, &log).finalizeAndWrite(writer);
-		writer.close();
-		system("spirv-dis geometry.spv");
-		assert(system("spirv-val geometry.spv") == 0);
-	}
+	libB = test::linkageLibB( &g_alloc, &g_logger );
+	REQUIRE( valid( libB ) );
 
-	// fragment shader example
-	if (BinaryFileWriter writer(alloc, "fragment.spv"); writer.isOpen())
-	{
-		test::fragmentShader(&alloc, &log).finalizeAndWrite(writer);
-		writer.close();
-		system("spirv-dis fragment.spv");
-		assert(system("spirv-val fragment.spv") == 0);
-	}
+	consumer = test::linkageConsumer( &g_alloc, &g_logger );
+	REQUIRE( valid( consumer ) );
 
-	return 0;
+	REQUIRE( test::linkageLinked( libA, libB, consumer, &g_alloc, &g_gram ) );
+	REQUIRE( valid( consumer ) );
 }
