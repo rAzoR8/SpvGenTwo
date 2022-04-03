@@ -1,9 +1,9 @@
-#include "example/FunctionCall.h"
+#include "test/FunctionCall.h"
 #include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 
-Module examples::functionCall(IAllocator* _pAllocator, ILogger* _pLogger)
+Module test::functionCall(IAllocator* _pAllocator, ILogger* _pLogger)
 {
     // create a new spir-v module
     Module module(_pAllocator, _pLogger);

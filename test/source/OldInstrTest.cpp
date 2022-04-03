@@ -1,4 +1,4 @@
-#include "example/OldInstrTest.h"
+#include "test/OldInstrTest.h"
 
 #include "common/HeapAllocator.h"
 #include "common/ConsoleLogger.h"
@@ -10,7 +10,7 @@ using namespace spvgentwo;
 using namespace ops;
 using namespace ext;
 
-Module examples::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
+Module test::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 {
 	Module module(_pAllocator, _pLogger);
 

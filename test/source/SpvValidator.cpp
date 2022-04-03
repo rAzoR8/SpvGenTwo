@@ -36,7 +36,7 @@ namespace
 }
 
 
-tests::SpvValidator::SpvValidator( spvgentwo::ILogger* _pLogger )
+test::SpvValidator::SpvValidator( spvgentwo::ILogger* _pLogger )
 {
 	static bool toolsInitialized = false;
 	if( toolsInitialized == false )
@@ -46,7 +46,7 @@ tests::SpvValidator::SpvValidator( spvgentwo::ILogger* _pLogger )
 	}
 }
 
-bool tests::SpvValidator::validate( const spvgentwo::Module& _module )
+bool test::SpvValidator::validate( const spvgentwo::Module& _module )
 {
 	std::vector<uint32_t> vec;
 	auto writer = spvgentwo::BinaryVectorWriter( vec );

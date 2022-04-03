@@ -1,9 +1,9 @@
-#include "example/ComputeShader.h"
+#include "test/ComputeShader.h"
 #include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 
-spvgentwo::Module examples::computeShader(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
+spvgentwo::Module test::computeShader(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
 	// create a new spir-v module
 	Module module(_pAllocator, _pLogger);

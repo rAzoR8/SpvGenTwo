@@ -2,7 +2,7 @@
 
 #include "spvgentwo/Module.h"
 
-namespace examples
+namespace test
 {
 	spvgentwo::Module expressionGraph(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger);
-} // !examples
+} // !test

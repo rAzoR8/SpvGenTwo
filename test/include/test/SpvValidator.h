@@ -2,7 +2,7 @@
 
 #include "spvgentwo/Module.h"
 
-namespace tests
+namespace test
 {
 	class SpvValidator
 	{

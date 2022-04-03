@@ -7,18 +7,18 @@
 #include "common/BinaryFileWriter.h"
 #include "common/BinaryFileReader.h"
 
-// examples
-#include "example/OldInstrTest.h"
-#include "example/FunctionCall.h"
-#include "example/ControlFlow.h"
-#include "example/Extensions.h"
-#include "example/Types.h"
-#include "example/Constants.h"
-#include "example/ExpressionGraph.h"
-#include "example/GeometryShader.h"
-#include "example/FragmentShader.h"
-#include "example/ComputeShader.h"
-#include "example/Linkage.h"
+// test
+#include "test/OldInstrTest.h"
+#include "test/FunctionCall.h"
+#include "test/ControlFlow.h"
+#include "test/Extensions.h"
+#include "test/Types.h"
+#include "test/Constants.h"
+#include "test/ExpressionGraph.h"
+#include "test/GeometryShader.h"
+#include "test/FragmentShader.h"
+#include "test/ComputeShader.h"
+#include "test/Linkage.h"
 
 #include <cstdarg>
 #include <cassert>
@@ -72,7 +72,7 @@ public:
 
 };
 
-int main()
+int foo()
 {
 	TestLogger log;
 	HeapAllocator alloc; // custom user allocator
@@ -81,7 +81,7 @@ int main()
 	// fragment shader example
 	if (BinaryFileWriter writer(alloc, "compute.spv"); writer.isOpen())
 	{
-		examples::computeShader(&alloc, &log).finalizeAndWrite(writer);
+		test::computeShader(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
 		system("spirv-dis compute.spv");
 		assert(system("spirv-val compute.spv") == 0);
@@ -92,7 +92,7 @@ int main()
 		// linkage export libA example
 		if (BinaryFileWriter writer(alloc, "exportA.spv"); writer.isOpen())
 		{
-			libA = examples::linkageLibA(&alloc, &log);
+			libA = test::linkageLibA(&alloc, &log);
 			libA.finalizeAndWrite(writer, &gram);
 			writer.close();
 			system("spirv-dis exportA.spv");
@@ -102,7 +102,7 @@ int main()
 		// linkage export libA example
 		if (BinaryFileWriter writer(alloc, "exportB.spv"); writer.isOpen())
 		{
-			libB = examples::linkageLibB(&alloc, &log);
+			libB = test::linkageLibB(&alloc, &log);
 			libB.finalizeAndWrite(writer, &gram);
 			writer.close();
 			system("spirv-dis exportB.spv");
@@ -112,7 +112,7 @@ int main()
 		// linkage import lib example
 		if (BinaryFileWriter writer(alloc, "import.spv"); writer.isOpen())
 		{
-			consumer = examples::linkageConsumer(&alloc, &log);
+			consumer = test::linkageConsumer(&alloc, &log);
 			consumer.finalizeAndWrite(writer);
 			writer.close();
 			system("spirv-dis import.spv");
@@ -122,7 +122,7 @@ int main()
 		// linkage importing example
 		if (BinaryFileWriter writer(alloc, "linkageOutput.spv"); writer.isOpen())
 		{
-			assert(examples::linkageLinked(libA, libB, consumer, &alloc, &gram));
+			assert(test::linkageLinked(libA, libB, consumer, &alloc, &gram));
 			consumer.finalizeAndWrite(writer);
 			writer.close();
 			system("spirv-dis linkageOutput.spv");
@@ -133,7 +133,7 @@ int main()
 	// expression graph example
 	if (BinaryFileWriter writer(alloc, "expressionGraph.spv"); writer.isOpen())
 	{
-		examples::expressionGraph(&alloc, &log).finalizeAndWrite(writer);
+		test::expressionGraph(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
 		system("spirv-dis expressionGraph.spv");
 		assert(system("spirv-val expressionGraph.spv") == 0);
@@ -142,7 +142,7 @@ int main()
 	// old cli test
 	if (BinaryFileWriter writer(alloc, "oldInstrTest.spv"); writer.isOpen())
 	{
-		examples::oldInstrTest(&alloc, &log).finalizeAndWrite(writer);
+		test::oldInstrTest(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
 		system("spirv-dis oldInstrTest.spv");
 		assert(system("spirv-val oldInstrTest.spv") == 0);
@@ -151,7 +151,7 @@ int main()
 	// function call example
 	if (BinaryFileWriter writer(alloc, "functionCall.spv"); writer.isOpen())
 	{
-		examples::functionCall(&alloc, &log).finalizeAndWrite(writer);
+		test::functionCall(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
 		system("spirv-dis functionCall.spv");
 		assert(system("spirv-val functionCall.spv") == 0);
@@ -160,7 +160,7 @@ int main()
 	// control flow example
 	if (BinaryFileWriter writer(alloc, "controlFlow.spv"); writer.isOpen())
 	{
-		examples::controlFlow(&alloc, &log).finalizeAndWrite(writer);
+		test::controlFlow(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
 		system("spirv-dis controlFlow.spv");
 		assert(system("spirv-val controlFlow.spv") == 0);
@@ -169,7 +169,7 @@ int main()
 	// extension example
 	if (BinaryFileWriter writer(alloc, "extensions.spv"); writer.isOpen())
 	{
-		examples::extensions(&alloc, &log).finalizeAndWrite(writer);
+		test::extensions(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
 		system("spirv-dis extensions.spv");
 		assert(system("spirv-val extensions.spv") == 0);
@@ -178,7 +178,7 @@ int main()
 	// types example
 	if (BinaryFileWriter writer(alloc, "types.spv"); writer.isOpen())
 	{
-		examples::types(&alloc, &log).finalizeAndWrite(writer, &gram);
+		test::types(&alloc, &log).finalizeAndWrite(writer, &gram);
 		writer.close();
 		system("spirv-dis types.spv");
 		assert(system("spirv-val types.spv") == 0);
@@ -187,7 +187,7 @@ int main()
 	// constants example
 	if (BinaryFileWriter writer(alloc, "constants.spv"); writer.isOpen())
 	{
-		examples::constants(&alloc, &log).finalizeAndWrite(writer);
+		test::constants(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
 		system("spirv-dis constants.spv");
 		assert(system("spirv-val constants.spv") == 0);
@@ -196,7 +196,7 @@ int main()
 	// geo shader example
 	if (BinaryFileWriter writer(alloc, "geometry.spv"); writer.isOpen())
 	{
-		examples::geometryShader(&alloc, &log).finalizeAndWrite(writer);
+		test::geometryShader(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
 		system("spirv-dis geometry.spv");
 		assert(system("spirv-val geometry.spv") == 0);
@@ -205,7 +205,7 @@ int main()
 	// fragment shader example
 	if (BinaryFileWriter writer(alloc, "fragment.spv"); writer.isOpen())
 	{
-		examples::fragmentShader(&alloc, &log).finalizeAndWrite(writer);
+		test::fragmentShader(&alloc, &log).finalizeAndWrite(writer);
 		writer.close();
 		system("spirv-dis fragment.spv");
 		assert(system("spirv-val fragment.spv") == 0);
