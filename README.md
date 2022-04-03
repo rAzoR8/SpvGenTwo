@@ -141,23 +141,25 @@ SpvGenTwo is split into 5 folders:
 * `dis` is a [spirv-dis](https://github.com/KhronosGroup/SPIRV-Tools#disassembler-tool)-like tool to print assembly language text.
 * `refl` is a [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect)-like tool to extract descriptor bindings and other relevant info from SPIR-V binary modules.
 * `link` is a [spirv-link](https://github.com/KhronosGroup/SPIRV-Tools#linker-tool)-like tool to for merging symbols of modules into a new output module.
+* `test` contains [Catch2](https://github.com/catchorg/Catch2) unit tests. When using Visual Studio, [Test Adapter for Catch2](https://github.com/JohnnyHendriks/TestAdapter_Catch2) can be used with the  [test/catch2.runsettings](test/catch2.runsettings) config file.
 
 # Building
 
-Use the supplied CMakeLists.txt to generate project files for your build system. SpvGenTwo allows the user to use STL headers (`<type_traits>`, `<new>` etc) instead of my hand-made replacements (see `stdreplament.h`).
+Use the supplied CMakeLists.txt to generate project files for your build system. SpvGenTwo allows the user to use standard library headers (`<type_traits>`, `<new>` etc) instead of my hand-made replacements (see `stdreplament.h`).
 
 * `SPVGENTWO_BUILD_EXAMPLES` is set to FALSE by default. If TRUE, an executable with sources from the 'example' folder will be built.
     * Note that the SpvGenTwoExample executable project requires the Vulkan SDK to be installed as it calls spirv-val and spriv-dis.
 * `SPVGENTWO_BUILD_DISASSEMBLER` is set to FALSE by default. If TRUE, an executable with sources from the 'dis' folder will be built.
 * `SPVGENTWO_BUILD_REFLECT` is set to FALSE by default. If TRUE, an executable with sources from the 'refl' folder will be built.
 * `SPVGENTWO_BUILD_LINKER` is set to FALSE by default. If TRUE, an executable with sources from the 'link' folder will be built.
+* `SPVGENTWO_BUILD_TESTS` is set to FALSE by default. If TRUE, an executable with sources from the 'test' folder will be built.
 * `SPVGENTWO_REPLACE_PLACEMENTNEW` is set to TRUE by default. If FALSE, placement-new will be included from `<new>` header.
 * `SPVGENTWO_REPLACE_TRAITS` is set to TRUE by default. If FALSE, `<type_traits>` and `<utility>` header will be included under `spvgentwo::stdrep` namespace.
 * `SPVGENTWO_LOGGING` is set to TRUE by default, calls to module.log() will have not effect if FALSE.
 * `SPVGENTWO_ENABLE_WARNINGS` is set to TRUE by default and will enable most pedantic warnings-as-errors for all targets except the examples.
 * `SPVGENTWO_ENABLE_OPERANDVALIDATION` is set to TRUE by default and enables an additional validation step for every makeOp/opXZY call which is not necessary for non-development builds.
 
-Note that I mainly develop on windows using clang and MSVC but I'll also try to support GCC/linux.
+Note that I mainly develop on Windows using Clang and MSVC but I'll also try to support GCC/linux. I don't have any Apple hardware so I can't debuggin any issues there, but you are welcome to contribute fixes for this platform.
 
 # Tools
 
