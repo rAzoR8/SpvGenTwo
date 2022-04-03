@@ -1141,6 +1141,13 @@ bool spvgentwo::Module::write(IWriter& _writer) const
 	return !iterateInstructions(writeInstr);
 }
 
+spvgentwo::spv::Id spvgentwo::Module::finalize( const Grammar* _pGrammar )
+{
+	finalizeEntryPoints();
+
+	return assignIDs( _pGrammar ); // overwrites m_spvBound
+}
+
 bool spvgentwo::Module::finalizeAndWrite(IWriter& _writer, const Grammar* _pGrammar)
 {
 	finalizeEntryPoints();

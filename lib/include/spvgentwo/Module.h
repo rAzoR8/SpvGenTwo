@@ -211,8 +211,12 @@ namespace spvgentwo
 		// returns false if IWriter::put failed
 		bool write(IWriter& _writer) const;
 
+		// call this function before any call to module.write()!
 		// calls finalizeGlobalInterface() on EntryPoints
 		// automatically assigns IDs (calls assignIDs, adds Required Capabilities & Extensions & Version if _pGrammar != nullptr)
+		spv::Id finalize( const Grammar* _pGrammar = nullptr );
+
+		// calls finalize()
 		// serializes module to IWriter
 		bool finalizeAndWrite(IWriter& _writer, const Grammar* _pGrammar = nullptr);
 
