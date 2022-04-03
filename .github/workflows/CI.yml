@@ -24,11 +24,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-
-    # required for SPIR-Tools tests :/
-    - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
+      uses: actions/setup-python@v3
+        with: # required for SPIR-Tools tests :/
           python-version: '3.x' 
       
     - name: Create Build Environment
