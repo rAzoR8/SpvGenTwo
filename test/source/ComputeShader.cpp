@@ -1,4 +1,4 @@
-#include "test/ComputeShader.h"
+#include "test/Modules.h"
 #include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;

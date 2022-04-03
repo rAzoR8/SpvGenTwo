@@ -1,4 +1,4 @@
-#include "test/Types.h"
+#include "test/Modules.h"
 
 #include "common/TypeHelper.h"
 #include "spvgentwo/Templates.h"

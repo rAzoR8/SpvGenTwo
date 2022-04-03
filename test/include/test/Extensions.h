@@ -4,5 +4,4 @@
 
 namespace test
 {
-	spvgentwo::Module extensions(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger);
 } // !test

@@ -1,4 +1,4 @@
-#include "test/OldInstrTest.h"
+#include "test/Modules.h"
 
 #include "common/HeapAllocator.h"
 #include "common/ConsoleLogger.h"

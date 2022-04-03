@@ -4,5 +4,4 @@
 
 namespace test
 {
-	spvgentwo::Module expressionGraph(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger);
 } // !test

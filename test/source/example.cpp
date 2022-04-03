@@ -8,17 +8,7 @@
 #include "common/BinaryFileReader.h"
 
 // test
-#include "test/OldInstrTest.h"
-#include "test/FunctionCall.h"
-#include "test/ControlFlow.h"
-#include "test/Extensions.h"
-#include "test/Types.h"
-#include "test/Constants.h"
-#include "test/ExpressionGraph.h"
-#include "test/GeometryShader.h"
-#include "test/FragmentShader.h"
-#include "test/ComputeShader.h"
-#include "test/Linkage.h"
+#include "test/Modules.h"
 
 #include <cstdarg>
 #include <cassert>

@@ -1,4 +1,4 @@
-#include "test/ControlFlow.h"
+#include "test/Modules.h"
 #include "spvgentwo/Operators.h"
 #include "common/ControlFlowGraph.h"
 #include "spvgentwo/Templates.h"

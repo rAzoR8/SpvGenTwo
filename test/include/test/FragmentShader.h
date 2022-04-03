@@ -4,5 +4,4 @@
 
 namespace test
 {
-	spvgentwo::Module fragmentShader(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger);
 } // !test

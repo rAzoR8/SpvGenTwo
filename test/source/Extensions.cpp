@@ -1,4 +1,4 @@
-#include "test/Extensions.h"
+#include "test/Modules.h"
 
 #include "spvgentwo/GLSL450Instruction.h"
 #include "spvgentwo/Templates.h"
