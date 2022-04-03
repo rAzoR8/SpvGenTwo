@@ -36,7 +36,6 @@ cmake_option(SPVGENTWO_ENABLE_WARNINGS "Enable Warnings" TRUE)
 cmake_option(SPVGENTWO_LOGGING "Enable Logging" TRUE)
 cmake_option(SPVGENTWO_REPLACE_PLACEMENTNEW "Don't use replacement new from <new>" TRUE)
 cmake_option(SPVGENTWO_REPLACE_TRAITS "Use custom traits instead of <type_traits>" TRUE)
-cmake_option(SPVGENTWO_BUILD_EXAMPLES "Build examples" FALSE)
 cmake_option(SPVGENTWO_BUILD_DISASSEMBLER "Build disassembler" FALSE)
 cmake_option(SPVGENTWO_BUILD_REFLECT "Build reflect" FALSE)
 cmake_option(SPVGENTWO_BUILD_LINKER "Build linker" FALSE)
@@ -134,17 +133,6 @@ if(${SPVGENTWO_BUILD_LINKER})
 	target_include_directories(SpvGenTwoLinker PUBLIC "${linker_includes};${common_includes}")
 	target_link_libraries(SpvGenTwoLinker PRIVATE SpvGenTwoLib SpvGenTwoCommon)
 	cmake_add_warnings(SpvGenTwoLinker)
-endif()
-
-#example project
-if(${SPVGENTWO_BUILD_EXAMPLES})
-	add_sources("example/source/*.cpp" "example_sources")
-	add_sources("example/include/example/*.h" "example_sources")
-	add_include_folder("example/include" "example_includes")
-
-	add_executable(SpvGenTwoExample "${example_sources}")
-	target_include_directories(SpvGenTwoExample PUBLIC "${example_includes};${common_includes}")
-	target_link_libraries(SpvGenTwoExample PRIVATE SpvGenTwoLib SpvGenTwoCommon)
 endif()
 
 #test project
