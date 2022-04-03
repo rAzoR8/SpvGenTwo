@@ -161,13 +161,28 @@ if(${SPVGENTWO_BUILD_TESTS})
 
 	list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 
+	FetchContent_Declare(
+		spirv-headers
+		GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
+		GIT_TAG sdk-1.3.204.1
+	  )
+	  FetchContent_MakeAvailable(spirv-headers)
+
+	FetchContent_Declare(
+		spirv-tools
+		GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
+		GIT_TAG        v2022.1
+	  )
+  
+	FetchContent_MakeAvailable(spirv-tools)	
+
 	add_sources("test/source/*.cpp" "test_sources")
 	add_sources("test/include/test/*.h" "test_sources")
 	add_include_folder("test/include" "test_includes")
 
 	add_executable(SpvGenTwoTests "${test_sources}")
 	target_include_directories(SpvGenTwoTests PUBLIC "${test_includes};${common_includes}")
-	target_link_libraries(SpvGenTwoTests PRIVATE SpvGenTwoLib SpvGenTwoCommon Catch2::Catch2WithMain)
+	target_link_libraries(SpvGenTwoTests PRIVATE SpvGenTwoLib SpvGenTwoCommon Catch2::Catch2WithMain SPIRV-Tools)
 	
 	include(CTest)
 	include(Catch)
