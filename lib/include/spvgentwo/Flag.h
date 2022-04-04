@@ -92,4 +92,11 @@ namespace spvgentwo
 	constexpr Flag<Enum> operator&(const Flag<Enum>& l, const Enum& r) { return Flag<Enum>::AND(l, r); }
 	template<class Enum>
 	constexpr Flag<Enum> operator^(const Flag<Enum>& l, const Enum& r) { return Flag<Enum>::XOR(l, r); }
+
+	template<class Enum>
+	constexpr Flag<Enum> operator|( const Enum& l, const Flag<Enum>& r ) { return Flag<Enum>::OR( l, r ); }
+	template<class Enum>
+	constexpr Flag<Enum> operator&( const Enum& l, const Flag<Enum>& r ) { return Flag<Enum>::AND( l, r ); }
+	template<class Enum>
+	constexpr Flag<Enum> operator^( const Enum& l, const Flag<Enum>& r ) { return Flag<Enum>::XOR( l, r ); }
 } // !spvgentwo
