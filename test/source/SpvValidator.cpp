@@ -4,8 +4,6 @@
 
 namespace
 {
-	static spvtools::SpirvTools g_tools{ SPV_ENV_UNIVERSAL_1_6 };
-
     class MessageConsumer
     {
     public:
@@ -33,17 +31,26 @@ namespace
     private:
         spvgentwo::ILogger* m_pLogger;
     };
+
+    static spvtools::SpirvTools& instance( spvgentwo::ILogger* _pLogger )
+    {
+        static spvtools::SpirvTools tools( SPV_ENV_UNIVERSAL_1_6 );
+        static bool toolsInitialized = false;
+
+        if( tools.IsValid() && toolsInitialized == false )
+        {
+            tools.SetMessageConsumer( MessageConsumer( _pLogger ) );
+            toolsInitialized = true;
+        }
+
+        return tools;
+    }
 }
 
 
-test::SpvValidator::SpvValidator( spvgentwo::ILogger* _pLogger )
+test::SpvValidator::SpvValidator( spvgentwo::ILogger* _pLogger ) : m_pLogger(_pLogger)
 {
-	static bool toolsInitialized = false;
-	if( toolsInitialized == false )
-	{
-		g_tools.SetMessageConsumer( MessageConsumer( _pLogger ) );
-		toolsInitialized = true;
-	}
+
 }
 
 bool test::SpvValidator::validate( const spvgentwo::Module& _module )
@@ -51,5 +58,5 @@ bool test::SpvValidator::validate( const spvgentwo::Module& _module )
 	std::vector<uint32_t> vec;
 	auto writer = spvgentwo::BinaryVectorWriter( vec );
 
-	return _module.write( writer ) && g_tools.Validate( vec );
+	return _module.write( writer ) && instance( m_pLogger ).Validate( vec );
 }

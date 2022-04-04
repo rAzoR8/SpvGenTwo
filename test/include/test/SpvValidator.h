@@ -10,5 +10,7 @@ namespace test
 		SpvValidator( spvgentwo::ILogger* _pLogger );
 
 		bool validate( const spvgentwo::Module& _module );
+	private:
+		spvgentwo::ILogger* m_pLogger;
 	};
 }
