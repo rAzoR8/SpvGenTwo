@@ -2,27 +2,31 @@
 #include "common/BinaryVectorWriter.h"
 #include "spirv-tools/libspirv.hpp"
 
+#include <catch2/catch_test_macros.hpp>
+
 namespace
 {
     class MessageConsumer
     {
     public:
         MessageConsumer( spvgentwo::ILogger* _pLogger ) : m_pLogger( _pLogger ) {};
-        void operator()( spv_message_level_t level, const char*, const spv_position_t& position, const char* message )
+        void operator()( spv_message_level_t level, const char*, const spv_position_t& position, const char* message ) const
         {
+            WARN( message );
+
             switch( level ) {
             case SPV_MSG_FATAL:
-                m_pLogger->log( spvgentwo::LogLevel::Fatal, "line %ull idx %ull : %s", position.line, position.index, message );
+                m_pLogger->logFatal( "line %u idx %u : %s", position.line, position.index, message );
                 break;
             case SPV_MSG_INTERNAL_ERROR:
             case SPV_MSG_ERROR:
-                m_pLogger->log( spvgentwo::LogLevel::Error, "line %ull idx %ull : %s", position.line, position.index, message );
+                m_pLogger->logError( "line %u idx %u : %s", position.line, position.index, message );
                 break;
             case SPV_MSG_WARNING:
-                m_pLogger->log( spvgentwo::LogLevel::Warning, "line %ull idx %ull : %s", position.line, position.index, message );
+                m_pLogger->logWarning( "line %u idx %u : %s", position.line, position.index, message );
                 break;
             case SPV_MSG_INFO:
-                m_pLogger->log( spvgentwo::LogLevel::Info, "line %ull idx %ull : %s", position.line, position.index, message );
+                m_pLogger->logInfo( "line %u idx %u : %s", position.line, position.index, message );
                 break;
             default:
                 break;
@@ -50,7 +54,6 @@ namespace
 
 test::SpvValidator::SpvValidator( spvgentwo::ILogger* _pLogger ) : m_pLogger(_pLogger)
 {
-
 }
 
 bool test::SpvValidator::validate( const spvgentwo::Module& _module )

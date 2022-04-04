@@ -1,4 +1,3 @@
-
 #include "spvgentwo/Grammar.h"
 #include "common/ConsoleLogger.h"
 #include "common/HeapAllocator.h"
