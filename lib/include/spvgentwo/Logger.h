@@ -42,8 +42,8 @@ namespace spvgentwo
 		void logFatal(const char* _pFormat, Args... _args) { log(LogLevel::Fatal, _pFormat, _args...); }
 
 	private:
-		Flag<LogLevel> m_filter = LogLevel::All;
 		Callback m_callback = nullptr;
+		Flag<LogLevel> m_filter = LogLevel::All;
 	};
 
 	template<typename ...Args>
