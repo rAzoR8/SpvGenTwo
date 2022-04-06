@@ -162,6 +162,9 @@ if(${SPVGENTWO_BUILD_TESTS})
 		GIT_TAG        v2022.1
 	  )
   
+	set(SPIRV_SKIP_TESTS ON)
+	set(SPIRV_SKIP_EXECUTABLES ON)
+
 	FetchContent_MakeAvailable(spirv-tools)	
 
 	add_sources("test/source/*.cpp" "test_sources")

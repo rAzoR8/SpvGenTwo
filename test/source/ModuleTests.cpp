@@ -1,5 +1,4 @@
 #include "spvgentwo/Grammar.h"
-#include "common/ConsoleLogger.h"
 #include "common/HeapAllocator.h"
 
 #include <catch2/catch_test_macros.hpp>
@@ -8,12 +7,13 @@
 // test
 #include "test/Modules.h"
 #include "test/SpvValidator.h"
+#include "test/TestLogger.h"
 
 using namespace spvgentwo;
 using namespace test;
 
 HeapAllocator g_alloc;
-ConsoleLogger g_logger( Flag( LogLevel::Warning, LogLevel::Error, LogLevel::Fatal) );
+TestLogger g_logger;
 Grammar g_gram( &g_alloc );
 SpvValidator g_validator;
 
