@@ -10,7 +10,7 @@ I mainly focused on Shader capabilities, so the Kernel and OpenCL side is a bit 
 
 **Overview:**
 * [Examples](#Examples)
-    * [Example Project](#Example-Project)
+    * [Test Project](#Test-Project)
 * [Building](#Building)
 * [Tools](#Tools)
     * [Disassembler](#Disassembler)
@@ -116,20 +116,20 @@ The resulting SPIR-V binary when disassembled using `spirv-dis`:
                OpFunctionEnd
 ```
 
-## Example Project
+## Test Project
 
-Set CMake option SPVGENTWO_BUILD_EXAMPLES to TRUE to build included examples:
+Set CMake option SPVGENTWO_BUILD_TESTS to TRUE to build included examples:
 
-* [Types Example](example/source/Types.cpp)
-* [Constants Example](example/source/Constants.cpp)
-* [ControlFlow Example](example/source/ControlFlow.cpp)
-* [FunctionCall Example](example/source/FunctionCall.cpp)
-* [Extensions Example](example/source/Extensions.cpp)
-* [ExpressionGraph Example](example/source/ExpressionGraph.cpp)
-* [Linkage Example](example/source/Linkage.cpp)
-* [FragmentShader Example](example/source/FragmentShader.cpp)
-* [GeometryShader Example](example/source/GeometryShader.cpp)
-* [ComputeShader Example](example/source/ComputeShader.cpp)
+* [Types](test/source/Types.cpp)
+* [Constants](test/source/Constants.cpp)
+* [ControlFlow](test/source/ControlFlow.cpp)
+* [FunctionCall](test/source/FunctionCall.cpp)
+* [Extensions](test/source/Extensions.cpp)
+* [ExpressionGraph](test/source/ExpressionGraph.cpp)
+* [Linkage](test/source/Linkage.cpp)
+* [FragmentShader](test/source/FragmentShader.cpp)
+* [GeometryShader](test/source/GeometryShader.cpp)
+* [ComputeShader](test/source/ComputeShader.cpp)
 
 # Project Structure
 
@@ -137,7 +137,7 @@ SpvGenTwo is split into 5 folders:
 
 * `lib` contains the foundation to generate SPIR-V code. SpvGenTwo makes excessive use of its allocator interface, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those are not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :). Everything within this folders is pure C++17, no other dependencies (given that SPVGENTWO_REPLACE_PLACEMENTNEW and SPVGENTWO_REPLACE_TRAITS are used).
 * `common` contains some convenience implementations of abstract interfaces: HeapAllocator uses C malloc and free, BindaryFileWriter uses fopen, ConsoleLogger uses vprintf, ModulePrinter uses snprintf. It also has some additional classes like Callable (std::function replacement), Graph, ControlFlowGraph, Expression and ExprGraph, they follow the same design principles and might sooner or later be moved to `lib` if needed.
-* `example` contains small, self-contained code snippets that each generate a SPIR-V module to show some of the fundamental mechanics and APIs of SpvGenTwo.
+* `test` contains small, self-contained code snippets that each generate a SPIR-V module to show some of the fundamental mechanics and APIs of SpvGenTwo.
 * `dis` is a [spirv-dis](https://github.com/KhronosGroup/SPIRV-Tools#disassembler-tool)-like tool to print assembly language text.
 * `refl` is a [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect)-like tool to extract descriptor bindings and other relevant info from SPIR-V binary modules.
 * `link` is a [spirv-link](https://github.com/KhronosGroup/SPIRV-Tools#linker-tool)-like tool to for merging symbols of modules into a new output module.
@@ -147,16 +147,15 @@ SpvGenTwo is split into 5 folders:
 
 Use the supplied CMakeLists.txt to generate project files for your build system. SpvGenTwo allows the user to use standard library headers (`<type_traits>`, `<new>` etc) instead of my hand-made replacements (see `stdreplament.h`).
 
-* `SPVGENTWO_BUILD_EXAMPLES` is set to FALSE by default. If TRUE, an executable with sources from the 'example' folder will be built.
-    * Note that the SpvGenTwoExample executable project requires the Vulkan SDK to be installed as it calls spirv-val and spriv-dis.
+* `SPVGENTWO_BUILD_TESTS` is set to FALSE by default. If TRUE, an executable with sources from the 'test' folder will be built.
+    * Note that the SpvGenTwoTest executable project depends on SPIR-V Tools which requires python to be present for its tests (even when building without tests *facepalm*)
 * `SPVGENTWO_BUILD_DISASSEMBLER` is set to FALSE by default. If TRUE, an executable with sources from the 'dis' folder will be built.
 * `SPVGENTWO_BUILD_REFLECT` is set to FALSE by default. If TRUE, an executable with sources from the 'refl' folder will be built.
 * `SPVGENTWO_BUILD_LINKER` is set to FALSE by default. If TRUE, an executable with sources from the 'link' folder will be built.
-* `SPVGENTWO_BUILD_TESTS` is set to FALSE by default. If TRUE, an executable with sources from the 'test' folder will be built.
 * `SPVGENTWO_REPLACE_PLACEMENTNEW` is set to TRUE by default. If FALSE, placement-new will be included from `<new>` header.
 * `SPVGENTWO_REPLACE_TRAITS` is set to TRUE by default. If FALSE, `<type_traits>` and `<utility>` header will be included under `spvgentwo::stdrep` namespace.
 * `SPVGENTWO_LOGGING` is set to TRUE by default, calls to module.log() will have not effect if FALSE.
-* `SPVGENTWO_ENABLE_WARNINGS` is set to TRUE by default and will enable most pedantic warnings-as-errors for all targets except the examples.
+* `SPVGENTWO_ENABLE_WARNINGS` is set to TRUE by default and will enable most pedantic warnings-as-errors for all targets except the tests.
 * `SPVGENTWO_ENABLE_OPERANDVALIDATION` is set to TRUE by default and enables an additional validation step for every makeOp/opXZY call which is not necessary for non-development builds.
 
 Note that I mainly develop on Windows using Clang and MSVC but I'll also try to support GCC/linux. I don't have any Apple hardware so I can't debuggin any issues there, but you are welcome to contribute fixes for this platform.
@@ -165,7 +164,7 @@ Note that I mainly develop on Windows using Clang and MSVC but I'll also try to 
 
 SpvGenTwo includes a couple of CLI tools to explore and test the libraries capabilities.
 
-## Disassembler
+## SPIR-V Disassembler
 
 ![SpvGenTwoDisassembler](/misc/dis.PNG)
 
@@ -182,7 +181,7 @@ CLI: ```SpvGenTwoDisassembler [file] <option> <option> ...```
 * `-colors` use [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) color codes
 * `-tabs "    "` example: use 4 spaces instead of 2 tabs
 
-## Reflector
+## SPIR-V Reflector
 
 ![SpvGenTwoReflect](/misc/refl.PNG)
 
@@ -204,11 +203,11 @@ CLI: SpvGenTwoReflect ```[file] <option> <option> ...```
     * `-id 24`
 * `-colors` use [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code) color codes
 
-## Linker
+## SPIR-V Linker
 
 ![SpvGenTwoLinker](/misc/linker.PNG)
 
-See [SpvGenTwoLinker](LINKER.md) for detailed description. Source can be found at [refl/source/link.cpp](refl/source/link.cpp).
+SPIR-V Shader library linker and patcher. See [SpvGenTwoLinker](LINKER.md) for detailed description. Source can be found at [refl/source/link.cpp](refl/source/link.cpp).
 
 # Documentation
 
@@ -237,7 +236,7 @@ A list of short and long term goals for this library:
 
 * Implement more Instructions, at least 90% of Shader capabilities
 * Improve validation / logging / error reporting
-* Write unit tests
+* Write more unit tests
 * Implement [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools) like helper tools
 * Implement some front-end or DSL like [SPEAR](https://github.com/rAzoR8/SPEAR)
 
