@@ -7,10 +7,8 @@ namespace test
 	class SpvValidator
 	{
 	public:
-		SpvValidator( spvgentwo::ILogger* _pLogger );
+		SpvValidator();
 
 		bool validate( const spvgentwo::Module& _module );
-	private:
-		spvgentwo::ILogger* m_pLogger;
 	};
 }

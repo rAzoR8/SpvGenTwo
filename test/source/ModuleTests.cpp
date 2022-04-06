@@ -15,7 +15,7 @@ using namespace test;
 HeapAllocator g_alloc;
 ConsoleLogger g_logger( Flag( LogLevel::Warning, LogLevel::Error, LogLevel::Fatal) );
 Grammar g_gram( &g_alloc );
-SpvValidator g_validator( &g_logger );
+SpvValidator g_validator;
 
 bool valid( spvgentwo::Module&& _module )
 {
