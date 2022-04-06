@@ -5,7 +5,9 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-test::TestLogger::TestLogger() : spvgentwo::ILogger([](spvgentwo::ILogger* _pInstance, spvgentwo::LogLevel _level, const char* _format, ...)
+namespace
+{
+	void TestLog(spvgentwo::ILogger* _pInstance, spvgentwo::LogLevel _level, const char* _format, ...)
 	{
 		char buffer[1024]{};
 
@@ -13,7 +15,7 @@ test::TestLogger::TestLogger() : spvgentwo::ILogger([](spvgentwo::ILogger* _pIns
 		va_start(args, _format);
 		vsnprintf(buffer, sizeof(buffer), _format, args);
 		va_end(args);
-		
+
 		switch (_level)
 		{
 		case spvgentwo::LogLevel::Info:
@@ -31,6 +33,9 @@ test::TestLogger::TestLogger() : spvgentwo::ILogger([](spvgentwo::ILogger* _pIns
 			break;
 		}
 	}
-)
+}
+
+
+test::TestLogger::TestLogger() : spvgentwo::ILogger(TestLog)
 {
 }
