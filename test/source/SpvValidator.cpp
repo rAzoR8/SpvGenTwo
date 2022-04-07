@@ -1,8 +1,12 @@
 #include "test/SpvValidator.h"
 #include "common/BinaryVectorWriter.h"
-#include "spirv-tools/libspirv.hpp"
+#include "common/ModulePrinter.h"
 
+#include "spirv-tools/libspirv.hpp"
 #include <catch2/catch_test_macros.hpp>
+
+using namespace spvgentwo;
+using namespace ModulePrinter;
 
 namespace
 {
@@ -41,14 +45,27 @@ namespace
 }
 
 
-test::SpvValidator::SpvValidator()
+test::SpvValidator::SpvValidator(const Grammar& _gram) : m_gram(_gram)
 {
 }
 
 bool test::SpvValidator::validate( const spvgentwo::Module& _module )
 {
 	std::vector<uint32_t> vec;
-	auto writer = spvgentwo::BinaryVectorWriter( vec );
+	auto writer = BinaryVectorWriter( vec );
 
-	return _module.write( writer ) && instance().Validate( vec );
+	if (_module.write(writer))
+	{
+		if (instance().Validate(vec) == false)
+		{
+			PrintOptions options{ PrintOptionsBits::All };
+			String buffer(_module.getAllocator(), 1024);
+			auto printer = ModuleStringPrinter(buffer, false);
+			printModule(_module, m_gram, printer, options);
+			WARN(buffer.c_str());
+			return false;
+		}
+		else return true;
+	}
+	else return false;
 }

@@ -7,8 +7,10 @@ namespace test
 	class SpvValidator
 	{
 	public:
-		SpvValidator();
+		SpvValidator(const spvgentwo::Grammar& _gram);
 
 		bool validate( const spvgentwo::Module& _module );
+	private:
+		const spvgentwo::Grammar& m_gram;
 	};
 }
