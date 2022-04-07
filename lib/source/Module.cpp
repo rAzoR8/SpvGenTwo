@@ -465,12 +465,20 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, c
 		{
 			pInstr->addOperand(literal_t{ val });
 		}
+		if(_const.getData().empty())
+		{
+			logError("Expected literal data for this constant [addConstant]");
+		}
 		break;
 	case spv::Op::OpConstantComposite:
 	case spv::Op::OpSpecConstantComposite:
 		for(const Constant& component : _const.getComponents())
 		{
 			pInstr->addOperand(addConstant(component));		
+		}
+		if (_const.getComponents().empty())
+		{
+			logError("Expected components for this constant composite[addConstant]");
 		}
 		break;
 	case spv::Op::OpSpecConstantOp:
@@ -1020,6 +1028,10 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo(IAllocator* _pAllocator)
 				{
 					c.getData().emplace_back(it->getLiteral());
 				}
+				if (c.getData().empty())
+				{
+					logError("Expected literal data for this constant [reconstructTypeAndConstantInfo]");
+				}
 				break;
 			case spv::Op::OpConstantComposite:
 			case spv::Op::OpSpecConstantComposite:
@@ -1034,6 +1046,10 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo(IAllocator* _pAllocator)
 						logError("Constituent constant not found");
 						success = false;					
 					}
+				}
+				if (c.getComponents().empty())
+				{
+					logError("Expected components for this constant composite [reconstructTypeAndConstantInfo]");
 				}
 				break;
 			case spv::Op::OpSpecConstantOp:
