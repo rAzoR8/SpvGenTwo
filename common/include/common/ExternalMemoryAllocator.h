@@ -40,14 +40,14 @@ namespace spvgentwo
 	};
 
 	template <sgt_size_t Capacity>
-	class StackMemoryAllocator : protected StackStorage<Capacity>, public ExternalMemoryAllocator
+	class StackAllocator : protected StackStorage<Capacity>, public ExternalMemoryAllocator
 	{
 	public:
-		constexpr StackMemoryAllocator() : ExternalMemoryAllocator(StackStorage<Capacity>::m_storage) {}
+		constexpr StackAllocator() : ExternalMemoryAllocator(StackStorage<Capacity>::m_storage) {}
 	};
 
 	template <class Container, sgt_size_t Capacity>
-	class StackContainer : StackMemoryAllocator<Capacity>, public Container
+	class StackContainer : StackAllocator<Capacity>, public Container
 	{
 	public:
 		template <class ... ContainerArgs>
