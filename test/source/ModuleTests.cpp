@@ -12,21 +12,24 @@
 using namespace spvgentwo;
 using namespace test;
 
-HeapAllocator g_alloc;
-TestLogger g_logger;
-Grammar g_gram( &g_alloc );
-SpvValidator g_validator(g_gram);
-
-bool valid( spvgentwo::Module&& _module )
+namespace 
 {
-	_module.finalize( &g_gram );
-	return g_validator.validate( _module );
-}
+	HeapAllocator g_alloc;
+	TestLogger g_logger;
+	Grammar g_gram(&g_alloc);
+	SpvValidator g_validator(g_gram);
 
-bool valid( spvgentwo::Module& _module )
-{
-	_module.finalize( &g_gram );
-	return g_validator.validate( _module );
+	bool valid(spvgentwo::Module&& _module)
+	{
+		_module.finalize(&g_gram);
+		return g_validator.validate(_module);
+	}
+
+	bool valid(spvgentwo::Module& _module)
+	{
+		_module.finalize(&g_gram);
+		return g_validator.validate(_module);
+	}
 }
 
 TEST_CASE( "types", "[Modules]" )
