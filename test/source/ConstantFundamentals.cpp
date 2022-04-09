@@ -8,7 +8,11 @@ StackAllocator<32> g_alloc;
 inline Constant constant() { return Constant(&g_alloc); }
 
 template <class T>
-inline bool test(T val) { return val == *constant().make<T>(val).getDataAs<T>(); }
+inline bool test(T val)
+{
+	const T* ptr = constant().make<T>(val).template getDataAs<T>();
+	return ptr != nullptr && *ptr == val;
+}
 
 TEST_CASE("Data consistency", "[Constants]")
 {
