@@ -145,6 +145,8 @@ if(${SPVGENTWO_BUILD_TESTS})
 	  GIT_TAG        v3.0.0-preview4
 	)
 
+	set(CATCH_CONFIG_FAST_COMPILE OFF)
+
 	FetchContent_MakeAvailable(Catch2)
 
 	list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)

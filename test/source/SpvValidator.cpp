@@ -52,7 +52,7 @@ test::SpvValidator::SpvValidator(const Grammar& _gram) : m_gram(_gram)
 bool test::SpvValidator::validate( const spvgentwo::Module& _module )
 {
 	std::vector<uint32_t> vec;
-	auto writer = BinaryVectorWriter( vec );
+	auto writer = BinaryVectorWriter<std::vector<uint32_t>>( vec );
 
 	if (_module.write(writer))
 	{

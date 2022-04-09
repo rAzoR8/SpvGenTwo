@@ -116,7 +116,7 @@ namespace spvgentwo
 		Function& addFunction();
 
 		template <class ReturnType = void, class ... ParameterTypes>
-		Function& addFunction(const char* _pFunctionName = nullptr, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
+		Function& addFunction(const char* _pFunctionName = nullptr, Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, bool _addEntryBasicBlock = true);
 
 		// remove Function or EntryPoint, returns list of Instructions which consumed the function (calls outside the function itself)
 		// _pAllocator to use for allocating List<Instruction*> (use modules allocator if nullptr)
@@ -126,7 +126,7 @@ namespace spvgentwo
 		EntryPoint& addEntryPoint();
 
 		template <class ReturnType = void, class ... ParameterTypes>
-		EntryPoint& addEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, const bool _addEntryBasicBlock = true);
+		EntryPoint& addEntryPoint(spv::ExecutionModel _model, const char* _pEntryPointName, Flag<spv::FunctionControlMask> _control = spv::FunctionControlMask::MaskNone, bool _addEntryBasicBlock = true);
 
 		// add OpCapability if not present in the module, _addDependentCapablity adds base capabilities (not required) for _capability: Geometry->Shader etc.
 		void addCapability(spv::Capability _capability, bool _addDependentCapablity = false);
