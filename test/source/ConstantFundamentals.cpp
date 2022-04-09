@@ -24,7 +24,9 @@ namespace {
 	{
 		Constant c(constant().make<T>(val));
 		const T* ptr = c.template getDataAs<T>();
-		return ptr != nullptr && *ptr == val;
+		if (ptr == nullptr) return false;
+		T v = *ptr;
+		return v == val;
 	}
 
 	bool valid(spvgentwo::Module&& _module)
@@ -42,23 +44,23 @@ namespace {
 
 TEST_CASE("Data consistency", "[Constants]")
 {
-	REQUIRE(testData((char)55));
-	REQUIRE(testData((char)-13));
-	REQUIRE(testData((unsigned char)255));
-	REQUIRE(testData((short)4900));
-	REQUIRE(testData((short)-1337));
-	REQUIRE(testData((unsigned short)0xffff));
-	REQUIRE(testData((unsigned short)12345));
-	REQUIRE(testData(85301));
-	REQUIRE(testData(-959999));
-	REQUIRE(testData(0xffffffff));
-	REQUIRE(testData(0xffffffffu));
-	REQUIRE(testData(0x1u));
-	REQUIRE(testData(-0xffffffffll));
-	REQUIRE(testData(0xffffffffffffffffllu));
-	REQUIRE(testData(-42.0f));
-	REQUIRE(testData(-0.0f));
-	REQUIRE(testData(-0.1 / 0.0000000000455667));
+	CHECK(testData((char)55));
+	CHECK(testData((char)-13));
+	CHECK(testData((unsigned char)255));
+	CHECK(testData((short)4900));
+	CHECK(testData((short)-1337));
+	CHECK(testData((unsigned short)0xffff));
+	CHECK(testData((unsigned short)12345));
+	CHECK(testData(85301));
+	CHECK(testData(-959999));
+	CHECK(testData(0xffffffff));
+	CHECK(testData(0xffffffffu));
+	CHECK(testData(0x1u));
+	CHECK(testData(-0xffffffffll));
+	CHECK(testData(0xffffffffffffffffllu));
+	CHECK(testData(-42.0f));
+	CHECK(testData(-0.0f));
+	CHECK(testData(-0.1 / 0.0000000000455667));
 }
 
 TEST_CASE("Create constant", "[Constants]")
