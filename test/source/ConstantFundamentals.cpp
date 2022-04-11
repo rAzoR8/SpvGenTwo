@@ -19,16 +19,6 @@ namespace {
 
 	inline Constant constant() { return Constant(&g_alloc); }
 
-	template <class T>
-	inline bool testData(T val)
-	{
-		Constant c(constant().make<T>(val));
-		const T* ptr = c.template getDataAs<T>();
-		if (ptr == nullptr) return false;
-		T v = *ptr;
-		return v == val;
-	}
-
 	bool valid(spvgentwo::Module&& _module)
 	{
 		_module.finalize(&g_gram);
@@ -44,23 +34,36 @@ namespace {
 
 TEST_CASE("Data consistency", "[Constants]")
 {
-	CHECK(testData((char)55));
-	CHECK(testData((char)-13));
-	CHECK(testData((unsigned char)255));
-	CHECK(testData((short)4900));
-	CHECK(testData((short)-1337));
-	CHECK(testData((unsigned short)0xffff));
-	CHECK(testData((unsigned short)12345));
-	CHECK(testData(85301));
-	CHECK(testData(-959999));
-	CHECK(testData(0xffffffff));
-	CHECK(testData(0xffffffffu));
-	CHECK(testData(0x1u));
-	CHECK(testData(-0xffffffffll));
-	CHECK(testData(0xffffffffffffffffllu));
-	CHECK(testData(-42.0f));
-	CHECK(testData(-0.0f));
-	CHECK(testData(-0.1 / 0.0000000000455667));
+	auto testData = [](auto val)
+	{
+		using T = decltype(val);
+		Constant c(constant().make<T>(val));
+		const T* ptr = c.template getDataAs<T>();
+		CHECK(ptr != nullptr);
+		if ( ptr != nullptr )
+		{
+			T v = *ptr;
+			CHECK(v == val);
+		}
+	};
+
+	testData((char)55);
+	testData((char)-13);
+	testData((unsigned char)255);
+	testData((short)4900);
+	testData((short)-1337);
+	testData((unsigned short)0xffff);
+	testData((unsigned short)12345);
+	testData(85301);
+	testData(-959999);
+	testData(0xffffffff);
+	testData(0xffffffffu);
+	testData(0x1u);
+	testData(-0xffffffffll);
+	testData(0xffffffffffffffffllu);
+	testData(-42.0f);
+	testData(-0.0f);
+	testData(-0.1 / 0.0000000000455667);
 }
 
 TEST_CASE("Create constant", "[Constants]")
