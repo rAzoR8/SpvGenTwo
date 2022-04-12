@@ -1,14 +1,18 @@
 #pragma once
 
+#include "Flag.h"
+
 namespace spvgentwo
 {
 	enum class LogLevel : unsigned int 
 	{
-		Debug, // for dev
-		Info, // detail msg
-		Warning, // missing information
-		Error, // invalid program / spirv state
-		Fatal // program should terminate
+		None = 0,
+		Debug = 1 << 0, // for dev
+		Info = 1 << 1, // detail msg
+		Warning = 1 << 2, // missing information
+		Error = 1 << 3, // invalid program / spirv state
+		Fatal = 1 << 4, // program should terminate
+		All = Debug | Info | Warning | Error | Fatal
 	};
 
 	class ILogger
@@ -16,9 +20,10 @@ namespace spvgentwo
 	public:
 		using Callback = void (*) (ILogger* _pInstance, LogLevel _level, const char* _format, ...);
 
-		ILogger(Callback _callback = nullptr) : m_callback(_callback){}
+		ILogger( Callback _callback = nullptr, Flag<LogLevel> _filter = LogLevel::All ) : m_callback( _callback ), m_filter(_filter) {}
 
-		void setCallback(Callback _callback) { m_callback = _callback; }
+		void setCallback( Callback _callback ) { m_callback = _callback; }
+		void setFilter( Flag<LogLevel> _filter ) { m_filter = _filter; }
 
 		virtual ~ILogger() {}
 
@@ -38,14 +43,16 @@ namespace spvgentwo
 
 	private:
 		Callback m_callback = nullptr;
+		Flag<LogLevel> m_filter = LogLevel::All;
 	};
 
 	template<typename ...Args>
 	inline void ILogger::log(LogLevel _level, const char* _pFormat, Args... _args)
 	{
-		if (m_callback != nullptr)
-		{
-			m_callback(this, _level, _pFormat, _args...);
+		LogLevel level =  _level & m_filter;
+		if (m_callback != nullptr && level != LogLevel::None )
+		{			
+			m_callback(this, level, _pFormat, _args...);
 		}
 	}
 } //! spvgentwo

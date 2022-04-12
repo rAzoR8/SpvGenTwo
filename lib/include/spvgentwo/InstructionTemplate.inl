@@ -44,9 +44,7 @@ namespace spvgentwo
 
 		inferResultTypeOperand();
 
-#ifdef SPVGENTWO_ENABLE_OPERANDVALIDATION
 		validateOperands();
-#endif
 
 		return this;
 	}

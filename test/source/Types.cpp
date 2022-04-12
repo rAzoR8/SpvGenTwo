@@ -1,11 +1,11 @@
-#include "example/Types.h"
+#include "test/Modules.h"
 
 #include "common/TypeHelper.h"
 #include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 
-Module examples::types(IAllocator* _pAllocator, ILogger* _pLogger)
+Module test::types(IAllocator* _pAllocator, ILogger* _pLogger)
 {
 	Module module(_pAllocator, _pLogger);
 	module.addCapability(spv::Capability::Shader);

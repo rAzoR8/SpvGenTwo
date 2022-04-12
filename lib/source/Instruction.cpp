@@ -1876,8 +1876,12 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 
 bool spvgentwo::Instruction::validateOperands()
 {
+#ifdef SPVGENTWO_ENABLE_OPERANDVALIDATION
 	ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
 	return validator != nullptr ? validator->validateOperands(*this) : true;
+#else
+	return true;
+#endif
 }
 
 bool spvgentwo::Instruction::isErrorInstr() const

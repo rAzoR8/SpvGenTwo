@@ -36,7 +36,6 @@ cmake_option(SPVGENTWO_ENABLE_WARNINGS "Enable Warnings" TRUE)
 cmake_option(SPVGENTWO_LOGGING "Enable Logging" TRUE)
 cmake_option(SPVGENTWO_REPLACE_PLACEMENTNEW "Don't use replacement new from <new>" TRUE)
 cmake_option(SPVGENTWO_REPLACE_TRAITS "Use custom traits instead of <type_traits>" TRUE)
-cmake_option(SPVGENTWO_BUILD_EXAMPLES "Build examples" FALSE)
 cmake_option(SPVGENTWO_BUILD_DISASSEMBLER "Build disassembler" FALSE)
 cmake_option(SPVGENTWO_BUILD_REFLECT "Build reflect" FALSE)
 cmake_option(SPVGENTWO_BUILD_LINKER "Build linker" FALSE)
@@ -136,17 +135,6 @@ if(${SPVGENTWO_BUILD_LINKER})
 	cmake_add_warnings(SpvGenTwoLinker)
 endif()
 
-#example project
-if(${SPVGENTWO_BUILD_EXAMPLES})
-	add_sources("example/source/*.cpp" "example_sources")
-	add_sources("example/include/example/*.h" "example_sources")
-	add_include_folder("example/include" "example_includes")
-
-	add_executable(SpvGenTwoExample "${example_sources}")
-	target_include_directories(SpvGenTwoExample PUBLIC "${example_includes};${common_includes}")
-	target_link_libraries(SpvGenTwoExample PRIVATE SpvGenTwoLib SpvGenTwoCommon)
-endif()
-
 #test project
 if(${SPVGENTWO_BUILD_TESTS})
 	Include(FetchContent)
@@ -154,12 +142,37 @@ if(${SPVGENTWO_BUILD_TESTS})
 	FetchContent_Declare(
 	  Catch2
 	  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-	  GIT_TAG        v3.0.0-preview3
+	  GIT_TAG        v3.0.0-preview4
 	)
+
+	set(CATCH_CONFIG_FAST_COMPILE OFF)
 
 	FetchContent_MakeAvailable(Catch2)
 
 	list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+
+	FetchContent_Declare(
+		spirv-headers
+		GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
+		GIT_TAG sdk-1.3.204.1
+	  )
+
+	set(SPIRV_HEADERS_SKIP_EXAMPLES ON)
+	set(SPIRV_HEADERS_SKIP_INSTALL ON)
+  
+	FetchContent_MakeAvailable(spirv-headers)
+
+	FetchContent_Declare(
+		spirv-tools
+		GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
+		GIT_TAG        v2022.1
+	  )
+  
+	set(SPIRV_SKIP_TESTS ON)
+	set(SPIRV_SKIP_EXECUTABLES ON)
+	set(SKIP_SPIRV_TOOLS_INSTALL ON)
+
+	FetchContent_MakeAvailable(spirv-tools)	
 
 	add_sources("test/source/*.cpp" "test_sources")
 	add_sources("test/include/test/*.h" "test_sources")
@@ -167,7 +180,7 @@ if(${SPVGENTWO_BUILD_TESTS})
 
 	add_executable(SpvGenTwoTests "${test_sources}")
 	target_include_directories(SpvGenTwoTests PUBLIC "${test_includes};${common_includes}")
-	target_link_libraries(SpvGenTwoTests PRIVATE SpvGenTwoLib SpvGenTwoCommon Catch2::Catch2WithMain)
+	target_link_libraries(SpvGenTwoTests PRIVATE SpvGenTwoLib SpvGenTwoCommon Catch2::Catch2WithMain SPIRV-Tools)
 	
 	include(CTest)
 	include(Catch)

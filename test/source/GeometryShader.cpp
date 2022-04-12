@@ -1,10 +1,10 @@
-#include "example/GeometryShader.h"
+#include "test/Modules.h"
 #include "spvgentwo/TypeAlias.h"
 #include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 
-Module examples::geometryShader(IAllocator* _pAllocator, ILogger* _pLogger)
+Module test::geometryShader(IAllocator* _pAllocator, ILogger* _pLogger)
 {
     using namespace glsl;
 

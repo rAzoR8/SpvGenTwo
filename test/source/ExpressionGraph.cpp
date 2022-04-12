@@ -1,63 +1,66 @@
-﻿#include "example/ExpressionGraph.h"
+﻿#include "test/Modules.h"
 #include "common/ExprGraph.h"
 
 #include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 
-enum class Op
-{
-	Nop,
-	Var,
-	Const,
-	Add,
-	Sub,
-	Mul,
-	Div
-};
+namespace {
 
-struct MyExpr
-{
-	const char* name = nullptr;
-	BasicBlock& bb;
-	Op op = Op::Nop;
-	//Instruction* constnt = nullptr;
-	Instruction* result = nullptr;
-
-	void operator()(const List<MyExpr*>& _inputs, [[maybe_unused]] const List<MyExpr*>& _outputs)
+	enum class Op
 	{
-		Instruction* lhs = _inputs.empty() ? nullptr : _inputs.front()->result;
-		Instruction* rhs = _inputs.size() == 2u ? _inputs.back()->result : nullptr;
-
-		switch (op)
-		{
-		case Op::Nop:
-			/*result =*/ bb->opNop();
-			break;
-		case Op::Var:
-			break;
-		case Op::Const:
-			//result = constant;//bb.getModule()->addConstant(constant);
-			break;
-		case Op::Add:
-			result = bb->Add(lhs, rhs);
-			break;
-		case Op::Sub:
-			result = bb->Sub(lhs, rhs);
-			break;
-		case Op::Mul:
-			result = bb->Mul(lhs, rhs);
-			break;
-		case Op::Div:
-			result = bb->Div(lhs, rhs);
-			break;
-		default:
-			break;
-		}
+		Nop,
+		Var,
+		Const,
+		Add,
+		Sub,
+		Mul,
+		Div
 	};
-};
 
-spvgentwo::Module examples::expressionGraph(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
+	struct MyExpr
+	{
+		const char* name = nullptr;
+		BasicBlock& bb;
+		Op op = Op::Nop;
+		//Instruction* constnt = nullptr;
+		Instruction* result = nullptr;
+
+		void operator()( const List<MyExpr*>& _inputs, [[maybe_unused]] const List<MyExpr*>& _outputs )
+		{
+			Instruction* lhs = _inputs.empty() ? nullptr : _inputs.front()->result;
+			Instruction* rhs = _inputs.size() == 2u ? _inputs.back()->result : nullptr;
+
+			switch( op )
+			{
+			case Op::Nop:
+				/*result =*/ bb->opNop();
+				break;
+			case Op::Var:
+				break;
+			case Op::Const:
+				//result = constant;//bb.getModule()->addConstant(constant);
+				break;
+			case Op::Add:
+				result = bb->Add( lhs, rhs );
+				break;
+			case Op::Sub:
+				result = bb->Sub( lhs, rhs );
+				break;
+			case Op::Mul:
+				result = bb->Mul( lhs, rhs );
+				break;
+			case Op::Div:
+				result = bb->Div( lhs, rhs );
+				break;
+			default:
+				break;
+			}
+		};
+	};
+}
+
+spvgentwo::Module test::expressionGraph(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
 	//auto expr = make_expr([]() {printf("hallo"); return 1u; });
 

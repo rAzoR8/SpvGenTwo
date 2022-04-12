@@ -1,10 +1,10 @@
-#include "example/FragmentShader.h"
+#include "test/Modules.h"
 #include "spvgentwo/TypeAlias.h"
 #include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 
-spvgentwo::Module examples::fragmentShader(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
+spvgentwo::Module test::fragmentShader(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
     // create a new spir-v module
     Module module(_pAllocator, _pLogger);

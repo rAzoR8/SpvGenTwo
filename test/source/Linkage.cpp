@@ -1,4 +1,4 @@
-#include "example/Linkage.h"
+#include "test/Modules.h"
 #include "common/LinkerHelper.h"
 #include "spvgentwo/Templates.h"
 #include "common/ModulePrinter.h"
@@ -14,7 +14,7 @@
 
 using namespace spvgentwo;
 
-spvgentwo::Module examples::linkageLibA(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
+spvgentwo::Module test::linkageLibA(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
 	// create a new spir-v module
 	Module module(_pAllocator, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger);
@@ -69,7 +69,7 @@ spvgentwo::Module examples::linkageLibA(spvgentwo::IAllocator* _pAllocator, spvg
 	return module;
 }
 
-spvgentwo::Module examples::linkageLibB(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
+spvgentwo::Module test::linkageLibB(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
 	// create a new spir-v module
 	Module module(_pAllocator, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger);
@@ -140,7 +140,7 @@ spvgentwo::Module examples::linkageLibB(spvgentwo::IAllocator* _pAllocator, spvg
 	return module;
 }
 
-spvgentwo::Module examples::linkageConsumer(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
+spvgentwo::Module test::linkageConsumer(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
 	// create a new spir-v module
 	Module module(_pAllocator, spv::AddressingModel::Logical, spv::MemoryModel::Simple, _pLogger);
@@ -172,7 +172,7 @@ spvgentwo::Module examples::linkageConsumer(spvgentwo::IAllocator* _pAllocator, 
 	return module;
 }
 
-bool examples::linkageLinked(const spvgentwo::Module& _libA, const spvgentwo::Module& _libB, spvgentwo::Module& _consumer, spvgentwo::IAllocator* _pAllocator, const spvgentwo::Grammar* _pGrammar)
+bool test::linkageLinked(const spvgentwo::Module& _libA, const spvgentwo::Module& _libB, spvgentwo::Module& _consumer, spvgentwo::IAllocator* _pAllocator, const spvgentwo::Grammar* _pGrammar)
 {
 	auto printer = ModulePrinter::ModuleSimpleFuncPrinter([](const char* str) {
 		printf("%s", str);

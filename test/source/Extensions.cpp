@@ -1,4 +1,4 @@
-#include "example/Extensions.h"
+#include "test/Modules.h"
 
 #include "spvgentwo/GLSL450Instruction.h"
 #include "spvgentwo/Templates.h"
@@ -6,7 +6,7 @@
 using namespace spvgentwo;
 using namespace ext;
 
-spvgentwo::Module examples::extensions(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
+spvgentwo::Module test::extensions(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
 	// create a new spir-v module
 	Module module(_pAllocator, spv::AddressingModel::Logical, spv::MemoryModel::VulkanKHR, _pLogger);

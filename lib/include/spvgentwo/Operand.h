@@ -22,7 +22,7 @@ namespace spvgentwo
 		unsigned int value = 0u;
 		operator unsigned int() const { return value; }
 	};
-	
+
 	static_assert(sizeof(literal_t) == sizeof(unsigned int), "literal_t padded");
 
 	struct Operand
@@ -40,7 +40,7 @@ namespace spvgentwo
 			Instruction* instruction = nullptr; // intermediate or type
 			literal_t literal;
 			spv::Id id;
-			BasicBlock* branchTarget; 
+			BasicBlock* branchTarget;
 		};
 
 		constexpr bool isBranchTarget() const { return type == Type::BranchTarget; }
@@ -53,7 +53,7 @@ namespace spvgentwo
 		constexpr literal_t getLiteral() const { return isLiteral() ? literal : literal_t{}; }
 		constexpr spv::Id getId() const { return isId() ? id : InvalidId; }
 
-		constexpr explicit operator Instruction*() const { return getInstruction(); }
+		constexpr explicit operator Instruction* () const { return getInstruction(); }
 		constexpr explicit operator spv::Id() const { return getId(); }
 		constexpr explicit operator literal_t() const { return getLiteral(); }
 		constexpr explicit operator BasicBlock* () const { return getBranchTarget(); }
@@ -87,33 +87,56 @@ namespace spvgentwo
 	template<class Container, class T, class ...Args>
 	void appendLiteralsToContainer(Container& _out, T first, Args ..._args)
 	{
-		constexpr auto bytes = sizeof(T);
-		constexpr auto words = bytes / sizeof(unsigned int);
+		static_assert(stdrep::is_constructible_v<typename Container::ValueType, literal_t>, "Container does not accept literal_t");
+		static_assert(stdrep::is_constructible_v<literal_t, T>, "Value type T for 'first' can not be used to construct a literal");
 
-		for (auto w = 0u; w < words; ++w)
+		[[maybe_unused]]
+		auto copy = [](const void* _src, void* _dst, sgt_size_t size)
 		{
-			_out.emplace_back(reinterpret_cast<const literal_t*>(&first)[w]);
+			auto* src = static_cast<const char*>(_src);
+			auto* dst = static_cast<char*>(_dst);
+
+			for ( sgt_size_t i = 0; i < size; i++ )
+			{
+				dst[i] = src[i];
+			}
+		};
+
+		using S = stdrep::decay_t<T>;
+
+		// The high-order bits of a literal number must be 0 for a floating-point type, or 0 for an integer type with Signedness of 0, or sign extended when Signedness is 1
+		if constexpr ( stdrep::is_same_v<S, char> )
+		{
+			_out.emplace_back(static_cast<unsigned int>(first < 0 ? 0xFFFFFF00 : 0u) | static_cast<unsigned int>(first));
+		}
+		else if constexpr ( stdrep::is_same_v<S, short> )
+		{
+			_out.emplace_back(static_cast<unsigned int>(first < 0 ? 0xFFFF0000 : 0u) | static_cast<unsigned int>(first));
+		}
+		else if constexpr ( stdrep::is_same_v<S, sgt_int64_t> || stdrep::is_same_v<S, sgt_uint64_t> || stdrep::is_same_v<S, double> )
+		{
+			static_assert(sizeof(double) ==  2*sizeof(sgt_uint32_t));
+			sgt_uint32_t vals[2]{};
+			copy(&first, vals, sizeof(double));
+
+			_out.emplace_back(vals[0]);
+			_out.emplace_back(vals[1]);
+		}
+		else if constexpr ( stdrep::is_same_v<S, float> )
+		{
+			static_assert(sizeof(float) == sizeof(sgt_uint32_t));
+			sgt_uint32_t val{};
+			copy(&first, &val, sizeof(sgt_uint32_t));
+
+			_out.emplace_back(val);
+		}
+		else
+		{
+			static_assert(sizeof(T) <= sizeof(sgt_uint32_t));
+			_out.emplace_back(literal_t{ first });
 		}
 
-		if constexpr (bytes % sizeof(unsigned int) != 0)
-		{
-			using S = stdrep::decay_t<T>;
-			literal_t lastWord{ 0u };
-			if constexpr (stdrep::is_same_v<S, short> || stdrep::is_same_v<S, char>) // int16_t and int8_t must be sign extended
-			{
-				// The high-order bits of a literal number must be 0 for a floating-point type, or 0 for an integer type with Signedness of 0, or sign extended when Signedness is 1
-				lastWord = first < 0 ? ~0u : 0u;
-			}
-
-			auto offset = words * sizeof(unsigned int);
-			for (auto i = 0u; offset < bytes; ++offset, ++i)
-			{
-				reinterpret_cast<unsigned char*>(&lastWord)[i] = reinterpret_cast<const unsigned char*>(&first)[offset];
-			}
-			_out.emplace_back(lastWord);
-		}
-
-		if constexpr (sizeof...(_args) > 0u)
+		if constexpr ( sizeof...(_args) > 0u )
 		{
 			appendLiteralsToContainer(_out, _args...);
 		}
@@ -122,6 +145,8 @@ namespace spvgentwo
 	template <class Container>
 	void appendLiteralsToContainer(Container& _out, const char* _pStr)
 	{
+		static_assert(stdrep::is_constructible_v<typename Container::ValueType, literal_t>, "Container does not accept literal_t");
+
 		literal_t word{ 0u };
 		unsigned int l = 0u;
 		char c = 0u;
@@ -132,12 +157,12 @@ namespace spvgentwo
 			const auto mod = l++ % sizeof(unsigned int);
 			reinterpret_cast<char*>(&word)[mod] = c;
 
-			if (c == 0 || mod == 3)
+			if ( c == 0 || mod == 3 )
 			{
 				_out.emplace_back(word);
 				word.value = 0u;
 			}
 
-		} while (c != 0);
+		} while ( c != 0 );
 	}
 } // !spvgentwo 

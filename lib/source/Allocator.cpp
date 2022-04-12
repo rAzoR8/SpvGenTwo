@@ -9,7 +9,7 @@ spvgentwo::ScopedAllocation::~ScopedAllocation()
 	allocator = nullptr;
 }
 
-spvgentwo::ScopedAllocation spvgentwo::IAllocator::allocateScoped(const sgt_size_t _bytes, const unsigned int _aligment)
+spvgentwo::ScopedAllocation spvgentwo::IAllocator::allocateScoped(sgt_size_t _bytes, unsigned int _aligment)
 {
 	return ScopedAllocation(allocate(_bytes, _aligment), _bytes, this);
 }

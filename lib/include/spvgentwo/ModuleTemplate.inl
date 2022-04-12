@@ -49,7 +49,7 @@ namespace spvgentwo
 	}
 
 	template<class ReturnType, class ...ParameterTypes>
-	inline Function& Module::addFunction(const char* _pFunctionName, const Flag<spv::FunctionControlMask> _control, const bool _addEntryBasicBlock)
+	inline Function& Module::addFunction(const char* _pFunctionName, Flag<spv::FunctionControlMask> _control, bool _addEntryBasicBlock)
 	{
 		Function& func = m_Functions.emplace_back(this, _pFunctionName, _control, type<ReturnType>(), type<ParameterTypes>()...);
 
@@ -62,7 +62,7 @@ namespace spvgentwo
 	}
 
 	template<class ReturnType, class ...ParameterTypes>
-	inline EntryPoint& Module::addEntryPoint(const spv::ExecutionModel _model, const char* _pEntryPointName, const Flag<spv::FunctionControlMask> _control, const bool _addEntryBasicBlock)
+	inline EntryPoint& Module::addEntryPoint(spv::ExecutionModel _model, const char* _pEntryPointName, Flag<spv::FunctionControlMask> _control, bool _addEntryBasicBlock)
 	{
 		EntryPoint& entry = m_EntryPoints.emplace_back(this, _model, _pEntryPointName, _control, type<ReturnType>(), type<ParameterTypes>()...);
 

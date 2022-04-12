@@ -1,9 +1,9 @@
-#include "example/Constants.h"
+#include "test/Modules.h"
 #include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 
-spvgentwo::Module examples::constants(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
+spvgentwo::Module test::constants(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
 	Module module(_pAllocator, _pLogger);
 	module.addCapability(spv::Capability::Shader);

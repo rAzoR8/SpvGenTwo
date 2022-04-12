@@ -22,10 +22,10 @@ namespace spvgentwo
 
 		~ExternalMemoryAllocator() override = default;
 
-		void* allocate(const sgt_size_t _bytes, unsigned int _aligment) final;
+		void* allocate(sgt_size_t _bytes, unsigned int _aligment) final;
 
 		// can only deallocate last allocation, does not keep track of allocations
-		void deallocate(void* _ptr, const sgt_size_t _bytes = 0u) final;
+		void deallocate(void* _ptr, sgt_size_t _bytes = 0u) final;
 
 	private:
 		void* m_pCurrent = nullptr;
@@ -40,14 +40,14 @@ namespace spvgentwo
 	};
 
 	template <sgt_size_t Capacity>
-	class StackMemoryAllocator : protected StackStorage<Capacity>, public ExternalMemoryAllocator
+	class StackAllocator : protected StackStorage<Capacity>, public ExternalMemoryAllocator
 	{
 	public:
-		constexpr StackMemoryAllocator() : ExternalMemoryAllocator(StackStorage<Capacity>::m_storage) {}
+		constexpr StackAllocator() : ExternalMemoryAllocator(StackStorage<Capacity>::m_storage) {}
 	};
 
 	template <class Container, sgt_size_t Capacity>
-	class StackContainer : StackMemoryAllocator<Capacity>, public Container
+	class StackContainer : StackAllocator<Capacity>, public Container
 	{
 	public:
 		template <class ... ContainerArgs>

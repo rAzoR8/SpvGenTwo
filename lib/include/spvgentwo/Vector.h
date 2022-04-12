@@ -10,6 +10,9 @@ namespace spvgentwo
 	public:
 		using T = typename stdrep::remove_cv_t<U>;
 		using Iterator = T*;
+		using ValueType = T;
+		using ReferenceType = T&;
+		using PointerType = T*;
 
 		constexpr Vector(IAllocator* _pAllocator = nullptr);
 
@@ -51,19 +54,19 @@ namespace spvgentwo
 		// only destructs, does not deallocate
 		void clear();
 
-		constexpr T* data() const noexcept{ return m_pData; }
+		constexpr T* data() const noexcept { return m_pData; }
 		constexpr sgt_size_t size() const noexcept { return m_elements; }
 		constexpr sgt_size_t capacity() const noexcept { return m_capacity; }
 		constexpr bool empty() const { return m_elements == 0; }
-		
+
 		constexpr Iterator begin() const noexcept { return m_pData; }
 		constexpr Iterator end() const noexcept { return m_pData + m_elements; }
 
 		constexpr T& front() { return *m_pData; }
-		constexpr const T& front() const{ return *m_pData; }
-		
-		constexpr T& back() { return m_pData[m_elements-1u]; }
-		constexpr const T& back() const { return m_pData[m_elements-1u]; }
+		constexpr const T& front() const { return *m_pData; }
+
+		constexpr T& back() { return m_pData[m_elements - 1u]; }
+		constexpr const T& back() const { return m_pData[m_elements - 1u]; }
 
 		template <class ...Args>
 		T* emplace_back(Args&& ..._args);
@@ -113,10 +116,10 @@ namespace spvgentwo
 	inline Vector<U>::Vector(IAllocator* _pAllocator, const T* _pData, sgt_size_t _size) :
 		m_pAllocator(_pAllocator)
 	{
-		if (reserve(_size))
+		if ( reserve(_size) )
 		{
 			// copy construct
-			for (sgt_size_t i = 0u; i < _size; ++i)
+			for ( sgt_size_t i = 0u; i < _size; ++i )
 			{
 				traits::constructWithArgs(m_pData + i, _pData[i]);
 			}
@@ -139,16 +142,16 @@ namespace spvgentwo
 	}
 
 	template<class U>
-	inline Vector<U>::Vector(const Vector<U>& _other) : Vector(_other.m_pAllocator, _other.m_pData, _other.m_elements)	{}
+	inline Vector<U>::Vector(const Vector<U>& _other) : Vector(_other.m_pAllocator, _other.m_pData, _other.m_elements) {}
 
 	template<class U>
 	template<typename ...Args>
 	inline Vector<U>::Vector(IAllocator* _pAllocator, const T& _first, Args&& ..._args) :
 		m_pAllocator(_pAllocator)
 	{
-		if (reserve(sizeof...(_args) + 1u))
+		if ( reserve(sizeof...(_args) + 1u) )
 		{
-			emplace_back_args(_first, stdrep::forward<Args>(_args)...);		
+			emplace_back_args(_first, stdrep::forward<Args>(_args)...);
 		}
 	}
 
@@ -163,7 +166,7 @@ namespace spvgentwo
 	template<class U>
 	inline Vector<U>& Vector<U>::operator=(Vector<U>&& _other) noexcept
 	{
-		if (this == &_other) return *this;
+		if ( this == &_other ) return *this;
 
 		// destruct left side
 		clear();
@@ -187,11 +190,11 @@ namespace spvgentwo
 	template<class U>
 	inline Vector<U>& Vector<U>::operator=(const Vector<U>& _other)
 	{
-		if (this == &_other) return *this;
+		if ( this == &_other ) return *this;
 
-		if (resize(_other.m_elements))
+		if ( resize(_other.m_elements) )
 		{
-			for (sgt_size_t i = 0u; i < _other.m_elements; ++i)
+			for ( sgt_size_t i = 0u; i < _other.m_elements; ++i )
 			{
 				m_pData[i] = _other.m_pData[i];
 			}
@@ -204,9 +207,9 @@ namespace spvgentwo
 	template<sgt_size_t N>
 	inline Vector<U>& Vector<U>::operator=(const T(&_data)[N])
 	{
-		if (resize(N))
+		if ( resize(N) )
 		{
-			for (sgt_size_t i = 0u; i < N; ++i)
+			for ( sgt_size_t i = 0u; i < N; ++i )
 			{
 				m_pData[i] = _data[i];
 			}
@@ -218,33 +221,33 @@ namespace spvgentwo
 	template<class U>
 	inline bool Vector<U>::reserve(sgt_size_t _size)
 	{
-		if (m_capacity >= _size)
+		if ( m_capacity >= _size )
 		{
 			return true;
 		}
 
-		if (m_pAllocator == nullptr)
+		if ( m_pAllocator == nullptr )
 		{
 			return false;
 		}
 
 		T* pNewData = static_cast<T*>(m_pAllocator->allocate(_size * sizeof(T), alignof(T)));
 
-		if (pNewData == nullptr)
+		if ( pNewData == nullptr )
 		{
 			return false;
 		}
 
-		if (m_pData != nullptr)
+		if ( m_pData != nullptr )
 		{
 			//  move or copy old to new data (if any)
-			for (sgt_size_t i = 0u; i < m_elements; ++i)
+			for ( sgt_size_t i = 0u; i < m_elements; ++i )
 			{
 				traits::constructWithArgs(pNewData + i, stdrep::move(m_pData[i]));
 			}
 
 			// free old data
-			for (sgt_size_t i = 0u; i < m_elements; ++i)
+			for ( sgt_size_t i = 0u; i < m_elements; ++i )
 			{
 				m_pData[i].~T();
 			}
@@ -260,32 +263,32 @@ namespace spvgentwo
 	template<class U>
 	inline bool Vector<U>::resize(sgt_size_t _size, const T* _pInitValue)
 	{
-		if (_size > m_capacity)
+		if ( _size > m_capacity )
 		{
-			if (reserve(_size) == false)
+			if ( reserve(_size) == false )
 			{
 				return false;
 			}
 
-			if (_pInitValue == nullptr || stdrep::is_copy_constructible_v<T> == false)
+			if ( _pInitValue == nullptr || stdrep::is_copy_constructible_v<T> == false )
 			{
-				for (sgt_size_t i = m_elements; i < m_capacity; ++i)
+				for ( sgt_size_t i = m_elements; i < m_capacity; ++i )
 				{
 					new(m_pData + i) T{};
 				}
 			}
-			else if constexpr(stdrep::is_copy_constructible_v<T>)
+			else if constexpr ( stdrep::is_copy_constructible_v<T> )
 			{
-				for (sgt_size_t i = m_elements; i < m_capacity; ++i)
+				for ( sgt_size_t i = m_elements; i < m_capacity; ++i )
 				{
 					new(m_pData + i) T{ *_pInitValue };
 				}
 			}
 		}
-		else if (_size < m_elements) // shrink
+		else if ( _size < m_elements ) // shrink
 		{
 			// destruct shrinke elements
-			for (sgt_size_t i = _size; i < m_elements; ++i)
+			for ( sgt_size_t i = _size; i < m_elements; ++i )
 			{
 				m_pData[i].~T();
 			}
@@ -300,7 +303,7 @@ namespace spvgentwo
 	inline void Vector<U>::clear()
 	{
 		// call destructor
-		for (sgt_size_t i = 0u; i < m_elements; ++i)
+		for ( sgt_size_t i = 0u; i < m_elements; ++i )
 		{
 			m_pData[i].~T();
 		}
@@ -311,12 +314,12 @@ namespace spvgentwo
 	template<class U>
 	inline void Vector<U>::assign(const T& _data, sgt_size_t _pos, sgt_size_t _count)
 	{
-		if (_pos + _count > m_elements)
+		if ( _pos + _count > m_elements )
 		{
 			_count = m_elements - _pos;
 		}
 
-		for (sgt_size_t i = _pos; i < _pos + _count; ++i)
+		for ( sgt_size_t i = _pos; i < _pos + _count; ++i )
 		{
 			m_pData[i] = _data;
 		}
@@ -326,70 +329,70 @@ namespace spvgentwo
 	inline typename Vector<U>::Iterator Vector<U>::insert(sgt_size_t _pos, const T* _pData, sgt_size_t _count)
 	{
 		// check if _pos is within the valid range [0, m_elements]
-		if (m_elements == 0u) // empty string
+		if ( m_elements == 0u ) // empty string
 		{
 			// if the string is empty, we can only insert at the beginning
 			_pos = 0u;
 		}
-		else if (_pos > m_elements)
+		else if ( _pos > m_elements )
 		{
 			return nullptr;
 		}
 
 		// no reallocation needed
-		if (m_elements + _count <= m_capacity) 
+		if ( m_elements + _count <= m_capacity )
 		{
 			auto remainder = m_elements - _pos;
 
 			// move-construct last remainder elements to reserved but un-initialized data at the end
-			for(sgt_size_t i = 0u; i < remainder; ++i)
+			for ( sgt_size_t i = 0u; i < remainder; ++i )
 			{
 				traits::constructWithArgs(m_pData + _pos + _count + i, stdrep::move(m_pData[_pos + i]));
 			}
-			for (sgt_size_t i = 0u; i < remainder; ++i) 
+			for ( sgt_size_t i = 0u; i < remainder; ++i )
 			{
 				m_pData[_pos + i] = _pData[i];
-			}			
+			}
 			auto rest = _count - remainder;
-			for (sgt_size_t i = 0u; i < rest; ++i)
+			for ( sgt_size_t i = 0u; i < rest; ++i )
 			{
 				traits::constructWithArgs(m_pData + m_elements + i, stdrep::move(_pData[remainder + i]));
 			}
 
 			m_elements += _count;
 		}
-		else 
+		else
 		{
 			const auto newSize = m_elements + _count;
 			const auto newCapacity = newSize + (newSize >> 2); // grow by 1.25
 
 			T* pNewData = static_cast<T*>(m_pAllocator->allocate(newCapacity * sizeof(T), alignof(T)));
 
-			if (pNewData == nullptr)
+			if ( pNewData == nullptr )
 			{
 				return nullptr;
 			}
 
 			// copy original data [0, .., _pos]
-			for (sgt_size_t i = 0u; i < _pos; ++i)
+			for ( sgt_size_t i = 0u; i < _pos; ++i )
 			{
 				traits::constructWithArgs(pNewData + i, stdrep::move(m_pData[i]));
 			}
 			//[_pos, .., _pos + count]
-			for (sgt_size_t i = 0u; i < _count; ++i) // inserted data
+			for ( sgt_size_t i = 0u; i < _count; ++i ) // inserted data
 			{
 				traits::constructWithArgs(pNewData + _pos + i, _pData[i]);
 			}
 			//[_pos, ..., m_elements]
 			auto rest = m_elements - _pos;
-			for (sgt_size_t i = 0u; i < rest; ++i) 
+			for ( sgt_size_t i = 0u; i < rest; ++i )
 			{
 				traits::constructWithArgs(pNewData + _pos + _count + i, stdrep::move(m_pData[_pos + i]));
 			}
-			
-			if (m_pData != nullptr)
+
+			if ( m_pData != nullptr )
 			{
-				m_pAllocator->deallocate(m_pData, m_capacity * sizeof(T));			
+				m_pAllocator->deallocate(m_pData, m_capacity * sizeof(T));
 			}
 
 			m_pData = pNewData;
@@ -403,7 +406,7 @@ namespace spvgentwo
 	template<class U>
 	inline void Vector<U>::deallocate()
 	{
-		if (m_pAllocator != nullptr && m_pData != nullptr)
+		if ( m_pAllocator != nullptr && m_pData != nullptr )
 		{
 			m_pAllocator->deallocate(m_pData, m_capacity * sizeof(T));
 			m_capacity = 0u;
@@ -413,17 +416,17 @@ namespace spvgentwo
 
 	template<class U>
 	template<sgt_size_t Size>
-	inline Vector<U>::Vector(IAllocator* _pAllocator, const T(&_array)[Size]) : Vector(_pAllocator, _array, Size){}
+	inline Vector<U>::Vector(IAllocator* _pAllocator, const T(&_array)[Size]) : Vector(_pAllocator, _array, Size) {}
 
 	template<class U>
 	template<class ...Args>
 	inline typename Vector<U>::T* Vector<U>::emplace_back(Args&& ..._args)
 	{
 		// we ran out of capacity, reallocate
-		if (m_elements >= m_capacity)
+		if ( m_elements >= m_capacity )
 		{
 			// grow by factor 1.25 + 1
-			if (reserve(m_capacity + 1u + (m_capacity >> 2)) == false)
+			if ( reserve(m_capacity + 1u + (m_capacity >> 2)) == false )
 			{
 				return nullptr;
 			}
@@ -438,10 +441,10 @@ namespace spvgentwo
 	{
 		emplace_back(_first);
 
-		if constexpr (sizeof...(_tail) > 0)
+		if constexpr ( sizeof...(_tail) > 0 )
 		{
 			emplace_back_args(stdrep::forward<Args>(_tail)...);
-		}		
+		}
 	}
 
 } // !spvgentwo

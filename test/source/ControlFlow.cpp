@@ -1,4 +1,4 @@
-#include "example/ControlFlow.h"
+#include "test/Modules.h"
 #include "spvgentwo/Operators.h"
 #include "common/ControlFlowGraph.h"
 #include "spvgentwo/Templates.h"
@@ -6,7 +6,7 @@
 using namespace spvgentwo;
 using namespace ops;
 
-spvgentwo::Module examples::controlFlow(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
+spvgentwo::Module test::controlFlow(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
     // create a new spir-v module
     Module module(_pAllocator, _pLogger);

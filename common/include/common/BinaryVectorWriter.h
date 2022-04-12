@@ -9,7 +9,7 @@ namespace spvgentwo
 	{
 	public:
 		BinaryVectorWriter(U32Vector& _vector) : m_vector(_vector) {};
-		virtual ~BinaryVectorWriter() {};
+		virtual ~BinaryVectorWriter() = default;
 
 		bool put(unsigned int _word) final;
 

@@ -2,8 +2,6 @@
 
 name: CI
 
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
 on:
   pull_request:
     branches:
@@ -13,9 +11,8 @@ on:
     branches:
     - master
     
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "greet"
+
   build:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -24,15 +21,15 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.x' 
       
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
       
-    # Runs a single command using the runners shell
     - name: CMake
       run: cmake -S . -B ${{runner.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DSPVGENTWO_BUILD_TESTS=TRUE -DSPVGENTWO_BUILD_EXAMPLES=TRUE -DSPVGENTWO_BUILD_DISASSEMBLER=TRUE -DSPVGENTWO_BUILD_REFLECT=TRUE -DSPVGENTWO_BUILD_LINKER=TRUE
     
@@ -42,4 +39,4 @@ jobs:
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
-      run: ctest -C Release
+      run: ctest -C Release --rerun-failed --output-on-failure

@@ -177,7 +177,7 @@ public:
 ```
 
 There are two ways to specify a function declaration:
-1. [Template constructor](example/source/FunctionCall.cpp) -
+1. [Template constructor](test/source/FunctionCall.cpp) -
 Calling `finalize` is not necessary:
 ```cpp
 template <class ... TypeInstr>
@@ -356,13 +356,13 @@ The resulting SPIR-V looks something like this:
                OpFunctionEnd
 ```
 
-For more examples, checkout the Types [example](example/source/Types.cpp).
+For more examples, checkout the Types [example](test/source/Types.cpp).
 
 # Constants
 
 [Constant](lib/include/spvgentwo/Constant.h) composition works quite similar to type composition as shown above. New constants can be created using `Module::newConstant()` an instantiated using `Instruction* addConstant(const Constant& _const)`. To directly instantiate constants from C++ values, use `module.constant<T>(const T& _value)` to generate a unique (cached) Instruction* pointer to use as instruction operand.
 
-Mind that the constant class can be used to generate all `OpConstant###` instructions __EXCEPT__ `OpSpecConstantOp` instructions which should be created using `Instruction::toSpecOp()` or `Instruction::opSpecConstantOp()`. See the [Constants.cpp](example/source/Constants.cpp) for more example usage.
+Mind that the constant class can be used to generate all `OpConstant###` instructions __EXCEPT__ `OpSpecConstantOp` instructions which should be created using `Instruction::toSpecOp()` or `Instruction::opSpecConstantOp()`. See the [Constants.cpp](test/source/Constants.cpp) for more example usage.
 
 ```cpp
 Constant myConst = module.newConstant();
@@ -506,4 +506,4 @@ public:
 };
 ```
 
-The new instruction extension class can then be used via `BasicBlock.ext<GLSL450Intruction>()` as seen in [Extensions.cpp](example/source/Extensions.cpp).
+The new instruction extension class can then be used via `BasicBlock.ext<GLSL450Intruction>()` as seen in [Extensions.cpp](test/source/Extensions.cpp).
