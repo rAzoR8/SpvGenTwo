@@ -9,7 +9,7 @@ namespace spvgentwo
 	public:
 		HeapAllocator();
 
-		void* allocate(sgt_size_t _bytes, unsigned int _alignment) final;
+		void* allocate(sgt_size_t _bytes, unsigned int _alignmentHint) final;
 		void deallocate(void* _ptr, sgt_size_t _bytes) final;
 
 		static HeapAllocator* instance();

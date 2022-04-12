@@ -43,7 +43,8 @@ namespace spvgentwo
 		virtual ~IAllocator() = default;
 
 		// alignment may only be a power of 2
-		[[nodiscard]] virtual void* allocate(sgt_size_t _bytes, unsigned int _alignment) = 0;
+		// the library has no alignment requirement so implementations are free to use the hint or return unaligned pointers
+		[[nodiscard]] virtual void* allocate(sgt_size_t _bytes, unsigned int _alignmentHint) = 0;
 		virtual void deallocate(void* _ptr, sgt_size_t _bytes = 0u) = 0;
 
 		[[nodiscard]] ScopedAllocation allocateScoped(sgt_size_t _bytes, unsigned int _alignment);

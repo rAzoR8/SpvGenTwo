@@ -5,35 +5,17 @@
 	#include <crtdbg.h>
 #endif
 
-#include <cstdlib>
-
-void* spvgentwo::HeapAllocator::allocate(sgt_size_t _bytes, unsigned int _alignment)
+void* spvgentwo::HeapAllocator::allocate(sgt_size_t _bytes, [[maybe_unused]] unsigned int _alignment)
 {
-	if (_alignment & (_alignment - 1)) // not a power of two
-	{
-		return nullptr;
-	}
-
 	m_Allocated += _bytes;
-
-#if defined(_WIN32) || defined(__CYGWIN__)
-	void* ptr = _aligned_malloc(_bytes, _alignment);
-#else	
-	void* ptr = aligned_alloc(_alignment < sizeof(void*) ? sizeof(void*) : _alignment, _bytes);
-#endif
-
-	return ptr;
+	return new char[_bytes];
 }
 
 void spvgentwo::HeapAllocator::deallocate(void* _ptr, sgt_size_t _bytes)
 {
 	m_Deallocated += _bytes;
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-	 _aligned_free(_ptr);
-#else	
-	free(_ptr);
-#endif
+	delete[] (char*) _ptr;
 }
 
 spvgentwo::HeapAllocator::HeapAllocator()
