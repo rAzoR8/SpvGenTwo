@@ -90,6 +90,7 @@ namespace spvgentwo
 		static_assert(stdrep::is_constructible_v<typename Container::ValueType, literal_t>, "Container does not accept literal_t");
 		static_assert(stdrep::is_constructible_v<literal_t, T>, "Value type T for 'first' can not be used to construct a literal");
 
+		[[maybe_unused]]
 		auto copy = [](const void* _src, void* _dst, sgt_size_t size)
 		{
 			auto* src = static_cast<const char*>(_src);
