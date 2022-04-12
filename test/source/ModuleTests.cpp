@@ -9,6 +9,8 @@
 #include "test/SpvValidator.h"
 #include "test/TestLogger.h"
 
+#include "spvgentwo/Templates.h"
+
 using namespace spvgentwo;
 using namespace test;
 
