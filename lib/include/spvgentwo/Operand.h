@@ -90,6 +90,17 @@ namespace spvgentwo
 		static_assert(stdrep::is_constructible_v<typename Container::ValueType, literal_t>, "Container does not accept literal_t");
 		static_assert(stdrep::is_constructible_v<literal_t, T>, "Value type T for 'first' can not be used to construct a literal");
 
+		auto copy = [](const void* _src, void* _dst, sgt_size_t size)
+		{
+			auto* src = static_cast<const char*>(_src);
+			auto* dst = static_cast<char*>(_dst);
+
+			for ( size_t i = 0; i < size; i++ )
+			{
+				dst[i] = src[i];
+			}
+		};
+
 		using S = stdrep::decay_t<T>;
 
 		// The high-order bits of a literal number must be 0 for a floating-point type, or 0 for an integer type with Signedness of 0, or sign extended when Signedness is 1
@@ -103,15 +114,20 @@ namespace spvgentwo
 		}
 		else if constexpr ( stdrep::is_same_v<S, sgt_int64_t> || stdrep::is_same_v<S, sgt_uint64_t> || stdrep::is_same_v<S, double> )
 		{
-			static_assert(sizeof(double) == sizeof(sgt_uint64_t));
-			const sgt_uint32_t* vals = reinterpret_cast<const sgt_uint32_t*>(&first);
+			static_assert(sizeof(double) ==  2*sizeof(sgt_uint32_t));
+			sgt_uint32_t vals[2]{};
+			copy(&first, vals, sizeof(double));
+
 			_out.emplace_back(vals[0]);
 			_out.emplace_back(vals[1]);
 		}
 		else if constexpr ( stdrep::is_same_v<S, float> )
 		{
 			static_assert(sizeof(float) == sizeof(sgt_uint32_t));
-			_out.emplace_back(*reinterpret_cast<const sgt_uint32_t*>(&first));
+			sgt_uint32_t val{};
+			copy(&first, &val, sizeof(sgt_uint32_t));
+
+			_out.emplace_back(val);
 		}
 		else
 		{
