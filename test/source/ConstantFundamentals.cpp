@@ -38,6 +38,9 @@ TEST_CASE("Data consistency", "[Constants]")
 	{
 		using T = decltype(val);
 		Constant c(constant().make<T>(val));
+		auto& data = c.getData();
+		REQUIRE(data.size() > 0);
+		REQUIRE(data.size() * sizeof(unsigned int) >= sizeof(T));
 		const T* ptr = c.template getDataAs<T>();
 		CHECK(ptr != nullptr);
 		if ( ptr != nullptr )
