@@ -95,7 +95,7 @@ namespace spvgentwo
 			auto* src = static_cast<const char*>(_src);
 			auto* dst = static_cast<char*>(_dst);
 
-			for ( size_t i = 0; i < size; i++ )
+			for ( sgt_size_t i = 0; i < size; i++ )
 			{
 				dst[i] = src[i];
 			}
