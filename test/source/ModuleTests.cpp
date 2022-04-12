@@ -32,6 +32,16 @@ namespace
 	}
 }
 
+TEST_CASE("funcName", "[Modules]")
+{
+	spvgentwo::Module module(&g_alloc);
+	spvgentwo::Function& funcAdd = module.addFunction("add", spvgentwo::spv::FunctionControlMask::Const);
+	REQUIRE(funcAdd.getName() != nullptr);
+
+	String name(&g_alloc, funcAdd.getName() );
+	REQUIRE(name == "add");
+}
+
 TEST_CASE( "types", "[Modules]" )
 {
 	REQUIRE( valid( test::types( &g_alloc, &g_logger ) ) );
