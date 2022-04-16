@@ -430,18 +430,12 @@ spvgentwo::Instruction* spvgentwo::Module::addDecorationInstr()
 spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, const char* _pName)
 {
 	const spv::Op constantOp = _const.getOperation();
-	const bool regularConstant = IsConstantOp(constantOp);
-	NodeT<Constant, Instruction*>::KV* pKeyVal = nullptr;;
+	auto& node = m_ConstantToInstr.emplaceUnique(_const, nullptr);
 
-	if( regularConstant ) 
+	// early return for regular constants which are unique
+	if( IsConstantOp(constantOp) && node.kv.value != nullptr )
 	{
-		auto& node = m_ConstantToInstr.emplaceUnique(_const, nullptr);
-		if (node.kv.value != nullptr)
-		{
-			return node.kv.value;
-		}
-
-		pKeyVal = &node.kv;
+		return node.kv.value;
 	}
 
 	Instruction* pType = addType(_const.getType());
@@ -450,11 +444,13 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, c
 	Entry<Instruction>* pEntry = Entry<Instruction>::create(m_pAllocator, this, spv::Op::OpNop);
 	Instruction* pInstr = pEntry->operator->();
 
-	if( regularConstant ) // add to Constant->Instr mapping
+	if( node.kv.value == nullptr )
 	{
-		pKeyVal->value = pInstr;
-		m_InstrToConstant.emplaceUnique(pInstr, &pKeyVal->key);
+		node.kv.value = pInstr;
 	}
+
+	// add to Instr->Constant mapping
+	m_InstrToConstant.emplaceUnique(pInstr, &node.kv.key);
 
 	pInstr->setOperation(constantOp);
 	pInstr->addOperand(pType);
@@ -515,7 +511,7 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, c
 
 const spvgentwo::Constant* spvgentwo::Module::getConstantInfo(const Instruction* _pConstantInstr)
 {
-	if (_pConstantInstr != nullptr && _pConstantInstr->isConstant())
+	if (_pConstantInstr != nullptr && _pConstantInstr->isSpecOrConstant())
 	{
 		const Constant* const* c = m_InstrToConstant.get(_pConstantInstr);
 
@@ -683,7 +679,7 @@ spvgentwo::Instruction* spvgentwo::Module::addConstantInstr(const Constant* _pCo
 {
 	Instruction* instr = &m_TypesAndConstants.emplace_back(this, spv::Op::OpNop);
 
-	if (_pConstant != nullptr && spv::IsConstantOp(_pConstant->getOperation()))
+	if (_pConstant != nullptr)
 	{
 		m_ConstantToInstr.emplaceUnique(*_pConstant, instr);
 		m_InstrToConstant.emplaceUnique(instr, _pConstant);
@@ -1009,7 +1005,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo(IAllocator* _pAllocator)
 			auto& node = m_TypeToInstr.emplaceUnique(stdrep::move(t), &instr);
 			m_InstrToType.emplaceUnique(&instr, &node.kv.key);
 		}
-		else if (instr.isConstant())
+		else if (instr.isSpecOrConstant())
 		{
 			Constant c(_pAllocator != nullptr ? _pAllocator : m_pAllocator);
 
@@ -1029,9 +1025,12 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo(IAllocator* _pAllocator)
 			{
 			case spv::Op::OpConstantNull:
 			case spv::Op::OpConstantTrue:
+			case spv::Op::OpSpecConstantTrue:
 			case spv::Op::OpConstantFalse:
+			case spv::Op::OpSpecConstantFalse:
 				break; // nothing to do
 			case spv::Op::OpConstant:
+			case spv::Op::OpSpecConstant:
 			case spv::Op::OpConstantSampler:
 				for (auto end = instr.end(); it != end; ++it)
 				{
@@ -1043,6 +1042,7 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo(IAllocator* _pAllocator)
 				}
 				break;
 			case spv::Op::OpConstantComposite:
+			case spv::Op::OpSpecConstantComposite:
 				for (auto end = instr.end(); it != end; ++it)
 				{					
 					if (const Constant* sub = getConstantInfo(it->getInstruction()); sub != nullptr)
