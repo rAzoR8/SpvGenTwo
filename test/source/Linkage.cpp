@@ -90,7 +90,7 @@ spvgentwo::Module test::linkageLibB(spvgentwo::IAllocator* _pAllocator, spvgentw
 		Instruction* x = funcPolynomial.getParameter(0);
 		module.addName(x, "x");
 
-		Instruction* loopCount = module.constant(8u, "count");
+		Instruction* loopCount = module.constant(8u, true, "count");
 		Instruction* varI = funcPolynomial.variable(0u, "i");
 		Instruction* varSum = funcPolynomial.variable<float>(0.f, "s");
 		Instruction* fltPtr = module.type<float*>("float*", spv::StorageClass::Uniform);

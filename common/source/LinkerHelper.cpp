@@ -250,7 +250,7 @@ namespace
 				cInstr = *ppTarget;
 				cached = true;
 			}
-			else if (lib->isSpecOrConstant())
+			else if (lib->isConstant())
 			{
 				if (const Constant* c = lib->getConstant(); c != nullptr && (_options & LinkerOptionBits::ImportMissingConstants))
 				{
@@ -258,7 +258,21 @@ namespace
 				}
 				else
 				{
-					operandError("Op(Spec)Constant", "Use \'ImportMissingConstants\'.");
+					operandError("OpConstant", "Use \'ImportMissingConstants\'.");
+					reported = true;
+				}
+			}
+			else if ( lib->isSpecConstant() )
+			{
+				if (_options & LinkerOptionBits::ImportMissingConstants)
+				{
+					cInstr = module->addConstantInstr();
+					if ( transferInstruction(lib, cInstr, _cache, _options) == false ) return false;
+					cached = true;
+				}
+				else
+				{
+					operandError("OpSpecConstant", "Use \'ImportMissingConstants\'.");
 					reported = true;
 				}
 			}

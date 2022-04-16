@@ -181,7 +181,7 @@ namespace spvgentwo
 		const Constant* getConstantInfo(const Instruction* _pConstantInstr);
 
 		template <class T>
-		Instruction* constant(const T& _value, const bool _spec = false, const char* _pName = nullptr);
+		Instruction* constant(const T& _value, bool _spec = false, const char* _pName = nullptr);
 
 		template <class T>
 		Instruction* specConstant(const T& _value, const char* _pName = nullptr) { return constant<T>(_value, true, _pName); }
