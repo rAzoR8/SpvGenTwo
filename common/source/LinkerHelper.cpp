@@ -252,9 +252,18 @@ namespace
 			}
 			else if (lib->isSpecOrConstant())
 			{
-				if (const Constant* c = lib->getConstant(); c != nullptr && (_options & LinkerOptionBits::ImportMissingConstants))
+				if ( _options & LinkerOptionBits::ImportMissingConstants )
 				{
-					cInstr = addTypeOrConstants([&]() { return module->addConstant(*c); }, *module, _options);
+					if ( const Constant* c = lib->getConstant(); c != nullptr )
+					{
+						cInstr = addTypeOrConstants([&]() { return module->addConstant(*c); }, *module, _options);
+					}
+					else // fallback to generic transfer for spec constants
+					{
+						cInstr = module->addConstantInstr();
+						if ( transferInstruction(lib, cInstr, _cache, _options) == false ) return false;
+						cached = true;
+					}				
 				}
 				else
 				{

@@ -429,21 +429,28 @@ spvgentwo::Instruction* spvgentwo::Module::addDecorationInstr()
 
 spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, const char* _pName)
 {
+	const spv::Op constantOp = _const.getOperation();
 	auto& node = m_ConstantToInstr.emplaceUnique(_const, nullptr);
-	if (node.kv.value != nullptr)
+
+	// early return for regular constants which are unique
+	if( IsConstantOp(constantOp) && node.kv.value != nullptr )
 	{
 		return node.kv.value;
 	}
 
 	Instruction* pType = addType(_const.getType());
 
-	auto entry = Entry<Instruction>::create(m_pAllocator, this, spv::Op::OpNop);
+	// linked list entry to store in m_TypesAndConstants
+	Entry<Instruction>* pEntry = Entry<Instruction>::create(m_pAllocator, this, spv::Op::OpNop);
+	Instruction* pInstr = pEntry->operator->();
 
-	Instruction* pInstr = node.kv.value = entry->operator->();
+	if( node.kv.value == nullptr )
+	{
+		node.kv.value = pInstr;
+	}
 
+	// add to Instr->Constant mapping
 	m_InstrToConstant.emplaceUnique(pInstr, &node.kv.key);
-
-	const spv::Op constantOp = _const.getOperation();
 
 	pInstr->setOperation(constantOp);
 	pInstr->addOperand(pType);
@@ -492,7 +499,7 @@ spvgentwo::Instruction* spvgentwo::Module::addConstant(const Constant& _const, c
 
 	pInstr->validateOperands();
 
-	m_TypesAndConstants.append_entry(entry);
+	m_TypesAndConstants.append_entry(pEntry);
 
 	if (_pName != nullptr)
 	{
@@ -947,17 +954,18 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo(IAllocator* _pAllocator)
 				}
 				t.Member(sub); // element type
 
-				const Constant* c = getConstantInfo((++it)->getInstruction());
-				if (c == nullptr)
+				Instruction* pConstInstr = (++it)->getInstruction();
+				if ( pConstInstr == nullptr || pConstInstr->getType()->isInt() == false)
 				{
-					logError("Array length constant not found");
+					logError("Array length constant not found or invalid type");
 					success = false;
 					break; // don't deref c
 				}
 
-				if (c->getType().isInt() && c->getData().empty() == false)
+				auto cit = pConstInstr->getFirstActualOperand();
+				if (cit->isLiteral())
 				{
-					t.setArrayLength(c->getData().front()); // array length
+					t.setArrayLength(cit->literal); // array length
 				}
 				else
 				{
@@ -1052,9 +1060,6 @@ bool spvgentwo::Module::reconstructTypeAndConstantInfo(IAllocator* _pAllocator)
 					logError("Expected components for this constant composite [reconstructTypeAndConstantInfo]");
 				}
 				break;
-			case spv::Op::OpSpecConstantOp:
-				continue; // continue the loop, dont add to lookup
-				//break;
 			default:
 				logError("Constant [%u] not implemented", instr.getOperation());
 				success = false;

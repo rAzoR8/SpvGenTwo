@@ -24,9 +24,9 @@ bool spvgentwo::ReflectionHelper::getLocalSize(const Module& _module, unsigned i
 					if (instr == nullptr || instr->isSpecOrConstant() == false)
 						return 0u;
 
-					if(const Constant* c = instr->getConstant(); c != nullptr && c->getData().empty() == false && c->getType().isInt())
+					if(auto it = instr->getFirstActualOperand(); it->isLiteral() )
 					{
-						return c->getData().front();
+						return it->literal;
 					}
 
 					return 0u;

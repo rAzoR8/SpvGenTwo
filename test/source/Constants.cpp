@@ -51,7 +51,7 @@ spvgentwo::Module test::constants(spvgentwo::IAllocator* _pAllocator, spvgentwo:
 		Instruction* nullptrconst = module.constant(const_null_t<unsigned int*>{});
 	}
 
-	// specialization constatant
+	// specialization constants
 	{
 		// integer specialization constant with value 42
 		Instruction* intconst = module.constant(42u, true);
