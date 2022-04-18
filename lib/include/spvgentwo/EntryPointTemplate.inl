@@ -19,7 +19,7 @@ namespace spvgentwo
 
 		if (getExecutionModeOp(_mode) == spv::Op::OpExecutionModeId)
 		{
-			if constexpr (sizeof...(_args) > 0 && stdrep::conjunction_v<stdrep::is_same<Instruction, Args>...>)
+			if constexpr (sizeof...(_args) > 0 && stdrep::conjunction_v<stdrep::is_same<Instruction*, Args>...>)
 			{
 				pInstr->opExecutionModeId(&m_Function, _mode, _args...);			
 			}
@@ -30,7 +30,7 @@ namespace spvgentwo
 		}
 		else
 		{
-			if constexpr (sizeof...(_args) > 0 && false == stdrep::conjunction_v<stdrep::is_same<Instruction, Args>...>)
+			if constexpr (sizeof...(_args) > 0 && false == stdrep::conjunction_v<stdrep::is_same<Instruction*, Args>...>)
 			{
 				pInstr->opExecutionMode(&m_Function, _mode, _args...);
 			}

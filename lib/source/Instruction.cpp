@@ -109,7 +109,7 @@ void spvgentwo::Instruction::setParent(const Instruction& _other)
 {
 	if (m_parent.pModule == nullptr)
 	{
-		m_parentType = _other.m_parentType;	
+		m_parentType = _other.m_parentType;
 		m_parent = _other.m_parent;
 		setAllocator(_other.getAllocator());
 	}
@@ -172,7 +172,7 @@ unsigned int spvgentwo::Instruction::getWordCount() const
 
 unsigned int spvgentwo::Instruction::getOpCode() const
 {
-	return ((unsigned int )m_Operation & spv::OpCodeMask) | (getWordCount() << spv::WordCountShift);
+	return ((unsigned int)m_Operation & spv::OpCodeMask) | (getWordCount() << spv::WordCountShift);
 }
 
 spvgentwo::spv::Id spvgentwo::Instruction::getResultId() const
@@ -197,13 +197,13 @@ spvgentwo::Instruction* spvgentwo::Instruction::getResultTypeInstr() const
 const spvgentwo::Type* spvgentwo::Instruction::getType() const
 {
 	const Module* pModule = getModule();
-	if (isType()) 
+	if (isType())
 	{
 		return pModule->getTypeInfo(this);
 	}
 	else if (hasResultType())
 	{
-		return pModule->getTypeInfo(getResultTypeInstr());	
+		return pModule->getTypeInfo(getResultTypeInstr());
 	}
 
 	return nullptr;
@@ -272,7 +272,7 @@ spvgentwo::spv::StorageClass spvgentwo::Instruction::getStorageClass() const
 
 spvgentwo::spv::Id spvgentwo::Instruction::assignResultId(bool _overwrite)
 {
-	if (auto it = getResultIdOperand(); it != nullptr && (_overwrite || it->getId() == InvalidId)) 
+	if (auto it = getResultIdOperand(); it != nullptr && (_overwrite || it->getId() == InvalidId))
 	{
 		*it = getModule()->getNextId();
 		return it->id;
@@ -317,7 +317,7 @@ bool spvgentwo::Instruction::write(IWriter& _writer) const
 {
 	if (_writer.put(getOpCode()) == false)
 		return false;
-	
+
 	for (const Operand& operand : *this)
 	{
 		if (operand.write(_writer) == false)
@@ -420,7 +420,7 @@ bool spvgentwo::Instruction::readOperands(IReader& _reader, const Grammar& _gram
 	{
 		const auto& op = *it;
 
-		if (op.kind == Grammar::OperandKind::LiteralString) 
+		if (op.kind == Grammar::OperandKind::LiteralString)
 		{
 			if (parseLiteralString(_operandCount) == false)
 			{
@@ -528,7 +528,7 @@ bool spvgentwo::Instruction::readOperands(IReader& _reader, const Grammar& _gram
 			}
 			else if (parseLiteral(_operandCount) == false)
 			{
-				return false;			
+				return false;
 			}
 		}
 		else
@@ -636,7 +636,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::Div(Instruction* _pLeft, Instruc
 		// there is no OpVectorTimes Scalar (Mul) for integer types
 
 		if (one != nullptr)
-		{			
+		{
 			// vec / scalar => vec * ( 1 / scalar )
 			Instruction* factor = Div(one, _pRight); // this instruction
 			return (*bb)->Mul(_pLeft, factor); // new instruction (BasicBlock->operator)
@@ -688,7 +688,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSizeOf(Instruction* _pPointerT
 
 	if (ptrType->isPointer())
 	{
-		return makeOp(spv::Op::OpSizeOf, InvalidInstr, InvalidId, _pPointerToVar);	
+		return makeOp(spv::Op::OpSizeOf, InvalidInstr, InvalidId, _pPointerToVar);
 	}
 	getModule()->logError("Operand of opSizeOf must be a pointer to a concrete type");
 	return error();
@@ -784,7 +784,7 @@ void spvgentwo::Instruction::opReturnValue(Instruction* _pValue)
 	Function* func = getFunction();
 	if (func != nullptr && _pValue->getType() != nullptr && func->getReturnType() == *_pValue->getType())
 	{
-		makeOp(spv::Op::OpReturnValue, _pValue);	
+		makeOp(spv::Op::OpReturnValue, _pValue);
 	}
 	else
 	{
@@ -822,7 +822,7 @@ void spvgentwo::Instruction::opName(Instruction* _pTarget, const char* _pName)
 {
 	if (_pTarget->hasResult())
 	{
-		makeOp(spv::Op::OpName, _pTarget, _pName);	
+		makeOp(spv::Op::OpName, _pTarget, _pName);
 	}
 	else
 	{
@@ -834,7 +834,7 @@ void spvgentwo::Instruction::opMemberName(Instruction* _pTargetStructType, unsig
 {
 	if (_pTargetStructType->getOperation() == spv::Op::OpTypeStruct)
 	{
-		makeOp(spv::Op::OpMemberName, _pTargetStructType, _memberIndex, _pName);	
+		makeOp(spv::Op::OpMemberName, _pTargetStructType, _memberIndex, _pName);
 	}
 	else
 	{
@@ -862,6 +862,11 @@ void spvgentwo::Instruction::opLine(Instruction* _pFileString, unsigned int _lin
 void spvgentwo::Instruction::opLine(const char* _pFileString, unsigned int _line, unsigned int _column)
 {
 	opLine(getModule()->addSourceStringInstr()->opString(_pFileString), _line, _column);
+}
+
+void spvgentwo::Instruction::opUnreachable()
+{
+	makeOp(spv::Op::OpUnreachable);
 }
 
 void spvgentwo::Instruction::opNoLine()
@@ -996,13 +1001,13 @@ spvgentwo::Instruction* spvgentwo::Instruction::opAccessChain(Instruction* _pBas
 		Module* pModule = _pBase->getModule();
 
 		// Result Type must be an OpTypePointer.
-		// Its Type operand must be the type reached by walking the Base’s type hierarchy down to the last provided index in Indexes, and its Storage Class operand must be the same as the Storage Class of Base.
+		// Its Type operand must be the type reached by walking the Baseï¿½s type hierarchy down to the last provided index in Indexes, and its Storage Class operand must be the same as the Storage Class of Base.
 
 		Instruction* pResultType = pModule->addType(it->wrapPointer(pBaseType->getStorageClass()));
 
 		makeOp(spv::Op::OpAccessChain, pResultType, InvalidId, _pBase);
-		
-		for (auto i : _indices) 
+
+		for (auto i : _indices)
 		{
 			addOperand(pModule->constant(i));
 		}
@@ -1025,7 +1030,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opArrayLength(Instruction* _pStr
 	{
 		getModule()->logError("Operand _pStructure of OpArrayLength must be a logical pointer to an OpTypeStruct whose last	member is a run-time array");
 		return error();
-	} 
+	}
 
 	return makeOp(spv::Op::OpArrayLength, InvalidInstr, InvalidId, _pStructure, literal_t{ _ArrayMemberIndex });
 }
@@ -1166,7 +1171,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opTranspose(Instruction* _pMatri
 
 	if (type->isMatrix())
 	{
-		return makeOp(spv::Op::OpTranspose, InvalidInstr, InvalidId, _pMatrix);	
+		return makeOp(spv::Op::OpTranspose, InvalidInstr, InvalidId, _pMatrix);
 	}
 
 	getModule()->logError("Operand of opTranspose is not a matrix type");
@@ -1183,7 +1188,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorExtractDynamic(Instructi
 	if (vecType->isVector() && indexType->isInt())
 	{
 		auto component = _pVector->getResultTypeInstr()->getFirstActualOperand();
-		return makeOp(spv::Op::OpVectorExtractDynamic, component->getInstruction(), InvalidId, _pVector, _pIndexInt);	
+		return makeOp(spv::Op::OpVectorExtractDynamic, component->getInstruction(), InvalidId, _pVector, _pIndexInt);
 	}
 
 	getModule()->logError("opVectorExtractDynamic: _pVector must be of type vector, _pIndexInt must be of type integer");
@@ -1215,7 +1220,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 
 	if (trueType == nullptr || falseType == nullptr || condType == nullptr || module == nullptr) return error();
 
-	if(*trueType != *falseType)
+	if (*trueType != *falseType)
 	{
 		getModule()->logError("Object argument types of opSelect are not identical");
 		return error();
@@ -1230,7 +1235,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSelect(Instruction* _pCondBool
 
 		bool pre14 = trueType->isScalar() || trueType->isVector() || trueType->isPointer();
 
-		if((trueType->isComposite() && pre14 == false) || (condType->isBool() && trueType->isVector()))
+		if ((trueType->isComposite() && pre14 == false) || (condType->isBool() && trueType->isVector()))
 		{
 			module->ensureSpvVersion(1u, 4u);
 		}
@@ -1263,7 +1268,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opVectorTimesScalar(Instruction*
 	}
 
 	getModule()->logError("Operand of OpVectorTimesScalar is not a scalar or vector of float type");
-	
+
 	return error();
 }
 
@@ -1352,7 +1357,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opSampledImage(Instruction* _pIm
 	}
 
 	getModule()->logError("OpSampledImage: image or sampler type does not match (storage / subpass image not allowed)");
-	
+
 	return error();
 }
 
@@ -1422,7 +1427,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opImageQuerySizeLod(Instruction*
 	{
 		getModule()->logError("Operand _pLoDInt of OpImageQuerySizeLod must be of type unsinged scalar integer");
 		return error();
-	}	
+	}
 
 	return makeOp(spv::Op::OpImageQuerySizeLod, InvalidInstr, InvalidId, _pImage, _pLoDInt);
 }
@@ -1570,6 +1575,20 @@ spvgentwo::Instruction* spvgentwo::Instruction::opConvertPtrToU(Instruction* _pP
 	return error();
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opConvertUToPtr(Instruction* _pUInt,
+	const Type& _type)
+{
+	if (_type.isPointer() && _type.getStorageClass() == spv::StorageClass::PhysicalStorageBuffer)
+	{
+		return makeOp(spv::Op::OpConvertUToPtr, getModule()->addType(_type), InvalidId, _pUInt);
+	}
+	else
+	{
+		getModule()->logError("ResultType of OpConvertUToPtr is not a physical pointer type");
+		return error();
+	}
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opBitcast(Instruction* _pResultType, Instruction* _pOperand)
 {
 	if (_pResultType == nullptr || _pOperand == nullptr) return error();
@@ -1585,7 +1604,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opBitcast(Instruction* _pResultT
 		return error();
 	}
 
-	if ((operandType->isPointer() && resultType->isPointer()) || 
+	if ((operandType->isPointer() && resultType->isPointer()) ||
 		(operandType->getScalarOrVectorLength() * operandType->getBaseType().getIntWidth() ==
 			resultType->getScalarOrVectorLength() * resultType->getBaseType().getIntWidth()))
 	{
@@ -1614,6 +1633,42 @@ spvgentwo::Instruction* spvgentwo::Instruction::toSpecOp()
 	return this;
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opPtrEqual(Instruction* _pLeftPtr,
+	Instruction* _pRightPtr)
+{
+	auto module = getModule();
+
+	if (_pLeftPtr->getType()->isPointer() && _pRightPtr->getType()->isPointer()
+		&& _pLeftPtr->getType() == _pRightPtr->getType())
+	{
+		auto t = module->addType(module->newType().Bool());
+		return makeOp(spv::Op::OpPtrEqual, t, InvalidId, _pLeftPtr, _pRightPtr);
+	}
+	else
+	{
+		module->logError("The types of _pLeftPtr and _pRightPtr must be OpTypePointer of the same type.");
+		return error();
+	}
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opPtrNotEqual(Instruction* _pLeftPtr,
+	Instruction* _pRightPtr)
+{
+	auto module = getModule();
+
+	if (_pLeftPtr->getType()->isPointer() && _pRightPtr->getType()->isPointer()
+		&& _pLeftPtr->getType() == _pRightPtr->getType())
+	{
+		auto t = module->addType(module->newType().Bool());
+		return makeOp(spv::Op::OpPtrNotEqual, t, InvalidId, _pLeftPtr, _pRightPtr);
+	}
+	else
+	{
+		module->logError("The types of _pLeftPtr and _pRightPtr must be OpTypePointer of the same type.");
+		return error();
+	}
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::error() const
 {
 	return getModule()->getErrorInstr();
@@ -1628,7 +1683,7 @@ bool spvgentwo::Instruction::checkImageCoordinateType(const Type* _pImageType, c
 
 	unsigned int dim = getImageDimension(_pImageType->getImageDimension());
 
-	if(dim == 0u)
+	if (dim == 0u)
 	{
 		module->logError("Image dimension not supported/implemented");
 		return false;
@@ -1848,23 +1903,23 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 		ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
 		const bool allowOverride = validator != nullptr && validator->overridePredefinedResultType();
 
-		if(retType.instruction == nullptr || allowOverride)
+		if (retType.instruction == nullptr || allowOverride)
 		{
 			pResultType = validator != nullptr ? validator->inferResultType(*this) : nullptr;
 			retType = pResultType;
 		}
-		else if( retType.instruction != nullptr )
+		else if (retType.instruction != nullptr)
 		{
-			if( retType.instruction->isType() == false )
+			if (retType.instruction->isType() == false)
 			{
-				getModule()->logError( "result type operand not is not a OpType instruction" );
+				getModule()->logError("result type operand not is not a OpType instruction");
 				return pResultType;
 			}
 
 			pResultType = retType.instruction;
 		}
 
-		if(pResultType == nullptr)
+		if (pResultType == nullptr)
 		{
 			getModule()->logError("Failed to infer result type for instruction");
 			return error();
@@ -1913,7 +1968,7 @@ spvgentwo::Instruction::Iterator spvgentwo::getLiteralString(String& _out, Instr
 spvgentwo::Instruction::Iterator spvgentwo::skipLiteralString(Instruction::Iterator _begin)
 {
 	for (; _begin != nullptr && _begin->isLiteral(); ++_begin)
-	{ 
+	{
 		if (hasStringTerminator(_begin->literal))
 		{
 			return _begin.next();
