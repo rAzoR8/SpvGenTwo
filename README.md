@@ -13,9 +13,9 @@ I mainly focused on Shader capabilities, so the Kernel and OpenCL side is a bit 
     * [Test Project](#Test-Project)
 * [Building](#Building)
 * [Tools](#Tools)
-    * [Disassembler](#Disassembler)
-    * [Reflector](#Reflector)
-    * [Linker](#Linker)
+    * [SPIR-V Disassembler](#SPIR-V-Disassembler)
+    * [SPIR-V Reflector](#SPIR-V-Reflector)
+    * [SPIR-V Linker](#SPIR-V-Linker)
 * [Documentation](#Documentation)
 * [Contributing](#Contributing)
 * [Copyright and Licensing](#Copyright-and-Licensing)
@@ -138,9 +138,9 @@ SpvGenTwo is split into 5 folders:
 * `lib` contains the foundation to generate SPIR-V code. SpvGenTwo makes excessive use of its allocator interface, no memory is allocated from the heap. SpvGenTwo comes with its on set of container classes: List, Vector, String and HashMap. Those are not built for performance, but they shouldn't be much worse than standard implementations (okay maybe my HashMap is not as fast as unordered_map, build times are quite nice though :). Everything within this folders is pure C++17, no other dependencies (given that SPVGENTWO_REPLACE_PLACEMENTNEW and SPVGENTWO_REPLACE_TRAITS are used).
 * `common` contains some convenience implementations of abstract interfaces: HeapAllocator uses C malloc and free, BindaryFileWriter uses fopen, ConsoleLogger uses vprintf, ModulePrinter uses snprintf. It also has some additional classes like Callable (std::function replacement), Graph, ControlFlowGraph, Expression and ExprGraph, they follow the same design principles and might sooner or later be moved to `lib` if needed.
 * `test` contains small, self-contained code snippets that each generate a SPIR-V module to show some of the fundamental mechanics and APIs of SpvGenTwo.
-* `dis` is a [spirv-dis](https://github.com/KhronosGroup/SPIRV-Tools#disassembler-tool)-like tool to print assembly language text.
-* `refl` is a [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect)-like tool to extract descriptor bindings and other relevant info from SPIR-V binary modules.
-* `link` is a [spirv-link](https://github.com/KhronosGroup/SPIRV-Tools#linker-tool)-like tool to for merging symbols of modules into a new output module.
+* `dis` is a SPIR-V disassembler tool like [spirv-dis](https://github.com/KhronosGroup/SPIRV-Tools#disassembler-tool) to print assembly language text.
+* `refl` is a SPIR-V reflection tool like [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect) to extract descriptor bindings and other relevant info from SPIR-V binary modules.
+* `link` is a SPIR-V linker like [spirv-link](https://github.com/KhronosGroup/SPIRV-Tools#linker-tool) for merging symbols of multiple modules into a new output module.
 * `test` contains [Catch2](https://github.com/catchorg/Catch2) unit tests. When using Visual Studio, [Test Adapter for Catch2](https://github.com/JohnnyHendriks/TestAdapter_Catch2) can be used with the  [test/catch2.runsettings](test/catch2.runsettings) config file.
 
 # Building
@@ -158,7 +158,7 @@ Use the supplied CMakeLists.txt to generate project files for your build system.
 * `SPVGENTWO_ENABLE_WARNINGS` is set to TRUE by default and will enable most pedantic warnings-as-errors for all targets except the tests.
 * `SPVGENTWO_ENABLE_OPERANDVALIDATION` is set to TRUE by default and enables an additional validation step for every makeOp/opXZY call which is not necessary for non-development builds.
 
-Note that I mainly develop on Windows using Clang and MSVC but I'll also try to support GCC/linux. I don't have any Apple hardware so I can't debuggin any issues there, but you are welcome to contribute fixes for this platform.
+Note that I mainly develop on Windows using Clang and MSVC but I'll also try to support GCC/linux. I don't have any Apple hardware so I can't debug any issues there, but you are welcome to contribute fixes for this platform.
 
 # Tools
 

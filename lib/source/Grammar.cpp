@@ -4,7 +4,7 @@
 #include "spvgentwo/OpenCl.h"
 using namespace spvgentwo;
 
-Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m_operandNames(_pAllocator, 791u), m_operandParameters(_pAllocator, 104u), m_operandBases(_pAllocator, 3u)
+Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 899u), m_operandNames(_pAllocator, 849u), m_operandParameters(_pAllocator, 110u), m_operandBases(_pAllocator, 3u)
 {
 	{
 		auto& bases = m_operandBases.emplaceUnique(OperandKind::PairLiteralIntegerIdRef, _pAllocator).kv.value;
@@ -65,6 +65,10 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 	{
 		auto& parameters = m_operandParameters.emplaceUnique(Hash64(0u, 0x0200), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::IdScope, OperandCategory::Id, "", Quantifier::One);
+	}
+	{
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(0u, 0x10000), _pAllocator).kv.value;
+		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "", Quantifier::One);
 	}
 	{
 		auto& parameters = m_operandParameters.emplaceUnique(Hash64(3u, 0x0008), _pAllocator).kv.value;
@@ -135,6 +139,14 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		parameters.emplace_back(OperandKind::IdScope, OperandCategory::Id, "", Quantifier::One);
 	}
 	{
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(6u, 0x10000), _pAllocator).kv.value;
+		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "", Quantifier::One);
+	}
+	{
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(6u, 0x20000), _pAllocator).kv.value;
+		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "", Quantifier::One);
+	}
+	{
 		auto& parameters = m_operandParameters.emplaceUnique(Hash64(14u, 0u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Number of <<Invocation,invocations>>'", Quantifier::One);
 	}
@@ -181,7 +193,10 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 	}
 	{
 		auto& parameters = m_operandParameters.emplaceUnique(Hash64(14u, 39u), _pAllocator).kv.value;
-		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Local Size Hint'", Quantifier::One);
+		parameters.reserve(3u);
+		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'x size hint'", Quantifier::One);
+		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'y size hint'", Quantifier::One);
+		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'z size hint'", Quantifier::One);
 	}
 	{
 		auto& parameters = m_operandParameters.emplaceUnique(Hash64(14u, 4459u), _pAllocator).kv.value;
@@ -247,195 +262,207 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'target_fmax'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 1u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(14u, 6417u), _pAllocator).kv.value;
+		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Barrier Count'", Quantifier::One);
+	}
+	{
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 1u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Specialization Constant ID'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 6u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 6u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Array Stride'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 7u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 7u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Matrix Stride'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 11u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 11u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::BuiltIn, OperandCategory::ValueEnum, "", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 27u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 27u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Execution'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 29u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 29u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Stream Number'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 30u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 30u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Location'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 31u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 31u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Component'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 32u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 32u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Index'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 33u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 33u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Binding Point'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 34u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 34u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Descriptor Set'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 35u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 35u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Byte Offset'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 36u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 36u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'XFB Buffer Number'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 37u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 37u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'XFB Stride'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 38u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 38u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::FunctionParameterAttribute, OperandCategory::ValueEnum, "'Function Parameter Attribute'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 39u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 39u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::FPRoundingMode, OperandCategory::ValueEnum, "'Floating-Point Rounding Mode'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 40u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 40u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::FPFastMathMode, OperandCategory::BitEnum, "'Fast-Math Mode'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 41u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 41u), _pAllocator).kv.value;
 		parameters.reserve(2u);
 		parameters.emplace_back(OperandKind::LiteralString, OperandCategory::Literal, "'Name'", Quantifier::One);
 		parameters.emplace_back(OperandKind::LinkageType, OperandCategory::ValueEnum, "'Linkage Type'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 43u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 43u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Attachment Index'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 44u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 44u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Alignment'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 45u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 45u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Max Byte Offset'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 46u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 46u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Alignment'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 47u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 47u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Max Byte Offset'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5256u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5256u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Offset'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5599u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5599u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'N'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5607u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5607u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralString, OperandCategory::Literal, "'Register'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5625u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5625u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Kind'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5628u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5628u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Offset'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5634u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5634u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Counter Buffer'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5635u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5635u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralString, OperandCategory::Literal, "'Semantic'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5636u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5636u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralString, OperandCategory::Literal, "'User Type'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5822u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5822u), _pAllocator).kv.value;
 		parameters.reserve(2u);
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Target Width'", Quantifier::One);
 		parameters.emplace_back(OperandKind::FPRoundingMode, OperandCategory::ValueEnum, "'FP Rounding Mode'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5823u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5823u), _pAllocator).kv.value;
 		parameters.reserve(2u);
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Target Width'", Quantifier::One);
 		parameters.emplace_back(OperandKind::FPDenormMode, OperandCategory::ValueEnum, "'FP Denorm Mode'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5826u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5826u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralString, OperandCategory::Literal, "'Memory Type'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5827u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5827u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Banks'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5828u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5828u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Bank Width'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5829u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5829u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Maximum Copies'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5832u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5832u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Maximum Replicates'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5834u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5834u), _pAllocator).kv.value;
 		parameters.reserve(2u);
 		parameters.emplace_back(OperandKind::LiteralString, OperandCategory::Literal, "'Merge Key'", Quantifier::One);
 		parameters.emplace_back(OperandKind::LiteralString, OperandCategory::Literal, "'Merge Type'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5835u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5835u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Bank Bits'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5836u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5836u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Force Key'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5900u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5900u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Cache Size in bytes'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5902u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5902u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Prefetcher Size in bytes'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5921u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5914u), _pAllocator).kv.value;
+		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Aliasing Scopes List'", Quantifier::One);
+	}
+	{
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5915u), _pAllocator).kv.value;
+		parameters.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Aliasing Scopes List'", Quantifier::One);
+	}
+	{
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5921u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Buffer Location ID'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 5944u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 5944u), _pAllocator).kv.value;
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'IO Pipe ID'", Quantifier::One);
 	}
 	{
-		auto& parameters = m_operandParameters.emplaceUnique(Hash64(28u, 6080u), _pAllocator).kv.value;
+		auto& parameters = m_operandParameters.emplaceUnique(Hash64(30u, 6080u), _pAllocator).kv.value;
 		parameters.reserve(2u);
 		parameters.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Target Width'", Quantifier::One);
 		parameters.emplace_back(OperandKind::FPOperationMode, OperandCategory::ValueEnum, "'FP Operation Mode'", Quantifier::One);
@@ -1889,7 +1916,9 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Insert'", Quantifier::One);
 		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Offset'", Quantifier::One);
 		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Count'", Quantifier::One);
+		instr.capabilities.reserve(2u);
 		instr.capabilities.emplace_back(spv::Capability::Shader);
+		instr.capabilities.emplace_back(spv::Capability::BitInstructions);
 	}
 	{
 		auto& instr = m_instructions.emplaceUnique(Hash64(202u, 0u), Instruction{"OpBitFieldSExtract", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
@@ -1899,7 +1928,9 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Base'", Quantifier::One);
 		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Offset'", Quantifier::One);
 		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Count'", Quantifier::One);
+		instr.capabilities.reserve(2u);
 		instr.capabilities.emplace_back(spv::Capability::Shader);
+		instr.capabilities.emplace_back(spv::Capability::BitInstructions);
 	}
 	{
 		auto& instr = m_instructions.emplaceUnique(Hash64(203u, 0u), Instruction{"OpBitFieldUExtract", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
@@ -1909,7 +1940,9 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Base'", Quantifier::One);
 		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Offset'", Quantifier::One);
 		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Count'", Quantifier::One);
+		instr.capabilities.reserve(2u);
 		instr.capabilities.emplace_back(spv::Capability::Shader);
+		instr.capabilities.emplace_back(spv::Capability::BitInstructions);
 	}
 	{
 		auto& instr = m_instructions.emplaceUnique(Hash64(204u, 0u), Instruction{"OpBitReverse", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
@@ -1917,7 +1950,9 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
 		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
 		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Base'", Quantifier::One);
+		instr.capabilities.reserve(2u);
 		instr.capabilities.emplace_back(spv::Capability::Shader);
+		instr.capabilities.emplace_back(spv::Capability::BitInstructions);
 	}
 	{
 		auto& instr = m_instructions.emplaceUnique(Hash64(205u, 0u), Instruction{"OpBitCount", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
@@ -3352,7 +3387,7 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		instr.capabilities.emplace_back(spv::Capability::VariablePointersStorageBuffer);
 	}
 	{
-		auto& instr = m_instructions.emplaceUnique(Hash64(4416u, 0u), Instruction{"OpTerminateInvocation", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		auto& instr = m_instructions.emplaceUnique(Hash64(4416u, 0u), Instruction{"OpTerminateInvocation", _pAllocator, _pAllocator, _pAllocator, 67072u}).kv.value;
 		instr.capabilities.emplace_back(spv::Capability::Shader);
 		instr.extensions.emplace_back(spv::Extension::SPV_KHR_terminate_invocation);
 	}
@@ -3458,6 +3493,75 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		auto& instr = m_instructions.emplaceUnique(Hash64(4449u, 0u), Instruction{"OpTerminateRayKHR", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
 		instr.capabilities.emplace_back(spv::Capability::RayTracingKHR);
 		instr.extensions.emplace_back(spv::Extension::SPV_KHR_ray_tracing);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(4450u, 0u), Instruction{"OpSDotKHR", _pAllocator, _pAllocator, _pAllocator, 67072u}).kv.value;
+		instr.operands.reserve(5u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Vector 1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Vector 2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::PackedVectorFormat, OperandCategory::ValueEnum, "'Packed Vector Format'", Quantifier::ZeroOrOne);
+		instr.capabilities.emplace_back(spv::Capability::DotProductKHR);
+		instr.extensions.emplace_back(spv::Extension::SPV_KHR_integer_dot_product);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(4451u, 0u), Instruction{"OpUDotKHR", _pAllocator, _pAllocator, _pAllocator, 67072u}).kv.value;
+		instr.operands.reserve(5u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Vector 1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Vector 2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::PackedVectorFormat, OperandCategory::ValueEnum, "'Packed Vector Format'", Quantifier::ZeroOrOne);
+		instr.capabilities.emplace_back(spv::Capability::DotProductKHR);
+		instr.extensions.emplace_back(spv::Extension::SPV_KHR_integer_dot_product);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(4452u, 0u), Instruction{"OpSUDotKHR", _pAllocator, _pAllocator, _pAllocator, 67072u}).kv.value;
+		instr.operands.reserve(5u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Vector 1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Vector 2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::PackedVectorFormat, OperandCategory::ValueEnum, "'Packed Vector Format'", Quantifier::ZeroOrOne);
+		instr.capabilities.emplace_back(spv::Capability::DotProductKHR);
+		instr.extensions.emplace_back(spv::Extension::SPV_KHR_integer_dot_product);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(4453u, 0u), Instruction{"OpSDotAccSatKHR", _pAllocator, _pAllocator, _pAllocator, 67072u}).kv.value;
+		instr.operands.reserve(6u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Vector 1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Vector 2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Accumulator'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::PackedVectorFormat, OperandCategory::ValueEnum, "'Packed Vector Format'", Quantifier::ZeroOrOne);
+		instr.capabilities.emplace_back(spv::Capability::DotProductKHR);
+		instr.extensions.emplace_back(spv::Extension::SPV_KHR_integer_dot_product);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(4454u, 0u), Instruction{"OpUDotAccSatKHR", _pAllocator, _pAllocator, _pAllocator, 67072u}).kv.value;
+		instr.operands.reserve(6u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Vector 1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Vector 2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Accumulator'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::PackedVectorFormat, OperandCategory::ValueEnum, "'Packed Vector Format'", Quantifier::ZeroOrOne);
+		instr.capabilities.emplace_back(spv::Capability::DotProductKHR);
+		instr.extensions.emplace_back(spv::Extension::SPV_KHR_integer_dot_product);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(4455u, 0u), Instruction{"OpSUDotAccSatKHR", _pAllocator, _pAllocator, _pAllocator, 67072u}).kv.value;
+		instr.operands.reserve(6u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Vector 1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Vector 2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Accumulator'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::PackedVectorFormat, OperandCategory::ValueEnum, "'Packed Vector Format'", Quantifier::ZeroOrOne);
+		instr.capabilities.emplace_back(spv::Capability::DotProductKHR);
+		instr.extensions.emplace_back(spv::Extension::SPV_KHR_integer_dot_product);
 	}
 	{
 		auto& instr = m_instructions.emplaceUnique(Hash64(4472u, 0u), Instruction{"OpTypeRayQueryKHR", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
@@ -3632,7 +3736,7 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		instr.operands.reserve(3u);
 		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
 		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
-		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Execution'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Scope'", Quantifier::One);
 		instr.capabilities.emplace_back(spv::Capability::ShaderClockKHR);
 		instr.extensions.emplace_back(spv::Extension::SPV_KHR_shader_clock);
 	}
@@ -3706,6 +3810,42 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'PayloadId'", Quantifier::One);
 		instr.capabilities.emplace_back(spv::Capability::RayTracingNV);
 		instr.extensions.emplace_back(spv::Extension::SPV_NV_ray_tracing);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5338u, 0u), Instruction{"OpTraceMotionNV", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(12u);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Accel'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Ray Flags'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Cull Mask'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'SBT Offset'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'SBT Stride'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Miss Index'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Ray Origin'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Ray Tmin'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Ray Direction'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Ray Tmax'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Time'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'PayloadId'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::RayTracingMotionBlurNV);
+		instr.extensions.emplace_back(spv::Extension::SPV_NV_ray_tracing_motion_blur);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5339u, 0u), Instruction{"OpTraceRayMotionNV", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(12u);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Accel'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Ray Flags'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Cull Mask'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'SBT Offset'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'SBT Stride'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Miss Index'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Ray Origin'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Ray Tmin'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Ray Direction'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Ray Tmax'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Time'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Payload'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::RayTracingMotionBlurNV);
+		instr.extensions.emplace_back(spv::Extension::SPV_NV_ray_tracing_motion_blur);
 	}
 	{
 		auto& instr = m_instructions.emplaceUnique(Hash64(5341u, 0u), Instruction{"OpTypeAccelerationStructureKHR", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
@@ -3798,9 +3938,8 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		instr.extensions.emplace_back(spv::Extension::SPV_EXT_fragment_shader_interlock);
 	}
 	{
-		auto& instr = m_instructions.emplaceUnique(Hash64(5380u, 0u), Instruction{"OpDemoteToHelperInvocationEXT", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		auto& instr = m_instructions.emplaceUnique(Hash64(5380u, 0u), Instruction{"OpDemoteToHelperInvocationEXT", _pAllocator, _pAllocator, _pAllocator, 67072u}).kv.value;
 		instr.capabilities.emplace_back(spv::Capability::DemoteToHelperInvocationEXT);
-		instr.extensions.emplace_back(spv::Extension::SPV_EXT_demote_to_helper_invocation);
 	}
 	{
 		auto& instr = m_instructions.emplaceUnique(Hash64(5381u, 0u), Instruction{"OpIsHelperInvocationEXT", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
@@ -3809,6 +3948,59 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
 		instr.capabilities.emplace_back(spv::Capability::DemoteToHelperInvocationEXT);
 		instr.extensions.emplace_back(spv::Extension::SPV_EXT_demote_to_helper_invocation);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5391u, 0u), Instruction{"OpConvertUToImageNV", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(3u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Operand'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::BindlessTextureNV);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5392u, 0u), Instruction{"OpConvertUToSamplerNV", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(3u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Operand'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::BindlessTextureNV);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5393u, 0u), Instruction{"OpConvertImageToUNV", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(3u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Operand'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::BindlessTextureNV);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5394u, 0u), Instruction{"OpConvertSamplerToUNV", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(3u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Operand'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::BindlessTextureNV);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5395u, 0u), Instruction{"OpConvertUToSampledImageNV", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(3u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Operand'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::BindlessTextureNV);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5396u, 0u), Instruction{"OpConvertSampledImageToUNV", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(3u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Operand'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::BindlessTextureNV);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5397u, 0u), Instruction{"OpSamplerImageAddressingModeNV", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Bit Width'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::BindlessTextureNV);
 	}
 	{
 		auto& instr = m_instructions.emplaceUnique(Hash64(5571u, 0u), Instruction{"OpSubgroupShuffleINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
@@ -4026,7 +4218,7 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		instr.capabilities.emplace_back(spv::Capability::IntegerFunctions2INTEL);
 	}
 	{
-		auto& instr = m_instructions.emplaceUnique(Hash64(5600u, 0u), Instruction{"OpConstFunctionPointerINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		auto& instr = m_instructions.emplaceUnique(Hash64(5600u, 0u), Instruction{"OpConstantFunctionPointerINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
 		instr.operands.reserve(3u);
 		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
 		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
@@ -4098,6 +4290,22 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		instr.capabilities.emplace_back(spv::Capability::AtomicFloat16MinMaxEXT);
 		instr.capabilities.emplace_back(spv::Capability::AtomicFloat32MinMaxEXT);
 		instr.capabilities.emplace_back(spv::Capability::AtomicFloat64MinMaxEXT);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5630u, 0u), Instruction{"OpAssumeTrueKHR", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Condition'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ExpectAssumeKHR);
+		instr.extensions.emplace_back(spv::Extension::SPV_KHR_expect_assume);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5631u, 0u), Instruction{"OpExpectKHR", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(4u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Value'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'ExpectedValue'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ExpectAssumeKHR);
+		instr.extensions.emplace_back(spv::Extension::SPV_KHR_expect_assume);
 	}
 	{
 		auto& instr = m_instructions.emplaceUnique(Hash64(5632u, 0u), Instruction{"OpDecorateString", _pAllocator, _pAllocator, _pAllocator, 66560u}).kv.value;
@@ -5202,10 +5410,729 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		instr.capabilities.emplace_back(spv::Capability::VariableLengthArrayINTEL);
 	}
 	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5840u, 0u), Instruction{"OpArbitraryFloatSinCosPiINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(9u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'FromSign'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5841u, 0u), Instruction{"OpArbitraryFloatCastINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5842u, 0u), Instruction{"OpArbitraryFloatCastFromIntINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'FromSign'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5843u, 0u), Instruction{"OpArbitraryFloatCastToIntINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(7u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5846u, 0u), Instruction{"OpArbitraryFloatAddINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(10u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5847u, 0u), Instruction{"OpArbitraryFloatSubINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(10u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5848u, 0u), Instruction{"OpArbitraryFloatMulINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(10u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5849u, 0u), Instruction{"OpArbitraryFloatDivINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(10u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5850u, 0u), Instruction{"OpArbitraryFloatGTINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(6u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M2'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5851u, 0u), Instruction{"OpArbitraryFloatGEINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(6u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M2'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5852u, 0u), Instruction{"OpArbitraryFloatLTINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(6u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M2'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5853u, 0u), Instruction{"OpArbitraryFloatLEINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(6u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M2'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5854u, 0u), Instruction{"OpArbitraryFloatEQINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(6u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M2'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5855u, 0u), Instruction{"OpArbitraryFloatRecipINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5856u, 0u), Instruction{"OpArbitraryFloatRSqrtINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5857u, 0u), Instruction{"OpArbitraryFloatCbrtINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5858u, 0u), Instruction{"OpArbitraryFloatHypotINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(10u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5859u, 0u), Instruction{"OpArbitraryFloatSqrtINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5860u, 0u), Instruction{"OpArbitraryFloatLogINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5861u, 0u), Instruction{"OpArbitraryFloatLog2INTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5862u, 0u), Instruction{"OpArbitraryFloatLog10INTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5863u, 0u), Instruction{"OpArbitraryFloatLog1pINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5864u, 0u), Instruction{"OpArbitraryFloatExpINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5865u, 0u), Instruction{"OpArbitraryFloatExp2INTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5866u, 0u), Instruction{"OpArbitraryFloatExp10INTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5867u, 0u), Instruction{"OpArbitraryFloatExpm1INTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5868u, 0u), Instruction{"OpArbitraryFloatSinINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5869u, 0u), Instruction{"OpArbitraryFloatCosINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5870u, 0u), Instruction{"OpArbitraryFloatSinCosINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5871u, 0u), Instruction{"OpArbitraryFloatSinPiINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5872u, 0u), Instruction{"OpArbitraryFloatCosPiINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5873u, 0u), Instruction{"OpArbitraryFloatASinINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5874u, 0u), Instruction{"OpArbitraryFloatASinPiINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5875u, 0u), Instruction{"OpArbitraryFloatACosINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5876u, 0u), Instruction{"OpArbitraryFloatACosPiINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5877u, 0u), Instruction{"OpArbitraryFloatATanINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5878u, 0u), Instruction{"OpArbitraryFloatATanPiINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(8u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5879u, 0u), Instruction{"OpArbitraryFloatATan2INTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(10u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5880u, 0u), Instruction{"OpArbitraryFloatPowINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(10u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5881u, 0u), Instruction{"OpArbitraryFloatPowRINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(10u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M2'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5882u, 0u), Instruction{"OpArbitraryFloatPowNINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(9u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'A'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'M1'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'B'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Mout'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'EnableSubnormals'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingMode'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'RoundingAccuracy'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFloatingPointINTEL);
+	}
+	{
 		auto& instr = m_instructions.emplaceUnique(Hash64(5887u, 0u), Instruction{"OpLoopControlINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
 		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Loop Control Parameters'", Quantifier::ZeroOrAny);
 		instr.capabilities.emplace_back(spv::Capability::UnstructuredLoopControlsINTEL);
 		instr.extensions.emplace_back(spv::Extension::SPV_INTEL_unstructured_loop_controls);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5911u, 0u), Instruction{"OpAliasDomainDeclINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(2u);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Name'", Quantifier::ZeroOrOne);
+		instr.capabilities.emplace_back(spv::Capability::MemoryAccessAliasingINTEL);
+		instr.extensions.emplace_back(spv::Extension::SPV_INTEL_memory_access_aliasing);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5912u, 0u), Instruction{"OpAliasScopeDeclINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(3u);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Alias Domain'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Name'", Quantifier::ZeroOrOne);
+		instr.capabilities.emplace_back(spv::Capability::MemoryAccessAliasingINTEL);
+		instr.extensions.emplace_back(spv::Extension::SPV_INTEL_memory_access_aliasing);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5913u, 0u), Instruction{"OpAliasScopeListDeclINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(2u);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'AliasScope1, AliasScope2, ...'", Quantifier::ZeroOrAny);
+		instr.capabilities.emplace_back(spv::Capability::MemoryAccessAliasingINTEL);
+		instr.extensions.emplace_back(spv::Extension::SPV_INTEL_memory_access_aliasing);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5923u, 0u), Instruction{"OpFixedSqrtINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(9u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input Type'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'S'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'I'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'rI'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Q'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'O'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFixedPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5924u, 0u), Instruction{"OpFixedRecipINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(9u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input Type'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'S'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'I'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'rI'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Q'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'O'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFixedPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5925u, 0u), Instruction{"OpFixedRsqrtINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(9u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input Type'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'S'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'I'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'rI'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Q'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'O'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFixedPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5926u, 0u), Instruction{"OpFixedSinINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(9u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input Type'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'S'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'I'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'rI'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Q'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'O'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFixedPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5927u, 0u), Instruction{"OpFixedCosINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(9u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input Type'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'S'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'I'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'rI'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Q'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'O'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFixedPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5928u, 0u), Instruction{"OpFixedSinCosINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(9u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input Type'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'S'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'I'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'rI'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Q'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'O'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFixedPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5929u, 0u), Instruction{"OpFixedSinPiINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(9u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input Type'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'S'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'I'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'rI'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Q'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'O'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFixedPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5930u, 0u), Instruction{"OpFixedCosPiINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(9u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input Type'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'S'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'I'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'rI'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Q'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'O'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFixedPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5931u, 0u), Instruction{"OpFixedSinCosPiINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(9u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input Type'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'S'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'I'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'rI'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Q'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'O'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFixedPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5932u, 0u), Instruction{"OpFixedLogINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(9u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input Type'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'S'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'I'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'rI'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Q'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'O'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFixedPointINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(5933u, 0u), Instruction{"OpFixedExpINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(9u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input Type'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Input'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'S'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'I'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'rI'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'Q'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::LiteralInteger, OperandCategory::Literal, "'O'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::ArbitraryPrecisionFixedPointINTEL);
 	}
 	{
 		auto& instr = m_instructions.emplaceUnique(Hash64(5934u, 0u), Instruction{"OpPtrCastToCrossWorkgroupINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
@@ -5427,14 +6354,17 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Memory'", Quantifier::One);
 		instr.operands.emplace_back(OperandKind::IdMemorySemantics, OperandCategory::Id, "'Semantics'", Quantifier::One);
 		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Value'", Quantifier::One);
-		instr.capabilities.reserve(2u);
+		instr.capabilities.reserve(3u);
+		instr.capabilities.emplace_back(spv::Capability::AtomicFloat16AddEXT);
 		instr.capabilities.emplace_back(spv::Capability::AtomicFloat32AddEXT);
 		instr.capabilities.emplace_back(spv::Capability::AtomicFloat64AddEXT);
 		instr.extensions.emplace_back(spv::Extension::SPV_EXT_shader_atomic_float_add);
 	}
 	{
 		auto& instr = m_instructions.emplaceUnique(Hash64(6086u, 0u), Instruction{"OpTypeBufferSurfaceINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(2u);
 		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::AccessQualifier, OperandCategory::ValueEnum, "'AccessQualifier'", Quantifier::One);
 		instr.capabilities.emplace_back(spv::Capability::VectorComputeINTEL);
 	}
 	{
@@ -5451,6 +6381,102 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 		auto& instr = m_instructions.emplaceUnique(Hash64(6092u, 0u), Instruction{"OpSpecConstantCompositeContinuedINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
 		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'Constituents'", Quantifier::ZeroOrAny);
 		instr.capabilities.emplace_back(spv::Capability::LongConstantCompositeINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(6142u, 0u), Instruction{"OpControlBarrierArriveINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(3u);
+		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Execution'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Memory'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdMemorySemantics, OperandCategory::Id, "'Semantics'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::SplitBarrierINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(6143u, 0u), Instruction{"OpControlBarrierWaitINTEL", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(3u);
+		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Execution'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Memory'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdMemorySemantics, OperandCategory::Id, "'Semantics'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::SplitBarrierINTEL);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(6401u, 0u), Instruction{"OpGroupIMulKHR", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(5u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Execution'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::GroupOperation, OperandCategory::ValueEnum, "'Operation'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'X'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::GroupUniformArithmeticKHR);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(6402u, 0u), Instruction{"OpGroupFMulKHR", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(5u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Execution'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::GroupOperation, OperandCategory::ValueEnum, "'Operation'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'X'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::GroupUniformArithmeticKHR);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(6403u, 0u), Instruction{"OpGroupBitwiseAndKHR", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(5u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Execution'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::GroupOperation, OperandCategory::ValueEnum, "'Operation'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'X'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::GroupUniformArithmeticKHR);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(6404u, 0u), Instruction{"OpGroupBitwiseOrKHR", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(5u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Execution'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::GroupOperation, OperandCategory::ValueEnum, "'Operation'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'X'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::GroupUniformArithmeticKHR);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(6405u, 0u), Instruction{"OpGroupBitwiseXorKHR", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(5u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Execution'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::GroupOperation, OperandCategory::ValueEnum, "'Operation'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'X'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::GroupUniformArithmeticKHR);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(6406u, 0u), Instruction{"OpGroupLogicalAndKHR", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(5u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Execution'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::GroupOperation, OperandCategory::ValueEnum, "'Operation'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'X'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::GroupUniformArithmeticKHR);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(6407u, 0u), Instruction{"OpGroupLogicalOrKHR", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(5u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Execution'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::GroupOperation, OperandCategory::ValueEnum, "'Operation'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'X'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::GroupUniformArithmeticKHR);
+	}
+	{
+		auto& instr = m_instructions.emplaceUnique(Hash64(6408u, 0u), Instruction{"OpGroupLogicalXorKHR", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
+		instr.operands.reserve(5u);
+		instr.operands.emplace_back(OperandKind::IdResultType, OperandCategory::Id, "ResultType", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdResult, OperandCategory::Id, "Result", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdScope, OperandCategory::Id, "'Execution'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::GroupOperation, OperandCategory::ValueEnum, "'Operation'", Quantifier::One);
+		instr.operands.emplace_back(OperandKind::IdRef, OperandCategory::Id, "'X'", Quantifier::One);
+		instr.capabilities.emplace_back(spv::Capability::GroupUniformArithmeticKHR);
 	}
 	{
 		auto& instr = m_instructions.emplaceUnique(Hash64(1u, 1u), Instruction{"Round", _pAllocator, _pAllocator, _pAllocator, 0u}).kv.value;
@@ -6714,6 +7740,8 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 	m_operandNames.emplaceUnique(Hash64(0u, 0x0800u), "VolatileTexelKHR");
 	m_operandNames.emplaceUnique(Hash64(0u, 0x1000u), "SignExtend");
 	m_operandNames.emplaceUnique(Hash64(0u, 0x2000u), "ZeroExtend");
+	m_operandNames.emplaceUnique(Hash64(0u, 0x4000u), "Nontemporal");
+	m_operandNames.emplaceUnique(Hash64(0u, 0x10000u), "Offsets");
 	m_operandNames.emplaceUnique(Hash64(1u, 0x0000u), "None");
 	m_operandNames.emplaceUnique(Hash64(1u, 0x0001u), "NotNaN");
 	m_operandNames.emplaceUnique(Hash64(1u, 0x0002u), "NotInf");
@@ -6748,6 +7776,7 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 	m_operandNames.emplaceUnique(Hash64(4u, 0x0002u), "DontInline");
 	m_operandNames.emplaceUnique(Hash64(4u, 0x0004u), "Pure");
 	m_operandNames.emplaceUnique(Hash64(4u, 0x0008u), "Const");
+	m_operandNames.emplaceUnique(Hash64(4u, 0x10000u), "OptNoneINTEL");
 	m_operandNames.emplaceUnique(Hash64(5u, 0x0000u), "Relaxed");
 	m_operandNames.emplaceUnique(Hash64(5u, 0x0000u), "None");
 	m_operandNames.emplaceUnique(Hash64(5u, 0x0002u), "Acquire");
@@ -6777,6 +7806,8 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 	m_operandNames.emplaceUnique(Hash64(6u, 0x0010u), "MakePointerVisibleKHR");
 	m_operandNames.emplaceUnique(Hash64(6u, 0x0020u), "NonPrivatePointer");
 	m_operandNames.emplaceUnique(Hash64(6u, 0x0020u), "NonPrivatePointerKHR");
+	m_operandNames.emplaceUnique(Hash64(6u, 0x10000u), "AliasScopeINTELMask");
+	m_operandNames.emplaceUnique(Hash64(6u, 0x20000u), "NoAliasINTELMask");
 	m_operandNames.emplaceUnique(Hash64(7u, 0x0000u), "None");
 	m_operandNames.emplaceUnique(Hash64(7u, 0x0001u), "CmdExecTime");
 	m_operandNames.emplaceUnique(Hash64(8u, 0x0000u), "NoneKHR");
@@ -6800,6 +7831,8 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 	m_operandNames.emplaceUnique(Hash64(10u, 3u), "OpenCL_C");
 	m_operandNames.emplaceUnique(Hash64(10u, 4u), "OpenCL_CPP");
 	m_operandNames.emplaceUnique(Hash64(10u, 5u), "HLSL");
+	m_operandNames.emplaceUnique(Hash64(10u, 6u), "CPP_for_OpenCL");
+	m_operandNames.emplaceUnique(Hash64(10u, 7u), "SYCL");
 	m_operandNames.emplaceUnique(Hash64(11u, 0u), "Vertex");
 	m_operandNames.emplaceUnique(Hash64(11u, 1u), "TessellationControl");
 	m_operandNames.emplaceUnique(Hash64(11u, 2u), "TessellationEvaluation");
@@ -6869,6 +7902,7 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 	m_operandNames.emplaceUnique(Hash64(14u, 37u), "SubgroupsPerWorkgroupId");
 	m_operandNames.emplaceUnique(Hash64(14u, 38u), "LocalSizeId");
 	m_operandNames.emplaceUnique(Hash64(14u, 39u), "LocalSizeHintId");
+	m_operandNames.emplaceUnique(Hash64(14u, 4421u), "SubgroupUniformControlFlowKHR");
 	m_operandNames.emplaceUnique(Hash64(14u, 4446u), "PostDepthCoverage");
 	m_operandNames.emplaceUnique(Hash64(14u, 4459u), "DenormPreserve");
 	m_operandNames.emplaceUnique(Hash64(14u, 4460u), "DenormFlushToZero");
@@ -6897,6 +7931,7 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 	m_operandNames.emplaceUnique(Hash64(14u, 5895u), "NoGlobalOffsetINTEL");
 	m_operandNames.emplaceUnique(Hash64(14u, 5896u), "NumSIMDWorkitemsINTEL");
 	m_operandNames.emplaceUnique(Hash64(14u, 5903u), "SchedulerTargetFmaxMhzINTEL");
+	m_operandNames.emplaceUnique(Hash64(14u, 6417u), "NamedBarrierCountINTEL");
 	m_operandNames.emplaceUnique(Hash64(15u, 0u), "UniformConstant");
 	m_operandNames.emplaceUnique(Hash64(15u, 1u), "Input");
 	m_operandNames.emplaceUnique(Hash64(15u, 2u), "Uniform");
@@ -7026,466 +8061,515 @@ Grammar::Grammar(IAllocator* _pAllocator) : m_instructions(_pAllocator, 817u), m
 	m_operandNames.emplaceUnique(Hash64(22u, 3u), "RTN");
 	m_operandNames.emplaceUnique(Hash64(23u, 0u), "Preserve");
 	m_operandNames.emplaceUnique(Hash64(23u, 1u), "FlushToZero");
-	m_operandNames.emplaceUnique(Hash64(24u, 0u), "IEEE");
-	m_operandNames.emplaceUnique(Hash64(24u, 1u), "ALT");
-	m_operandNames.emplaceUnique(Hash64(25u, 0u), "Export");
-	m_operandNames.emplaceUnique(Hash64(25u, 1u), "Import");
-	m_operandNames.emplaceUnique(Hash64(26u, 0u), "ReadOnly");
-	m_operandNames.emplaceUnique(Hash64(26u, 1u), "WriteOnly");
-	m_operandNames.emplaceUnique(Hash64(26u, 2u), "ReadWrite");
-	m_operandNames.emplaceUnique(Hash64(27u, 0u), "Zext");
-	m_operandNames.emplaceUnique(Hash64(27u, 1u), "Sext");
-	m_operandNames.emplaceUnique(Hash64(27u, 2u), "ByVal");
-	m_operandNames.emplaceUnique(Hash64(27u, 3u), "Sret");
-	m_operandNames.emplaceUnique(Hash64(27u, 4u), "NoAlias");
-	m_operandNames.emplaceUnique(Hash64(27u, 5u), "NoCapture");
-	m_operandNames.emplaceUnique(Hash64(27u, 6u), "NoWrite");
-	m_operandNames.emplaceUnique(Hash64(27u, 7u), "NoReadWrite");
-	m_operandNames.emplaceUnique(Hash64(28u, 0u), "RelaxedPrecision");
-	m_operandNames.emplaceUnique(Hash64(28u, 1u), "SpecId");
-	m_operandNames.emplaceUnique(Hash64(28u, 2u), "Block");
-	m_operandNames.emplaceUnique(Hash64(28u, 3u), "BufferBlock");
-	m_operandNames.emplaceUnique(Hash64(28u, 4u), "RowMajor");
-	m_operandNames.emplaceUnique(Hash64(28u, 5u), "ColMajor");
-	m_operandNames.emplaceUnique(Hash64(28u, 6u), "ArrayStride");
-	m_operandNames.emplaceUnique(Hash64(28u, 7u), "MatrixStride");
-	m_operandNames.emplaceUnique(Hash64(28u, 8u), "GLSLShared");
-	m_operandNames.emplaceUnique(Hash64(28u, 9u), "GLSLPacked");
-	m_operandNames.emplaceUnique(Hash64(28u, 10u), "CPacked");
-	m_operandNames.emplaceUnique(Hash64(28u, 11u), "BuiltIn");
-	m_operandNames.emplaceUnique(Hash64(28u, 13u), "NoPerspective");
-	m_operandNames.emplaceUnique(Hash64(28u, 14u), "Flat");
-	m_operandNames.emplaceUnique(Hash64(28u, 15u), "Patch");
-	m_operandNames.emplaceUnique(Hash64(28u, 16u), "Centroid");
-	m_operandNames.emplaceUnique(Hash64(28u, 17u), "Sample");
-	m_operandNames.emplaceUnique(Hash64(28u, 18u), "Invariant");
-	m_operandNames.emplaceUnique(Hash64(28u, 19u), "Restrict");
-	m_operandNames.emplaceUnique(Hash64(28u, 20u), "Aliased");
-	m_operandNames.emplaceUnique(Hash64(28u, 21u), "Volatile");
-	m_operandNames.emplaceUnique(Hash64(28u, 22u), "Constant");
-	m_operandNames.emplaceUnique(Hash64(28u, 23u), "Coherent");
-	m_operandNames.emplaceUnique(Hash64(28u, 24u), "NonWritable");
-	m_operandNames.emplaceUnique(Hash64(28u, 25u), "NonReadable");
-	m_operandNames.emplaceUnique(Hash64(28u, 26u), "Uniform");
-	m_operandNames.emplaceUnique(Hash64(28u, 27u), "UniformId");
-	m_operandNames.emplaceUnique(Hash64(28u, 28u), "SaturatedConversion");
-	m_operandNames.emplaceUnique(Hash64(28u, 29u), "Stream");
-	m_operandNames.emplaceUnique(Hash64(28u, 30u), "Location");
-	m_operandNames.emplaceUnique(Hash64(28u, 31u), "Component");
-	m_operandNames.emplaceUnique(Hash64(28u, 32u), "Index");
-	m_operandNames.emplaceUnique(Hash64(28u, 33u), "Binding");
-	m_operandNames.emplaceUnique(Hash64(28u, 34u), "DescriptorSet");
-	m_operandNames.emplaceUnique(Hash64(28u, 35u), "Offset");
-	m_operandNames.emplaceUnique(Hash64(28u, 36u), "XfbBuffer");
-	m_operandNames.emplaceUnique(Hash64(28u, 37u), "XfbStride");
-	m_operandNames.emplaceUnique(Hash64(28u, 38u), "FuncParamAttr");
-	m_operandNames.emplaceUnique(Hash64(28u, 39u), "FPRoundingMode");
-	m_operandNames.emplaceUnique(Hash64(28u, 40u), "FPFastMathMode");
-	m_operandNames.emplaceUnique(Hash64(28u, 41u), "LinkageAttributes");
-	m_operandNames.emplaceUnique(Hash64(28u, 42u), "NoContraction");
-	m_operandNames.emplaceUnique(Hash64(28u, 43u), "InputAttachmentIndex");
-	m_operandNames.emplaceUnique(Hash64(28u, 44u), "Alignment");
-	m_operandNames.emplaceUnique(Hash64(28u, 45u), "MaxByteOffset");
-	m_operandNames.emplaceUnique(Hash64(28u, 46u), "AlignmentId");
-	m_operandNames.emplaceUnique(Hash64(28u, 47u), "MaxByteOffsetId");
-	m_operandNames.emplaceUnique(Hash64(28u, 4469u), "NoSignedWrap");
-	m_operandNames.emplaceUnique(Hash64(28u, 4470u), "NoUnsignedWrap");
-	m_operandNames.emplaceUnique(Hash64(28u, 4999u), "ExplicitInterpAMD");
-	m_operandNames.emplaceUnique(Hash64(28u, 5248u), "OverrideCoverageNV");
-	m_operandNames.emplaceUnique(Hash64(28u, 5250u), "PassthroughNV");
-	m_operandNames.emplaceUnique(Hash64(28u, 5252u), "ViewportRelativeNV");
-	m_operandNames.emplaceUnique(Hash64(28u, 5256u), "SecondaryViewportRelativeNV");
-	m_operandNames.emplaceUnique(Hash64(28u, 5271u), "PerPrimitiveNV");
-	m_operandNames.emplaceUnique(Hash64(28u, 5272u), "PerViewNV");
-	m_operandNames.emplaceUnique(Hash64(28u, 5273u), "PerTaskNV");
-	m_operandNames.emplaceUnique(Hash64(28u, 5285u), "PerVertexNV");
-	m_operandNames.emplaceUnique(Hash64(28u, 5300u), "NonUniform");
-	m_operandNames.emplaceUnique(Hash64(28u, 5300u), "NonUniformEXT");
-	m_operandNames.emplaceUnique(Hash64(28u, 5355u), "RestrictPointer");
-	m_operandNames.emplaceUnique(Hash64(28u, 5355u), "RestrictPointerEXT");
-	m_operandNames.emplaceUnique(Hash64(28u, 5356u), "AliasedPointer");
-	m_operandNames.emplaceUnique(Hash64(28u, 5356u), "AliasedPointerEXT");
-	m_operandNames.emplaceUnique(Hash64(28u, 5599u), "SIMTCallINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5602u), "ReferencedIndirectlyINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5607u), "ClobberINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5608u), "SideEffectsINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5624u), "VectorComputeVariableINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5625u), "FuncParamIOKindINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5626u), "VectorComputeFunctionINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5627u), "StackCallINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5628u), "GlobalVariableOffsetINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5634u), "CounterBuffer");
-	m_operandNames.emplaceUnique(Hash64(28u, 5634u), "HlslCounterBufferGOOGLE");
-	m_operandNames.emplaceUnique(Hash64(28u, 5635u), "UserSemantic");
-	m_operandNames.emplaceUnique(Hash64(28u, 5635u), "HlslSemanticGOOGLE");
-	m_operandNames.emplaceUnique(Hash64(28u, 5636u), "UserTypeGOOGLE");
-	m_operandNames.emplaceUnique(Hash64(28u, 5822u), "FunctionRoundingModeINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5823u), "FunctionDenormModeINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5825u), "RegisterINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5826u), "MemoryINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5827u), "NumbanksINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5828u), "BankwidthINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5829u), "MaxPrivateCopiesINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5830u), "SinglepumpINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5831u), "DoublepumpINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5832u), "MaxReplicatesINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5833u), "SimpleDualPortINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5834u), "MergeINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5835u), "BankBitsINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5836u), "ForcePow2DepthINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5899u), "BurstCoalesceINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5900u), "CacheSizeINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5901u), "DontStaticallyCoalesceINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5902u), "PrefetchINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5905u), "StallEnableINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5907u), "FuseLoopsInFunctionINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5921u), "BufferLocationINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 5944u), "IOPipeStorageINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 6080u), "FunctionFloatingPointModeINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 6085u), "SingleElementVectorINTEL");
-	m_operandNames.emplaceUnique(Hash64(28u, 6087u), "VectorComputeCallableFunctionINTEL");
-	m_operandNames.emplaceUnique(Hash64(29u, 0u), "Position");
-	m_operandNames.emplaceUnique(Hash64(29u, 1u), "PointSize");
-	m_operandNames.emplaceUnique(Hash64(29u, 3u), "ClipDistance");
-	m_operandNames.emplaceUnique(Hash64(29u, 4u), "CullDistance");
-	m_operandNames.emplaceUnique(Hash64(29u, 5u), "VertexId");
-	m_operandNames.emplaceUnique(Hash64(29u, 6u), "InstanceId");
-	m_operandNames.emplaceUnique(Hash64(29u, 7u), "PrimitiveId");
-	m_operandNames.emplaceUnique(Hash64(29u, 8u), "InvocationId");
-	m_operandNames.emplaceUnique(Hash64(29u, 9u), "Layer");
-	m_operandNames.emplaceUnique(Hash64(29u, 10u), "ViewportIndex");
-	m_operandNames.emplaceUnique(Hash64(29u, 11u), "TessLevelOuter");
-	m_operandNames.emplaceUnique(Hash64(29u, 12u), "TessLevelInner");
-	m_operandNames.emplaceUnique(Hash64(29u, 13u), "TessCoord");
-	m_operandNames.emplaceUnique(Hash64(29u, 14u), "PatchVertices");
-	m_operandNames.emplaceUnique(Hash64(29u, 15u), "FragCoord");
-	m_operandNames.emplaceUnique(Hash64(29u, 16u), "PointCoord");
-	m_operandNames.emplaceUnique(Hash64(29u, 17u), "FrontFacing");
-	m_operandNames.emplaceUnique(Hash64(29u, 18u), "SampleId");
-	m_operandNames.emplaceUnique(Hash64(29u, 19u), "SamplePosition");
-	m_operandNames.emplaceUnique(Hash64(29u, 20u), "SampleMask");
-	m_operandNames.emplaceUnique(Hash64(29u, 22u), "FragDepth");
-	m_operandNames.emplaceUnique(Hash64(29u, 23u), "HelperInvocation");
-	m_operandNames.emplaceUnique(Hash64(29u, 24u), "NumWorkgroups");
-	m_operandNames.emplaceUnique(Hash64(29u, 25u), "WorkgroupSize");
-	m_operandNames.emplaceUnique(Hash64(29u, 26u), "WorkgroupId");
-	m_operandNames.emplaceUnique(Hash64(29u, 27u), "LocalInvocationId");
-	m_operandNames.emplaceUnique(Hash64(29u, 28u), "GlobalInvocationId");
-	m_operandNames.emplaceUnique(Hash64(29u, 29u), "LocalInvocationIndex");
-	m_operandNames.emplaceUnique(Hash64(29u, 30u), "WorkDim");
-	m_operandNames.emplaceUnique(Hash64(29u, 31u), "GlobalSize");
-	m_operandNames.emplaceUnique(Hash64(29u, 32u), "EnqueuedWorkgroupSize");
-	m_operandNames.emplaceUnique(Hash64(29u, 33u), "GlobalOffset");
-	m_operandNames.emplaceUnique(Hash64(29u, 34u), "GlobalLinearId");
-	m_operandNames.emplaceUnique(Hash64(29u, 36u), "SubgroupSize");
-	m_operandNames.emplaceUnique(Hash64(29u, 37u), "SubgroupMaxSize");
-	m_operandNames.emplaceUnique(Hash64(29u, 38u), "NumSubgroups");
-	m_operandNames.emplaceUnique(Hash64(29u, 39u), "NumEnqueuedSubgroups");
-	m_operandNames.emplaceUnique(Hash64(29u, 40u), "SubgroupId");
-	m_operandNames.emplaceUnique(Hash64(29u, 41u), "SubgroupLocalInvocationId");
-	m_operandNames.emplaceUnique(Hash64(29u, 42u), "VertexIndex");
-	m_operandNames.emplaceUnique(Hash64(29u, 43u), "InstanceIndex");
-	m_operandNames.emplaceUnique(Hash64(29u, 4416u), "SubgroupEqMask");
-	m_operandNames.emplaceUnique(Hash64(29u, 4416u), "SubgroupEqMaskKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 4417u), "SubgroupGeMask");
-	m_operandNames.emplaceUnique(Hash64(29u, 4417u), "SubgroupGeMaskKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 4418u), "SubgroupGtMask");
-	m_operandNames.emplaceUnique(Hash64(29u, 4418u), "SubgroupGtMaskKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 4419u), "SubgroupLeMask");
-	m_operandNames.emplaceUnique(Hash64(29u, 4419u), "SubgroupLeMaskKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 4420u), "SubgroupLtMask");
-	m_operandNames.emplaceUnique(Hash64(29u, 4420u), "SubgroupLtMaskKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 4424u), "BaseVertex");
-	m_operandNames.emplaceUnique(Hash64(29u, 4425u), "BaseInstance");
-	m_operandNames.emplaceUnique(Hash64(29u, 4426u), "DrawIndex");
-	m_operandNames.emplaceUnique(Hash64(29u, 4432u), "PrimitiveShadingRateKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 4438u), "DeviceIndex");
-	m_operandNames.emplaceUnique(Hash64(29u, 4440u), "ViewIndex");
-	m_operandNames.emplaceUnique(Hash64(29u, 4444u), "ShadingRateKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 4992u), "BaryCoordNoPerspAMD");
-	m_operandNames.emplaceUnique(Hash64(29u, 4993u), "BaryCoordNoPerspCentroidAMD");
-	m_operandNames.emplaceUnique(Hash64(29u, 4994u), "BaryCoordNoPerspSampleAMD");
-	m_operandNames.emplaceUnique(Hash64(29u, 4995u), "BaryCoordSmoothAMD");
-	m_operandNames.emplaceUnique(Hash64(29u, 4996u), "BaryCoordSmoothCentroidAMD");
-	m_operandNames.emplaceUnique(Hash64(29u, 4997u), "BaryCoordSmoothSampleAMD");
-	m_operandNames.emplaceUnique(Hash64(29u, 4998u), "BaryCoordPullModelAMD");
-	m_operandNames.emplaceUnique(Hash64(29u, 5014u), "FragStencilRefEXT");
-	m_operandNames.emplaceUnique(Hash64(29u, 5253u), "ViewportMaskNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5257u), "SecondaryPositionNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5258u), "SecondaryViewportMaskNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5261u), "PositionPerViewNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5262u), "ViewportMaskPerViewNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5264u), "FullyCoveredEXT");
-	m_operandNames.emplaceUnique(Hash64(29u, 5274u), "TaskCountNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5275u), "PrimitiveCountNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5276u), "PrimitiveIndicesNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5277u), "ClipDistancePerViewNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5278u), "CullDistancePerViewNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5279u), "LayerPerViewNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5280u), "MeshViewCountNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5281u), "MeshViewIndicesNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5286u), "BaryCoordNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5287u), "BaryCoordNoPerspNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5292u), "FragSizeEXT");
-	m_operandNames.emplaceUnique(Hash64(29u, 5292u), "FragmentSizeNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5293u), "FragInvocationCountEXT");
-	m_operandNames.emplaceUnique(Hash64(29u, 5293u), "InvocationsPerPixelNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5319u), "LaunchIdNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5319u), "LaunchIdKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5320u), "LaunchSizeNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5320u), "LaunchSizeKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5321u), "WorldRayOriginNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5321u), "WorldRayOriginKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5322u), "WorldRayDirectionNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5322u), "WorldRayDirectionKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5323u), "ObjectRayOriginNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5323u), "ObjectRayOriginKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5324u), "ObjectRayDirectionNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5324u), "ObjectRayDirectionKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5325u), "RayTminNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5325u), "RayTminKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5326u), "RayTmaxNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5326u), "RayTmaxKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5327u), "InstanceCustomIndexNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5327u), "InstanceCustomIndexKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5330u), "ObjectToWorldNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5330u), "ObjectToWorldKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5331u), "WorldToObjectNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5331u), "WorldToObjectKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5332u), "HitTNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5333u), "HitKindNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5333u), "HitKindKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5351u), "IncomingRayFlagsNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5351u), "IncomingRayFlagsKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5352u), "RayGeometryIndexKHR");
-	m_operandNames.emplaceUnique(Hash64(29u, 5374u), "WarpsPerSMNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5375u), "SMCountNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5376u), "WarpIDNV");
-	m_operandNames.emplaceUnique(Hash64(29u, 5377u), "SMIDNV");
-	m_operandNames.emplaceUnique(Hash64(30u, 0u), "CrossDevice");
-	m_operandNames.emplaceUnique(Hash64(30u, 1u), "Device");
-	m_operandNames.emplaceUnique(Hash64(30u, 2u), "Workgroup");
-	m_operandNames.emplaceUnique(Hash64(30u, 3u), "Subgroup");
-	m_operandNames.emplaceUnique(Hash64(30u, 4u), "Invocation");
-	m_operandNames.emplaceUnique(Hash64(30u, 5u), "QueueFamily");
-	m_operandNames.emplaceUnique(Hash64(30u, 5u), "QueueFamilyKHR");
-	m_operandNames.emplaceUnique(Hash64(30u, 6u), "ShaderCallKHR");
-	m_operandNames.emplaceUnique(Hash64(31u, 0u), "Reduce");
-	m_operandNames.emplaceUnique(Hash64(31u, 1u), "InclusiveScan");
-	m_operandNames.emplaceUnique(Hash64(31u, 2u), "ExclusiveScan");
-	m_operandNames.emplaceUnique(Hash64(31u, 3u), "ClusteredReduce");
-	m_operandNames.emplaceUnique(Hash64(31u, 6u), "PartitionedReduceNV");
-	m_operandNames.emplaceUnique(Hash64(31u, 7u), "PartitionedInclusiveScanNV");
-	m_operandNames.emplaceUnique(Hash64(31u, 8u), "PartitionedExclusiveScanNV");
-	m_operandNames.emplaceUnique(Hash64(32u, 0u), "NoWait");
-	m_operandNames.emplaceUnique(Hash64(32u, 1u), "WaitKernel");
-	m_operandNames.emplaceUnique(Hash64(32u, 2u), "WaitWorkGroup");
-	m_operandNames.emplaceUnique(Hash64(33u, 0u), "Matrix");
-	m_operandNames.emplaceUnique(Hash64(33u, 1u), "Shader");
-	m_operandNames.emplaceUnique(Hash64(33u, 2u), "Geometry");
-	m_operandNames.emplaceUnique(Hash64(33u, 3u), "Tessellation");
-	m_operandNames.emplaceUnique(Hash64(33u, 4u), "Addresses");
-	m_operandNames.emplaceUnique(Hash64(33u, 5u), "Linkage");
-	m_operandNames.emplaceUnique(Hash64(33u, 6u), "Kernel");
-	m_operandNames.emplaceUnique(Hash64(33u, 7u), "Vector16");
-	m_operandNames.emplaceUnique(Hash64(33u, 8u), "Float16Buffer");
-	m_operandNames.emplaceUnique(Hash64(33u, 9u), "Float16");
-	m_operandNames.emplaceUnique(Hash64(33u, 10u), "Float64");
-	m_operandNames.emplaceUnique(Hash64(33u, 11u), "Int64");
-	m_operandNames.emplaceUnique(Hash64(33u, 12u), "Int64Atomics");
-	m_operandNames.emplaceUnique(Hash64(33u, 13u), "ImageBasic");
-	m_operandNames.emplaceUnique(Hash64(33u, 14u), "ImageReadWrite");
-	m_operandNames.emplaceUnique(Hash64(33u, 15u), "ImageMipmap");
-	m_operandNames.emplaceUnique(Hash64(33u, 17u), "Pipes");
-	m_operandNames.emplaceUnique(Hash64(33u, 18u), "Groups");
-	m_operandNames.emplaceUnique(Hash64(33u, 19u), "DeviceEnqueue");
-	m_operandNames.emplaceUnique(Hash64(33u, 20u), "LiteralSampler");
-	m_operandNames.emplaceUnique(Hash64(33u, 21u), "AtomicStorage");
-	m_operandNames.emplaceUnique(Hash64(33u, 22u), "Int16");
-	m_operandNames.emplaceUnique(Hash64(33u, 23u), "TessellationPointSize");
-	m_operandNames.emplaceUnique(Hash64(33u, 24u), "GeometryPointSize");
-	m_operandNames.emplaceUnique(Hash64(33u, 25u), "ImageGatherExtended");
-	m_operandNames.emplaceUnique(Hash64(33u, 27u), "StorageImageMultisample");
-	m_operandNames.emplaceUnique(Hash64(33u, 28u), "UniformBufferArrayDynamicIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 29u), "SampledImageArrayDynamicIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 30u), "StorageBufferArrayDynamicIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 31u), "StorageImageArrayDynamicIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 32u), "ClipDistance");
-	m_operandNames.emplaceUnique(Hash64(33u, 33u), "CullDistance");
-	m_operandNames.emplaceUnique(Hash64(33u, 34u), "ImageCubeArray");
-	m_operandNames.emplaceUnique(Hash64(33u, 35u), "SampleRateShading");
-	m_operandNames.emplaceUnique(Hash64(33u, 36u), "ImageRect");
-	m_operandNames.emplaceUnique(Hash64(33u, 37u), "SampledRect");
-	m_operandNames.emplaceUnique(Hash64(33u, 38u), "GenericPointer");
-	m_operandNames.emplaceUnique(Hash64(33u, 39u), "Int8");
-	m_operandNames.emplaceUnique(Hash64(33u, 40u), "InputAttachment");
-	m_operandNames.emplaceUnique(Hash64(33u, 41u), "SparseResidency");
-	m_operandNames.emplaceUnique(Hash64(33u, 42u), "MinLod");
-	m_operandNames.emplaceUnique(Hash64(33u, 43u), "Sampled1D");
-	m_operandNames.emplaceUnique(Hash64(33u, 44u), "Image1D");
-	m_operandNames.emplaceUnique(Hash64(33u, 45u), "SampledCubeArray");
-	m_operandNames.emplaceUnique(Hash64(33u, 46u), "SampledBuffer");
-	m_operandNames.emplaceUnique(Hash64(33u, 47u), "ImageBuffer");
-	m_operandNames.emplaceUnique(Hash64(33u, 48u), "ImageMSArray");
-	m_operandNames.emplaceUnique(Hash64(33u, 49u), "StorageImageExtendedFormats");
-	m_operandNames.emplaceUnique(Hash64(33u, 50u), "ImageQuery");
-	m_operandNames.emplaceUnique(Hash64(33u, 51u), "DerivativeControl");
-	m_operandNames.emplaceUnique(Hash64(33u, 52u), "InterpolationFunction");
-	m_operandNames.emplaceUnique(Hash64(33u, 53u), "TransformFeedback");
-	m_operandNames.emplaceUnique(Hash64(33u, 54u), "GeometryStreams");
-	m_operandNames.emplaceUnique(Hash64(33u, 55u), "StorageImageReadWithoutFormat");
-	m_operandNames.emplaceUnique(Hash64(33u, 56u), "StorageImageWriteWithoutFormat");
-	m_operandNames.emplaceUnique(Hash64(33u, 57u), "MultiViewport");
-	m_operandNames.emplaceUnique(Hash64(33u, 58u), "SubgroupDispatch");
-	m_operandNames.emplaceUnique(Hash64(33u, 59u), "NamedBarrier");
-	m_operandNames.emplaceUnique(Hash64(33u, 60u), "PipeStorage");
-	m_operandNames.emplaceUnique(Hash64(33u, 61u), "GroupNonUniform");
-	m_operandNames.emplaceUnique(Hash64(33u, 62u), "GroupNonUniformVote");
-	m_operandNames.emplaceUnique(Hash64(33u, 63u), "GroupNonUniformArithmetic");
-	m_operandNames.emplaceUnique(Hash64(33u, 64u), "GroupNonUniformBallot");
-	m_operandNames.emplaceUnique(Hash64(33u, 65u), "GroupNonUniformShuffle");
-	m_operandNames.emplaceUnique(Hash64(33u, 66u), "GroupNonUniformShuffleRelative");
-	m_operandNames.emplaceUnique(Hash64(33u, 67u), "GroupNonUniformClustered");
-	m_operandNames.emplaceUnique(Hash64(33u, 68u), "GroupNonUniformQuad");
-	m_operandNames.emplaceUnique(Hash64(33u, 69u), "ShaderLayer");
-	m_operandNames.emplaceUnique(Hash64(33u, 70u), "ShaderViewportIndex");
-	m_operandNames.emplaceUnique(Hash64(33u, 4422u), "FragmentShadingRateKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 4423u), "SubgroupBallotKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 4427u), "DrawParameters");
-	m_operandNames.emplaceUnique(Hash64(33u, 4428u), "WorkgroupMemoryExplicitLayoutKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 4429u), "WorkgroupMemoryExplicitLayout8BitAccessKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 4430u), "WorkgroupMemoryExplicitLayout16BitAccessKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 4431u), "SubgroupVoteKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 4433u), "StorageBuffer16BitAccess");
-	m_operandNames.emplaceUnique(Hash64(33u, 4433u), "StorageUniformBufferBlock16");
-	m_operandNames.emplaceUnique(Hash64(33u, 4434u), "UniformAndStorageBuffer16BitAccess");
-	m_operandNames.emplaceUnique(Hash64(33u, 4434u), "StorageUniform16");
-	m_operandNames.emplaceUnique(Hash64(33u, 4435u), "StoragePushConstant16");
-	m_operandNames.emplaceUnique(Hash64(33u, 4436u), "StorageInputOutput16");
-	m_operandNames.emplaceUnique(Hash64(33u, 4437u), "DeviceGroup");
-	m_operandNames.emplaceUnique(Hash64(33u, 4439u), "MultiView");
-	m_operandNames.emplaceUnique(Hash64(33u, 4441u), "VariablePointersStorageBuffer");
-	m_operandNames.emplaceUnique(Hash64(33u, 4442u), "VariablePointers");
-	m_operandNames.emplaceUnique(Hash64(33u, 4445u), "AtomicStorageOps");
-	m_operandNames.emplaceUnique(Hash64(33u, 4447u), "SampleMaskPostDepthCoverage");
-	m_operandNames.emplaceUnique(Hash64(33u, 4448u), "StorageBuffer8BitAccess");
-	m_operandNames.emplaceUnique(Hash64(33u, 4449u), "UniformAndStorageBuffer8BitAccess");
-	m_operandNames.emplaceUnique(Hash64(33u, 4450u), "StoragePushConstant8");
-	m_operandNames.emplaceUnique(Hash64(33u, 4464u), "DenormPreserve");
-	m_operandNames.emplaceUnique(Hash64(33u, 4465u), "DenormFlushToZero");
-	m_operandNames.emplaceUnique(Hash64(33u, 4466u), "SignedZeroInfNanPreserve");
-	m_operandNames.emplaceUnique(Hash64(33u, 4467u), "RoundingModeRTE");
-	m_operandNames.emplaceUnique(Hash64(33u, 4468u), "RoundingModeRTZ");
-	m_operandNames.emplaceUnique(Hash64(33u, 4471u), "RayQueryProvisionalKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 4472u), "RayQueryKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 4478u), "RayTraversalPrimitiveCullingKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 4479u), "RayTracingKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 5008u), "Float16ImageAMD");
-	m_operandNames.emplaceUnique(Hash64(33u, 5009u), "ImageGatherBiasLodAMD");
-	m_operandNames.emplaceUnique(Hash64(33u, 5010u), "FragmentMaskAMD");
-	m_operandNames.emplaceUnique(Hash64(33u, 5013u), "StencilExportEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5015u), "ImageReadWriteLodAMD");
-	m_operandNames.emplaceUnique(Hash64(33u, 5016u), "Int64ImageEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5055u), "ShaderClockKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 5249u), "SampleMaskOverrideCoverageNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5251u), "GeometryShaderPassthroughNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5254u), "ShaderViewportIndexLayerEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5254u), "ShaderViewportIndexLayerNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5255u), "ShaderViewportMaskNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5259u), "ShaderStereoViewNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5260u), "PerViewAttributesNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5265u), "FragmentFullyCoveredEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5266u), "MeshShadingNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5282u), "ImageFootprintNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5284u), "FragmentBarycentricNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5288u), "ComputeDerivativeGroupQuadsNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5291u), "FragmentDensityEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5291u), "ShadingRateNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5297u), "GroupNonUniformPartitionedNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5301u), "ShaderNonUniform");
-	m_operandNames.emplaceUnique(Hash64(33u, 5301u), "ShaderNonUniformEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5302u), "RuntimeDescriptorArray");
-	m_operandNames.emplaceUnique(Hash64(33u, 5302u), "RuntimeDescriptorArrayEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5303u), "InputAttachmentArrayDynamicIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 5303u), "InputAttachmentArrayDynamicIndexingEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5304u), "UniformTexelBufferArrayDynamicIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 5304u), "UniformTexelBufferArrayDynamicIndexingEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5305u), "StorageTexelBufferArrayDynamicIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 5305u), "StorageTexelBufferArrayDynamicIndexingEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5306u), "UniformBufferArrayNonUniformIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 5306u), "UniformBufferArrayNonUniformIndexingEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5307u), "SampledImageArrayNonUniformIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 5307u), "SampledImageArrayNonUniformIndexingEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5308u), "StorageBufferArrayNonUniformIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 5308u), "StorageBufferArrayNonUniformIndexingEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5309u), "StorageImageArrayNonUniformIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 5309u), "StorageImageArrayNonUniformIndexingEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5310u), "InputAttachmentArrayNonUniformIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 5310u), "InputAttachmentArrayNonUniformIndexingEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5311u), "UniformTexelBufferArrayNonUniformIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 5311u), "UniformTexelBufferArrayNonUniformIndexingEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5312u), "StorageTexelBufferArrayNonUniformIndexing");
-	m_operandNames.emplaceUnique(Hash64(33u, 5312u), "StorageTexelBufferArrayNonUniformIndexingEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5340u), "RayTracingNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5345u), "VulkanMemoryModel");
-	m_operandNames.emplaceUnique(Hash64(33u, 5345u), "VulkanMemoryModelKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 5346u), "VulkanMemoryModelDeviceScope");
-	m_operandNames.emplaceUnique(Hash64(33u, 5346u), "VulkanMemoryModelDeviceScopeKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 5347u), "PhysicalStorageBufferAddresses");
-	m_operandNames.emplaceUnique(Hash64(33u, 5347u), "PhysicalStorageBufferAddressesEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5350u), "ComputeDerivativeGroupLinearNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5353u), "RayTracingProvisionalKHR");
-	m_operandNames.emplaceUnique(Hash64(33u, 5357u), "CooperativeMatrixNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5363u), "FragmentShaderSampleInterlockEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5372u), "FragmentShaderShadingRateInterlockEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5373u), "ShaderSMBuiltinsNV");
-	m_operandNames.emplaceUnique(Hash64(33u, 5378u), "FragmentShaderPixelInterlockEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5379u), "DemoteToHelperInvocationEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5568u), "SubgroupShuffleINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5569u), "SubgroupBufferBlockIOINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5570u), "SubgroupImageBlockIOINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5579u), "SubgroupImageMediaBlockIOINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5582u), "RoundToInfinityINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5583u), "FloatingPointModeINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5584u), "IntegerFunctions2INTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5603u), "FunctionPointersINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5604u), "IndirectReferencesINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5606u), "AsmINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5612u), "AtomicFloat32MinMaxEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5613u), "AtomicFloat64MinMaxEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5616u), "AtomicFloat16MinMaxEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 5617u), "VectorComputeINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5619u), "VectorAnyINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5696u), "SubgroupAvcMotionEstimationINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5697u), "SubgroupAvcMotionEstimationIntraINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5698u), "SubgroupAvcMotionEstimationChromaINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5817u), "VariableLengthArrayINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5821u), "FunctionFloatControlINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5824u), "FPGAMemoryAttributesINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5837u), "FPFastMathModeINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5844u), "ArbitraryPrecisionIntegersINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5886u), "UnstructuredLoopControlsINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5888u), "FPGALoopControlsINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5892u), "KernelAttributesINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5897u), "FPGAKernelAttributesINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5898u), "FPGAMemoryAccessesINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5904u), "FPGAClusterAttributesINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5906u), "LoopFuseINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5920u), "FPGABufferLocationINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5935u), "USMStorageClassesINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5943u), "IOPipesINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5945u), "BlockingPipesINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 5948u), "FPGARegINTEL");
-	m_operandNames.emplaceUnique(Hash64(33u, 6033u), "AtomicFloat32AddEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 6034u), "AtomicFloat64AddEXT");
-	m_operandNames.emplaceUnique(Hash64(33u, 6089u), "LongConstantCompositeINTEL");
-	m_operandNames.emplaceUnique(Hash64(34u, 0u), "RayQueryCandidateIntersectionKHR");
-	m_operandNames.emplaceUnique(Hash64(34u, 1u), "RayQueryCommittedIntersectionKHR");
-	m_operandNames.emplaceUnique(Hash64(35u, 0u), "RayQueryCommittedIntersectionNoneKHR");
-	m_operandNames.emplaceUnique(Hash64(35u, 1u), "RayQueryCommittedIntersectionTriangleKHR");
-	m_operandNames.emplaceUnique(Hash64(35u, 2u), "RayQueryCommittedIntersectionGeneratedKHR");
-	m_operandNames.emplaceUnique(Hash64(36u, 0u), "RayQueryCandidateIntersectionTriangleKHR");
-	m_operandNames.emplaceUnique(Hash64(36u, 1u), "RayQueryCandidateIntersectionAABBKHR");
+	m_operandNames.emplaceUnique(Hash64(24u, 0u), "TRN");
+	m_operandNames.emplaceUnique(Hash64(24u, 1u), "TRN_ZERO");
+	m_operandNames.emplaceUnique(Hash64(24u, 2u), "RND");
+	m_operandNames.emplaceUnique(Hash64(24u, 3u), "RND_ZERO");
+	m_operandNames.emplaceUnique(Hash64(24u, 4u), "RND_INF");
+	m_operandNames.emplaceUnique(Hash64(24u, 5u), "RND_MIN_INF");
+	m_operandNames.emplaceUnique(Hash64(24u, 6u), "RND_CONV");
+	m_operandNames.emplaceUnique(Hash64(24u, 7u), "RND_CONV_ODD");
+	m_operandNames.emplaceUnique(Hash64(25u, 0u), "IEEE");
+	m_operandNames.emplaceUnique(Hash64(25u, 1u), "ALT");
+	m_operandNames.emplaceUnique(Hash64(26u, 0u), "WRAP");
+	m_operandNames.emplaceUnique(Hash64(26u, 1u), "SAT");
+	m_operandNames.emplaceUnique(Hash64(26u, 2u), "SAT_ZERO");
+	m_operandNames.emplaceUnique(Hash64(26u, 3u), "SAT_SYM");
+	m_operandNames.emplaceUnique(Hash64(27u, 0u), "Export");
+	m_operandNames.emplaceUnique(Hash64(27u, 1u), "Import");
+	m_operandNames.emplaceUnique(Hash64(27u, 2u), "LinkOnceODR");
+	m_operandNames.emplaceUnique(Hash64(28u, 0u), "ReadOnly");
+	m_operandNames.emplaceUnique(Hash64(28u, 1u), "WriteOnly");
+	m_operandNames.emplaceUnique(Hash64(28u, 2u), "ReadWrite");
+	m_operandNames.emplaceUnique(Hash64(29u, 0u), "Zext");
+	m_operandNames.emplaceUnique(Hash64(29u, 1u), "Sext");
+	m_operandNames.emplaceUnique(Hash64(29u, 2u), "ByVal");
+	m_operandNames.emplaceUnique(Hash64(29u, 3u), "Sret");
+	m_operandNames.emplaceUnique(Hash64(29u, 4u), "NoAlias");
+	m_operandNames.emplaceUnique(Hash64(29u, 5u), "NoCapture");
+	m_operandNames.emplaceUnique(Hash64(29u, 6u), "NoWrite");
+	m_operandNames.emplaceUnique(Hash64(29u, 7u), "NoReadWrite");
+	m_operandNames.emplaceUnique(Hash64(30u, 0u), "RelaxedPrecision");
+	m_operandNames.emplaceUnique(Hash64(30u, 1u), "SpecId");
+	m_operandNames.emplaceUnique(Hash64(30u, 2u), "Block");
+	m_operandNames.emplaceUnique(Hash64(30u, 3u), "BufferBlock");
+	m_operandNames.emplaceUnique(Hash64(30u, 4u), "RowMajor");
+	m_operandNames.emplaceUnique(Hash64(30u, 5u), "ColMajor");
+	m_operandNames.emplaceUnique(Hash64(30u, 6u), "ArrayStride");
+	m_operandNames.emplaceUnique(Hash64(30u, 7u), "MatrixStride");
+	m_operandNames.emplaceUnique(Hash64(30u, 8u), "GLSLShared");
+	m_operandNames.emplaceUnique(Hash64(30u, 9u), "GLSLPacked");
+	m_operandNames.emplaceUnique(Hash64(30u, 10u), "CPacked");
+	m_operandNames.emplaceUnique(Hash64(30u, 11u), "BuiltIn");
+	m_operandNames.emplaceUnique(Hash64(30u, 13u), "NoPerspective");
+	m_operandNames.emplaceUnique(Hash64(30u, 14u), "Flat");
+	m_operandNames.emplaceUnique(Hash64(30u, 15u), "Patch");
+	m_operandNames.emplaceUnique(Hash64(30u, 16u), "Centroid");
+	m_operandNames.emplaceUnique(Hash64(30u, 17u), "Sample");
+	m_operandNames.emplaceUnique(Hash64(30u, 18u), "Invariant");
+	m_operandNames.emplaceUnique(Hash64(30u, 19u), "Restrict");
+	m_operandNames.emplaceUnique(Hash64(30u, 20u), "Aliased");
+	m_operandNames.emplaceUnique(Hash64(30u, 21u), "Volatile");
+	m_operandNames.emplaceUnique(Hash64(30u, 22u), "Constant");
+	m_operandNames.emplaceUnique(Hash64(30u, 23u), "Coherent");
+	m_operandNames.emplaceUnique(Hash64(30u, 24u), "NonWritable");
+	m_operandNames.emplaceUnique(Hash64(30u, 25u), "NonReadable");
+	m_operandNames.emplaceUnique(Hash64(30u, 26u), "Uniform");
+	m_operandNames.emplaceUnique(Hash64(30u, 27u), "UniformId");
+	m_operandNames.emplaceUnique(Hash64(30u, 28u), "SaturatedConversion");
+	m_operandNames.emplaceUnique(Hash64(30u, 29u), "Stream");
+	m_operandNames.emplaceUnique(Hash64(30u, 30u), "Location");
+	m_operandNames.emplaceUnique(Hash64(30u, 31u), "Component");
+	m_operandNames.emplaceUnique(Hash64(30u, 32u), "Index");
+	m_operandNames.emplaceUnique(Hash64(30u, 33u), "Binding");
+	m_operandNames.emplaceUnique(Hash64(30u, 34u), "DescriptorSet");
+	m_operandNames.emplaceUnique(Hash64(30u, 35u), "Offset");
+	m_operandNames.emplaceUnique(Hash64(30u, 36u), "XfbBuffer");
+	m_operandNames.emplaceUnique(Hash64(30u, 37u), "XfbStride");
+	m_operandNames.emplaceUnique(Hash64(30u, 38u), "FuncParamAttr");
+	m_operandNames.emplaceUnique(Hash64(30u, 39u), "FPRoundingMode");
+	m_operandNames.emplaceUnique(Hash64(30u, 40u), "FPFastMathMode");
+	m_operandNames.emplaceUnique(Hash64(30u, 41u), "LinkageAttributes");
+	m_operandNames.emplaceUnique(Hash64(30u, 42u), "NoContraction");
+	m_operandNames.emplaceUnique(Hash64(30u, 43u), "InputAttachmentIndex");
+	m_operandNames.emplaceUnique(Hash64(30u, 44u), "Alignment");
+	m_operandNames.emplaceUnique(Hash64(30u, 45u), "MaxByteOffset");
+	m_operandNames.emplaceUnique(Hash64(30u, 46u), "AlignmentId");
+	m_operandNames.emplaceUnique(Hash64(30u, 47u), "MaxByteOffsetId");
+	m_operandNames.emplaceUnique(Hash64(30u, 4469u), "NoSignedWrap");
+	m_operandNames.emplaceUnique(Hash64(30u, 4470u), "NoUnsignedWrap");
+	m_operandNames.emplaceUnique(Hash64(30u, 4999u), "ExplicitInterpAMD");
+	m_operandNames.emplaceUnique(Hash64(30u, 5248u), "OverrideCoverageNV");
+	m_operandNames.emplaceUnique(Hash64(30u, 5250u), "PassthroughNV");
+	m_operandNames.emplaceUnique(Hash64(30u, 5252u), "ViewportRelativeNV");
+	m_operandNames.emplaceUnique(Hash64(30u, 5256u), "SecondaryViewportRelativeNV");
+	m_operandNames.emplaceUnique(Hash64(30u, 5271u), "PerPrimitiveNV");
+	m_operandNames.emplaceUnique(Hash64(30u, 5272u), "PerViewNV");
+	m_operandNames.emplaceUnique(Hash64(30u, 5273u), "PerTaskNV");
+	m_operandNames.emplaceUnique(Hash64(30u, 5285u), "PerVertexKHR");
+	m_operandNames.emplaceUnique(Hash64(30u, 5285u), "PerVertexNV");
+	m_operandNames.emplaceUnique(Hash64(30u, 5300u), "NonUniform");
+	m_operandNames.emplaceUnique(Hash64(30u, 5300u), "NonUniformEXT");
+	m_operandNames.emplaceUnique(Hash64(30u, 5355u), "RestrictPointer");
+	m_operandNames.emplaceUnique(Hash64(30u, 5355u), "RestrictPointerEXT");
+	m_operandNames.emplaceUnique(Hash64(30u, 5356u), "AliasedPointer");
+	m_operandNames.emplaceUnique(Hash64(30u, 5356u), "AliasedPointerEXT");
+	m_operandNames.emplaceUnique(Hash64(30u, 5398u), "BindlessSamplerNV");
+	m_operandNames.emplaceUnique(Hash64(30u, 5399u), "BindlessImageNV");
+	m_operandNames.emplaceUnique(Hash64(30u, 5400u), "BoundSamplerNV");
+	m_operandNames.emplaceUnique(Hash64(30u, 5401u), "BoundImageNV");
+	m_operandNames.emplaceUnique(Hash64(30u, 5599u), "SIMTCallINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5602u), "ReferencedIndirectlyINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5607u), "ClobberINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5608u), "SideEffectsINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5624u), "VectorComputeVariableINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5625u), "FuncParamIOKindINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5626u), "VectorComputeFunctionINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5627u), "StackCallINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5628u), "GlobalVariableOffsetINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5634u), "CounterBuffer");
+	m_operandNames.emplaceUnique(Hash64(30u, 5634u), "HlslCounterBufferGOOGLE");
+	m_operandNames.emplaceUnique(Hash64(30u, 5635u), "UserSemantic");
+	m_operandNames.emplaceUnique(Hash64(30u, 5635u), "HlslSemanticGOOGLE");
+	m_operandNames.emplaceUnique(Hash64(30u, 5636u), "UserTypeGOOGLE");
+	m_operandNames.emplaceUnique(Hash64(30u, 5822u), "FunctionRoundingModeINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5823u), "FunctionDenormModeINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5825u), "RegisterINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5826u), "MemoryINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5827u), "NumbanksINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5828u), "BankwidthINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5829u), "MaxPrivateCopiesINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5830u), "SinglepumpINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5831u), "DoublepumpINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5832u), "MaxReplicatesINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5833u), "SimpleDualPortINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5834u), "MergeINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5835u), "BankBitsINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5836u), "ForcePow2DepthINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5899u), "BurstCoalesceINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5900u), "CacheSizeINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5901u), "DontStaticallyCoalesceINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5902u), "PrefetchINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5905u), "StallEnableINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5907u), "FuseLoopsInFunctionINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5914u), "AliasScopeINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5915u), "NoAliasINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5921u), "BufferLocationINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 5944u), "IOPipeStorageINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 6080u), "FunctionFloatingPointModeINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 6085u), "SingleElementVectorINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 6087u), "VectorComputeCallableFunctionINTEL");
+	m_operandNames.emplaceUnique(Hash64(30u, 6140u), "MediaBlockIOINTEL");
+	m_operandNames.emplaceUnique(Hash64(31u, 0u), "Position");
+	m_operandNames.emplaceUnique(Hash64(31u, 1u), "PointSize");
+	m_operandNames.emplaceUnique(Hash64(31u, 3u), "ClipDistance");
+	m_operandNames.emplaceUnique(Hash64(31u, 4u), "CullDistance");
+	m_operandNames.emplaceUnique(Hash64(31u, 5u), "VertexId");
+	m_operandNames.emplaceUnique(Hash64(31u, 6u), "InstanceId");
+	m_operandNames.emplaceUnique(Hash64(31u, 7u), "PrimitiveId");
+	m_operandNames.emplaceUnique(Hash64(31u, 8u), "InvocationId");
+	m_operandNames.emplaceUnique(Hash64(31u, 9u), "Layer");
+	m_operandNames.emplaceUnique(Hash64(31u, 10u), "ViewportIndex");
+	m_operandNames.emplaceUnique(Hash64(31u, 11u), "TessLevelOuter");
+	m_operandNames.emplaceUnique(Hash64(31u, 12u), "TessLevelInner");
+	m_operandNames.emplaceUnique(Hash64(31u, 13u), "TessCoord");
+	m_operandNames.emplaceUnique(Hash64(31u, 14u), "PatchVertices");
+	m_operandNames.emplaceUnique(Hash64(31u, 15u), "FragCoord");
+	m_operandNames.emplaceUnique(Hash64(31u, 16u), "PointCoord");
+	m_operandNames.emplaceUnique(Hash64(31u, 17u), "FrontFacing");
+	m_operandNames.emplaceUnique(Hash64(31u, 18u), "SampleId");
+	m_operandNames.emplaceUnique(Hash64(31u, 19u), "SamplePosition");
+	m_operandNames.emplaceUnique(Hash64(31u, 20u), "SampleMask");
+	m_operandNames.emplaceUnique(Hash64(31u, 22u), "FragDepth");
+	m_operandNames.emplaceUnique(Hash64(31u, 23u), "HelperInvocation");
+	m_operandNames.emplaceUnique(Hash64(31u, 24u), "NumWorkgroups");
+	m_operandNames.emplaceUnique(Hash64(31u, 25u), "WorkgroupSize");
+	m_operandNames.emplaceUnique(Hash64(31u, 26u), "WorkgroupId");
+	m_operandNames.emplaceUnique(Hash64(31u, 27u), "LocalInvocationId");
+	m_operandNames.emplaceUnique(Hash64(31u, 28u), "GlobalInvocationId");
+	m_operandNames.emplaceUnique(Hash64(31u, 29u), "LocalInvocationIndex");
+	m_operandNames.emplaceUnique(Hash64(31u, 30u), "WorkDim");
+	m_operandNames.emplaceUnique(Hash64(31u, 31u), "GlobalSize");
+	m_operandNames.emplaceUnique(Hash64(31u, 32u), "EnqueuedWorkgroupSize");
+	m_operandNames.emplaceUnique(Hash64(31u, 33u), "GlobalOffset");
+	m_operandNames.emplaceUnique(Hash64(31u, 34u), "GlobalLinearId");
+	m_operandNames.emplaceUnique(Hash64(31u, 36u), "SubgroupSize");
+	m_operandNames.emplaceUnique(Hash64(31u, 37u), "SubgroupMaxSize");
+	m_operandNames.emplaceUnique(Hash64(31u, 38u), "NumSubgroups");
+	m_operandNames.emplaceUnique(Hash64(31u, 39u), "NumEnqueuedSubgroups");
+	m_operandNames.emplaceUnique(Hash64(31u, 40u), "SubgroupId");
+	m_operandNames.emplaceUnique(Hash64(31u, 41u), "SubgroupLocalInvocationId");
+	m_operandNames.emplaceUnique(Hash64(31u, 42u), "VertexIndex");
+	m_operandNames.emplaceUnique(Hash64(31u, 43u), "InstanceIndex");
+	m_operandNames.emplaceUnique(Hash64(31u, 4416u), "SubgroupEqMask");
+	m_operandNames.emplaceUnique(Hash64(31u, 4416u), "SubgroupEqMaskKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 4417u), "SubgroupGeMask");
+	m_operandNames.emplaceUnique(Hash64(31u, 4417u), "SubgroupGeMaskKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 4418u), "SubgroupGtMask");
+	m_operandNames.emplaceUnique(Hash64(31u, 4418u), "SubgroupGtMaskKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 4419u), "SubgroupLeMask");
+	m_operandNames.emplaceUnique(Hash64(31u, 4419u), "SubgroupLeMaskKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 4420u), "SubgroupLtMask");
+	m_operandNames.emplaceUnique(Hash64(31u, 4420u), "SubgroupLtMaskKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 4424u), "BaseVertex");
+	m_operandNames.emplaceUnique(Hash64(31u, 4425u), "BaseInstance");
+	m_operandNames.emplaceUnique(Hash64(31u, 4426u), "DrawIndex");
+	m_operandNames.emplaceUnique(Hash64(31u, 4432u), "PrimitiveShadingRateKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 4438u), "DeviceIndex");
+	m_operandNames.emplaceUnique(Hash64(31u, 4440u), "ViewIndex");
+	m_operandNames.emplaceUnique(Hash64(31u, 4444u), "ShadingRateKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 4992u), "BaryCoordNoPerspAMD");
+	m_operandNames.emplaceUnique(Hash64(31u, 4993u), "BaryCoordNoPerspCentroidAMD");
+	m_operandNames.emplaceUnique(Hash64(31u, 4994u), "BaryCoordNoPerspSampleAMD");
+	m_operandNames.emplaceUnique(Hash64(31u, 4995u), "BaryCoordSmoothAMD");
+	m_operandNames.emplaceUnique(Hash64(31u, 4996u), "BaryCoordSmoothCentroidAMD");
+	m_operandNames.emplaceUnique(Hash64(31u, 4997u), "BaryCoordSmoothSampleAMD");
+	m_operandNames.emplaceUnique(Hash64(31u, 4998u), "BaryCoordPullModelAMD");
+	m_operandNames.emplaceUnique(Hash64(31u, 5014u), "FragStencilRefEXT");
+	m_operandNames.emplaceUnique(Hash64(31u, 5253u), "ViewportMaskNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5257u), "SecondaryPositionNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5258u), "SecondaryViewportMaskNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5261u), "PositionPerViewNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5262u), "ViewportMaskPerViewNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5264u), "FullyCoveredEXT");
+	m_operandNames.emplaceUnique(Hash64(31u, 5274u), "TaskCountNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5275u), "PrimitiveCountNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5276u), "PrimitiveIndicesNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5277u), "ClipDistancePerViewNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5278u), "CullDistancePerViewNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5279u), "LayerPerViewNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5280u), "MeshViewCountNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5281u), "MeshViewIndicesNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5286u), "BaryCoordKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5286u), "BaryCoordNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5287u), "BaryCoordNoPerspKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5287u), "BaryCoordNoPerspNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5292u), "FragSizeEXT");
+	m_operandNames.emplaceUnique(Hash64(31u, 5292u), "FragmentSizeNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5293u), "FragInvocationCountEXT");
+	m_operandNames.emplaceUnique(Hash64(31u, 5293u), "InvocationsPerPixelNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5319u), "LaunchIdNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5319u), "LaunchIdKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5320u), "LaunchSizeNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5320u), "LaunchSizeKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5321u), "WorldRayOriginNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5321u), "WorldRayOriginKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5322u), "WorldRayDirectionNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5322u), "WorldRayDirectionKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5323u), "ObjectRayOriginNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5323u), "ObjectRayOriginKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5324u), "ObjectRayDirectionNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5324u), "ObjectRayDirectionKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5325u), "RayTminNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5325u), "RayTminKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5326u), "RayTmaxNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5326u), "RayTmaxKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5327u), "InstanceCustomIndexNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5327u), "InstanceCustomIndexKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5330u), "ObjectToWorldNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5330u), "ObjectToWorldKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5331u), "WorldToObjectNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5331u), "WorldToObjectKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5332u), "HitTNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5333u), "HitKindNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5333u), "HitKindKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5334u), "CurrentRayTimeNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5351u), "IncomingRayFlagsNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5351u), "IncomingRayFlagsKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5352u), "RayGeometryIndexKHR");
+	m_operandNames.emplaceUnique(Hash64(31u, 5374u), "WarpsPerSMNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5375u), "SMCountNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5376u), "WarpIDNV");
+	m_operandNames.emplaceUnique(Hash64(31u, 5377u), "SMIDNV");
+	m_operandNames.emplaceUnique(Hash64(32u, 0u), "CrossDevice");
+	m_operandNames.emplaceUnique(Hash64(32u, 1u), "Device");
+	m_operandNames.emplaceUnique(Hash64(32u, 2u), "Workgroup");
+	m_operandNames.emplaceUnique(Hash64(32u, 3u), "Subgroup");
+	m_operandNames.emplaceUnique(Hash64(32u, 4u), "Invocation");
+	m_operandNames.emplaceUnique(Hash64(32u, 5u), "QueueFamily");
+	m_operandNames.emplaceUnique(Hash64(32u, 5u), "QueueFamilyKHR");
+	m_operandNames.emplaceUnique(Hash64(32u, 6u), "ShaderCallKHR");
+	m_operandNames.emplaceUnique(Hash64(33u, 0u), "Reduce");
+	m_operandNames.emplaceUnique(Hash64(33u, 1u), "InclusiveScan");
+	m_operandNames.emplaceUnique(Hash64(33u, 2u), "ExclusiveScan");
+	m_operandNames.emplaceUnique(Hash64(33u, 3u), "ClusteredReduce");
+	m_operandNames.emplaceUnique(Hash64(33u, 6u), "PartitionedReduceNV");
+	m_operandNames.emplaceUnique(Hash64(33u, 7u), "PartitionedInclusiveScanNV");
+	m_operandNames.emplaceUnique(Hash64(33u, 8u), "PartitionedExclusiveScanNV");
+	m_operandNames.emplaceUnique(Hash64(34u, 0u), "NoWait");
+	m_operandNames.emplaceUnique(Hash64(34u, 1u), "WaitKernel");
+	m_operandNames.emplaceUnique(Hash64(34u, 2u), "WaitWorkGroup");
+	m_operandNames.emplaceUnique(Hash64(35u, 0u), "Matrix");
+	m_operandNames.emplaceUnique(Hash64(35u, 1u), "Shader");
+	m_operandNames.emplaceUnique(Hash64(35u, 2u), "Geometry");
+	m_operandNames.emplaceUnique(Hash64(35u, 3u), "Tessellation");
+	m_operandNames.emplaceUnique(Hash64(35u, 4u), "Addresses");
+	m_operandNames.emplaceUnique(Hash64(35u, 5u), "Linkage");
+	m_operandNames.emplaceUnique(Hash64(35u, 6u), "Kernel");
+	m_operandNames.emplaceUnique(Hash64(35u, 7u), "Vector16");
+	m_operandNames.emplaceUnique(Hash64(35u, 8u), "Float16Buffer");
+	m_operandNames.emplaceUnique(Hash64(35u, 9u), "Float16");
+	m_operandNames.emplaceUnique(Hash64(35u, 10u), "Float64");
+	m_operandNames.emplaceUnique(Hash64(35u, 11u), "Int64");
+	m_operandNames.emplaceUnique(Hash64(35u, 12u), "Int64Atomics");
+	m_operandNames.emplaceUnique(Hash64(35u, 13u), "ImageBasic");
+	m_operandNames.emplaceUnique(Hash64(35u, 14u), "ImageReadWrite");
+	m_operandNames.emplaceUnique(Hash64(35u, 15u), "ImageMipmap");
+	m_operandNames.emplaceUnique(Hash64(35u, 17u), "Pipes");
+	m_operandNames.emplaceUnique(Hash64(35u, 18u), "Groups");
+	m_operandNames.emplaceUnique(Hash64(35u, 19u), "DeviceEnqueue");
+	m_operandNames.emplaceUnique(Hash64(35u, 20u), "LiteralSampler");
+	m_operandNames.emplaceUnique(Hash64(35u, 21u), "AtomicStorage");
+	m_operandNames.emplaceUnique(Hash64(35u, 22u), "Int16");
+	m_operandNames.emplaceUnique(Hash64(35u, 23u), "TessellationPointSize");
+	m_operandNames.emplaceUnique(Hash64(35u, 24u), "GeometryPointSize");
+	m_operandNames.emplaceUnique(Hash64(35u, 25u), "ImageGatherExtended");
+	m_operandNames.emplaceUnique(Hash64(35u, 27u), "StorageImageMultisample");
+	m_operandNames.emplaceUnique(Hash64(35u, 28u), "UniformBufferArrayDynamicIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 29u), "SampledImageArrayDynamicIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 30u), "StorageBufferArrayDynamicIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 31u), "StorageImageArrayDynamicIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 32u), "ClipDistance");
+	m_operandNames.emplaceUnique(Hash64(35u, 33u), "CullDistance");
+	m_operandNames.emplaceUnique(Hash64(35u, 34u), "ImageCubeArray");
+	m_operandNames.emplaceUnique(Hash64(35u, 35u), "SampleRateShading");
+	m_operandNames.emplaceUnique(Hash64(35u, 36u), "ImageRect");
+	m_operandNames.emplaceUnique(Hash64(35u, 37u), "SampledRect");
+	m_operandNames.emplaceUnique(Hash64(35u, 38u), "GenericPointer");
+	m_operandNames.emplaceUnique(Hash64(35u, 39u), "Int8");
+	m_operandNames.emplaceUnique(Hash64(35u, 40u), "InputAttachment");
+	m_operandNames.emplaceUnique(Hash64(35u, 41u), "SparseResidency");
+	m_operandNames.emplaceUnique(Hash64(35u, 42u), "MinLod");
+	m_operandNames.emplaceUnique(Hash64(35u, 43u), "Sampled1D");
+	m_operandNames.emplaceUnique(Hash64(35u, 44u), "Image1D");
+	m_operandNames.emplaceUnique(Hash64(35u, 45u), "SampledCubeArray");
+	m_operandNames.emplaceUnique(Hash64(35u, 46u), "SampledBuffer");
+	m_operandNames.emplaceUnique(Hash64(35u, 47u), "ImageBuffer");
+	m_operandNames.emplaceUnique(Hash64(35u, 48u), "ImageMSArray");
+	m_operandNames.emplaceUnique(Hash64(35u, 49u), "StorageImageExtendedFormats");
+	m_operandNames.emplaceUnique(Hash64(35u, 50u), "ImageQuery");
+	m_operandNames.emplaceUnique(Hash64(35u, 51u), "DerivativeControl");
+	m_operandNames.emplaceUnique(Hash64(35u, 52u), "InterpolationFunction");
+	m_operandNames.emplaceUnique(Hash64(35u, 53u), "TransformFeedback");
+	m_operandNames.emplaceUnique(Hash64(35u, 54u), "GeometryStreams");
+	m_operandNames.emplaceUnique(Hash64(35u, 55u), "StorageImageReadWithoutFormat");
+	m_operandNames.emplaceUnique(Hash64(35u, 56u), "StorageImageWriteWithoutFormat");
+	m_operandNames.emplaceUnique(Hash64(35u, 57u), "MultiViewport");
+	m_operandNames.emplaceUnique(Hash64(35u, 58u), "SubgroupDispatch");
+	m_operandNames.emplaceUnique(Hash64(35u, 59u), "NamedBarrier");
+	m_operandNames.emplaceUnique(Hash64(35u, 60u), "PipeStorage");
+	m_operandNames.emplaceUnique(Hash64(35u, 61u), "GroupNonUniform");
+	m_operandNames.emplaceUnique(Hash64(35u, 62u), "GroupNonUniformVote");
+	m_operandNames.emplaceUnique(Hash64(35u, 63u), "GroupNonUniformArithmetic");
+	m_operandNames.emplaceUnique(Hash64(35u, 64u), "GroupNonUniformBallot");
+	m_operandNames.emplaceUnique(Hash64(35u, 65u), "GroupNonUniformShuffle");
+	m_operandNames.emplaceUnique(Hash64(35u, 66u), "GroupNonUniformShuffleRelative");
+	m_operandNames.emplaceUnique(Hash64(35u, 67u), "GroupNonUniformClustered");
+	m_operandNames.emplaceUnique(Hash64(35u, 68u), "GroupNonUniformQuad");
+	m_operandNames.emplaceUnique(Hash64(35u, 69u), "ShaderLayer");
+	m_operandNames.emplaceUnique(Hash64(35u, 70u), "ShaderViewportIndex");
+	m_operandNames.emplaceUnique(Hash64(35u, 71u), "UniformDecoration");
+	m_operandNames.emplaceUnique(Hash64(35u, 4422u), "FragmentShadingRateKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 4423u), "SubgroupBallotKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 4427u), "DrawParameters");
+	m_operandNames.emplaceUnique(Hash64(35u, 4428u), "WorkgroupMemoryExplicitLayoutKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 4429u), "WorkgroupMemoryExplicitLayout8BitAccessKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 4430u), "WorkgroupMemoryExplicitLayout16BitAccessKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 4431u), "SubgroupVoteKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 4433u), "StorageBuffer16BitAccess");
+	m_operandNames.emplaceUnique(Hash64(35u, 4433u), "StorageUniformBufferBlock16");
+	m_operandNames.emplaceUnique(Hash64(35u, 4434u), "UniformAndStorageBuffer16BitAccess");
+	m_operandNames.emplaceUnique(Hash64(35u, 4434u), "StorageUniform16");
+	m_operandNames.emplaceUnique(Hash64(35u, 4435u), "StoragePushConstant16");
+	m_operandNames.emplaceUnique(Hash64(35u, 4436u), "StorageInputOutput16");
+	m_operandNames.emplaceUnique(Hash64(35u, 4437u), "DeviceGroup");
+	m_operandNames.emplaceUnique(Hash64(35u, 4439u), "MultiView");
+	m_operandNames.emplaceUnique(Hash64(35u, 4441u), "VariablePointersStorageBuffer");
+	m_operandNames.emplaceUnique(Hash64(35u, 4442u), "VariablePointers");
+	m_operandNames.emplaceUnique(Hash64(35u, 4445u), "AtomicStorageOps");
+	m_operandNames.emplaceUnique(Hash64(35u, 4447u), "SampleMaskPostDepthCoverage");
+	m_operandNames.emplaceUnique(Hash64(35u, 4448u), "StorageBuffer8BitAccess");
+	m_operandNames.emplaceUnique(Hash64(35u, 4449u), "UniformAndStorageBuffer8BitAccess");
+	m_operandNames.emplaceUnique(Hash64(35u, 4450u), "StoragePushConstant8");
+	m_operandNames.emplaceUnique(Hash64(35u, 4464u), "DenormPreserve");
+	m_operandNames.emplaceUnique(Hash64(35u, 4465u), "DenormFlushToZero");
+	m_operandNames.emplaceUnique(Hash64(35u, 4466u), "SignedZeroInfNanPreserve");
+	m_operandNames.emplaceUnique(Hash64(35u, 4467u), "RoundingModeRTE");
+	m_operandNames.emplaceUnique(Hash64(35u, 4468u), "RoundingModeRTZ");
+	m_operandNames.emplaceUnique(Hash64(35u, 4471u), "RayQueryProvisionalKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 4472u), "RayQueryKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 4478u), "RayTraversalPrimitiveCullingKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 4479u), "RayTracingKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 5008u), "Float16ImageAMD");
+	m_operandNames.emplaceUnique(Hash64(35u, 5009u), "ImageGatherBiasLodAMD");
+	m_operandNames.emplaceUnique(Hash64(35u, 5010u), "FragmentMaskAMD");
+	m_operandNames.emplaceUnique(Hash64(35u, 5013u), "StencilExportEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5015u), "ImageReadWriteLodAMD");
+	m_operandNames.emplaceUnique(Hash64(35u, 5016u), "Int64ImageEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5055u), "ShaderClockKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 5249u), "SampleMaskOverrideCoverageNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5251u), "GeometryShaderPassthroughNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5254u), "ShaderViewportIndexLayerEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5254u), "ShaderViewportIndexLayerNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5255u), "ShaderViewportMaskNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5259u), "ShaderStereoViewNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5260u), "PerViewAttributesNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5265u), "FragmentFullyCoveredEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5266u), "MeshShadingNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5282u), "ImageFootprintNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5284u), "FragmentBarycentricKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 5284u), "FragmentBarycentricNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5288u), "ComputeDerivativeGroupQuadsNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5291u), "FragmentDensityEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5291u), "ShadingRateNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5297u), "GroupNonUniformPartitionedNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5301u), "ShaderNonUniform");
+	m_operandNames.emplaceUnique(Hash64(35u, 5301u), "ShaderNonUniformEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5302u), "RuntimeDescriptorArray");
+	m_operandNames.emplaceUnique(Hash64(35u, 5302u), "RuntimeDescriptorArrayEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5303u), "InputAttachmentArrayDynamicIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 5303u), "InputAttachmentArrayDynamicIndexingEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5304u), "UniformTexelBufferArrayDynamicIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 5304u), "UniformTexelBufferArrayDynamicIndexingEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5305u), "StorageTexelBufferArrayDynamicIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 5305u), "StorageTexelBufferArrayDynamicIndexingEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5306u), "UniformBufferArrayNonUniformIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 5306u), "UniformBufferArrayNonUniformIndexingEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5307u), "SampledImageArrayNonUniformIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 5307u), "SampledImageArrayNonUniformIndexingEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5308u), "StorageBufferArrayNonUniformIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 5308u), "StorageBufferArrayNonUniformIndexingEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5309u), "StorageImageArrayNonUniformIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 5309u), "StorageImageArrayNonUniformIndexingEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5310u), "InputAttachmentArrayNonUniformIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 5310u), "InputAttachmentArrayNonUniformIndexingEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5311u), "UniformTexelBufferArrayNonUniformIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 5311u), "UniformTexelBufferArrayNonUniformIndexingEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5312u), "StorageTexelBufferArrayNonUniformIndexing");
+	m_operandNames.emplaceUnique(Hash64(35u, 5312u), "StorageTexelBufferArrayNonUniformIndexingEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5340u), "RayTracingNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5341u), "RayTracingMotionBlurNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5345u), "VulkanMemoryModel");
+	m_operandNames.emplaceUnique(Hash64(35u, 5345u), "VulkanMemoryModelKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 5346u), "VulkanMemoryModelDeviceScope");
+	m_operandNames.emplaceUnique(Hash64(35u, 5346u), "VulkanMemoryModelDeviceScopeKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 5347u), "PhysicalStorageBufferAddresses");
+	m_operandNames.emplaceUnique(Hash64(35u, 5347u), "PhysicalStorageBufferAddressesEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5350u), "ComputeDerivativeGroupLinearNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5353u), "RayTracingProvisionalKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 5357u), "CooperativeMatrixNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5363u), "FragmentShaderSampleInterlockEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5372u), "FragmentShaderShadingRateInterlockEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5373u), "ShaderSMBuiltinsNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5378u), "FragmentShaderPixelInterlockEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5379u), "DemoteToHelperInvocation");
+	m_operandNames.emplaceUnique(Hash64(35u, 5379u), "DemoteToHelperInvocationEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5390u), "BindlessTextureNV");
+	m_operandNames.emplaceUnique(Hash64(35u, 5568u), "SubgroupShuffleINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5569u), "SubgroupBufferBlockIOINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5570u), "SubgroupImageBlockIOINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5579u), "SubgroupImageMediaBlockIOINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5582u), "RoundToInfinityINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5583u), "FloatingPointModeINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5584u), "IntegerFunctions2INTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5603u), "FunctionPointersINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5604u), "IndirectReferencesINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5606u), "AsmINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5612u), "AtomicFloat32MinMaxEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5613u), "AtomicFloat64MinMaxEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5616u), "AtomicFloat16MinMaxEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 5617u), "VectorComputeINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5619u), "VectorAnyINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5629u), "ExpectAssumeKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 5696u), "SubgroupAvcMotionEstimationINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5697u), "SubgroupAvcMotionEstimationIntraINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5698u), "SubgroupAvcMotionEstimationChromaINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5817u), "VariableLengthArrayINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5821u), "FunctionFloatControlINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5824u), "FPGAMemoryAttributesINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5837u), "FPFastMathModeINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5844u), "ArbitraryPrecisionIntegersINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5845u), "ArbitraryPrecisionFloatingPointINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5886u), "UnstructuredLoopControlsINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5888u), "FPGALoopControlsINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5892u), "KernelAttributesINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5897u), "FPGAKernelAttributesINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5898u), "FPGAMemoryAccessesINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5904u), "FPGAClusterAttributesINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5906u), "LoopFuseINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5910u), "MemoryAccessAliasingINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5920u), "FPGABufferLocationINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5922u), "ArbitraryPrecisionFixedPointINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5935u), "USMStorageClassesINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5943u), "IOPipesINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5945u), "BlockingPipesINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 5948u), "FPGARegINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 6016u), "DotProductInputAll");
+	m_operandNames.emplaceUnique(Hash64(35u, 6016u), "DotProductInputAllKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 6017u), "DotProductInput4x8Bit");
+	m_operandNames.emplaceUnique(Hash64(35u, 6017u), "DotProductInput4x8BitKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 6018u), "DotProductInput4x8BitPacked");
+	m_operandNames.emplaceUnique(Hash64(35u, 6018u), "DotProductInput4x8BitPackedKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 6019u), "DotProduct");
+	m_operandNames.emplaceUnique(Hash64(35u, 6019u), "DotProductKHR");
+	m_operandNames.emplaceUnique(Hash64(35u, 6025u), "BitInstructions");
+	m_operandNames.emplaceUnique(Hash64(35u, 6033u), "AtomicFloat32AddEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 6034u), "AtomicFloat64AddEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 6089u), "LongConstantCompositeINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 6094u), "OptNoneINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 6095u), "AtomicFloat16AddEXT");
+	m_operandNames.emplaceUnique(Hash64(35u, 6114u), "DebugInfoModuleINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 6141u), "SplitBarrierINTEL");
+	m_operandNames.emplaceUnique(Hash64(35u, 6400u), "GroupUniformArithmeticKHR");
+	m_operandNames.emplaceUnique(Hash64(36u, 0u), "RayQueryCandidateIntersectionKHR");
+	m_operandNames.emplaceUnique(Hash64(36u, 1u), "RayQueryCommittedIntersectionKHR");
+	m_operandNames.emplaceUnique(Hash64(37u, 0u), "RayQueryCommittedIntersectionNoneKHR");
+	m_operandNames.emplaceUnique(Hash64(37u, 1u), "RayQueryCommittedIntersectionTriangleKHR");
+	m_operandNames.emplaceUnique(Hash64(37u, 2u), "RayQueryCommittedIntersectionGeneratedKHR");
+	m_operandNames.emplaceUnique(Hash64(38u, 0u), "RayQueryCandidateIntersectionTriangleKHR");
+	m_operandNames.emplaceUnique(Hash64(38u, 1u), "RayQueryCandidateIntersectionAABBKHR");
+	m_operandNames.emplaceUnique(Hash64(39u, 0u), "PackedVectorFormat4x8Bit");
+	m_operandNames.emplaceUnique(Hash64(39u, 0u), "PackedVectorFormat4x8BitKHR");
 }
 const Grammar::Instruction* Grammar::getInfo(unsigned int _opcode, Extension _extension) const
 {

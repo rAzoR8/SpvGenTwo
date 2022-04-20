@@ -1,4 +1,5 @@
-# SpvGenTwo - Linker
+# SpvGenTwo - SPIR-V Linker
+CLI tool for creating and linking shader libraries.
 
 ![SpvGenTwoLinker](/misc/linker.PNG)
 
