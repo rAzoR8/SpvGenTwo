@@ -346,7 +346,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpConvertPtrToU | &#10004; |
 | OpSatConvertSToU | &#10004; |
 | OpSatConvertUToS | &#10004; |
-| OpConvertUToPtr | &#9744; |
+| OpConvertUToPtr | &#10004; |
 | OpPtrCastToGeneric | &#9744; |
 | OpGenericCastToPtr | &#9744; |
 | OpGenericCastToPtrExplicit | &#9744; |
@@ -469,7 +469,7 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpKill | &#10004; |
 | OpReturn | &#10004; |
 | OpReturnValue | &#10004; |
-| OpUnreachable | &#9744; |
+| OpUnreachable | &#10004; |
 | OpNoLine | &#10004; |
 | OpAtomicFlagTestAndSet | &#9744; |
 | OpAtomicFlagClear | &#9744; |
@@ -485,6 +485,8 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpModuleProcessed | &#9744; |
 | OpExecutionModeId | &#9744; |
 | OpDecorateId | &#10004; |
+| OpPtrEqual | &#10004; |
+| OpPtrNotEqual | &#10004; |
 | ... | ... |
 
 ## GLSL.std.450
