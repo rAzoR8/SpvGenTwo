@@ -1575,18 +1575,26 @@ spvgentwo::Instruction* spvgentwo::Instruction::opConvertPtrToU(Instruction* _pP
 	return error();
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opConvertUToPtr(Instruction* _pUInt,
-	const Type& _type)
+spvgentwo::Instruction* spvgentwo::Instruction::opConvertUToPtr(Instruction* _pResultType, Instruction* _pUInt)
 {
-	if (_type.isPointer() && _type.getStorageClass() == spv::StorageClass::PhysicalStorageBuffer)
+	const Type* resultType = _pResultType->getType();
+	
+	bool resultTypeCheck = resultType->isPointer() &&
+		resultType->getStorageClass() == spv::StorageClass::PhysicalStorageBuffer;
+
+	if (!resultTypeCheck)
 	{
-		return makeOp(spv::Op::OpConvertUToPtr, getModule()->addType(_type), InvalidId, _pUInt);
-	}
-	else
-	{
-		getModule()->logError("ResultType of OpConvertUToPtr is not a physical pointer type");
+		getModule()->logError("_pResultType of OpConvertUToPtr is not a physical pointer type");
 		return error();
 	}
+
+	if (!_pUInt->getType()->isUInt())
+	{
+		getModule()->logError("_pUInt of OpConvertUToPtr is not a scalar of unsigned integer type");
+		return error();
+	}
+
+	return makeOp(spv::Op::OpConvertUToPtr, _pResultType, InvalidId, _pUInt);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opBitcast(Instruction* _pResultType, Instruction* _pOperand)
@@ -1637,36 +1645,38 @@ spvgentwo::Instruction* spvgentwo::Instruction::opPtrEqual(Instruction* _pLeftPt
 	Instruction* _pRightPtr)
 {
 	auto module = getModule();
+	
+	const Type& leftType = *_pLeftPtr->getType();
+	const Type& rightType = *_pRightPtr->getType();
 
-	if (_pLeftPtr->getType()->isPointer() && _pRightPtr->getType()->isPointer()
-		&& _pLeftPtr->getType() == _pRightPtr->getType())
+	auto typeCheck = leftType.isPointer() && rightType.isPointer() && leftType == rightType;
+	
+	if (!typeCheck)
 	{
-		auto t = module->addType(module->newType().Bool());
-		return makeOp(spv::Op::OpPtrEqual, t, InvalidId, _pLeftPtr, _pRightPtr);
-	}
-	else
-	{
-		module->logError("The types of _pLeftPtr and _pRightPtr must be OpTypePointer of the same type.");
+		module->logError("The types of _pLeftPtr and _pRightPtr must be pointers of the same type.");
 		return error();
 	}
+
+	return makeOp(spv::Op::OpPtrEqual, InvalidInstr, InvalidId, _pLeftPtr, _pRightPtr);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opPtrNotEqual(Instruction* _pLeftPtr,
 	Instruction* _pRightPtr)
 {
-	auto module = getModule();
+	Module* module = getModule();
 
-	if (_pLeftPtr->getType()->isPointer() && _pRightPtr->getType()->isPointer()
-		&& _pLeftPtr->getType() == _pRightPtr->getType())
+	const Type& leftType = *_pLeftPtr->getType();
+	const Type& rightType = *_pRightPtr->getType();
+
+	bool typeCheck = leftType.isPointer() && rightType.isPointer() && leftType == rightType;
+
+	if (!typeCheck)
 	{
-		auto t = module->addType(module->newType().Bool());
-		return makeOp(spv::Op::OpPtrNotEqual, t, InvalidId, _pLeftPtr, _pRightPtr);
-	}
-	else
-	{
-		module->logError("The types of _pLeftPtr and _pRightPtr must be OpTypePointer of the same type.");
+		module->logError("The types of _pLeftPtr and _pRightPtr must be pointers of the same type.");
 		return error();
 	}
+
+	return makeOp(spv::Op::OpPtrNotEqual, InvalidInstr, InvalidId, _pLeftPtr, _pRightPtr);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::error() const

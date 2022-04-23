@@ -498,8 +498,8 @@ namespace spvgentwo
 		Instruction* opSatConvertUToS(Instruction* _pSignedInt) { return scalarVecOp(spv::Op::OpSatConvertUToS, _pSignedInt, nullptr, "Operand of OpSatConvertUToS is not a scalar or vector of unsigned integer type"); }
 
 		// Instruction* OpConvertUToPtr(); TODO
-        Instruction* opConvertUToPtr(Instruction* _pUInt, const Type& _type);
-		 
+		Instruction* opConvertUToPtr(Instruction* _pResultType, Instruction* _pUInt);
+
 		// Instruction* OpPtrCastToGeneric(); TODO
 		// Instruction* OpGenericCastToPtr(); TODO
 		// Instruction* OpGenericCastToPtrExplicit(); TODO
@@ -725,8 +725,8 @@ namespace spvgentwo
 		void opReturnValue(Instruction* _pValue);
 
 		// Instruction* OpUnreachable() till opNoLine; TODO
-        void opUnreachable();
-        
+		void opUnreachable();
+
 		void opNoLine();
 
 		// Instruction* OpAtomicFlagTestAndSet(); TODO
@@ -751,7 +751,7 @@ namespace spvgentwo
 		// TODO: All the rest to at least maybe OpDecorateString without the INTEL extension instructions?
 
 		// START FROM: 401 OpPtrEqual
-        Instruction* opPtrEqual(Instruction* _pLeftPtr, Instruction* _pRightPtr);
+		Instruction* opPtrEqual(Instruction* _pLeftPtr, Instruction* _pRightPtr);
 
 		Instruction* opPtrNotEqual(Instruction* _pLeftPtr, Instruction* _pRightPtr);
 	protected:

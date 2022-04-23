@@ -245,12 +245,12 @@ Module test::oldInstrTest(IAllocator* _pAllocator, ILogger* _pLogger)
 		Instruction* res2 = nullptr;
 
 		BasicBlock& merge = bb.If(cond, [&](BasicBlock& trueBB)
-		{
-			res1 = trueBB.Add(z, x) * uniX;
-		}, [&](BasicBlock& falseBB)
-		{
-			res2 = falseBB.Sub(z, x) * uniX;
-		});
+			{
+				res1 = trueBB.Add(z, x) * uniX;
+			}, [&](BasicBlock& falseBB)
+			{
+				res2 = falseBB.Sub(z, x) * uniX;
+			});
 
 		merge.returnValue(/*merge->opPhi(res1, res2)*/);
 	}

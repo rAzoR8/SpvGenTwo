@@ -16,6 +16,7 @@ namespace test
 	spvgentwo::Module fragmentShader( spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger );
 	spvgentwo::Module functionCall( spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger );
 	spvgentwo::Module geometryShader( spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger );
+	spvgentwo::Module physicalStorageTest(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger );
 
 	spvgentwo::Module linkageLibA( spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger );
 	spvgentwo::Module linkageLibB( spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger );
