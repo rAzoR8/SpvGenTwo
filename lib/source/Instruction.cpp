@@ -1578,7 +1578,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::opConvertPtrToU(Instruction* _pP
 spvgentwo::Instruction* spvgentwo::Instruction::opConvertUToPtr(Instruction* _pResultType, Instruction* _pUInt)
 {
 	const Type* resultType = _pResultType->getType();
-	
+	const Type* pUintType = _pUInt->getType();
+
+	if (resultType == nullptr || pUintType == nullptr) return error();
+
 	bool resultTypeCheck = resultType->isPointer() &&
 		resultType->getStorageClass() == spv::StorageClass::PhysicalStorageBuffer;
 
@@ -1588,7 +1591,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::opConvertUToPtr(Instruction* _pR
 		return error();
 	}
 
-	if (!_pUInt->getType()->isUInt())
+	if (!pUintType->isUInt())
 	{
 		getModule()->logError("_pUInt of OpConvertUToPtr is not a scalar of unsigned integer type");
 		return error();
@@ -1646,10 +1649,12 @@ spvgentwo::Instruction* spvgentwo::Instruction::opPtrEqual(Instruction* _pLeftPt
 {
 	auto module = getModule();
 	
-	const Type& leftType = *_pLeftPtr->getType();
-	const Type& rightType = *_pRightPtr->getType();
+	const Type* leftType = _pLeftPtr->getType();
+	const Type* rightType = _pRightPtr->getType();
 
-	auto typeCheck = leftType.isPointer() && rightType.isPointer() && leftType == rightType;
+	if (leftType == nullptr || rightType == nullptr) return error();
+
+	auto typeCheck = leftType->isPointer() && rightType->isPointer() && *leftType == *rightType;
 	
 	if (!typeCheck)
 	{
@@ -1665,10 +1670,12 @@ spvgentwo::Instruction* spvgentwo::Instruction::opPtrNotEqual(Instruction* _pLef
 {
 	Module* module = getModule();
 
-	const Type& leftType = *_pLeftPtr->getType();
-	const Type& rightType = *_pRightPtr->getType();
+	const Type* leftType = _pLeftPtr->getType();
+	const Type* rightType = _pRightPtr->getType();
 
-	bool typeCheck = leftType.isPointer() && rightType.isPointer() && leftType == rightType;
+	if (leftType == nullptr || rightType == nullptr) return error();
+
+	auto typeCheck = leftType->isPointer() && rightType->isPointer() && *leftType == *rightType;
 
 	if (!typeCheck)
 	{
