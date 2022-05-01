@@ -94,6 +94,11 @@ TEST_CASE( "expressionGraph", "[Modules]" )
 	REQUIRE( valid( test::expressionGraph( &g_alloc, &g_logger ) ) );
 }
 
+TEST_CASE("physicalStorageTest", "[Modules]")
+{
+	REQUIRE(valid(test::physicalStorageTest(&g_alloc, &g_logger)));
+}
+
 TEST_CASE( "linking", "[Modules]" )
 {
 	Module libA, libB, consumer;

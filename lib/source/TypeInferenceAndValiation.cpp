@@ -279,6 +279,8 @@ spvgentwo::Instruction* spvgentwo::ITypeInferenceAndVailation::inferResultType(c
 		return module->addType(type1->front()); 
 	case spv::Op::OpAny:
 	case spv::Op::OpAll:
+	case spv::Op::OpPtrEqual:
+	case spv::Op::OpPtrNotEqual:
 		return module->type<bool>();
 	case spv::Op::OpLogicalEqual:
 	case spv::Op::OpLogicalNotEqual:

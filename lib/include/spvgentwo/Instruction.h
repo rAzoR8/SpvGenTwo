@@ -498,6 +498,8 @@ namespace spvgentwo
 		Instruction* opSatConvertUToS(Instruction* _pSignedInt) { return scalarVecOp(spv::Op::OpSatConvertUToS, _pSignedInt, nullptr, "Operand of OpSatConvertUToS is not a scalar or vector of unsigned integer type"); }
 
 		// Instruction* OpConvertUToPtr(); TODO
+		Instruction* opConvertUToPtr(Instruction* _pResultType, Instruction* _pUInt);
+
 		// Instruction* OpPtrCastToGeneric(); TODO
 		// Instruction* OpGenericCastToPtr(); TODO
 		// Instruction* OpGenericCastToPtrExplicit(); TODO
@@ -715,6 +717,7 @@ namespace spvgentwo
 		void opBranchConditional(Instruction* _pCondition, BasicBlock* _pTrueBlock, BasicBlock* _pFalseBlock, const unsigned int _trueWeight, const unsigned int _falseWeight);
 
 		// Instruction* OpSwitch(); TODO
+
 		Instruction* opKill();
 
 		void opReturn();
@@ -722,6 +725,7 @@ namespace spvgentwo
 		void opReturnValue(Instruction* _pValue);
 
 		// Instruction* OpUnreachable() till opNoLine; TODO
+		void opUnreachable();
 
 		void opNoLine();
 
@@ -746,6 +750,10 @@ namespace spvgentwo
 
 		// TODO: All the rest to at least maybe OpDecorateString without the INTEL extension instructions?
 
+		// START FROM: 401 OpPtrEqual
+		Instruction* opPtrEqual(Instruction* _pLeftPtr, Instruction* _pRightPtr);
+
+		Instruction* opPtrNotEqual(Instruction* _pLeftPtr, Instruction* _pRightPtr);
 	protected:
 		// return error instr
 		[[nodiscard]] Instruction* error() const;
