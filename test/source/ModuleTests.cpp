@@ -64,6 +64,11 @@ TEST_CASE( "oldInstrTest", "[Modules]" )
 	REQUIRE( valid( test::oldInstrTest( &g_alloc, &g_logger ) ) );
 }
 
+TEST_CASE("imageSampling", "[Modules]")
+{
+	REQUIRE( valid( test::imageRead( &g_alloc, &g_logger ) ) );
+}
+
 TEST_CASE( "functionCall", "[Modules]" )
 {
 	REQUIRE( valid( test::functionCall( &g_alloc, &g_logger ) ) );

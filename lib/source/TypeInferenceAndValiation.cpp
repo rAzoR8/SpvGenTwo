@@ -142,7 +142,9 @@ spvgentwo::Instruction* spvgentwo::ITypeInferenceAndVailation::inferResultType(c
 	const Type* type1 = typeInstr1 != nullptr ? typeInstr1->getType() : nullptr;
 	const Type* type2 = typeInstr2 != nullptr ? typeInstr2->getType() : nullptr;
 
-	switch (_instr.getOperation())
+	const spv::Op instr = _instr.getOperation();
+
+	switch (instr)
 	{
 	case spv::Op::OpSizeOf:
 		return module->type<unsigned int>();
@@ -358,6 +360,7 @@ spvgentwo::Instruction* spvgentwo::ITypeInferenceAndVailation::inferResultType(c
 	case spv::Op::OpImageFetch:
 	case spv::Op::OpImageGather:
 	case spv::Op::OpImageDrefGather:
+	case spv::Op::OpImageRead:
 	{
 		if (type1 == nullptr) break;
 
@@ -366,33 +369,27 @@ spvgentwo::Instruction* spvgentwo::ITypeInferenceAndVailation::inferResultType(c
 		
 		const Type& sampledType = image->front();
 
-		//Result Type must be a vector of four components of ﬂoating-point type or integer type.
-		//Its components must be the same as Sampled Type of the underlying OpTypeImage (unless that underlying Sampled Type isOpTypeVoid).
+		//samples:
+		// Result Type must be a vector of four components of ﬂoating-point type or integer type.
+		// Its components must be the same as Sampled Type of the underlying OpTypeImage (unless that underlying Sampled Type isOpTypeVoid).
+
+		//OpImageRead:
+		// Result Type must be a scalar or vector of floating-point type or integer type. It must be a scalar or vector with
+		// component type the same as Sampled Type of the OpTypeImage(unless that Sampled Type is OpTypeVoid)
+
+		unsigned int components = instr != spv::Op::OpImageRead ? 4u : getImageChannelCount(image->getImageFormat());
 		
 		if (sampledType.isVoid())
 		{
-			// not sure what todo, return void? or return float4?
+			// assume float4
 			return module->type<vector_t<float, 4>>();
 		}
 		else
 		{
-			return module->addType(sampledType.wrapVector(4));
+			return module->addType(sampledType.wrapVector(components));
 		}
 	}		
 		break;
-
-	case spv::Op::OpImageRead:
-	{
-		// Result Type must be a scalar or vector of floating-point type or integer type. It must be a scalar or vector with
-		// component type the same as Sampled Type of the OpTypeImage(unless that Sampled Type is OpTypeVoid)
-
-		if (type1 == nullptr || type1->isImage() == false) break;
-
-		Type t(module->newType().fromImageFormat(type1->getImageFormat(), true)); // Norm as float
-
-		return module->addType(t);
-	}
-
 	case spv::Op::OpImage:
 	{
 		if (type1 == nullptr || type1->isSampledImage() == false) break;
