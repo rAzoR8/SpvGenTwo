@@ -43,7 +43,15 @@ spvgentwo::Module test::fragmentShader(spvgentwo::IAllocator* _pAllocator, spvge
     imgDesc.dimension = spv::Dim::Dim3D;
     imgDesc.sampledType = { spv::Op::OpTypeInt, 8u };
     imgDesc.format = spv::ImageFormat::Rgba8ui;
-    Instruction* const uni3DImgRawRGBA8 = module.uniform(u8"u_img3DRGABA8", imgDesc);
+    Instruction* const uni3DImgRawRGBA8 = module.uniform(u8"u_img3DRGBA8", imgDesc);
+
+    // void sample type tex
+    imgDesc.dimension = spv::Dim::Dim2D;
+    imgDesc.format = spv::ImageFormat::Rgba16;
+    imgDesc.sampledType = DynScalarVoid;
+    imgDesc.accessQualifier = spv::AccessQualifier::ReadOnly;
+    imgDesc.samplerAccess = SamplerImageAccess::Sampled;
+    Instruction* const uni2DImgVoidRGBA16 = module.uniform(u8"u_img2DRGBA16Void", dyn_sampled_image_t{ imgDesc });
 
     Instruction* const constCoord2D = module.constant(make_vector(0u, 1u));
     Instruction* const constCoord3D = module.constant(make_vector(0u, 1u, 2u));
@@ -92,6 +100,9 @@ spvgentwo::Module test::fragmentShader(spvgentwo::IAllocator* _pAllocator, spvge
 
         Instruction* rawStorageImgRG32 = merge->opLoad(uniImgRawStorageRG32);
         merge->opImageWrite(rawStorageImgRG32, offsetCoord, rg32);
+
+        Instruction* voidImgRGBA16 = merge->opLoad(uni2DImgVoidRGBA16);
+        merge->opImageSampleImplictLod(voidImgRGBA16, uv);
 
         merge.returnValue();
     }

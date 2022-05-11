@@ -27,16 +27,19 @@ namespace spvgentwo
 	struct dyn_scalar_t
 	{
 		struct dyntype_desc_tag {};
-		spv::Op baseType = spv::Op::OpTypeVoid; // OpTypeInt or OpTypeFloat
+		spv::Op baseType = spv::Op::OpTypeFloat; // OpTypeInt or OpTypeFloat
 		unsigned int bits = 32u; // bit width of int / float
 		bool sign = false; // integer sign
 	};
+
+	constexpr dyn_scalar_t DynScalarVoid = { spv::Op::OpTypeVoid, 0u, false };
+	constexpr dyn_scalar_t DynScalarF32 = { spv::Op::OpTypeFloat, 32u, false };
 
 	struct dyn_image_t
 	{
 		struct dyntype_desc_tag {};
 
-		dyn_scalar_t sampledType{ spv::Op::OpTypeFloat };
+		dyn_scalar_t sampledType{ DynScalarF32 };
 		spv::Dim dimension = spv::Dim::Dim2D;
 		unsigned int depth = 1u;
 		bool array = false;
@@ -46,10 +49,10 @@ namespace spvgentwo
 		spv::AccessQualifier accessQualifier = spv::AccessQualifier::Max;
 	};
 
-	struct dyn_sampled_image_t { dyn_image_t imageType; struct dyntype_desc_tag {};};
+	struct dyn_sampled_image_t { dyn_image_t imageType{}; struct dyntype_desc_tag {}; };
 
-	struct dyn_vector_t { dyn_scalar_t elementType; unsigned int elements; struct dyntype_desc_tag {};};
-	struct dyn_matrix_t { dyn_vector_t columnType; unsigned int columns; /*length of the row*/ struct dyntype_desc_tag {};};
+	struct dyn_vector_t { dyn_scalar_t elementType{}; unsigned int elements{}; struct dyntype_desc_tag {}; };
+	struct dyn_matrix_t { dyn_vector_t columnType{}; unsigned int columns{}; /*length of the row*/ struct dyntype_desc_tag {}; };
 
 	template<class T, unsigned int N>
 	struct array_t {

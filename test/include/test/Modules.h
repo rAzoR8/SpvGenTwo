@@ -8,6 +8,7 @@ namespace test
 	spvgentwo::Module types( spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger );
 
 	spvgentwo::Module oldInstrTest( spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger );
+	spvgentwo::Module imageRead( spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger );
 
 	spvgentwo::Module computeShader(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger);
 	spvgentwo::Module controlFlow( spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger );

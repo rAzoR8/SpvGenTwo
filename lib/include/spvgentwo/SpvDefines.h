@@ -464,4 +464,59 @@ namespace spvgentwo
 			return 0u;
 		}
 	}
+
+	// returns number of channels/components for spv::ImageFormat, or 0u if unknown or max
+	constexpr unsigned int getImageChannelCount(spv::ImageFormat _format)
+	{
+		switch (_format)
+		{
+		case spvgentwo::spv::ImageFormat::R8:
+		case spvgentwo::spv::ImageFormat::R8Snorm:
+		case spvgentwo::spv::ImageFormat::R8i:
+		case spvgentwo::spv::ImageFormat::R8ui:
+		case spvgentwo::spv::ImageFormat::R16:
+		case spvgentwo::spv::ImageFormat::R16f:
+		case spvgentwo::spv::ImageFormat::R16Snorm:
+		case spvgentwo::spv::ImageFormat::R16i:
+		case spvgentwo::spv::ImageFormat::R16ui:
+		case spvgentwo::spv::ImageFormat::R32f:
+		case spvgentwo::spv::ImageFormat::R32i:
+		case spvgentwo::spv::ImageFormat::R32ui:
+		case spvgentwo::spv::ImageFormat::R64i:
+		case spvgentwo::spv::ImageFormat::R64ui:
+			return 1u;
+		case spvgentwo::spv::ImageFormat::Rg8:
+		case spvgentwo::spv::ImageFormat::Rg8Snorm:
+		case spvgentwo::spv::ImageFormat::Rg8i:
+		case spvgentwo::spv::ImageFormat::Rg8ui:
+		case spvgentwo::spv::ImageFormat::Rg16:
+		case spvgentwo::spv::ImageFormat::Rg16f:
+		case spvgentwo::spv::ImageFormat::Rg16Snorm:
+		case spvgentwo::spv::ImageFormat::Rg16i:
+		case spvgentwo::spv::ImageFormat::Rg16ui:
+		case spvgentwo::spv::ImageFormat::Rg32f:
+		case spvgentwo::spv::ImageFormat::Rg32i:
+		case spvgentwo::spv::ImageFormat::Rg32ui:
+			return 2u;
+		case spvgentwo::spv::ImageFormat::R11fG11fB10f:
+			return 3u;
+		case spvgentwo::spv::ImageFormat::Rgba8:
+		case spvgentwo::spv::ImageFormat::Rgba8Snorm:
+		case spvgentwo::spv::ImageFormat::Rgba8i:
+		case spvgentwo::spv::ImageFormat::Rgba8ui:
+		case spvgentwo::spv::ImageFormat::Rgb10A2:
+		case spvgentwo::spv::ImageFormat::Rgb10a2ui:
+		case spvgentwo::spv::ImageFormat::Rgba16:
+		case spvgentwo::spv::ImageFormat::Rgba16Snorm:
+		case spvgentwo::spv::ImageFormat::Rgba16f:
+		case spvgentwo::spv::ImageFormat::Rgba16i:
+		case spvgentwo::spv::ImageFormat::Rgba16ui:
+		case spvgentwo::spv::ImageFormat::Rgba32f:
+		case spvgentwo::spv::ImageFormat::Rgba32i:
+		case spvgentwo::spv::ImageFormat::Rgba32ui:
+			return 4u;
+		default:
+			return 0u;
+		}
+	}
 } //!spvgentwo
