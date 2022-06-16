@@ -874,6 +874,77 @@ void spvgentwo::Instruction::opNoLine()
 	makeOp(spv::Op::OpNoLine);
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opBitFieldInsert(Instruction* _pBase, Instruction* _pInsert, Instruction* _pCount, Instruction* _pOffset)
+{
+	const Type* ret = _pBase->getType();
+	const Type* itype = _pInsert->getType();
+	const Type* ctype = _pCount->getType();
+	const Type* otype = _pOffset->getType();
+
+	if ( ret == nullptr || itype == nullptr || ctype == nullptr || otype == nullptr ) return error();
+
+	if ( ret->isVectorOfInt() && *ret == *itype )
+	{
+		if ( ctype->isInt() && otype->isInt() )
+		{
+			return makeOp(spv::Op::OpBitFieldInsert, _pBase->getResultTypeInstr(), InvalidId, _pBase, _pInsert, _pCount, _pOffset);
+		}
+		else
+		{
+			getModule()->logError("Operands _pCount and _pOffset of opBitFieldInsert must be of type scalar integer");
+		}
+	}
+	else
+	{
+		getModule()->logError("Operands _pBase and _pInsert of opBitFieldInsert must be of type scalar integer or vector");
+	}
+
+	return error();
+}
+
+namespace
+{
+	spvgentwo::Instruction* opBitFieldExtract(spvgentwo::Instruction* _pThis, spvgentwo::spv::Op _op, spvgentwo::Instruction* _pBase, spvgentwo::Instruction* _pCount, spvgentwo::Instruction* _pOffset)
+	{
+		using namespace spvgentwo;
+		const Type* ret = _pBase->getType();
+		const Type* ctype = _pCount->getType();
+		const Type* otype = _pOffset->getType();
+
+		Module* module = _pThis->getModule();
+
+		if ( ret == nullptr || ctype == nullptr || otype == nullptr ) return module->getErrorInstr();
+
+		if ( ret->isVectorOfInt() )
+		{
+			if ( ctype->isInt() && otype->isInt() )
+			{
+				return _pThis->makeOp(_op, _pBase->getResultTypeInstr(), InvalidId, _pBase, _pCount, _pOffset);
+			}
+			else
+			{
+				module->logError("Operands _pCount and _pOffset of opBitFieldExtract must be of type scalar integer");
+			}
+		}
+		else
+		{
+			module->logError("Operands _pBase of opBitFieldExtract must be of type scalar integer or vector");
+		}
+
+		return module->getErrorInstr();
+	}
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opBitFieldSExtract(Instruction* _pBase, Instruction* _pCount, Instruction* _pOffset)
+{
+	return opBitFieldExtract(this, spv::Op::OpBitFieldSExtract, _pBase, _pCount, _pOffset);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opBitFieldUExtract(Instruction* _pBase, Instruction* _pCount, Instruction* _pOffset)
+{
+	return opBitFieldExtract(this, spv::Op::OpBitFieldUExtract, _pBase, _pCount, _pOffset);
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opEmitVertex()
 {
 	return makeOp(spv::Op::OpEmitVertex);

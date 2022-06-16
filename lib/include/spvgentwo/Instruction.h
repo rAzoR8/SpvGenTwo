@@ -653,10 +653,11 @@ namespace spvgentwo
 
 		Instruction* opNot(Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpNot, _pIntVec, nullptr, "Operand of OpNot is not a scalar or vector of int type"); }
 
-		// Instruction* OpBitFieldInsert(); TODO
-		// Instruction* OpBitFieldSExtract(); TODO
-		// Instruction* OpBitFieldUExtract(); TODO
-		// Instruction* OpBitReverse(); TODO
+		Instruction* opBitFieldInsert(Instruction* _pBase, Instruction* _pInsert, Instruction* _pCount, Instruction* _pOffset);
+		Instruction* opBitFieldSExtract(Instruction* _pBase, Instruction* _pCount, Instruction* _pOffset);
+		Instruction* opBitFieldUExtract(Instruction* _pBase, Instruction* _pCount, Instruction* _pOffset);
+		Instruction* opBitReverse(Instruction* _pBase) { return scalarVecOp(spv::Op::OpBitReverse, _pBase, nullptr, "Operand of OpBitReverse is not a scalar or vector of int type"); }
+		Instruction* opBitCount(Instruction* _pBase) { return scalarVecOp(spv::Op::OpBitCount, _pBase, nullptr, "Operand of OpBitCount is not a scalar or vector of int type"); }
 
 		Instruction* opDPdx(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdx, _pFloatVec, nullptr, "Operand of OpDPdx is not a scalar or vector of float type"); }
 		Instruction* opDPdy(Instruction* _pFloatVec) { return scalarVecOp(spv::Op::OpDPdy, _pFloatVec, nullptr, "Operand of OpDPdy is not a scalar or vector of float type"); }
