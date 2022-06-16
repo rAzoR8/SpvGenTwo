@@ -190,7 +190,14 @@ spvgentwo::Instruction* spvgentwo::ITypeInferenceAndVailation::inferResultType(c
 	case spv::Op::OpDPdyCoarse:
 
 	case spv::Op::OpSatConvertSToU: // spec doesnt specify signedness of result type but Kernel-Cap dictates unsigned int.
-	case spv::Op::OpSatConvertUToS: // i assume the parameter type is a valid integer type in Kernel-Cap, so just use that
+	case spv::Op::OpSatConvertUToS: // I assume the parameter type is a valid integer type in Kernel-Cap, so just use that
+
+	case spv::Op::OpBitFieldInsert:
+	case spv::Op::OpBitFieldSExtract:
+	case spv::Op::OpBitFieldUExtract:
+
+	case spv::Op::OpBitReverse:
+	case spv::Op::OpBitCount:
 
 		return typeInstr1;
 
@@ -324,6 +331,7 @@ spvgentwo::Instruction* spvgentwo::ITypeInferenceAndVailation::inferResultType(c
 	case spv::Op::OpOrdered:
 	case spv::Op::OpUnordered:
 	{
+		// Result Type must be a scalar or vector of Boolean type.
 		if (type1 == nullptr) return module->getErrorInstr();
 
 		Type t(module->getAllocator());
