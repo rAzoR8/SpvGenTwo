@@ -26,7 +26,7 @@ namespace spvgentwo
 		Normalized = 1
 	};
 
-	constexpr auto wordCount(const decltype(sizeof(spv::Id)) _byteCount)
+	constexpr auto wordCount(decltype(sizeof(spv::Id)) _byteCount)
 	{
 		if (_byteCount <= sizeof(spv::Id)) return decltype(sizeof(spv::Id)){ 1u };
 		return (_byteCount / sizeof(spv::Id)) + (_byteCount % sizeof(spv::Id) != 0u ? 1u : 0u);
@@ -50,7 +50,7 @@ namespace spvgentwo
 		return (static_cast<unsigned int>(_op) & spv::OpCodeMask) | (_operandCount << spv::WordCountShift);
 	}
 
-	inline bool hasResultAndTypeId(const spv::Op _operation)
+	inline bool hasResultAndTypeId(spv::Op _operation)
 	{
 		bool res = false, type = false;
 		spv::HasResultAndType(_operation, &res, &type);
@@ -58,7 +58,7 @@ namespace spvgentwo
 	}
 
 	// returns either spv::OpExecutionMode or spv::OpExecutionModeId based on input mode
-	constexpr spv::Op getExecutionModeOp(const spv::ExecutionMode _mode)
+	constexpr spv::Op getExecutionModeOp(spv::ExecutionMode _mode)
 	{
 		switch (_mode)
 		{
@@ -71,7 +71,7 @@ namespace spvgentwo
 		}
 	}
 
-	constexpr bool isTerminatorOp(const spv::Op _instr)
+	constexpr bool isTerminatorOp(spv::Op _instr)
 	{
 		switch (_instr)
 		{
@@ -89,7 +89,7 @@ namespace spvgentwo
 	}
 
 	// Instructions that start "OpConstant" or "OpSpec"
-	constexpr bool isSpecOrConstantOp(const spv::Op _instr)
+	constexpr bool isSpecOrConstantOp(spv::Op _instr)
 	{
 		return IsConstantOp(_instr) || IsSpecConstantOp(_instr);
 	}
@@ -102,7 +102,7 @@ namespace spvgentwo
 	};
 
 	// get spv::Op::OpTypeFloat from spv::Op::OpFAdd etc (argument type), returns spv::Op::OpNop
-	constexpr spv::Op getTypeFromOp(const spv::Op _op, Sign& _sign)
+	constexpr spv::Op getTypeFromOp(spv::Op _op, Sign& _sign)
 	{
 		// this is not a complete match for all instructions, but for most that have variants for several types
 		switch (_op)
@@ -235,7 +235,7 @@ namespace spvgentwo
 		}
 	}
 
-	constexpr spv::Op getTypeFromOp(const spv::Op _op) { Sign sign = Sign::Any; return getTypeFromOp(_op, sign); }
+	constexpr spv::Op getTypeFromOp(spv::Op _op) { Sign sign = Sign::Any; return getTypeFromOp(_op, sign); }
 
 	constexpr bool hasStringTerminator(unsigned int _word)
 	{

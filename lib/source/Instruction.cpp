@@ -1988,7 +1988,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 
 		Operand& retType = front();
 
-		ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
+		const ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
 		const bool allowOverride = validator != nullptr && validator->overridePredefinedResultType();
 
 		if (retType.instruction == nullptr || allowOverride)
@@ -2017,10 +2017,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 	return pResultType;
 }
 
-bool spvgentwo::Instruction::validateOperands()
+bool spvgentwo::Instruction::validateOperands() const
 {
 #ifdef SPVGENTWO_ENABLE_OPERANDVALIDATION
-	ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
+	const ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
 	return validator != nullptr ? validator->validateOperands(*this) : true;
 #else
 	return true;

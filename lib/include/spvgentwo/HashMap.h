@@ -28,8 +28,8 @@ namespace spvgentwo
 		HashMap(IAllocator* _pAllocator, unsigned int _buckets = DefaultBucktCount, HashFunc _func = hash<Key>);
 		HashMap(HashMap&& _other) noexcept;
 
-		// computes bucket size as sizeof..(_keyvals) * 2 + 1 (number of nodes construected from args passed)
-		// added further nodes after construction is therefore suboptimal, use default consturctor with _buckets count for runtime decided count
+		// computes bucket size as sizeof..(_keyvals) * 2 + 1 (number of nodes constructed from args passed)
+		// adding further nodes after construction is therefore suboptimal, use default consturctor with _buckets count for runtime decided count
 		template <class ... Args>
 		HashMap(IAllocator* _pAllocator, Key&& _key, Value&& _value, Args&& ... _keyvals);
 

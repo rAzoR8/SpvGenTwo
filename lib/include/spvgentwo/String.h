@@ -52,8 +52,8 @@ namespace spvgentwo
 
 		String& operator=(const char* _pStr);
 		
-		constexpr const char* c_str() const { return data(); }
-		constexpr operator const char* () const { return data(); }
+		constexpr char* c_str() const { return data(); }
+		constexpr operator char* () const { return data(); }
 
 		// exclude string terminator
 		constexpr sgt_size_t size() const { return m_elements == 0u ? 0u : m_elements - 1u; }

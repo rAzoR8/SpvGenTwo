@@ -36,14 +36,13 @@ namespace spvgentwo
 
 		const char* getName() const;
 
-		IAllocator* getAllocator();
+		IAllocator* getAllocator() const;
 
 		Instruction* getLabel() { return &m_Label;	}
 		const Instruction* getLabel() const { return &m_Label; }
 
 		// get last instruction
-		Instruction* getTerminator();
-		const Instruction* getTerminator() const;
+		Instruction* getTerminator() const;
 
 		// returns a list of BasicBlock branch targets of this blocks terminator
 		bool getBranchTargets(List<BasicBlock*>& _outTargetBlocks) const;

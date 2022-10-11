@@ -60,22 +60,12 @@ const char* spvgentwo::BasicBlock::getName() const
 	return m_Label.getName();
 }
 
-spvgentwo::IAllocator* spvgentwo::BasicBlock::getAllocator()
+spvgentwo::IAllocator* spvgentwo::BasicBlock::getAllocator() const
 {
-	return getModule()->getAllocator();;
+	return getModule()->getAllocator();
 }
 
-spvgentwo::Instruction* spvgentwo::BasicBlock::getTerminator()
-{
-	if (empty() == false && back().isTerminator())
-	{
-		return &back();
-	}
-
-	return nullptr;
-}
-
-const spvgentwo::Instruction* spvgentwo::BasicBlock::getTerminator() const
+spvgentwo::Instruction* spvgentwo::BasicBlock::getTerminator() const
 {
 	if (empty() == false && back().isTerminator())
 	{
