@@ -14,7 +14,7 @@ namespace spvgentwo
 
 		~Entry() = default;
 
-		 constexpr Entry& operator=(Entry&& _other) noexcept;
+		constexpr Entry& operator=(Entry&& _other) noexcept;
 
 		template<class ...Args>
 		static Entry* create(IAllocator* _pAlloc, Args&& ..._args);

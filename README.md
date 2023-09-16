@@ -423,11 +423,11 @@ SPIR-V IR generation progress, parsing is independent and auto generated. This t
 | OpBitwiseXor | &#10004; |
 | OpBitwiseAnd | &#10004; |
 | OpNot | &#10004; |
-| OpBitFieldInsert | &#9744; |
-| OpBitFieldSExtract | &#9744; |
-| OpBitFieldUExtract | &#9744; |
-| OpBitReverse | &#9744; |
-| OpBitCount | &#9744; |
+| OpBitFieldInsert | &#10004; |
+| OpBitFieldSExtract | &#10004; |
+| OpBitFieldUExtract | &#10004; |
+| OpBitReverse | &#10004; |
+| OpBitCount | &#10004; |
 | OpDPdx | &#10004; |
 | OpDPdy | &#10004; |
 | OpFwidth | &#10004; |

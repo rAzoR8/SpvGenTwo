@@ -874,6 +874,77 @@ void spvgentwo::Instruction::opNoLine()
 	makeOp(spv::Op::OpNoLine);
 }
 
+spvgentwo::Instruction* spvgentwo::Instruction::opBitFieldInsert(Instruction* _pBase, Instruction* _pInsert, Instruction* _pOffset, Instruction* _pCount)
+{
+	const Type* ret = _pBase->getType();
+	const Type* itype = _pInsert->getType();
+	const Type* otype = _pOffset->getType();
+	const Type* ctype = _pCount->getType();
+
+	if ( ret == nullptr || itype == nullptr || ctype == nullptr || otype == nullptr ) return error();
+
+	if ( ret->isScalarOrVectorOf(spv::Op::OpTypeInt) && *ret == *itype )
+	{
+		if ( ctype->isInt() && otype->isInt() )
+		{
+			return makeOp(spv::Op::OpBitFieldInsert, _pBase->getResultTypeInstr(), InvalidId, _pBase, _pInsert, _pOffset, _pCount);
+		}
+		else
+		{
+			getModule()->logError("Operands _pCount and _pOffset of opBitFieldInsert must be of type scalar integer");
+		}
+	}
+	else
+	{
+		getModule()->logError("Operands _pBase and _pInsert of opBitFieldInsert must be of type scalar integer or vector");
+	}
+
+	return error();
+}
+
+namespace
+{
+	spvgentwo::Instruction* opBitFieldExtract(spvgentwo::Instruction* _pThis, spvgentwo::spv::Op _op, spvgentwo::Instruction* _pBase, spvgentwo::Instruction* _pOffset, spvgentwo::Instruction* _pCount)
+	{
+		using namespace spvgentwo;
+		const Type* ret = _pBase->getType();
+		const Type* otype = _pOffset->getType();
+		const Type* ctype = _pCount->getType();
+
+		Module* module = _pThis->getModule();
+
+		if ( ret == nullptr || ctype == nullptr || otype == nullptr ) return module->getErrorInstr();
+
+		if ( ret->isScalarOrVectorOf(spv::Op::OpTypeInt) )
+		{
+			if ( ctype->isInt() && otype->isInt() )
+			{
+				return _pThis->makeOp(_op, _pBase->getResultTypeInstr(), InvalidId, _pBase, _pOffset, _pCount);
+			}
+			else
+			{
+				module->logError("Operands _pCount and _pOffset of opBitFieldExtract must be of type scalar integer");
+			}
+		}
+		else
+		{
+			module->logError("Operands _pBase of opBitFieldExtract must be of type scalar integer or vector");
+		}
+
+		return module->getErrorInstr();
+	}
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opBitFieldSExtract(Instruction* _pBase, Instruction* _pOffset, Instruction* _pCount)
+{
+	return opBitFieldExtract(this, spv::Op::OpBitFieldSExtract, _pBase, _pOffset, _pCount);
+}
+
+spvgentwo::Instruction* spvgentwo::Instruction::opBitFieldUExtract(Instruction* _pBase, Instruction* _pOffset, Instruction* _pCount)
+{
+	return opBitFieldExtract(this, spv::Op::OpBitFieldUExtract, _pBase, _pOffset, _pCount);
+}
+
 spvgentwo::Instruction* spvgentwo::Instruction::opEmitVertex()
 {
 	return makeOp(spv::Op::OpEmitVertex);
@@ -1917,7 +1988,7 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 
 		Operand& retType = front();
 
-		ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
+		const ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
 		const bool allowOverride = validator != nullptr && validator->overridePredefinedResultType();
 
 		if (retType.instruction == nullptr || allowOverride)
@@ -1946,10 +2017,10 @@ spvgentwo::Instruction* spvgentwo::Instruction::inferResultTypeOperand()
 	return pResultType;
 }
 
-bool spvgentwo::Instruction::validateOperands()
+bool spvgentwo::Instruction::validateOperands() const
 {
 #ifdef SPVGENTWO_ENABLE_OPERANDVALIDATION
-	ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
+	const ITypeInferenceAndVailation* validator = getModule()->getTypeInferenceAndVailation();
 	return validator != nullptr ? validator->validateOperands(*this) : true;
 #else
 	return true;
