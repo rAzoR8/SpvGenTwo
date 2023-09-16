@@ -154,7 +154,7 @@ if(${SPVGENTWO_BUILD_TESTS})
 	FetchContent_Declare(
 		spirv-headers
 		GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
-		GIT_TAG sdk-1.3.204.1
+		GIT_TAG sdk-1.3.261.1
 	  )
 
 	set(SPIRV_HEADERS_SKIP_EXAMPLES ON)
@@ -165,7 +165,7 @@ if(${SPVGENTWO_BUILD_TESTS})
 	FetchContent_Declare(
 		spirv-tools
 		GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
-		GIT_TAG        v2022.1
+		GIT_TAG        sdk-1.3.261.1
 	  )
   
 	set(SPIRV_SKIP_TESTS ON)

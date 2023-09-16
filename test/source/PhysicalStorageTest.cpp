@@ -30,12 +30,12 @@ Module test::physicalStorageTest(IAllocator* _pAllocator, ILogger* _pLogger)
 	//		uint64_t ptr; // to convert to a physical pointer
 	//	};
 	storageBufferType.Struct().Member().UInt(64);
-	Instruction* storageBufferTypeIns = module.addType(storageBufferType);
+	Instruction* storageBufferTypeInt = module.addType(storageBufferType);
 	Instruction* storageBufferPtr = module.storageBuffer(storageBufferType, "testStorageBuffer");
-	module.addDecorationInstr()->opDecorate(storageBufferTypeIns, spv::Decoration::Block);
+	module.addDecorationInstr()->opDecorate(storageBufferTypeInt, spv::Decoration::Block);
 	module.addDecorationInstr()->opDecorate(storageBufferPtr, spv::Decoration::DescriptorSet, 0);
 	module.addDecorationInstr()->opDecorate(storageBufferPtr, spv::Decoration::Binding, 0);
-	module.addDecorationInstr()->opMemberDecorate(storageBufferTypeIns, 0, spv::Decoration::Offset, literal_t{ 0 });
+	module.addDecorationInstr()->opMemberDecorate(storageBufferTypeInt, 0, spv::Decoration::Offset, literal_t{ 0 });
 
 	Type physicalStorageBufferType = module.newType();
 	//	struct
@@ -44,6 +44,8 @@ Module test::physicalStorageTest(IAllocator* _pAllocator, ILogger* _pLogger)
 	//	};
 	Type innerType = module.newType();
 	innerType.Struct().Member().Float(32);
+	Instruction* storageBufferTypeFloat = module.addType(innerType);
+	module.addDecorationInstr()->opMemberDecorate(storageBufferTypeFloat, 0, spv::Decoration::Offset, literal_t{ 0 });
 	physicalStorageBufferType.Pointer(spv::StorageClass::PhysicalStorageBuffer, &innerType);
 
 	// void entryPoint();
