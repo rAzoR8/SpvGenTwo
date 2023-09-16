@@ -874,20 +874,20 @@ void spvgentwo::Instruction::opNoLine()
 	makeOp(spv::Op::OpNoLine);
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opBitFieldInsert(Instruction* _pBase, Instruction* _pInsert, Instruction* _pCount, Instruction* _pOffset)
+spvgentwo::Instruction* spvgentwo::Instruction::opBitFieldInsert(Instruction* _pBase, Instruction* _pInsert, Instruction* _pOffset, Instruction* _pCount)
 {
 	const Type* ret = _pBase->getType();
 	const Type* itype = _pInsert->getType();
-	const Type* ctype = _pCount->getType();
 	const Type* otype = _pOffset->getType();
+	const Type* ctype = _pCount->getType();
 
 	if ( ret == nullptr || itype == nullptr || ctype == nullptr || otype == nullptr ) return error();
 
-	if ( ret->isVectorOfInt() && *ret == *itype )
+	if ( ret->isScalarOrVectorOf(spv::Op::OpTypeInt) && *ret == *itype )
 	{
 		if ( ctype->isInt() && otype->isInt() )
 		{
-			return makeOp(spv::Op::OpBitFieldInsert, _pBase->getResultTypeInstr(), InvalidId, _pBase, _pInsert, _pCount, _pOffset);
+			return makeOp(spv::Op::OpBitFieldInsert, _pBase->getResultTypeInstr(), InvalidId, _pBase, _pInsert, _pOffset, _pCount);
 		}
 		else
 		{
@@ -904,22 +904,22 @@ spvgentwo::Instruction* spvgentwo::Instruction::opBitFieldInsert(Instruction* _p
 
 namespace
 {
-	spvgentwo::Instruction* opBitFieldExtract(spvgentwo::Instruction* _pThis, spvgentwo::spv::Op _op, spvgentwo::Instruction* _pBase, spvgentwo::Instruction* _pCount, spvgentwo::Instruction* _pOffset)
+	spvgentwo::Instruction* opBitFieldExtract(spvgentwo::Instruction* _pThis, spvgentwo::spv::Op _op, spvgentwo::Instruction* _pBase, spvgentwo::Instruction* _pOffset, spvgentwo::Instruction* _pCount)
 	{
 		using namespace spvgentwo;
 		const Type* ret = _pBase->getType();
-		const Type* ctype = _pCount->getType();
 		const Type* otype = _pOffset->getType();
+		const Type* ctype = _pCount->getType();
 
 		Module* module = _pThis->getModule();
 
 		if ( ret == nullptr || ctype == nullptr || otype == nullptr ) return module->getErrorInstr();
 
-		if ( ret->isVectorOfInt() )
+		if ( ret->isScalarOrVectorOf(spv::Op::OpTypeInt) )
 		{
 			if ( ctype->isInt() && otype->isInt() )
 			{
-				return _pThis->makeOp(_op, _pBase->getResultTypeInstr(), InvalidId, _pBase, _pCount, _pOffset);
+				return _pThis->makeOp(_op, _pBase->getResultTypeInstr(), InvalidId, _pBase, _pOffset, _pCount);
 			}
 			else
 			{
@@ -935,14 +935,14 @@ namespace
 	}
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opBitFieldSExtract(Instruction* _pBase, Instruction* _pCount, Instruction* _pOffset)
+spvgentwo::Instruction* spvgentwo::Instruction::opBitFieldSExtract(Instruction* _pBase, Instruction* _pOffset, Instruction* _pCount)
 {
-	return opBitFieldExtract(this, spv::Op::OpBitFieldSExtract, _pBase, _pCount, _pOffset);
+	return opBitFieldExtract(this, spv::Op::OpBitFieldSExtract, _pBase, _pOffset, _pCount);
 }
 
-spvgentwo::Instruction* spvgentwo::Instruction::opBitFieldUExtract(Instruction* _pBase, Instruction* _pCount, Instruction* _pOffset)
+spvgentwo::Instruction* spvgentwo::Instruction::opBitFieldUExtract(Instruction* _pBase, Instruction* _pOffset, Instruction* _pCount)
 {
-	return opBitFieldExtract(this, spv::Op::OpBitFieldUExtract, _pBase, _pCount, _pOffset);
+	return opBitFieldExtract(this, spv::Op::OpBitFieldUExtract, _pBase, _pOffset, _pCount);
 }
 
 spvgentwo::Instruction* spvgentwo::Instruction::opEmitVertex()

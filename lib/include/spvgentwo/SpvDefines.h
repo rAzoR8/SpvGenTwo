@@ -187,6 +187,8 @@ namespace spvgentwo
 		case spv::Op::OpBitwiseAnd:
 		case spv::Op::OpSatConvertUToS:
 		case spv::Op::OpSatConvertSToU:
+		case spv::Op::OpBitFieldInsert:
+		case spv::Op::OpBitReverse:
 
 			_sign = Sign::Any;
 			return spv::Op::OpTypeInt;

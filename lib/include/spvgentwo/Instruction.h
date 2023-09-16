@@ -653,9 +653,9 @@ namespace spvgentwo
 
 		Instruction* opNot(Instruction* _pIntVec) { return scalarVecOp(spv::Op::OpNot, _pIntVec, nullptr, "Operand of OpNot is not a scalar or vector of int type"); }
 
-		Instruction* opBitFieldInsert(Instruction* _pBase, Instruction* _pInsert, Instruction* _pCount, Instruction* _pOffset);
-		Instruction* opBitFieldSExtract(Instruction* _pBase, Instruction* _pCount, Instruction* _pOffset);
-		Instruction* opBitFieldUExtract(Instruction* _pBase, Instruction* _pCount, Instruction* _pOffset);
+		Instruction* opBitFieldInsert(Instruction* _pBase, Instruction* _pInsert, Instruction* _pOffset, Instruction* _pCount);
+		Instruction* opBitFieldSExtract(Instruction* _pBase, Instruction* _pOffset, Instruction* _pCount);
+		Instruction* opBitFieldUExtract(Instruction* _pBase, Instruction* _pOffset, Instruction* _pCount);
 		Instruction* opBitReverse(Instruction* _pBase) { return scalarVecOp(spv::Op::OpBitReverse, _pBase, nullptr, "Operand of OpBitReverse is not a scalar or vector of int type"); }
 		Instruction* opBitCount(Instruction* _pBase) { return scalarVecOp(spv::Op::OpBitCount, _pBase, nullptr, "Operand of OpBitCount is not a scalar or vector of int type"); }
 

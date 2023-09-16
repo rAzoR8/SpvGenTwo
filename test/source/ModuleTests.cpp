@@ -104,6 +104,11 @@ TEST_CASE("physicalStorageTest", "[Modules]")
 	REQUIRE(valid(test::physicalStorageTest(&g_alloc, &g_logger)));
 }
 
+TEST_CASE("bitInstructionTest", "[Modules]")
+{
+	REQUIRE(valid(test::bitInstructionTest(&g_alloc, &g_logger)));
+}
+
 TEST_CASE( "linking", "[Modules]" )
 {
 	Module libA, libB, consumer;
