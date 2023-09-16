@@ -1,6 +1,5 @@
 #include "test/Modules.h"
-#include "spvgentwo/ModuleTemplate.inl"
-#include "spvgentwo/InstructionTemplate.inl"
+#include "spvgentwo/Templates.h"
 
 using namespace spvgentwo;
 
