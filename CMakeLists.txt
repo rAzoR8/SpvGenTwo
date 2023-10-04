@@ -123,7 +123,7 @@ if(${SPVGENTWO_BUILD_REFLECT})
 	cmake_add_warnings(SpvGenTwoReflect)
 endif()
 
-#reflection project
+#linker project
 if(${SPVGENTWO_BUILD_LINKER})
 	add_sources("link/source/*.cpp" "linker_sources")
 	add_sources("link/include/link/*.h" "linker_sources")
@@ -142,7 +142,7 @@ if(${SPVGENTWO_BUILD_TESTS})
 	FetchContent_Declare(
 	  Catch2
 	  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-	  GIT_TAG        v3.0.0-preview4
+	  GIT_TAG        v3.4.0
 	)
 
 	set(CATCH_CONFIG_FAST_COMPILE OFF)
