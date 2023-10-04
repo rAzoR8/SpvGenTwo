@@ -207,7 +207,7 @@ CLI: SpvGenTwoReflect ```[file] <option> <option> ...```
 
 ![SpvGenTwoLinker](/misc/linker.PNG)
 
-SPIR-V Shader library linker and patcher. See [SpvGenTwoLinker](LINKER.md) for detailed description. Source can be found at [refl/source/link.cpp](refl/source/link.cpp).
+SPIR-V Shader library linker and patcher. See [SpvGenTwoLinker](LINKER.md) for detailed description. Source can be found at [link/source/link.cpp](link/source/link.cpp).
 
 # Documentation
 
