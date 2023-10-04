@@ -23,7 +23,6 @@ namespace {
 		const char* name = nullptr;
 		BasicBlock& bb;
 		Op op = Op::Nop;
-		//Instruction* constnt = nullptr;
 		Instruction* result = nullptr;
 
 		void operator()( const List<MyExpr*>& _inputs, [[maybe_unused]] const List<MyExpr*>& _outputs )
@@ -34,12 +33,12 @@ namespace {
 			switch( op )
 			{
 			case Op::Nop:
-				/*result =*/ bb->opNop();
+				bb->opNop();
 				break;
 			case Op::Var:
 				break;
 			case Op::Const:
-				//result = constant;//bb.getModule()->addConstant(constant);
+				// nothing to do
 				break;
 			case Op::Add:
 				result = bb->Add( lhs, rhs );
@@ -62,13 +61,6 @@ namespace {
 
 spvgentwo::Module test::expressionGraph(spvgentwo::IAllocator* _pAllocator, spvgentwo::ILogger* _pLogger)
 {
-	//auto expr = make_expr([]() {printf("hallo"); return 1u; });
-
-	//auto val = expr();
-	//Graph<spv::Op> g(&alloc);
-
-	//g.emplace(spv::Op::OpIAdd)->connect(g.emplace(spv::Op::OpIMul));
-
 	Module module(_pAllocator, _pLogger);
 	module.addCapability(spv::Capability::Shader);
 	Function& main = module.addEntryPoint<void>(spv::ExecutionModel::Vertex, u8"mainÜmlautß"); //test utf-8
@@ -76,7 +68,7 @@ spvgentwo::Module test::expressionGraph(spvgentwo::IAllocator* _pAllocator, spvg
 
 	ExprGraph<MyExpr> exprgraph(_pAllocator);
 
-	auto* c1 = exprgraph.emplace(MyExpr{ "c1", bb, Op::Const, module.constant(1337) });
+	auto* c1 = exprgraph.emplace(MyExpr{ "c1",bb, Op::Const, module.constant(1337) });
 	auto* c2 = exprgraph.emplace(MyExpr{ "c1",bb, Op::Const, module.constant(42) });
 
 	auto* add = exprgraph.emplace(MyExpr{ "add",bb, Op::Add });
