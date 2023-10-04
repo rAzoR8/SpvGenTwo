@@ -3,7 +3,7 @@ CLI tool for creating and linking shader libraries.
 
 ![SpvGenTwoLinker](/misc/linker.PNG)
 
-SpvGenTwoLinker source can be found at [refl/source/link.cpp](refl/source/link.cpp)
+SpvGenTwoLinker source can be found at [link/source/link.cpp](link/source/link.cpp)
 
 CLI: SpvGenTwoLinker ```<option> <option> ...```
 
@@ -49,7 +49,7 @@ Currently, GLSL shader compilers do no support SPIR-V import/export attributes s
     -PrintInstructions or -verbose
 
 # Link example
-Example code for generating the SPIR-V modules listed below can be found in the [Linkage Example](example/source/Linkage.cpp)
+Example code for generating the SPIR-V modules listed below can be found in the [Linkage Example](test/source/Linkage.cpp)
 
 __import.spv__ requires external symbols to be runnable:
 * `float addGlobalTime(float x)` from __exportA.spv__

@@ -18,7 +18,7 @@ SpvGenTwo is build around building-blocks that are somewhat similar to SPIR-V's 
 # Operands
 There are four kinds of [operands](lib/include/spvgentwo/Operand.h) in SpvGenTwo:
 
-* **ResultId** - [id](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.html#Terms) which was the result of an instruction
+* **ResultId** - [id](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_terms) which was the result of an instruction
 * **Literal** - 32bit integral immediate value
 * **Instruction** - is resolved to an _id_ using `instruction->getResultId()`, this allows the the Instruction to be changed until it is finally resolved by serialization (when the module is written)
 * **BranchTarget** - BasicBlock resolved by its first instruction `branchTarget->front().getResultId()` - this is just a helpful indirection
@@ -41,7 +41,7 @@ union {
 ```
 # Instructions
 
-[Instructions](lib/include/spvgentwo/Instruction.h) are a list of _operands_ and the associated `spv::Op` operation. SPIR-V mandates a [physical layout](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.html#_a_id_physicallayout_a_physical_layout_of_a_spir_v_module_and_instruction) (order) for instructions:
+[Instructions](lib/include/spvgentwo/Instruction.h) are a list of _operands_ and the associated `spv::Op` operation. SPIR-V mandates a [physical layout](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_physical_layout_of_a_spir_v_module_and_instruction) (order) for instructions:
 
 | Instruction Word Number   | Contents  |
 |---|---|
@@ -141,7 +141,7 @@ public:
 
 The BasicBlock class can be used as a stack of operations where the left-hand operand of a new operation is the last Instruction stored in the BasicBlock and the right-hand operand is the result of another operation (possibly from a different BasicBlock). The result of this new Operation is pushed onto the stack (there is no pop). This concept is used in the global [operators](lib/source/Operators.cpp) implementation.
 
-Programming control-flow in SPIR-V can be tedious. The BasicBlock class implements some helpers making easier to write _structured_ **if** statements and **loops**. Please see the Control-Flow [example](example/source/ControlFlow.cpp) for more detail.
+Programming control-flow in SPIR-V can be tedious. The BasicBlock class implements some helpers making easier to write _structured_ **if** statements and **loops**. Please see the Control-Flow [unit-test](test/source/ControlFlow.cpp) for more detail.
 
 # Functions
 
@@ -219,7 +219,7 @@ An [entry point](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.ht
 
 # Modules
 
-[Modules](lib/include/spvgentwo/Modules.h) contain all Functions (and EntryPoints), the complete set [preamble](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.html#_a_id_logicallayout_a_logical_layout_of_a_module) instructions and type/constant/name lookup hash-maps.
+[Module](lib/include/spvgentwo/Module.h) contains all Functions (and EntryPoints), the complete set [preamble](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_logical_layout_of_a_module) instructions and type/constant/name lookup hash-maps.
 
 The Module class does not actually derive from a List of Functions because it hosts EntryPoints as well.
 
