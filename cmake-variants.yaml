@@ -1,0 +1,22 @@
+buildType:
+  default: debug
+  description: Build All
+  choices:
+    debug:
+      short: Debug All
+      long: Build all tools with debug Info
+      buildType: Debug
+      settings:
+        SPVGENTWO_BUILD_DISASSEMBLER: on
+        SPVGENTWO_BUILD_REFLECT: on
+        SPVGENTWO_BUILD_LINKER: on
+        SPVGENTWO_BUILD_TESTS: on
+    release:
+      short: Release All
+      long: Build all tools with release Info
+      buildType: Release
+      settings:
+        SPVGENTWO_BUILD_DISASSEMBLER: on
+        SPVGENTWO_BUILD_REFLECT: on
+        SPVGENTWO_BUILD_LINKER: on
+        SPVGENTWO_BUILD_TESTS: on
